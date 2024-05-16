@@ -18,4 +18,4 @@ rm -rf /var/lib/containerd
 rm -r ~/.docker
 rm /usr/share/keyrings/docker-archive-keyring.gpg
 
-rm ~/docker-ce ~/apt ~/aptcache ~/policy
+rm ~/docker-ce ~/apt ~/updateapt-cache ~/policy
