@@ -17,3 +17,5 @@ rm -rf /var/run/docker.sock
 rm -rf /var/lib/containerd
 rm -r ~/.docker
 rm /usr/share/keyrings/docker-archive-keyring.gpg
+
+rm ~/docker-ce ~/apt ~/aptcache ~/policy
