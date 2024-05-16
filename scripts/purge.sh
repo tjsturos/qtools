@@ -12,14 +12,15 @@ source $SCRIPT_DIR/backup/local-backup.sh
 rm -rf /root/ceremonyclient
 rm /root/go/bin/node
 
+cd /root/
 # reinstall
 git clone https://github.com/QuilibriumNetwork/ceremonyclient.git
 
-cd ceremonyclient/node
+cd /root/ceremonyclient/node
 GOEXPERIMENT=arenas go install ./...
 systemctl start ceremonyclient.service
 
-wait 60
+sleep 60
 
 source $SCRIPT_DIR/backup/restore-backup.sh
 
