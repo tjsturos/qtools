@@ -5,7 +5,7 @@
 FILE_FINAL_CRON=~/final-cron
 
 # Update the saved cron file with the @restart task
-echo "GOROOT=/usr/local/go && GOPATH=$HOME/go && PATH=/bin:/usr/bin:$GOPATH/bin:$GOROOT/bin" > $FILE_FINAL_CRON
+echo "\nGOROOT=/usr/local/go\nGOPATH=$HOME/go\nPATH=/bin:/usr/bin:$HOME/go/bin:/usr/local/go/bin" > $FILE_FINAL_CRON
 echo "1 */3 * * * $CURRENT_DIR/scripts/update.sh" >> $FILE_FINAL_CRON
 
 # Load the updated file back into the crontab

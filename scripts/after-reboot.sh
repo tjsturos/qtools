@@ -1,11 +1,12 @@
 #/bin/bash
 source $HOME/.bashrc
+STORED_PATH=$(cat ~/saved-path)
+PATH=$STORED_PATH
+log "Loading stored path: $STORED_PATH"
 #install quilibrium from github
 # TODO: update to official Quilibrium mirror once available
 log "cloning Quilibrium repo"
 cd $HOME && git clone https://github.com/QuilibriumNetwork/ceremonyclient.git
-
-
 
 # setup firewall
 log "setting up firewall"

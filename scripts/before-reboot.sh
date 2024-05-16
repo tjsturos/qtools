@@ -29,6 +29,8 @@ append_to_file $BASHRC "PATH=\$GOPATH/bin:\$GOROOT/bin:\$PATH"
 
 source $BASHRC
 
+echo "$PATH" > ~/saved-path
+
 FILE_SYSCTL=/etc/sysctl.conf
 
 # make sure bandwidth is optimized 
