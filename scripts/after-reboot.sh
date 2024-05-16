@@ -5,8 +5,7 @@ source $HOME/.bashrc
 log "cloning Quilibrium repo"
 cd $HOME && git clone https://github.com/QuilibriumNetwork/ceremonyclient.git
 
-# If the backup files exist, copy to correct dir
-source ./backup/restore-backup.sh
+
 
 # setup firewall
 log "setting up firewall"
@@ -24,9 +23,13 @@ fi
 cd $HOME/ceremonyclient/node
 GOEXPERIMENT=arenas  go  install  ./...
 
+sleep 30
 
 sed -i 's/^ *listenGrpcMultiaddr:.*$/  listenGrpcMultiaddr: \/ip4\/127.0.0.1\/tcp\/8337/' ./.config/config.yml
 sed -i '/^ *engine: *$/a \  statsMultiaddr: "/dns/stats.quilibrium.com/tcp/443"' ./.config/config.yml
+
+# If the backup files exist, copy to correct dir
+source $CURRENT_DIR/scripts/backup/restore-backup.sh
 
 # Copy the service to the systemd directory
 cp $CURRENT_DIR/ceremonyclient.service /lib/systemd/system/
