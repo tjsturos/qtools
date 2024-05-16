@@ -37,10 +37,16 @@ ufw allow 443
 
 cd $HOME && git clone https://github.com/QuilibriumNetwork/ceremonyclient.git
 
+# build the Node binary
 cd $HOME/ceremonyclient/node
 log "The current directory is $(pwd), path is $PATH"
 GOEXPERIMENT=arenas go install  ./... >> $CURRENT_DIR/$FILE_LOG
 
+# Copy the service to the systemd directory
+cp $CURRENT_DIR/ceremonyclient.service /lib/systemd/system/
+
+# tells server to start on reboot
+systemctl enable ceremonyclient.service
 # make sure to indicate we are done with phase one (needing a reboot)
 touch $FLAG_AFTER_FIRST_REBOOT
 echo "$CURRENT_DIR" > $FLAG_AFTER_FIRST_REBOOT
