@@ -27,6 +27,18 @@ append_to_file $FILE_SYSCTL "net.core.wmem_max = 600000000"
 # load the updates
 sysctl -p
 
+log "setting up firewall"
+echo "y" | ufw enable
+ufw allow 22
+ufw allow 8336
+ufw allow 443
+
+cd $HOME && git clone https://github.com/QuilibriumNetwork/ceremonyclient.git
+
+cd $HOME/ceremonyclient/node
+log "The current directory is $(pwd)"
+GOEXPERIMENT=arenas go install  ./... >> $CURRENT_DIR/$FILE_LOG
+
 # make sure to indicate we are done with phase one (needing a reboot)
 touch $FLAG_AFTER_FIRST_REBOOT
 echo "$CURRENT_DIR" > $FLAG_AFTER_FIRST_REBOOT
