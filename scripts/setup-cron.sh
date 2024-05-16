@@ -8,7 +8,6 @@ append_to_file $FILE_INITIAL_CRON "GOROOT=/usr/local/go"
 append_to_file $FILE_INITIAL_CRON "GOPATH=/root/go"
 append_to_file $FILE_INITIAL_CRON "PATH=/root/go/bin:/usr/local/go/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin"
 append_to_file $FILE_INITIAL_CRON "@reboot $CURRENT_DIR/install.sh"
-append_to_file $FILE_INITIAL_CRON "1 */3 * * * $CURRENT_DIR/scripts/update.sh"
 
 # Load the updated file back into the crontab
 crontab $FILE_INITIAL_CRON

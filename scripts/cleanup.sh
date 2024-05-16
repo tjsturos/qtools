@@ -7,7 +7,8 @@ FILE_FINAL_CRON=~/final-cron
 append_to_file $FILE_FINAL_CRON "GOROOT=/usr/local/go"
 append_to_file $FILE_FINAL_CRON "GOPATH=/root/go"
 append_to_file $FILE_FINAL_CRON "PATH=/root/go/bin:/usr/local/go/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin"
-append_to_file $FILE_FINAL_CRON "1 */3 * * * /root/quilibrium-node-setup/scripts/update.sh"
+append_to_file $FILE_FINAL_CRON "1 0 * * * $CURRENT_DIR/scripts/backup-local.sh"
+append_to_file $FILE_FINAL_CRON "1 */3 * * * $CURRENT_DIR/scripts/update.sh"
 
 # Load the updated file back into the crontab
 crontab $FILE_FINAL_CRON
