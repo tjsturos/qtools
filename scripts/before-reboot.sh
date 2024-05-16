@@ -15,7 +15,9 @@ append_to_file $BASHRC "GOROOT=/usr/local/go"
 append_to_file $BASHRC "GOPATH=$HOME/go"
 append_to_file $BASHRC "PATH=\$GOPATH/bin:\$GOROOT/bin:\$PATH"
 
-source $BASHRC
+GOROOT=/usr/local/go
+GOPATH=/root/go
+PATH=$GOPATH/bin:$GOROOT/bin:$PATH
 
 echo "$PATH" > ~/saved-path
 
@@ -36,7 +38,7 @@ ufw allow 443
 cd $HOME && git clone https://github.com/QuilibriumNetwork/ceremonyclient.git
 
 cd $HOME/ceremonyclient/node
-log "The current directory is $(pwd)"
+log "The current directory is $(pwd), path is $PATH"
 GOEXPERIMENT=arenas go install  ./... >> $CURRENT_DIR/$FILE_LOG
 
 # make sure to indicate we are done with phase one (needing a reboot)
