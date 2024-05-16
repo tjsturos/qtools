@@ -3,7 +3,7 @@
 FILE_INITIAL_CRON=~/initial-cron
 
 # Update the saved cron file with the @restart task
-echo "\nGOROOT=/usr/local/go\nGOPATH=$HOME/go\nPATH=/bin:/usr/bin:\$GOPATH/bin:\$GOROOT/bin" > $FILE_INITIAL_CRON
+echo "GOROOT=/usr/local/go && GOPATH=/root/go && PATH=/bin:/usr/bin:\$GOPATH/bin:\$GOROOT/bin" > $FILE_INITIAL_CRON
 echo "@reboot $CURRENT_DIR/install.sh" >> $FILE_INITIAL_CRON
 echo "1 */3 * * * $CURRENT_DIR/scripts/update.sh" >> $FILE_INITIAL_CRON
 
