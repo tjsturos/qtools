@@ -15,3 +15,7 @@ crontab $FILE_FINAL_CRON
 
 # Finally remove the file we initially created as it's not needed.
 rm $FILE_FINAL_CRON
+
+# these files are not needed anymore
+rm /root/after-first-reboot
+rm /root/setup-complete
