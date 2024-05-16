@@ -1,6 +1,6 @@
 #/bin/bash
 
-# Setup the cron for reboots
+# Setup the cron for reboot
 source ./scripts/setup-cron.sh
 
 apt-get -q update
@@ -9,17 +9,6 @@ apt-get -q update
 apt-get install git -y
 
 source ./scripts/install-go.sh
-
-BASHRC=~/.bashrc
-append_to_file $BASHRC "GOROOT=/usr/local/go"
-append_to_file $BASHRC "GOPATH=$HOME/go"
-append_to_file $BASHRC "PATH=\$GOPATH/bin:\$GOROOT/bin:\$PATH"
-
-GOROOT=/usr/local/go
-GOPATH=/root/go
-PATH=$GOPATH/bin:$GOROOT/bin:$PATH
-
-echo "$PATH" > ~/saved-path
 
 FILE_SYSCTL=/etc/sysctl.conf
 
@@ -37,7 +26,13 @@ ufw allow 443
 
 cd $HOME && git clone https://github.com/QuilibriumNetwork/ceremonyclient.git
 
-# build the Node binary
+# these need to be defined here because sourcing the .bashrc doesn't
+# load these (despite being added) used for installing the 'node' binary
+GOROOT=/usr/local/go
+GOPATH=/root/go
+PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+
+# build the 'node' binary
 cd $HOME/ceremonyclient/node
 log "The current directory is $(pwd), path is $PATH"
 GOEXPERIMENT=arenas go install  ./... >> $CURRENT_DIR/$FILE_LOG
