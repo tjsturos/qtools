@@ -21,7 +21,7 @@ if [[ -f $FILE_SETUP_CUSTOMIZATION ]]; then
 fi
 
 cd $HOME/ceremonyclient/node
-GOEXPERIMENT=arenas  go  install  ./...
+GOEXPERIMENT=arenas go install  ./... 
 
 sleep 30
 
@@ -33,7 +33,6 @@ source $CURRENT_DIR/scripts/backup/restore-backup.sh
 
 # Copy the service to the systemd directory
 cp $CURRENT_DIR/ceremonyclient.service /lib/systemd/system/
-
 
 # tells server to start on reboot
 systemctl enable ceremonyclient.service
