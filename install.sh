@@ -4,6 +4,18 @@ FILE_AFTER_FIRST_REBOOT="after-first-reboot"
 FILE_SETUP_COMPLETE="setup-complete"
 FILE_LOG="quil_on_start_log"
 
+append_to_file() {
+    FILE="$1"
+    CONTENT="$2"
+
+    if ! grep -qFx "$CONTENT" $FILE; then
+        log "Adding $CONTENT to $FILE"
+        echo "$CONTENT" >> $FILE
+    else
+        log "$CONTENT already found in $FILE. Skipping."
+    fi
+}
+
 # "FLAGS" to look for to change what this script will run
 export FLAG_AFTER_FIRST_REBOOT=$HOME/$FILE_AFTER_FIRST_REBOOT
 export FLAG_SETUP_COMPLETE=$HOME/$FILE_SETUP_COMPLETE

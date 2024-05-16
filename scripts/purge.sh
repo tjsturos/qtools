@@ -1,5 +1,9 @@
 #!/bin/bash
 
+STORED_PATH="$(cat ~/saved-path)"
+PATH=$STORED_PATH
+log "Loading stored path: $STORED_PATH"
+
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
 # Stop the ceremonyclient service

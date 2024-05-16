@@ -5,18 +5,6 @@ source ./scripts/setup-cron.sh
 
 apt-get -q update
 
-append_to_file() {
-    FILE="$1"
-    CONTENT="$2"
-
-    if ! grep -qFx "$CONTENT" $FILE; then
-        log "Adding $CONTENT to $FILE"
-        echo "$CONTENT" >> $FILE
-    else
-        log "$CONTENT already found in $FILE. Skipping."
-    fi
-}
-
 # make sure git is installed
 apt-get install git -y
 

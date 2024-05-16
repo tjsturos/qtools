@@ -1,6 +1,6 @@
 #/bin/bash
 source $HOME/.bashrc
-STORED_PATH=$(cat ~/saved-path)
+STORED_PATH="$(cat ~/saved-path)"
 PATH=$STORED_PATH
 log "Loading stored path: $STORED_PATH"
 #install quilibrium from github
@@ -23,6 +23,7 @@ fi
 
 log "The path is: $PATH"
 cd $HOME/ceremonyclient/node
+log "The current directory is $(pwd)"
 GOEXPERIMENT=arenas go install  ./... >> $CURRENT_DIR/$FILE_LOG
 
 sleep 30

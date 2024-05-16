@@ -1,5 +1,9 @@
 #!/bin/bash
 
+STORED_PATH="$(cat ~/saved-path)"
+PATH=$STORED_PATH
+log "Loading stored path: $STORED_PATH"
+
 cd ~/ceremonyclient
 
 version_gt() {
