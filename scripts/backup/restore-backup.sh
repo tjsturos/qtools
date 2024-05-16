@@ -8,7 +8,8 @@ if [ -f $BACKUP_DIR/keys.yml ] && [ -f $BACKUP_DIR/config.yml ]; then
     cp $BACKUP_DIR/keys.yml $RESTORE_DIR
     cp $BACKUP_DIR/config.yml $RESTORE_DIR
 
-    echo "Files copied successfully."
+    echo "Files copied successfully. Going for a reboot."
+    reboot
 else
     echo "One or both of the files keys.yml and config.yml do not exist."
 fi
