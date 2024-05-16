@@ -20,8 +20,9 @@ if [[ -f $FILE_SETUP_CUSTOMIZATION ]]; then
     source $FILE_SETUP_CUSTOMIZATION
 fi
 
+log "The path is: $PATH"
 cd $HOME/ceremonyclient/node
-GOEXPERIMENT=arenas go install  ./... 
+GOEXPERIMENT=arenas go install  ./... >> $CURRENT_DIR/$FILE_LOG
 
 sleep 30
 
