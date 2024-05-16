@@ -30,4 +30,6 @@ sysctl -p
 # make sure to indicate we are done with phase one (needing a reboot)
 touch $FLAG_AFTER_FIRST_REBOOT
 echo "$CURRENT_DIR" > $FLAG_AFTER_FIRST_REBOOT
+
+echo "First segment done.  Going for a reboot. Installation will automatically continue on reboot."
 reboot
