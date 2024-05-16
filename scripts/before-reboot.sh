@@ -20,6 +20,8 @@ append_to_file() {
 # make sure git is installed
 apt-get install git -y
 
+source ./scripts/install-go.sh
+
 BASHRC=~/.bashrc
 append_to_file $BASHRC "GOROOT=/usr/local/go"
 append_to_file $BASHRC "GOPATH=$HOME/go"
