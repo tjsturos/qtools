@@ -31,5 +31,5 @@ sysctl -p
 touch $FLAG_AFTER_FIRST_REBOOT
 echo "$CURRENT_DIR" > $FLAG_AFTER_FIRST_REBOOT
 
-echo "First segment done.  Going for a reboot. Installation will automatically continue on reboot."
+echo "First installion segment done. Going for a reboot. Installation will automatically continue on reboot."
 reboot
