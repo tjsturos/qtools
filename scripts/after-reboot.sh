@@ -22,10 +22,11 @@ if [[ -f $FILE_SETUP_CUSTOMIZATION ]]; then
 fi
 
 cd $HOME/ceremonyclient/node
+GOEXPERIMENT=arenas  go  install  ./...
+
 
 sed -i 's/^ *listenGrpcMultiaddr:.*$/  listenGrpcMultiaddr: \/ip4\/127.0.0.1\/tcp\/8337/' ./.config/config.yml
 sed -i '/^ *engine: *$/a \  statsMultiaddr: "/dns/stats.quilibrium.com/tcp/443"' ./.config/config.yml
-GOEXPERIMENT=arenas  go  install  ./...
 
 # Copy the service to the systemd directory
 cp $CURRENT_DIR/ceremonyclient.service /lib/systemd/system/
@@ -43,4 +44,4 @@ touch $FLAG_SETUP_COMPLETE
 echo "true" > $FLAG_SETUP_COMPLETE
 
 # cleanup any leftovers
-source ./cleanup.sh
+source $CURRENT_DIR/scripts/cleanup.sh
