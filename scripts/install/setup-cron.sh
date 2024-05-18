@@ -14,3 +14,26 @@ crontab $FILE_CRON
 
 # Finally remove the file we initially created as it's not needed.
 rm $FILE_CRON
+
+expected_output="GOROOT=/usr/local/go
+GOPATH=/root/go
+PATH=/root/go/bin:/usr/local/go/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
+QTOOLS_PATH=/root/quilibrium-node-setup
+1 0 * * * qtools make-backup
+1 */3 * * * qtools update"
+
+# Get the actual output of 'ufw status'
+actual_output=$(crontab -l)
+
+if [[ "$actual_output" == "$expected_output" ]]; then
+  echo "The crontab was successfully updated."
+  exit 0
+else
+  echo "The crontab did not update successfully."
+  echo "Expected:"
+  echo "$expected_output"
+  echo "Actual:"
+  echo "$actual_output"
+  exit 1
+fi
+
