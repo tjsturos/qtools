@@ -64,7 +64,7 @@ case "$1" in
   remove-docker|purge)
     export SERVICE_PATH="$QTOOLS_PATH/scripts"
     ;;
-  update-node|self-update)
+  update-node|update-qtools)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/update"
     ;;
   install-go|install-qclient-binary|complete-install|install-node-binary|setup-cron|modify-config|create-qtools-symlink|setup-firewall|add-auto-complete)
