@@ -76,8 +76,9 @@ command_exists() {
 install_package() {
     package="$1"
     package_parent="$2"
+    log "Looking for package $1"
     if command_exists $package_parent; then
-       
+        log "Package $1 found."
     else
         echo "$package is not installed. Installing..."
 
