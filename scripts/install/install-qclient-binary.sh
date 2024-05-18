@@ -18,4 +18,4 @@ GOEXPERIMENT=arenas go build -o /root/go/bin/qclient main.go > /dev/null 2>&1
 # verify install
 file_exists $QUIL_CLIENT_PATH/qclient
 
-ln -s /usr/local/bin/qclient $QUIL_CLIENT_PATH/qclient
+ln -s $QUIL_CLIENT_PATH/qclient /usr/local/bin/qclient
