@@ -1,5 +1,12 @@
 #!/bin/bash
 
+if grep -qE "$pattern" "$bashrc_file"; then
+  echo "Pattern found in .bashrc. Removing it..."
+  # Use sed to remove the line containing the pattern
+  sed -i "/$pattern/d" "$bashrc_file"
+  echo "Pattern removed from .bashrc."
+fi
+
 apt-get install bash-completion
 
 append_to_file ~/.bashrc "source /etc/profile.d/bash_completion.sh"
