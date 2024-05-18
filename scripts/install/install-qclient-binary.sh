@@ -18,7 +18,9 @@ GOEXPERIMENT=arenas go build -o /root/go/bin/qclient main.go > /dev/null 2>&1
 # verify install
 file_exists $QUIL_CLIENT_PATH/qclient
 
-ln -s $QUIL_CLIENT_PATH/qclient /usr/local/bin/qclient
+if [ -f  /usr/local/bin/qclient ]; then
+    ln -s $QUIL_CLIENT_PATH/qclient /usr/local/bin/qclient
+fi
 
 _qclient_completions() {
     local cur prev opts
