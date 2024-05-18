@@ -19,3 +19,36 @@ GOEXPERIMENT=arenas go build -o /root/go/bin/qclient main.go > /dev/null 2>&1
 file_exists $QUIL_CLIENT_PATH/qclient
 
 ln -s $QUIL_CLIENT_PATH/qclient /usr/local/bin/qclient
+
+_qclient_completions() {
+    local cur prev opts
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    # Define the top-level commands
+    opts="token cross-mint"
+
+    # Define subcommands for 'token'
+    if [[ ${prev} == "token" ]]; then
+        COMPREPLY=( $(compgen -W "balance coins transfer accept reject mutual-receive mutual-transfer mint split merge" -- ${cur}) )
+        return 0
+    fi
+
+    if [[ ${prev} == "mint" ]]; then
+        COMPREPLY=( $(compgen -W "all" -- ${cur}) )
+        return 0
+    fi
+
+    # Provide top-level command completions
+    if [[ ${COMP_CWORD} == 1 ]]; then
+        COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+        return 0
+    fi
+
+    return 0
+}
+
+complete -F _qclient_completions qclient
+
+source ~/.bashrc
