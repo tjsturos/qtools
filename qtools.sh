@@ -6,6 +6,7 @@ usage() {
   echo "Options:"
   echo "  complete-install       - Do a full install of the ceremony client."
   echo "  update-node            - Perform an update on the ceremony client."
+  echo "  update-qtools          - Update the qTools code."
   echo "  make-backup            - Make a local-only backup (on this server) of the config.yml and keys.yml files."
   echo "  restore-backup         - Make a local-only backup (on this server) of the config.yml and keys.yml files."
   echo "  modify-config          - Perform necessary changes to the config.yml file (upon creation or already created)."
