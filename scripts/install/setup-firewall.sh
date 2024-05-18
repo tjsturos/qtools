@@ -26,7 +26,7 @@ fi
 
 # Check each expected rule
 missing_rules=()
-for rule in "${expected_rules[@]}"; then
+for rule in "${expected_rules[@]}"; do
   if ! echo "$actual_output" | grep -q "$rule"; then
     missing_rules+=("$rule")
   fi
