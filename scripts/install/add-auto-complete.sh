@@ -11,7 +11,7 @@ search_directory="scripts"
 
 # Check if the directory exists
 if [[ ! -d "$search_directory" ]]; then
-  echo "Directory '$search_directory' does not exist."
+  log "Directory '$search_directory' does not exist."
   exit 1
 fi
 
@@ -20,7 +20,7 @@ sh_files=$(find "$search_directory" -type f -name "*.sh")
 
 # Check if any .sh files were found
 if [[ -z "$sh_files" ]]; then
-  echo "No .sh files found in '$search_directory'."
+  log "No .sh files found in '$search_directory'."
 else
   # Initialize an array to hold the script names without the .sh extension
   script_names=()

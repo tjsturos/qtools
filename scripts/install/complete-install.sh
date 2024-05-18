@@ -3,7 +3,7 @@
 apt-get -q update
 
 # make sure git is installed
-apt-get install git -y
+install_package git
 
 qtools install-go
 
@@ -35,7 +35,7 @@ qtools restore-backup
 log "running customization"
 source $QTOOLS_PATH/scripts/install/customization.sh
 
-echo "Installation complete. Going for a reboot."
+log "Installation complete. Going for a reboot."
 
 wait
 reboot
