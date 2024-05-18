@@ -27,7 +27,7 @@ remove_file() {
     if [ -f "$FILE" ]; then
         log "File $FILE found.  Removing."
         rm $FILE
-        if [ ! -f $FILE ];
+        if [ ! -f $FILE ]; then
             log "File $FILE deletion was successful."
         else
             log "File $FILE deletion was not successful."

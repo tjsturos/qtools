@@ -50,7 +50,7 @@ if [ ! -f "$QTOOLS_BIN_PATH" ]; then
   source $QTOOLS_PATH/install/create-qtools-symlink.sh
 
   if [ ! -f "$QTOOLS_BIN_PATH" ]; then
-    log "$QTOOLS_BIN_PATH did not exist. Attempted to install, but failed. This is required to proceed. Try `ln -s $QTOOLS_PATH/qtools.sh /usr/local/bin/qtools` manually."
+    log "$QTOOLS_BIN_PATH did not exist. Attempted to install, but failed. This is required to proceed. Try \"ln -s $QTOOLS_PATH/qtools.sh /usr/local/bin/qtools\" manually."
     exit 1
   fi
 fi
