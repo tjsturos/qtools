@@ -16,7 +16,8 @@ usage() {
   echo "  purge-node             - Remove Node and re-install (performs local-only back of config files)"
   echo "  install-node-binary    - Install node binary for this node"
   echo "  install-qclient-binary - Install qClient binary for this node"
-  echo "  create-qtools-symlink  - Create a symlink for qtools to /usr/local/bin"
+  echo "  create-qtools-symlink  - Create a symlink for 'qtools' to /usr/local/bin"
+  echo "  add-auto-complete      - Add autocomplete for the 'qtools' command"
   
   exit 1
 }
@@ -59,7 +60,7 @@ case "$1" in
   remove-docker|update-node|purge)
     export SERVICE_PATH="$QTOOLS_PATH/scripts"
     ;;
-  install-go|install-qclient-binary|complete-install|install-node-binary|setup-cron|modify-config|create-qtools-symlink|setup-firewall)
+  install-go|install-qclient-binary|complete-install|install-node-binary|setup-cron|modify-config|create-qtools-symlink|setup-firewall|add-auto-complete)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/install"
     ;;
   make-backup|restore-backup)
