@@ -73,38 +73,34 @@ command_exists() {
   command -v "$1" >/dev/null 2>&1
 }
 
-install_inotify() {
-    # Function to check if a command exists
+install_package() {
+    package="$1"
+    if command_exists $package; then
+        echo "$package is already installed."
+    else
+        echo "$package is not installed. Installing..."
 
-# Check if inotifywait (part of inotify-tools) is installed
-if command_exists inotifywait; then
-  echo "inotify-tools is already installed."
-else
-  echo "inotify-tools is not installed. Installing..."
+        # Detect the package manager and install the package
+        if command_exists apt-get; then
+            sudo apt-get update
+            sudo apt-get install -y $package
+        elif command_exists yum; then
+            sudo yum install -y $package
+        elif command_exists dnf; then
+            sudo dnf install -y $package
+        elif command_exists pacman; then
+            sudo pacman -Sy $package
+        elif command_exists brew; then
+            brew install $package
+        else
+            echo "Error: Cannot determine the package manager to use for installing $package."
+            exit 1
+        fi
 
-  # Detect the package manager and install inotify-tools
-  if command_exists apt-get; then
-    sudo apt-get update
-    sudo apt-get install -y inotify-tools
-  elif command_exists yum; then
-    sudo yum install -y inotify-tools
-  elif command_exists dnf; then
-    sudo dnf install -y inotify-tools
-  elif command_exists pacman; then
-    sudo pacman -Sy inotify-tools
-  elif command_exists brew; then
-    brew install inotify-tools
-  else
-    echo "Error: Cannot determine the package manager to use for installing inotify-tools."
-    exit 1
-  fi
-
-  # Verify if the installation was successful
-  if command_exists inotifywait; then
-    echo "inotify-tools was successfully installed."
-  else
-    echo "Error: Failed to install inotify-tools."
-    exit 1
-  fi
-fi
+        # Verify if the installation was successful
+        if ! command_exists $package; then
+            echo "Error: Failed to install $package."
+            exit 1
+        fi
+    fi
 }
