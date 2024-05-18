@@ -11,15 +11,15 @@ export GOROOT=/usr/local/go
 export GOPATH=/root/go
 export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
 
-# install grpcurl
-go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest
-
 cd /root/
 git clone https://github.com/QuilibriumNetwork/ceremonyclient.git
 
 # build the 'node' binary
 qtools install-node-binary
-qtools install qclient-binary
+qtools install-qclient-binary
+qtools install-grpc
+qtools setup-firewall
+qtools setup-cron
 
 # Copy the service to the systemd directory
 cp $QTOOLS_PATH/ceremonyclient.service /lib/systemd/system/
@@ -30,9 +30,9 @@ systemctl enable ceremonyclient.service
 # start the server
 systemctl start ceremonyclient.service
 
-qtools restore-backup
+qtools restore-backup &
+qtools modify-config &
 
-log "running customization"
 source $QTOOLS_PATH/scripts/install/customization.sh
 
 log "Installation complete. Going for a reboot."

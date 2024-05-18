@@ -1,10 +1,5 @@
 #!/bin/bash
-
-STORED_PATH="$(cat ~/saved-path)"
-PATH=$STORED_PATH
-log "Loading stored path: $STORED_PATH"
-
-cd ~/ceremonyclient
+cd $QUIL_PATH
 
 version_gt() {
     test "$(printf '%s\n' "$@" | sort -V | head -n 1)" != "$1";
@@ -25,12 +20,8 @@ if version_gt "$REMOTE_VERSION" "$CURRENT_VERSION"; then
     cd node
     GOEXPERIMENT=arenas go clean -v -n -a ./...
 
-    remove_file $QUIL_GO_NODE_BIN
-
+    # Install binaries
     qtools install-node-binary
-
-    file_exists $QUIL_GO_NODE_BIN
-
     qtools install-qclient-binary
 
     systemctl start ceremonyclient.service
