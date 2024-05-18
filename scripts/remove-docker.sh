@@ -1,9 +1,8 @@
 #!/bin/bash
 
-cd ~/ceremonyclient
+cd $QUIL_PATH
 
-mv .config/keys.yml node/.config/keys.yml
-mv .config/config.yml node/.config/config.yml
+qtools make-backup
 
 docker compose down
 
@@ -19,3 +18,7 @@ rm -r ~/.docker
 rm /usr/share/keyrings/docker-archive-keyring.gpg
 
 rm ~/docker-ce ~/apt ~/updateapt-cache ~/policy
+
+rm -rf $QUIL_PATH
+
+qtools complete-install

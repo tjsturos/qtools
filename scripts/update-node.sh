@@ -24,10 +24,15 @@ if version_gt "$REMOTE_VERSION" "$CURRENT_VERSION"; then
     git merge origin
     cd node
     GOEXPERIMENT=arenas go clean -v -n -a ./...
-    rm /root/go/bin/node
-    ls /root/go/bin
-    GOEXPERIMENT=arenas  go  install  ./...
-    ls /root/go/bin
+
+    remove_file $QUIL_GO_NODE_BIN
+
+    qtools install-node-binary
+
+    file_exists $QUIL_GO_NODE_BIN
+
+    qtools install-qclient-binary
+
     systemctl start ceremonyclient.service
 else
     echo "No new Quilibrium version found: $REMOTE_VERSION vs. $CURRENT_VERSION"
