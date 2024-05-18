@@ -12,6 +12,9 @@ if [ -f "$QUIL_CLIENT_PATH/qclient" ]; then
     remove_file $QUIL_CLIENT_PATH/qclient
 fi
 
+# remove previous build files
+GOEXPERIMENT=arenas go clean -v -n -a ./...
+
 # Install
 GOEXPERIMENT=arenas go build -o /root/go/bin/qclient main.go > /dev/null 2>&1
 
