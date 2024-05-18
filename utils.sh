@@ -39,7 +39,7 @@ remove_file() {
 
 file_exists() {
     FILE="$1"
-    if [ ! -f $FILE ];
+    if [ ! -f $FILE ]; then
         log "File $FILE exists."
     else
         log "File $FILE does not exist."
