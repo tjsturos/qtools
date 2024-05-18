@@ -14,7 +14,7 @@ append_to_file $FILE_CRON "1 */3 * * * qtools update"
 crontab $FILE_CRON
 
 # Finally remove the file we initially created as it's not needed.
-rm $FILE_CRON
+remove_file $FILE_CRON
 
 expected_output="GOROOT=/usr/local/go
 GOPATH=/root/go

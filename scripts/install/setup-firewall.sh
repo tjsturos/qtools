@@ -15,7 +15,8 @@ To                         Action      From
 443                        ALLOW       Anywhere
 22 (v6)                    ALLOW       Anywhere (v6)
 8336 (v6)                  ALLOW       Anywhere (v6)
-443 (v6)                   ALLOW       Anywhere (v6)"
+443 (v6)                   ALLOW       Anywhere (v6)
+"
 
 # Get the actual output of 'ufw status'
 actual_output=$(ufw status)
@@ -25,10 +26,10 @@ if [[ "$actual_output" == "$expected_output" ]]; then
   log "The firewall rules were successfully applied."
   exit 0
 else
-  echo "The firewall rules were not applied successfully."
-  echo "Expected:"
-  echo "$expected_output"
-  echo "Actual:"
-  echo "$actual_output"
+  log "The firewall rules were not applied successfully."
+  log "Expected:"
+  log "$expected_output"
+  log "Actual:"
+  log "$actual_output"
   exit 1
 fi
