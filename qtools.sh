@@ -60,8 +60,11 @@ fi
 
 # Set environment variables based on the option
 case "$1" in
-  remove-docker|update-node|purge)
+  remove-docker|purge)
     export SERVICE_PATH="$QTOOLS_PATH/scripts"
+    ;;
+  update-node|self-update)
+    export SERVICE_PATH="$QTOOLS_PATH/scripts/update"
     ;;
   install-go|install-qclient-binary|complete-install|install-node-binary|setup-cron|modify-config|create-qtools-symlink|setup-firewall|add-auto-complete)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/install"

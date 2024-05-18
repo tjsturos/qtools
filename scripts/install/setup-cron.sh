@@ -7,6 +7,7 @@ append_to_file $FILE_CRON "GOPATH=/root/go"
 append_to_file $FILE_CRON "PATH=/root/go/bin:/usr/local/go/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin"
 append_to_file $FILE_CRON "QTOOLS_PATH=$QTOOLS_PATH"
 append_to_file $FILE_CRON "1 0 * * * qtools make-backup"
+append_to_file $FILE_CRON "1 0 * * * qtools update-qtools"
 append_to_file $FILE_CRON "1 */3 * * * qtools update"
 
 # Load the updated file back into the crontab
@@ -20,6 +21,7 @@ GOPATH=/root/go
 PATH=/root/go/bin:/usr/local/go/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
 QTOOLS_PATH=/root/quilibrium-node-setup
 1 0 * * * qtools make-backup
+1 0 * * * qtools update-qtools
 1 */3 * * * qtools update"
 
 # Get the actual output of 'ufw status'
