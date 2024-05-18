@@ -17,6 +17,7 @@ usage() {
   echo "  purge-node             - Remove Node and re-install (performs local-only back of config files)"
   echo "  install-node-binary    - Install node binary for this node"
   echo "  install-qclient-binary - Install qClient binary for this node"
+  echo "  install-grpc           - Install grpc on the server for querying node info"
   echo "  create-qtools-symlink  - Create a symlink for 'qtools' to /usr/local/bin"
   echo "  add-auto-complete      - Add autocomplete for the 'qtools' command"
   echo "  get-token-info         - Get network information on tokens"
@@ -73,13 +74,16 @@ case "$1" in
   update-node|update-qtools)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/update"
     ;;
-  install-go|install-qclient-binary|complete-install|install-node-binary|setup-cron|modify-config|create-qtools-symlink|setup-firewall|add-auto-complete)
+  install-go|install-qclient-binary|complete-install|install-node-binary|setup-cron|modify-config|create-qtools-symlink|setup-firewall|add-auto-complete|install-grpc)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/install"
     ;;
   make-backup|restore-backup)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/backup"
     ;;
   get-node-count|get-node-info|get-peer-info|get-token-info)
+    if ! command_exists grpcurl; then
+      qtools install-grpc
+    fi
     export SERVICE_PATH="$QTOOLS_PATH/scripts/grpc"
     ;;
   *)
