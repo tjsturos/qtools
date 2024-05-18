@@ -45,6 +45,8 @@ fi
 # common utils for scripts
 source $QTOOLS_PATH/utils.sh
 
+install_inotify
+
 # Remaining scripts need existance of the QTOOLS_BIN_PATH binary
 if [ ! -f "$QTOOLS_BIN_PATH" ]; then
   # Attempt to install it.
