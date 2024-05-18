@@ -47,7 +47,7 @@ source $QTOOLS_PATH/utils.sh
 # Remaining scripts need existance of the QTOOLS_BIN_PATH binary
 if [ ! -f "$QTOOLS_BIN_PATH" ]; then
   # Attempt to install it.
-  source $QTOOLS_PATH/install/create-qtools-symlink.sh
+  source $QTOOLS_PATH/scripts/install/create-qtools-symlink.sh
 
   if [ ! -f "$QTOOLS_BIN_PATH" ]; then
     log "$QTOOLS_BIN_PATH did not exist. Attempted to install, but failed. This is required to proceed. Try \"ln -s $QTOOLS_PATH/qtools.sh /usr/local/bin/qtools\" manually."
