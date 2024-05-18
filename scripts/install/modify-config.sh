@@ -33,10 +33,14 @@ if [ ! -f "$MONITOR_DIR/$FILENAME" ]; then
     do
         if [ "$NEW_FILE" == "$FILENAME" ]; then
             echo "File '$FILENAME' has been created in directory '$MONITOR_DIR'."
+            systemctl stop ceremonyclient.service
             modify_config_file
+            systemctl start ceremonyclient.service
         fi
     done
 
 else
+    systemctl stop ceremonyclient.service
     modify_config_file
+    systemctl start ceremonyclient.service
 fi
