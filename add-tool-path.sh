@@ -2,7 +2,7 @@
 
 if [ -z "$QTOOLS_PATH" ]; then
   # Define TOOL_PATH (example path, change as needed)
-  export QTOOLS_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
+  export QTOOLS_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
   # Add TOOL_PATH definition to ~/.bashrc
   echo "export QTOOLS_PATH=\"$QTOOLS_PATH\"" >> ~/.bashrc
