@@ -75,7 +75,8 @@ command_exists() {
 
 install_package() {
     package="$1"
-    if command_exists $package; then
+    package_parent="$2"
+    if command_exists $package_parent; then
         echo "$package is already installed."
     else
         echo "$package is not installed. Installing..."
