@@ -7,8 +7,8 @@ systemctl stop ceremonyclient.service
 qtools make-backup
 
 # remove old node code
-rm -rf $QUIL_PATH
-rm $QUIL_GO_NODE_BIN
+remove_directory $QUIL_PATH
+remove_file $QUIL_GO_NODE_BIN
 
 cd /root/
 # reinstall

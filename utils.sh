@@ -22,6 +22,19 @@ append_to_file() {
     fi
 }
 
+remove_directory() {
+    DIRECTORY="$1"
+    if [ -d "$DIRECTORY" ]; then
+        log "Directory $DIRECTORY found.  Removing."
+        rm -rf $DIRECTORY
+        if [ ! -f $DIRECTORY ]; then
+            log "Directory $DIRECTORY deletion was successful."
+        else
+            log "Directory $DIRECTORY deletion was not successful."
+        fi
+    fi
+}
+
 remove_file() {
     FILE="$1"
     if [ -f "$FILE" ]; then
