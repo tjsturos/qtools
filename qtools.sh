@@ -19,6 +19,10 @@ usage() {
   echo "  install-qclient-binary - Install qClient binary for this node"
   echo "  create-qtools-symlink  - Create a symlink for 'qtools' to /usr/local/bin"
   echo "  add-auto-complete      - Add autocomplete for the 'qtools' command"
+  echo "  get-token-info         - Get network information on tokens"
+  echo "  get-peer-info          - Get network information on peers"
+  echo "  get-node-count         - Get the number of nodes on the network"
+  echo "  get-node-info          - Get information about this node"
   
   exit 1
 }
@@ -74,6 +78,9 @@ case "$1" in
     ;;
   make-backup|restore-backup)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/backup"
+    ;;
+  get-node-count|get-node-info|get-peer-info|get-token-info)
+    export SERVICE_PATH="$QTOOLS_PATH/scripts/grpc"
     ;;
   *)
     echo "Invalid option: $1"
