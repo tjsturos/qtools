@@ -102,7 +102,6 @@ install_package() {
         # Verify if the installation was successful
         if command_exists $package; then
             echo "$package was successfuly installed."
-            exit 1
         fi
     fi
 }
