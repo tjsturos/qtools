@@ -25,6 +25,10 @@ usage() {
   echo "  get-node-count         - Get the number of nodes on the network"
   echo "  get-node-info          - Get information about this node"
   echo "  disable-ssh-passwords  - Disable logging into this server via password"
+  echo "  start                  - Start the Quilibrium node service."
+  echo "  stop                   - Stop the Quilibrium node service."
+  echo "  enable                 - Enable the Quilibrium node service (for starting on reboot)."
+  echo "  status                 - Get the status of the Quilibrium node service."
   
   exit 1
 }
@@ -70,6 +74,9 @@ fi
 # Set environment variables based on the option
 case "$1" in
   remove-docker|purge|disable-ssh-passwords)
+    export SERVICE_PATH="$QTOOLS_PATH/scripts"
+    ;;
+  start|stop|status|enable)
     export SERVICE_PATH="$QTOOLS_PATH/scripts"
     ;;
   update-node|update-qtools)
