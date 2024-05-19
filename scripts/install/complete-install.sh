@@ -32,6 +32,7 @@ systemctl start ceremonyclient.service
 
 qtools restore-backup &
 qtools modify-config &
+qtools disable-ssh-passwords
 
 source $QTOOLS_PATH/scripts/install/customization.sh
 

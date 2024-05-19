@@ -24,6 +24,7 @@ usage() {
   echo "  get-peer-info          - Get network information on peers"
   echo "  get-node-count         - Get the number of nodes on the network"
   echo "  get-node-info          - Get information about this node"
+  echo "  disable-ssh-passwords  - Disable logging into this server via password"
   
   exit 1
 }
@@ -68,7 +69,7 @@ fi
 
 # Set environment variables based on the option
 case "$1" in
-  remove-docker|purge)
+  remove-docker|purge|disable-ssh-passwords)
     export SERVICE_PATH="$QTOOLS_PATH/scripts"
     ;;
   update-node|update-qtools)
