@@ -1,5 +1,5 @@
 [Unit]
-Description=Ceremony Client Go App Service
+Description=Quilibrium Ceremony Client Service
 
 [Service]
 Type=simple

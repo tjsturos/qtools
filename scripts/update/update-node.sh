@@ -1,10 +1,5 @@
 #!/bin/bash
-
-STORED_PATH="$(cat ~/saved-path)"
-PATH=$STORED_PATH
-log "Loading stored path: $STORED_PATH"
-
-cd ~/ceremonyclient
+cd $QUIL_PATH
 
 version_gt() {
     test "$(printf '%s\n' "$@" | sort -V | head -n 1)" != "$1";
@@ -24,10 +19,11 @@ if version_gt "$REMOTE_VERSION" "$CURRENT_VERSION"; then
     git merge origin
     cd node
     GOEXPERIMENT=arenas go clean -v -n -a ./...
-    rm /root/go/bin/node
-    ls /root/go/bin
-    GOEXPERIMENT=arenas  go  install  ./...
-    ls /root/go/bin
+
+    # Install binaries
+    qtools install-node-binary
+    qtools install-qclient-binary
+
     systemctl start ceremonyclient.service
 else
     echo "No new Quilibrium version found: $REMOTE_VERSION vs. $CURRENT_VERSION"
