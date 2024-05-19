@@ -3,7 +3,7 @@ BACKUP_DIR=~/quil-backup
 RESTORE_DIR=$QUIL_NODE_PATH/.config
 
 restore_file_from_backup() {
-    $FILENAME="$1"
+    FILENAME="$1"
     cp $BACKUP_DIR/$FILENAME $RESTORE_DIR
     file_exists $RESTORE_DIR/$FILENAME
 }
