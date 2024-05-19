@@ -31,8 +31,8 @@ usage() {
 if [ -z "$1" ]; then
   usage
 fi
-
 # Load environment variables to be made available in all scripts
+export DEBIAN_FRONTEND="noninteractive"
 export QUIL_PATH=/root/ceremonyclient
 export QUIL_NODE_PATH=$QUIL_PATH/node
 export QUIL_CLIENT_PATH=$QUIL_PATH/client

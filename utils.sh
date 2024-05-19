@@ -85,7 +85,7 @@ install_package() {
         # Detect the package manager and install the package
         if command_exists apt-get; then
             sudo apt-get update
-            sudo apt-get install -y $package
+            sudo apt-get install -y -q $package
         elif command_exists yum; then
             sudo yum install -y $package
         elif command_exists dnf; then
@@ -95,13 +95,13 @@ install_package() {
         elif command_exists brew; then
             brew install $package
         else
-            echo "Error: Cannot determine the package manager to use for installing $package."
+            log "Error: Cannot determine the package manager to use for installing $package."
             exit 1
         fi
 
         # Verify if the installation was successful
         if command_exists $package; then
-            echo "$package was successfuly installed."
+            log "$package was successfuly installed."
         fi
     fi
 }
