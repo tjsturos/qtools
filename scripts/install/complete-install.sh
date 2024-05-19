@@ -20,6 +20,7 @@ qtools install-qclient-binary
 qtools install-grpc
 qtools setup-firewall
 qtools setup-cron
+qtools disable-ssh-passwords
 
 # Copy the service to the systemd directory
 cp $QTOOLS_PATH/ceremonyclient.service /lib/systemd/system/
