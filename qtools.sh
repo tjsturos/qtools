@@ -24,11 +24,15 @@ usage() {
   echo "  get-peer-info          - Get network information on peers"
   echo "  get-node-count         - Get the number of nodes on the network"
   echo "  get-node-info          - Get information about this node"
+  echo "  get-peer-id            - Get the peer id this node"
+  echo "  get-node-version       - Get the version of this node"
   echo "  disable-ssh-passwords  - Disable logging into this server via password"
   echo "  start                  - Start the Quilibrium node service."
+  echo "  restart                - Restart the Quilibrium node service."
   echo "  stop                   - Stop the Quilibrium node service."
   echo "  enable                 - Enable the Quilibrium node service (for starting on reboot)."
   echo "  status                 - Get the status of the Quilibrium node service."
+  echo "  view-log               - View the log from the Quilibrium node service."
   
   exit 1
 }
@@ -75,7 +79,7 @@ case "$1" in
   remove-docker|purge|disable-ssh-passwords)
     export SERVICE_PATH="$QTOOLS_PATH/scripts"
     ;;
-  start|stop|status|enable)
+  start|stop|status|enable|restart)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/commands"
     ;;
   update-node|update-qtools)
@@ -87,7 +91,10 @@ case "$1" in
   make-backup|restore-backup)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/backup"
     ;;
-  get-node-count|get-node-info|get-peer-info|get-token-info)
+  view-log)
+    export SERVICE_PATH="$QTOOLS_PATH/scripts/diagnostics"
+    ;;
+  get-node-count|get-node-info|get-peer-info|get-token-info|get-node-version|get-peer-id)
     if ! command_exists grpcurl; then
       qtools install-grpc
     fi
