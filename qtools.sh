@@ -76,7 +76,7 @@ case "$1" in
     export SERVICE_PATH="$QTOOLS_PATH/scripts"
     ;;
   start|stop|status|enable)
-    export SERVICE_PATH="$QTOOLS_PATH/scripts"
+    export SERVICE_PATH="$QTOOLS_PATH/scripts/commands"
     ;;
   update-node|update-qtools)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/update"
