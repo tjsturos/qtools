@@ -3,37 +3,51 @@
 # Check if the parameter is provided
 usage() {
   echo "Usage: $0 <option>"
+  echo "Note that autocomplete should be installed.  If it doesn't work, run 'qtools add-auto-complete' and try again."
+  echo ""
   echo "Options:"
+
+  echo "Installation and Updates:"
   echo "  complete-install       - Do a full install of the ceremony client."
   echo "  update-node            - Perform an update on the ceremony client."
   echo "  update-qtools          - Update the qTools code."
+  echo "  install-go             - Install Go and setup Go environment."
+  echo "  install-node-binary    - Install node binary for this node."
+  echo "  install-qclient-binary - Install qClient binary for this node."
+  echo "  install-grpc           - Install gRPC on the server for querying node info."
+
+  echo "Configuration:"
   echo "  make-backup            - Make a local-only backup (on this server) of the config.yml and keys.yml files."
-  echo "  restore-backup         - Make a local-only backup (on this server) of the config.yml and keys.yml files."
+  echo "  restore-backup         - Restore a local-only backup (on this server) of the config.yml and keys.yml files."
   echo "  modify-config          - Perform necessary changes to the config.yml file (upon creation or already created)."
+
+  echo "System Setup:"
   echo "  remove-docker          - Remove Docker from this server."
-  echo "  setup-cron             - Install neccesary scheduled tasks for the node"
-  echo "  setup-firewall         - Install firewall for this server"
-  echo "  install-go             - Install Go and setup Go environment"
-  echo "  purge-node             - Remove Node and re-install (performs local-only back of config files)"
-  echo "  install-node-binary    - Install node binary for this node"
-  echo "  install-qclient-binary - Install qClient binary for this node"
-  echo "  install-grpc           - Install grpc on the server for querying node info"
-  echo "  create-qtools-symlink  - Create a symlink for 'qtools' to /usr/local/bin"
-  echo "  add-auto-complete      - Add autocomplete for the 'qtools' command"
-  echo "  get-token-info         - Get network information on tokens"
-  echo "  get-peer-info          - Get network information on peers"
-  echo "  get-node-count         - Get the number of nodes on the network"
-  echo "  get-node-info          - Get information about this node"
-  echo "  get-peer-id            - Get the peer id this node"
-  echo "  get-node-version       - Get the version of this node"
-  echo "  disable-ssh-passwords  - Disable logging into this server via password"
+  echo "  setup-cron             - Install necessary scheduled tasks for the node."
+  echo "  setup-firewall         - Install firewall for this server."
+  echo "  disable-ssh-passwords  - Disable logging into this server via password."
+
+  echo "Node Management:"
+  echo "  purge-node             - Remove Node and re-install (performs local-only backup of config files)."
   echo "  start                  - Start the Quilibrium node service."
   echo "  restart                - Restart the Quilibrium node service."
   echo "  stop                   - Stop the Quilibrium node service."
   echo "  enable                 - Enable the Quilibrium node service (for starting on reboot)."
   echo "  status                 - Get the status of the Quilibrium node service."
   echo "  view-log               - View the log from the Quilibrium node service."
-  
+
+  echo "Tooling:"
+  echo "  create-qtools-symlink  - Create a symlink for 'qtools' to /usr/local/bin."
+  echo "  add-auto-complete      - Add autocomplete for the 'qtools' command."
+
+  echo "Network Information:"
+  echo "  get-token-info         - Get network information on tokens."
+  echo "  get-peer-info          - Get network information on peers."
+  echo "  get-node-count         - Get the number of nodes on the network."
+  echo "  get-node-info          - Get information about this node."
+  echo "  get-peer-id            - Get the peer ID of this node."
+  echo "  get-node-version       - Get the version of this node."
+
   exit 1
 }
 
