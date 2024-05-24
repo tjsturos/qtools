@@ -15,6 +15,7 @@ usage() {
   echo "  install-node-binary    - Install node binary for this node."
   echo "  install-qclient-binary - Install qClient binary for this node."
   echo "  install-grpc           - Install gRPC on the server for querying node info."
+  echo "  import-store           - Import the store snapshot from Cherry Servers."
 
   echo "Configuration:"
   echo "  make-backup            - Make a local-only backup (on this server) of the config.yml and keys.yml files."
@@ -56,7 +57,7 @@ if [ -z "$1" ]; then
 fi
 # Load environment variables to be made available in all scripts
 export DEBIAN_FRONTEND="noninteractive"
-export QUIL_PATH=/root/ceremonyclient
+export QUIL_PATH=$HOME/ceremonyclient
 export QUIL_NODE_PATH=$QUIL_PATH/node
 export QUIL_CLIENT_PATH=$QUIL_PATH/client
 export QUIL_GO_NODE_BIN=/root/go/bin/node
@@ -99,7 +100,7 @@ case "$1" in
   update-node|update-qtools)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/update"
     ;;
-  install-go|install-qclient-binary|complete-install|install-node-binary|setup-cron|modify-config|create-qtools-symlink|setup-firewall|add-auto-complete|install-grpc)
+  install-go|install-qclient-binary|complete-install|install-node-binary|setup-cron|modify-config|create-qtools-symlink|setup-firewall|add-auto-complete|install-grpc|import-store)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/install"
     ;;
   make-backup|restore-backup)
