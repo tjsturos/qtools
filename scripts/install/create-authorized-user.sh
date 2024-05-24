@@ -32,6 +32,21 @@ else
     echo "Failed to add user $NEW_USER to the $GROUP group."
     exit 1
 fi
+
+cp /etc/sudoers /etc/sudoers.bak
+
+# Add the no-password sudo rule for the user
+echo "$NEW_USER ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+
+# Verify the sudoers file for syntax errors
+if visudo -c &>/dev/null; then
+    echo "Updated /etc/sudoers successfully."
+else
+    echo "Failed to update /etc/sudoers. Restoring backup."
+    mv /etc/sudoers.bak /etc/sudoers
+    exit 1
+fi
+
 # Set up .ssh directory for the new user
 export USER_HOME=$(eval echo "~$NEW_USER")
 SSH_DIR="$USER_HOME/.ssh"
