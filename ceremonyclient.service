@@ -5,9 +5,9 @@ Description=Quilibrium Ceremony Client Service
 Type=simple
 Restart=always
 RestartSec=5s
-WorkingDirectory=$HOME/ceremonyclient/node
+WorkingDirectory=$USER_HOME/ceremonyclient/node
 Environment=GOEXPERIMENT=arenas
-ExecStart=$HOME/go/bin/node ./...
+ExecStart=$USER_HOME/go/bin/node ./...
 User=quilbrium
 Group=quilbrium
 

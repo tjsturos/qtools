@@ -15,13 +15,13 @@ remove_directory /etc/docker
 groupdel docker
 remove_directory /var/run/docker.sock
 remove_directory /var/lib/containerd
-remove_directory $HOME/.docker
+remove_directory $USER_HOME/.docker
 
 remove_file /usr/share/keyrings/docker-archive-keyring.gpg
-remove_file $HOME/docker-ce
-remove_file $HOME/apt
-remove_file $HOME/updateapt-cache
-remove_file $HOME/policy
+remove_file $USER_HOME/docker-ce
+remove_file $USER_HOME/apt
+remove_file $USER_HOME/updateapt-cache
+remove_file $USER_HOME/policy
 
 remove_directory $QUIL_PATH
 

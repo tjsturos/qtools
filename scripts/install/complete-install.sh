@@ -13,7 +13,7 @@ qtools install-go
 qtools add-auto-complete
 
 export GOROOT=/usr/local/go
-export GOPATH=$HOME/go
+export GOPATH=$USER_HOME/go
 export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
 qtools install-grpc
 qtools setup-firewall

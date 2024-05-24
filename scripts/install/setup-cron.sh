@@ -18,7 +18,7 @@ remove_file $FILE_CRON
 
 expected_output="GOROOT=/usr/local/go
 GOPATH=\$HOME/go
-PATH=\$HOME//go/bin:/usr/local/go/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
+PATH=\$HOME/go/bin:/usr/local/go/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
 QTOOLS_PATH=/root/qtools
 1 0 * * * qtools make-backup
 1 0 * * * qtools update-qtools

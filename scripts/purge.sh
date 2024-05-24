@@ -10,7 +10,7 @@ qtools make-backup
 remove_directory $QUIL_PATH
 remove_file $QUIL_GO_NODE_BIN
 
-cd $HOME
+cd $USER_HOME
 # reinstall
 git clone https://github.com/QuilibriumNetwork/ceremonyclient.git
 

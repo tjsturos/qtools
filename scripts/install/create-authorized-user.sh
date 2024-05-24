@@ -57,7 +57,7 @@ chmod 600 "$SSH_DIR/authorized_keys"
 # Add Go environment
 BASHRC=$USER_HOME/.bashrc
 append_to_file $BASHRC "export GOROOT=/usr/local/go"
-append_to_file $BASHRC "export GOPATH=$HOME/go"
+append_to_file $BASHRC "export GOPATH=$USER_HOME/go"
 append_to_file $BASHRC "export PATH=\$GOPATH/bin:\$GOROOT/bin:\$PATH"
 
 # Disable root SSH login

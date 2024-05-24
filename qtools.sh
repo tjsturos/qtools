@@ -56,14 +56,18 @@ usage() {
 if [ -z "$1" ]; then
   usage
 fi
+
+USER="quilibrium"
+USER_HOME="~/$USER"
+GROUP="quilibrium"
+
 # Load environment variables to be made available in all scripts
 export DEBIAN_FRONTEND="noninteractive"
-export QUIL_PATH=$HOME/ceremonyclient
+export QUIL_PATH=$USER_HOME/ceremonyclient
 export QUIL_NODE_PATH=$QUIL_PATH/node
 export QUIL_CLIENT_PATH=$QUIL_PATH/client
-export QUIL_GO_NODE_BIN=$HOME/go/bin/node
+export QUIL_GO_NODE_BIN=$USER_HOME/go/bin/node
 export QTOOLS_BIN_PATH=/usr/local/bin/qtools
-GROUP="quilibrium"
 
 # The rest of these scripts rely on $QTOOLS_PATH, so fail if not found.
 if [ -z "$QTOOLS_PATH" ]; then

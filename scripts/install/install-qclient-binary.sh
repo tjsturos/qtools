@@ -16,7 +16,7 @@ fi
 GOEXPERIMENT=arenas go clean -v -n -a ./...
 
 # Install
-GOEXPERIMENT=arenas go build -o $HOME/go/bin/qclient main.go > /dev/null 2>&1
+GOEXPERIMENT=arenas go build -o $USER_HOME/go/bin/qclient main.go > /dev/null 2>&1
 
 # verify install
 file_exists $QUIL_CLIENT_PATH/qclient
