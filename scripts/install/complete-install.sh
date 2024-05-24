@@ -5,22 +5,28 @@ apt-get -q update
 # make sure git is installed
 install_package git
 
+USER=quilibrium
+USER_HOME=$(eval echo "~$USER")
+qtools create-authorized-user
+
 qtools install-go
 qtools add-auto-complete
 
 export GOROOT=/usr/local/go
-export GOPATH=/root/go
+export GOPATH=$HOME/go
 export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+qtools install-grpc
+qtools setup-firewall
+qtools setup-cron
+qtools disable-ssh-passwords
 
-cd /root/
-git clone https://github.com/QuilibriumNetwork/ceremonyclient.git
+su - $USER
+cd $USER_HOME
+git clone https://github.com/QuilibriumNetwork/ceremonyclient.git 
 
 # build the 'node' binary
 qtools install-node-binary
 qtools install-qclient-binary
-qtools install-grpc
-qtools setup-firewall
-qtools setup-cron
 
 # Copy the service to the systemd directory
 cp $QTOOLS_PATH/ceremonyclient.service /lib/systemd/system/
@@ -33,7 +39,6 @@ systemctl start ceremonyclient.service
 
 qtools restore-backup &
 qtools modify-config &
-qtools disable-ssh-passwords
 
 source $QTOOLS_PATH/scripts/install/customization.sh
 

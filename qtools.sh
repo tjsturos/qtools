@@ -16,6 +16,7 @@ usage() {
   echo "  install-qclient-binary - Install qClient binary for this node."
   echo "  install-grpc           - Install gRPC on the server for querying node info."
   echo "  import-store           - Import the store snapshot from Cherry Servers."
+  echo "  create-authorized-user - Create an non-root user "
 
   echo "Configuration:"
   echo "  make-backup            - Make a local-only backup (on this server) of the config.yml and keys.yml files."
@@ -60,8 +61,9 @@ export DEBIAN_FRONTEND="noninteractive"
 export QUIL_PATH=$HOME/ceremonyclient
 export QUIL_NODE_PATH=$QUIL_PATH/node
 export QUIL_CLIENT_PATH=$QUIL_PATH/client
-export QUIL_GO_NODE_BIN=/root/go/bin/node
+export QUIL_GO_NODE_BIN=$HOME/go/bin/node
 export QTOOLS_BIN_PATH=/usr/local/bin/qtools
+GROUP="quilibrium"
 
 # The rest of these scripts rely on $QTOOLS_PATH, so fail if not found.
 if [ -z "$QTOOLS_PATH" ]; then
@@ -73,6 +75,7 @@ fi
 # common utils for scripts
 source $QTOOLS_PATH/utils.sh
 
+# Required package for waiting on file/directories to exist
 install_package inotify-tools inotifywait
 
 # Remaining scripts need existance of the QTOOLS_BIN_PATH binary
@@ -100,7 +103,7 @@ case "$1" in
   update-node|update-qtools)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/update"
     ;;
-  install-go|install-qclient-binary|complete-install|install-node-binary|setup-cron|modify-config|create-qtools-symlink|setup-firewall|add-auto-complete|install-grpc|import-store)
+  create-authorized-user|install-go|install-qclient-binary|complete-install|install-node-binary|setup-cron|modify-config|create-qtools-symlink|setup-firewall|add-auto-complete|install-grpc|import-store)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/install"
     ;;
   make-backup|restore-backup)

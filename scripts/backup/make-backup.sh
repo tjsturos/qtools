@@ -1,5 +1,5 @@
 #!/bin/bash
-BACKUP_DIR=/root/quil-backup
+BACKUP_DIR=$HOME/quil-backup
 # Create the directory if it doesn't exist
 mkdir -p $BACKUP_DIR
 
