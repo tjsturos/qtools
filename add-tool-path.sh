@@ -5,6 +5,7 @@ if [ -z "$QTOOLS_PATH" ]; then
   export QTOOLS_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
   # Change group of the directory and its contents
+  groupadd $GROUP
   chgrp -R "$GROUP" $QTOOLS_PATH
   if [ $? -ne 0 ]; then
       echo "Failed to change group of $DIRECTORY"

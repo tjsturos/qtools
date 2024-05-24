@@ -25,7 +25,13 @@ if [ $? -ne 0 ]; then
     echo "Failed to create user $NEW_USER"
     exit 1
 fi
-
+usermod -aG sudo $NEW_USER
+if id -nG "$NEW_USER" | grep -qw "$GROUP"; then
+    echo "User $NEW_USER has been added to the $GROUP group and now has sudo privileges."
+else
+    echo "Failed to add user $NEW_USER to the $GROUP group."
+    exit 1
+fi
 # Set up .ssh directory for the new user
 export USER_HOME=$(eval echo "~$NEW_USER")
 SSH_DIR="$USER_HOME/.ssh"
