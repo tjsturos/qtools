@@ -16,6 +16,5 @@ append_to_file() {
 export QTOOLS_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 append_to_file ~/.bashrc "export QTOOLS_PATH=\"$QTOOLS_PATH\""
-
+append_to_file ~/.bash_login "source ~/.bashrc"
 # Reload ~/.bashrc to apply changes
-source ~/.bashrc
