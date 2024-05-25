@@ -23,13 +23,13 @@ qtools setup-firewall
 qtools setup-cron
 
 # Copy the service to the systemd directory
-cp $QTOOLS_PATH/ceremonyclient.service /lib/systemd/system/
+cp $QTOOLS_PATH/ceremonyclient.service $QUIL_SERVICE_PATH
 
 # tells server to always start node service on reboot
 systemctl enable ceremonyclient.service
 
 # start the server
-systemctl start ceremonyclient.service
+qtools start
 
 qtools restore-backup &
 qtools modify-config &
