@@ -1,3 +1,7 @@
 #!/bin/bash
 
-ln -s $QTOOLS_PATH/qtools.sh /usr/local/bin/qtools
+if [ -f "$QTOOLS_BIN_PATH" ]; then
+    rm $QTOOLS_BIN_PATH
+fi
+
+ln -s $QTOOLS_PATH/qtools.sh $QTOOLS_BIN_PATH
