@@ -24,7 +24,7 @@ NEW_EXECSTART="ExecStart=$QUIL_NODE_PATH/$QUIL_BIN"
 
 # Function to check if the ExecStart line matches the desired one
 check_execstart() {
-    grep -q "^ExecStart=$QUIL_BIN" "$QUIL_SERVICE_FILE"
+    grep -q "^ExecStart=$QUIL_NODE_PATH/$QUIL_BIN" "$QUIL_SERVICE_FILE"
 }
 
 # Update the service file if needed
