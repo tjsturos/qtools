@@ -71,10 +71,15 @@ export QTOOLS_BIN_PATH=/usr/local/bin/qtools
 
 # The rest of these scripts rely on $QTOOLS_PATH, so fail if not found.
 if [ -z "$QTOOLS_PATH" ]; then
-  source add-tool-path.sh
+  source ~/.bashrc
   if [ -z "$QTOOLS_PATH" ]; then
-    echo "Couldn't find QTOOLS_PATH. Failing early."
-    exit 1
+    # QTOOLS_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    # this currently requires to be in the ~/qtools, should be updated not care where qtools is installed
+    source ~/qtools/add-tool-path.sh
+    if [ -z "$QTOOLS_PATH" ]; then
+      echo "Couldn't find QTOOLS_PATH. Failing early."
+      exit 1
+    fi
   fi
 fi
 
