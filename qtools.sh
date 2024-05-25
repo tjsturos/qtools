@@ -63,6 +63,7 @@ export QUIL_CLIENT_PATH=$QUIL_PATH/client
 export QUIL_GO_NODE_BIN=/root/go/bin/node
 export QTOOLS_BIN_PATH=/usr/local/bin/qtools
 export QUIL_SERVICE_PATH=/lib/systemd/system
+export QUIL_SERVICE_FILE="$QUIL_SERVICE_PATH/ceremonyclient.service"
 
 # The rest of these scripts rely on $QTOOLS_PATH, so fail if not found.
 if [ -z "$QTOOLS_PATH" ]; then

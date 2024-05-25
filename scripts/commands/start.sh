@@ -4,7 +4,7 @@
 version=$(cat $QUIL_NODE_PATH/config/version.go | grep -A 1 "func GetVersion() \[\]byte {" | grep -Eo '0x[0-9a-fA-F]+' | xargs printf "%d.%d.%d")
 
 echo "Found version: $version"
- 
+
 # Determine the binary path based on OS and architecture
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     if [[ "$arch" == arm* ]]; then
@@ -24,13 +24,13 @@ NEW_EXECSTART="ExecStart=$QUIL_BIN"
 
 # Function to check if the ExecStart line matches the desired one
 check_execstart() {
-    grep -q "^ExecStart=$QUIL_BIN" "$SERVICE_FILE"
+    grep -q "^ExecStart=$QUIL_BIN" "$QUIL_SERVICE_FILE"
 }
 
 # Update the service file if needed
 if ! check_execstart; then
     # Use sed to replace the ExecStart line in the service file
-    sudo sed -i -e "/^ExecStart=/c\\$NEW_EXECSTART" "$SERVICE_FILE"
+    sudo sed -i -e "/^ExecStart=/c\\$NEW_EXECSTART" "$QUIL_SERVICE_FILE"
 
     # Reload the systemd manager configuration
     sudo systemctl daemon-reload
