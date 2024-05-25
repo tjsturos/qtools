@@ -9,6 +9,4 @@ if [ -z "$QTOOLS_PATH" ]; then
 
   # Reload ~/.bashrc to apply changes
   source ~/.bashrc
-
-  echo "QTOOLS_PATH was undefined. Added to ~/.bashrc and reloaded."
 fi
