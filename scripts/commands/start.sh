@@ -3,6 +3,8 @@
 # Extract version information
 version=$(cat $QUIL_NODE_PATH/config/version.go | grep -A 1 "func GetVersion() \[\]byte {" | grep -Eo '0x[0-9a-fA-F]+' | xargs printf "%d.%d.%d")
 
+echo "Found version: $version"
+ 
 # Determine the binary path based on OS and architecture
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     if [[ "$arch" == arm* ]]; then
