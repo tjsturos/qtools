@@ -4,4 +4,5 @@ cd $QUIL_PATH
 git pull
 git checkout release
 
-$QUIL_NODE_PATH/release_autorun.sh
+cd $QUIL_NODE_PATH
+source ./release_autorun.sh
