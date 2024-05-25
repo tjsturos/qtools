@@ -20,7 +20,7 @@ else
 fi
 
 # Define the new ExecStart line
-NEW_EXECSTART="ExecStart=$QUIL_BIN"
+NEW_EXECSTART="ExecStart=$QUIL_NODE_PATH/$QUIL_BIN"
 
 # Function to check if the ExecStart line matches the desired one
 check_execstart() {
