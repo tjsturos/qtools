@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ -f "$QTOOLS_BIN_PATH" ]; then
+if [ -L "$QTOOLS_BIN_PATH" ]; then
     rm $QTOOLS_BIN_PATH
 fi
 
