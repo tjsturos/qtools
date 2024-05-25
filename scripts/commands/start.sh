@@ -8,12 +8,12 @@ echo "Found version: $version"
 # Determine the binary path based on OS and architecture
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     if [[ "$arch" == arm* ]]; then
-        QUIL_BIN="$QUIL_NODE_PATH/node-$version-linux-arm64"
+        QUIL_BIN="node-$version-linux-arm64"
     else
-        QUIL_BIN="$QUIL_NODE_PATH/node-$version-linux-amd64"
+        QUIL_BIN="node-$version-linux-amd64"
     fi
 elif [[ "$OSTYPE" == "darwin"* ]]; then
-    QUIL_BIN="$QUIL_NODE_PATH/node-$version-darwin-arm64"
+    QUIL_BIN="node-$version-darwin-arm64"
 else
     echo "unsupported OS for releases, please build from source"
     exit 1
