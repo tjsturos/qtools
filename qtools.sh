@@ -68,8 +68,11 @@ export QUIL_SERVICE_FILE="$QUIL_SERVICE_PATH/ceremonyclient.service"
 # The rest of these scripts rely on $QTOOLS_PATH, so fail if not found.
 if [ -z "$QTOOLS_PATH" ]; then
   source add-tool-path.sh
-  echo "Couldn't find QTOOLS_PATH. Failing early."
-  exit 1
+  source ~/.bashrc
+  if [ -z "$QTOOLS_PATH" ]; then
+    echo "Couldn't find QTOOLS_PATH. Failing early."
+    exit 1
+  fi
 fi
 
 # common utils for scripts
