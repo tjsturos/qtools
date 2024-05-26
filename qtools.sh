@@ -82,6 +82,7 @@ QTOOLS_PATH=$(dirname "$SCRIPT_PATH")
 source $QTOOLS_PATH/utils.sh
 
 install_package inotify-tools inotifywait
+install_package colordiff colordiff
 
 # Remaining scripts need existance of the QTOOLS_BIN_PATH binary
 if [ ! -L "$QTOOLS_BIN_PATH" ]; then

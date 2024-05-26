@@ -27,15 +27,22 @@ QTOOLS_PATH=$QTOOLS_PATH
 # Get the actual output of 'ufw status'
 actual_output=$(crontab -l)
 
+
+
+
+
+
 if [[ "$actual_output" == "$expected_output" ]]; then
   echo "The crontab was successfully updated."
   exit 0
 else
-  echo "The crontab did not update successfully."
-  echo "Expected:"
-  echo "$expected_output"
-  echo "Actual:"
-  echo "$actual_output"
+  expected_file="expected.txt"
+  actual_file="actual.txt"
+  echo $expected_output >> $expected_file
+  echo $actual_output > $actual_output
+  colordiff -u $expected_file $actual_file
+  rm $expected_file
+  rm $actual_file
   exit 1
 fi
 
