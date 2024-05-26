@@ -11,6 +11,7 @@ usage() {
   echo "  complete-install       - Do a full install of the ceremony client."
   echo "  update-node            - Perform an update on the ceremony client."
   echo "  update-qtools          - Update the qTools code."
+  echo "  update-kernel          - Update the Linux kernel on this server."
   echo "  install-go             - Install Go and setup Go environment."
   echo "  install-node-binary    - Install node binary for this node."
   echo "  install-qclient-binary - Install qClient binary for this node."
@@ -57,7 +58,7 @@ if [ -z "$1" ]; then
 fi
 
 # Load environment variables to be made available in all scripts
-export DEBIAN_FRONTEND="noninteractive"
+export DEBIAN_FRONTEND=noninteractive
 export QUIL_PATH=$HOME/ceremonyclient
 export QUIL_NODE_PATH=$QUIL_PATH/node
 export QUIL_CLIENT_PATH=$QUIL_PATH/client
@@ -106,7 +107,7 @@ case "$1" in
   start|stop|status|enable|restart)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/commands"
     ;;
-  update-node|update-qtools)
+  update-node|update-qtools|update-kernel)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/update"
     ;;
   install-go|install-qclient-binary|complete-install|install-node-binary|setup-cron|modify-config|create-qtools-symlink|setup-firewall|add-auto-complete|install-grpc|import-store)

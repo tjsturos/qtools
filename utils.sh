@@ -77,11 +77,11 @@ install_package() {
     package="$1"
     package_parent="$2"
     if ! command_exists $package_parent; then
-        echo "$package is not installed. Installing..."
+        log "$package is not installed. Installing..."
 
         # Detect the package manager and install the package
         if command_exists apt-get; then
-            sudo apt-get update
+            sudo apt-get update -y
             sudo apt-get install -y -q $package
         elif command_exists yum; then
             sudo yum install -y $package
