@@ -102,3 +102,17 @@ install_package() {
         fi
     fi
 }
+
+# Function to remove lines from a file if they match the starting pattern
+remove_lines_matching_pattern() {
+    local file="$1"
+    local pattern="$2"
+
+    if [[ -z "$file" || -z "$pattern" ]]; then
+        echo "Usage: remove_lines_matching_pattern <file> <pattern>"
+        return 1
+    fi
+
+    # Use sed to remove lines matching the specified pattern
+    sed -i "/$pattern/d" "$file"
+}
