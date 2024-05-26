@@ -8,6 +8,9 @@ sudo apt upgrade -y
 echo "Upgrading kernel packages..."
 sudo apt install -y linux-generic
 
+# remove old packages
+apt-get autoremove -y
+
 # Reboot the system
 echo "Rebooting the system to apply the new kernel..."
 sudo reboot
