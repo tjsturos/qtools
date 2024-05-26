@@ -61,7 +61,7 @@ export DEBIAN_FRONTEND="noninteractive"
 export QUIL_PATH=$HOME/ceremonyclient
 export QUIL_NODE_PATH=$QUIL_PATH/node
 export QUIL_CLIENT_PATH=$QUIL_PATH/client
-export QUIL_GO_NODE_BIN=/root/go/bin/node
+export QUIL_GO_NODE_BIN=$HOME/go/bin/node
 export QTOOLS_BIN_PATH=/usr/local/bin/qtools
 export QUIL_SERVICE_PATH=/lib/systemd/system
 export QUIL_SERVICE_FILE="$QUIL_SERVICE_PATH/ceremonyclient.service"
@@ -69,12 +69,14 @@ export QUIL_SERVICE_FILE="$QUIL_SERVICE_PATH/ceremonyclient.service"
 # Determine the script's path, whether called through a symlink or directly
 if [[ -L "$0" ]]; then
     # If $0 is a symlink, resolve it to the actual script path
-    QTOOLS_PATH=$(readlink -f "$0")
+    SCRIPT_PATH=$(readlink -f "$0")
 else
     # If $0 is not a symlink, use the direct path
-    QTOOLS_PATH=$(realpath "$0")
+    SCRIPT_PATH=$(realpath "$0")
 fi
 
+# Get the directory where the script is located
+QTOOLS_PATH=$(dirname "$SCRIPT_PATH")
 
 # common utils for scripts
 source $QTOOLS_PATH/utils.sh
