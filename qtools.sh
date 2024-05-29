@@ -70,6 +70,7 @@ export SYSTEMD_SERVICE_PATH=/lib/systemd/system
 export QUIL_SERVICE_NAME='ceremonyclient.service'
 export QUIL_DEBUG_SERVICE_NAME='ceremonyclient-debug.service'
 export QUIL_SERVICE_FILE="$SYSTEMD_SERVICE_PATH/$QUIL_SERVICE_NAME"
+export QUIL_DEBUG_SERVICE_FILE="$SYSTEMD_SERVICE_PATH/$QUIL_DEBUG_SERVICE_NAME"
 export LOG_OUTPUT_FILE="debug.log"
 export BASHRC_FILE="$HOME/.bashrc"
 

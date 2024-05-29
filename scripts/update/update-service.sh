@@ -43,16 +43,15 @@ if ! check_execstart "$QUIL_SERVICE_FILE" "$NEW_EXECSTART"; then
     log "Systemctl binary version updated to $QUIL_BIN"
 fi
 
-DEBUG_SERVICE_FILE=$QUIL_SERVICE_FILE-debug.service
 
-if [ ! -f "$SYSTEMD_SERVICE_PATH/$QUIL_DEBUG_SERVICE_NAME" ]; then
+if [ ! -f "$QUIL_DEBUG_SERVICE_FILE" ]; then
     cp $QTOOLS_PATH/$QUIL_DEBUG_SERVICE_NAME $SYSTEMD_SERVICE_PATH
 fi
 
 NEW_DEBUG_EXECSTART="ExecStart=$QUIL_NODE_PATH/$QUIL_BIN --debug"
-if ! check_execstart "$DEBUG_SERVICE_FILE" "$NEW_DEBUG_EXECSTART"; then
+if ! check_execstart "$QUIL_DEBUG_SERVICE_FILE" "$NEW_DEBUG_EXECSTART"; then
     # Use sed to replace the ExecStart line in the service file
-    sudo sed -i -e "/^ExecStart=/c\\$NEW_DEBUG_EXECSTART" "$DEBUG_SERVICE_FILE"
+    sudo sed -i -e "/^ExecStart=/c\\$NEW_DEBUG_EXECSTART" "$QUIL_DEBUG_SERVICE_FILE"
 
     # Reload the systemd manager configuration
     sudo systemctl daemon-reload
