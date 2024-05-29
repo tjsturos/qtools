@@ -13,7 +13,7 @@ export GOPATH=/root/go
 export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
 
 cd /root/
-git clone https://github.com/QuilibriumNetwork/ceremonyclient.git
+git clone $SOURCE_URL
 
 # build the 'node' binary
 qtools install-node-binary

@@ -12,7 +12,7 @@ remove_file $QUIL_GO_NODE_BIN
 
 cd /root/
 # reinstall
-git clone https://github.com/QuilibriumNetwork/ceremonyclient.git
+git clone $SOURCE_URL
 
 qtools install-node-binary
 

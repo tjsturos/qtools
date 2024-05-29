@@ -18,6 +18,7 @@ usage() {
   echo "  install-qclient-binary - Install qClient binary for this node."
   echo "  install-grpc           - Install gRPC on the server for querying node info."
   echo "  import-store           - Import the store snapshot from Cherry Servers."
+  echo "  update-source-url      - Update the source URL for the Git Repo."          
 
   echo "Configuration:"
   echo "  make-backup            - Make a local-only backup (on this server) of the config.yml and keys.yml files."
@@ -73,6 +74,7 @@ export QUIL_SERVICE_FILE="$SYSTEMD_SERVICE_PATH/$QUIL_SERVICE_NAME"
 export QUIL_DEBUG_SERVICE_FILE="$SYSTEMD_SERVICE_PATH/$QUIL_DEBUG_SERVICE_NAME"
 export LOG_OUTPUT_FILE="debug.log"
 export BASHRC_FILE="$HOME/.bashrc"
+export SOURCE_URL="https://source.quilibrium.com/quilibrium/ceremonyclient"
 
 # Determine the script's path, whether called through a symlink or directly
 if [[ -L "$0" ]]; then
@@ -114,7 +116,7 @@ case "$1" in
   start|stop|status|enable|restart)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/commands"
     ;;
-  update-node|self-update|update-kernel|update-service)
+  update-node|self-update|update-kernel|update-service|update-source-url)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/update"
     ;;
   install-go|install-qclient-binary|complete-install|install-node-binary|install-cron|modify-config|create-qtools-symlink|setup-firewall|add-auto-complete|install-grpc|import-store)
