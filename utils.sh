@@ -20,7 +20,6 @@ append_to_file() {
     CONTENT="$2"
     LOG_OUTPUT="${3:-true}"
 
-    
     if ! grep -qFx "$CONTENT" $FILE 2>/dev/null; then
         
         log "Adding $CONTENT to $FILE" $LOG_OUTPUT
