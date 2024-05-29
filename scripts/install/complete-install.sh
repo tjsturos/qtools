@@ -23,7 +23,10 @@ qtools setup-firewall
 qtools install-cron
 
 # Copy the service to the systemd directory
-cp $QTOOLS_PATH/$QUIL_SERVICE_NAME $QUIL_SERVICE_PATH
+cp $QTOOLS_PATH/$QUIL_SERVICE_NAME $SYSTEMD_SERVICE_PATH
+cp $QTOOLS_PATH/$QUIL_DEBUG_SERVICE_NAME $SYSTEMD_SERVICE_PATH
+
+qtools update-service
 
 # tells server to always start node service on reboot
 systemctl enable $QUIL_SERVICE_NAME

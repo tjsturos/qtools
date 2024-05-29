@@ -1,0 +1,13 @@
+[Unit]
+Description=Quilibrium Ceremony Client DEBUG Service
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5s
+WorkingDirectory=/root/ceremonyclient/node 
+Environment=GOEXPERIMENT=arenas
+ExecStart=/root/go/bin/node ./... --debug
+
+[Install]
+WantedBy=multi-user.target

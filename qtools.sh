@@ -12,6 +12,7 @@ usage() {
   echo "  update-node            - Perform an update on the ceremony client."
   echo "  self-update            - Update the qTools code."
   echo "  update-kernel          - Update the Linux kernel on this server."
+  echo "  update-service         - Update the Systemd services (live and debug)."
   echo "  install-go             - Install Go and setup Go environment."
   echo "  install-node-binary    - Install node binary for this node."
   echo "  install-qclient-binary - Install qClient binary for this node."
@@ -36,6 +37,7 @@ usage() {
   echo "  stop                   - Stop the Quilibrium node service."
   echo "  enable                 - Enable the Quilibrium node service (for starting on reboot)."
   echo "  status                 - Get the status of the Quilibrium node service."
+  echo "  debug                  - Start the node in debug mode."
   echo "  view-log               - View the log from the Quilibrium node service."
 
   echo "Tooling:"
@@ -64,9 +66,10 @@ export QUIL_NODE_PATH=$QUIL_PATH/node
 export QUIL_CLIENT_PATH=$QUIL_PATH/client
 export QUIL_GO_NODE_BIN=$HOME/go/bin/node
 export QTOOLS_BIN_PATH=/usr/local/bin/qtools
-export QUIL_SERVICE_PATH=/lib/systemd/system
+export SYSTEMD_SERVICE_PATH=/lib/systemd/system
 export QUIL_SERVICE_NAME='ceremonyclient.service'
-export QUIL_SERVICE_FILE="$QUIL_SERVICE_PATH/$QUIL_SERVICE_NAME"
+export QUIL_DEBUG_SERVICE_NAME='ceremonyclient-debug.service'
+export QUIL_SERVICE_FILE="$SYSTEMD_SERVICE_PATH/$QUIL_SERVICE_NAME"
 
 # Determine the script's path, whether called through a symlink or directly
 if [[ -L "$0" ]]; then
@@ -108,7 +111,7 @@ case "$1" in
   start|stop|status|enable|restart)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/commands"
     ;;
-  update-node|self-update|update-kernel)
+  update-node|self-update|update-kernel|update-service)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/update"
     ;;
   install-go|install-qclient-binary|complete-install|install-node-binary|install-cron|modify-config|create-qtools-symlink|setup-firewall|add-auto-complete|install-grpc|import-store)
@@ -117,7 +120,7 @@ case "$1" in
   make-backup|restore-backup)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/backup"
     ;;
-  view-log)
+  view-log|debug)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/diagnostics"
     ;;
   get-node-count|get-node-info|get-peer-info|get-token-info|get-node-version|get-peer-id)
