@@ -1,3 +1,2 @@
 #!/bin/bash
-
-systemctl status $QUIL_SERVICE_NAME
+sudo systemctl status $QUIL_SERVICE_NAME

@@ -1,3 +1,2 @@
 #!/bin/bash
-
-systemctl enable $QUIL_SERVICE_NAME
+sudo systemctl enable $QUIL_SERVICE_NAME

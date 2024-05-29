@@ -1,3 +1,2 @@
 #!/bin/bash
-
-systemctl stop $QUIL_SERVICE_NAME
+sudo systemctl stop $QUIL_SERVICE_NAME
