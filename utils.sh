@@ -93,8 +93,8 @@ install_package() {
 
         # Detect the package manager and install the package
         if command_exists apt-get; then
-            sudo apt-get update -y
-            sudo apt-get install -y -q $package
+            sudo apt-get update -y &> $QTOOLS_PATH/$LOG_OUTPUT_FILE
+            sudo apt-get install -y -q $package  &> $QTOOLS_PATH/$LOG_OUTPUT_FILE
         elif command_exists yum; then
             sudo yum install -y $package
         elif command_exists dnf; then
@@ -110,7 +110,7 @@ install_package() {
 
         # Verify if the installation was successful
         if command_exists $package; then
-            log "$package was successfuly installed."
+            log "$package was successfuly installed." 
         fi
     fi
 }
@@ -124,7 +124,7 @@ remove_lines_matching_pattern() {
         echo "Usage: remove_lines_matching_pattern <file> <pattern>"
         return 1
     fi
-    
+
     # Use sed to remove lines matching the specified pattern
     sed -i "/$pattern/d" "$file"
 }
