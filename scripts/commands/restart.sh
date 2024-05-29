@@ -1,2 +1,2 @@
 #!/bin/bash
-systemctl restart ceremonyclient.service
+systemctl restart $QUIL_SERVICE_NAME

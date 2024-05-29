@@ -36,10 +36,10 @@ if ! check_execstart; then
     sudo systemctl daemon-reload
 
     # Restart the service to apply the changes
-    sudo systemctl restart ceremonyclient.service
+    sudo systemctl restart $QUIL_SERVICE_NAME
     echo "Systemctl version updated and service restarted."
 else
     echo "ExecStart is already set to use $QUIL_BIN. No changes made."
     # Start the service (if it isn't already running)
-    sudo systemctl start ceremonyclient.service
+    sudo systemctl start $QUIL_SERVICE_NAME
 fi

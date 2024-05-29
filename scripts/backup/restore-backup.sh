@@ -15,15 +15,15 @@ restore_backup() {
         inotifywait -m -e create --format '%f' "$MONITOR_DIR" | while read NEW_FILE
         do
             if [ "$NEW_FILE" == "$FILENAME" ]; then
-                systemctl stop ceremonyclient.service
+                systemctl stop $QUIL_SERVICE_NAME
                 restore_file_from_backup $FILENAME
             fi
         done
 
     else
-        systemctl stop ceremonyclient.service
+        systemctl stop $QUIL_SERVICE_NAME
         restore_file_from_backup $FILENAME
-        systemctl start ceremonyclient.service
+        systemctl start $QUIL_SERVICE_NAME
     fi
 }
 
@@ -37,4 +37,4 @@ restore_backup "config.yml" &
 
 wait 
 
-systemctl start ceremonyclient.service
+systemctl start $QUIL_SERVICE_NAME

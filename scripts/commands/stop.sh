@@ -1,3 +1,3 @@
 #!/bin/bash
 
-systemctl stop ceremonyclient.service
+systemctl stop $QUIL_SERVICE_NAME

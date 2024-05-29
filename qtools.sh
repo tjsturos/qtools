@@ -65,7 +65,8 @@ export QUIL_CLIENT_PATH=$QUIL_PATH/client
 export QUIL_GO_NODE_BIN=$HOME/go/bin/node
 export QTOOLS_BIN_PATH=/usr/local/bin/qtools
 export QUIL_SERVICE_PATH=/lib/systemd/system
-export QUIL_SERVICE_FILE="$QUIL_SERVICE_PATH/ceremonyclient.service"
+export QUIL_SERVICE_NAME='ceremonyclient.service'
+export QUIL_SERVICE_FILE="$QUIL_SERVICE_PATH/$QUIL_SERVICE_NAME"
 
 # Determine the script's path, whether called through a symlink or directly
 if [[ -L "$0" ]]; then

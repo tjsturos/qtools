@@ -1,3 +1,3 @@
 #!/bin/bash
 
-systemctl enable ceremonyclient.service
+systemctl enable $QUIL_SERVICE_NAME

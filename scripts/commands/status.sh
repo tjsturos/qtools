@@ -1,3 +1,3 @@
 #!/bin/bash
 
-systemctl status ceremonyclient.service
+systemctl status $QUIL_SERVICE_NAME

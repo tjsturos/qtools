@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Stop the ceremonyclient service
-systemctl stop ceremonyclient.service
+systemctl stop $QUIL_SERVICE_NAME
 
 # make a backup of the keys
 qtools make-backup
@@ -18,6 +18,6 @@ qtools install-node-binary
 
 qtools restore-backup
 
-systemctl start ceremonyclient.service
+systemctl start $QUIL_SERVICE_NAME
 
 
