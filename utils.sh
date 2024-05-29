@@ -1,52 +1,64 @@
 
 log() {
-    FILE_LOG="quil-node-setup.log"
+    MESSAGE="$1"
+    SHOULD_OUTPUT="${2:-true}"
+
     if [[ ! -f "$QTOOLS_PATH/$FILE_LOG" ]]; then
-        touch $QTOOLS_PATH/$FILE_LOG
+        touch $QTOOLS_PATH/$LOG_OUTPUT_FILE
     fi
 
     LOG="$(date) - $1"
-    echo "$LOG" >> $QTOOLS_PATH/$FILE_LOG
-    echo "$LOG"
+    if [ "$SHOULD_OUTPUT" != "false" ]; then
+            echo "$LOG"
+    fi
+    
+    echo "$LOG" >> $QTOOLS_PATH/$LOG_OUTPUT_FILE
 }
 
 append_to_file() {
     FILE="$1"
     CONTENT="$2"
+    LOG_OUTPUT="${3:-true}"
 
     if ! grep -qFx "$CONTENT" $FILE; then
-        log "Adding $CONTENT to $FILE"
+        
+        log "Adding $CONTENT to $FILE" $LOG_OUTPUT
+        
         echo "$CONTENT" >> $FILE
     else
-        log "$CONTENT already found in $FILE. Skipping."
+        log "$CONTENT already found in $FILE. Skipping." $LOG_OUTPUT
     fi
 }
 
 remove_directory() {
     DIRECTORY="$1"
+    LOG_OUTPUT="${2:-true}"
     if [ -d "$DIRECTORY" ]; then
-        log "Directory $DIRECTORY found.  Removing."
+        log "Directory $DIRECTORY found.  Removing." $LOG_OUTPUT
+        
         rm -rf $DIRECTORY
-        if [ ! -f $DIRECTORY ]; then
-            log "Directory $DIRECTORY deletion was successful."
+        if [ ! -d $DIRECTORY ]; then
+            log "Directory $DIRECTORY deletion was successful." $LOG_OUTPUT
         else
-            log "Directory $DIRECTORY deletion was not successful."
+            log "Directory $DIRECTORY deletion was not successful." $LOG_OUTPUT
         fi
     fi
 }
 
 remove_file() {
     FILE="$1"
+    LOG_OUTPUT="${2:-true}"
     if [ -f "$FILE" ]; then
-        log "File $FILE found.  Removing."
+        log "File $FILE found.  Removing." $LOG_OUTPUT
+        
         rm $FILE
         if [ ! -f $FILE ]; then
-            log "File $FILE deletion was successful."
+            log "File $FILE deletion was successful." $LOG_OUTPUT
         else
-            log "File $FILE deletion was not successful."
+            log "File $FILE deletion was not successful." $LOG_OUTPUT
         fi
     else
-        log "$FILE file not found."
+        log "$FILE file not found." $LOG_OUTPUT
     fi
 }
 

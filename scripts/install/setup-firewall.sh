@@ -1,6 +1,6 @@
 #!/bin/bash
 
-log "setting up firewall"
+log "Setting up firewall"
 echo "y" | ufw enable
 ufw allow 22
 ufw allow 8336
