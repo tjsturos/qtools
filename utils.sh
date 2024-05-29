@@ -87,8 +87,8 @@ command_exists() {
 
 install_package() {
     package="$1"
-    package_parent="$2"
-    if ! command_exists $package_parent; then
+    command="$2"
+    if ! command_exists $command; then
         log "$package is not installed. Installing..."
 
         # Detect the package manager and install the package
@@ -109,8 +109,8 @@ install_package() {
         fi
 
         # Verify if the installation was successful
-        if command_exists $package; then
-            log "$package was successfuly installed." 
+        if command_exists $command; then
+            log "$package was successfuly installed and $command is now available for use." 
         fi
     fi
 }

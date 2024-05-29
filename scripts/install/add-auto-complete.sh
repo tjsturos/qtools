@@ -1,6 +1,6 @@
 #!/bin/bash
 
-install_package bash-completion bash-completion
+install_package bash-completion complete
 
 append_to_file $BASHRC_FILE "source /etc/profile.d/bash_completion.sh" false
 
