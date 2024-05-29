@@ -29,7 +29,7 @@ cp $QTOOLS_PATH/$QUIL_DEBUG_SERVICE_NAME $SYSTEMD_SERVICE_PATH
 qtools update-service
 
 # tells server to always start node service on reboot
-systemctl enable $QUIL_SERVICE_NAME
+qtools enable
 
 # start the server
 qtools start

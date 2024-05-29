@@ -6,14 +6,14 @@ edit_sshd_config() {
 
   # Ensure the script is run as root
   if [[ $EUID -ne 0 ]]; then
-    echo "This script must be run as root" 1>&2
+    log "This script must be run as root" 1>&2
     exit 1
   fi
 
   # Backup the original sshd_config
   if [[ ! -f "${sshd_config}.bak" ]]; then
     cp "$sshd_config" "${sshd_config}.bak"
-    echo "Backup of sshd_config created at ${sshd_config}.bak"
+    log "Backup of sshd_config created at ${sshd_config}.bak"
   fi
 
   # Disable PasswordAuthentication and ChallengeResponseAuthentication

@@ -44,7 +44,7 @@ else
   
   pattern="^complete -W '.*' qtools$"
   remove_lines_matching_pattern "~/.bashrc" "$pattern"
-  append_to_file ~/.bashrc "complete -W '$joined_script_names' qtools"
+  append_to_file ~/.bashrc "complete -W '$joined_script_names' qtools" false
 fi
 
 source ~/.bashrc

@@ -9,13 +9,13 @@ FILENAME="config.yml"
 # Ensure inotify-tools is installed
 if ! command -v inotifywait &> /dev/null
 then
-    log "inotifywait could not be found, please install inotify-tools"
+    log "The binary inotifywait could not be found, please install inotify-tools"
     exit 1
 fi
 
 # Modifications to make to the config file
 modify_config_file() {
-    echo "Modifying config"
+    log "Modifying Ceremony client's config.yml file."
     sed -i 's/^ *listenGrpcMultiaddr:.*$/  listenGrpcMultiaddr: \/ip4\/127.0.0.1\/tcp\/8337/' $MONITOR_DIR/$FILENAME
     sed -i 's/^ *listenRESTMultiaddr:.*$/  listenGrpcMultiaddr: \/ip4\/127.0.0.1\/tcp\/8338/' $MONITOR_DIR/$FILENAME
     sed -i '/^ *engine: *$/a \  statsMultiaddr: "/dns/stats.quilibrium.com/tcp/443"' $MONITOR_DIR/$FILENAME
@@ -32,15 +32,15 @@ if [ ! -f "$MONITOR_DIR/$FILENAME" ]; then
     inotifywait -m -e create --format '%f' "$MONITOR_DIR" | while read NEW_FILE
     do
         if [ "$NEW_FILE" == "$FILENAME" ]; then
-            echo "File '$FILENAME' has been created in directory '$MONITOR_DIR'."
-            systemctl stop $QUIL_SERVICE_NAME
+            log "File '$FILENAME' has been created in directory '$MONITOR_DIR'."
+            qtools stop
             modify_config_file
-            systemctl start $QUIL_SERVICE_NAME
+            qtools start
         fi
     done
 
 else
-    systemctl stop $QUIL_SERVICE_NAME
+    qtools stop
     modify_config_file
-    systemctl start $QUIL_SERVICE_NAME
+    qtools start
 fi

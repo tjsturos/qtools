@@ -20,7 +20,7 @@ actual_output=$(ufw status)
 
 # Check if UFW is active
 if ! echo "$actual_output" | grep -q "Status: active"; then
-  echo "UFW is not active."
+  log "UFW is not active."
   exit 1
 fi
 
@@ -34,12 +34,11 @@ done
 
 # Report results
 if [ ${#missing_rules[@]} -eq 0 ]; then
-  echo "All expected rules are present in the UFW status."
-  exit 0
+  log "All expected rules are present in the UFW status."
 else
-  echo "The following expected rules are missing in the UFW status:"
+  log "The following expected rules are missing in the UFW status:"
   for rule in "${missing_rules[@]}"; do
-    echo "$rule"
+    log "$rule"
   done
   exit 1
 fi

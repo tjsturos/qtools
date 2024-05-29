@@ -9,7 +9,7 @@ cd $QUIL_CLIENT_PATH
 
 # Remove the file before re-installation
 if [ -f "$QUIL_CLIENT_PATH/qclient" ]; then
-    remove_file $QUIL_CLIENT_PATH/qclient
+    remove_file $QUIL_CLIENT_PATH/qclient false
 fi
 
 # remove previous build files

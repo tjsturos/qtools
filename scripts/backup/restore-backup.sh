@@ -1,5 +1,5 @@
 #!/bin/bash
-BACKUP_DIR=~/quil-backup
+BACKUP_DIR=$HOME/quil-backup
 RESTORE_DIR=$QUIL_NODE_PATH/.config
 
 restore_file_from_backup() {
@@ -15,15 +15,15 @@ restore_backup() {
         inotifywait -m -e create --format '%f' "$MONITOR_DIR" | while read NEW_FILE
         do
             if [ "$NEW_FILE" == "$FILENAME" ]; then
-                systemctl stop $QUIL_SERVICE_NAME
+                qtools stop
                 restore_file_from_backup $FILENAME
             fi
         done
 
     else
-        systemctl stop $QUIL_SERVICE_NAME
+        qtools stop
         restore_file_from_backup $FILENAME
-        systemctl start $QUIL_SERVICE_NAME
+        qtools start
     fi
 }
 
@@ -37,4 +37,4 @@ restore_backup "config.yml" &
 
 wait 
 
-systemctl start $QUIL_SERVICE_NAME
+qtools start
