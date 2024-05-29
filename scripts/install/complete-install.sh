@@ -20,7 +20,7 @@ qtools install-node-binary
 qtools install-qclient-binary
 qtools install-grpc
 qtools setup-firewall
-qtools setup-cron
+qtools install-cron
 
 # Copy the service to the systemd directory
 cp $QTOOLS_PATH/$QUIL_SERVICE_NAME $QUIL_SERVICE_PATH

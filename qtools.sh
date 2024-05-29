@@ -10,7 +10,7 @@ usage() {
   echo "Installation and Updates:"
   echo "  complete-install       - Do a full install of the ceremony client."
   echo "  update-node            - Perform an update on the ceremony client."
-  echo "  update-qtools          - Update the qTools code."
+  echo "  self-update            - Update the qTools code."
   echo "  update-kernel          - Update the Linux kernel on this server."
   echo "  install-go             - Install Go and setup Go environment."
   echo "  install-node-binary    - Install node binary for this node."
@@ -25,7 +25,7 @@ usage() {
 
   echo "System Setup:"
   echo "  remove-docker          - Remove Docker from this server."
-  echo "  setup-cron             - Install necessary scheduled tasks for the node."
+  echo "  install-cron             - Install necessary scheduled tasks for the node."
   echo "  setup-firewall         - Install firewall for this server."
   echo "  disable-ssh-passwords  - Disable logging into this server via password."
 
@@ -108,10 +108,10 @@ case "$1" in
   start|stop|status|enable|restart)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/commands"
     ;;
-  update-node|update-qtools|update-kernel)
+  update-node|self-update|update-kernel)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/update"
     ;;
-  install-go|install-qclient-binary|complete-install|install-node-binary|setup-cron|modify-config|create-qtools-symlink|setup-firewall|add-auto-complete|install-grpc|import-store)
+  install-go|install-qclient-binary|complete-install|install-node-binary|install-cron|modify-config|create-qtools-symlink|setup-firewall|add-auto-complete|install-grpc|import-store)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/install"
     ;;
   make-backup|restore-backup)

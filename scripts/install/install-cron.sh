@@ -7,7 +7,7 @@ append_to_file $FILE_CRON "GOPATH=/root/go"
 append_to_file $FILE_CRON "PATH=/root/go/bin:/usr/local/go/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin"
 append_to_file $FILE_CRON "QTOOLS_PATH=$QTOOLS_PATH"
 append_to_file $FILE_CRON "1 0 * * * qtools make-backup"
-append_to_file $FILE_CRON "*/10 * * * * qtools update-qtools && qtools update-node"
+append_to_file $FILE_CRON "*/10 * * * * qtools self-update && qtools update-node"
 
 # Load the updated file back into the crontab
 crontab $FILE_CRON
@@ -20,7 +20,7 @@ GOPATH=/root/go
 PATH=/root/go/bin:/usr/local/go/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
 QTOOLS_PATH=$QTOOLS_PATH
 1 0 * * * qtools make-backup
-*/10 * * * * qtools update-qtools && qtools update-node"
+*/10 * * * * qtools self-update && qtools update-node"
 
 # Get the actual output of 'ufw status'
 actual_output=$(crontab -l)
