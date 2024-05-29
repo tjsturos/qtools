@@ -74,7 +74,7 @@ export QUIL_SERVICE_FILE="$SYSTEMD_SERVICE_PATH/$QUIL_SERVICE_NAME"
 export QUIL_DEBUG_SERVICE_FILE="$SYSTEMD_SERVICE_PATH/$QUIL_DEBUG_SERVICE_NAME"
 export LOG_OUTPUT_FILE="debug.log"
 export BASHRC_FILE="$HOME/.bashrc"
-export SOURCE_URL="https://source.quilibrium.com/quilibrium/ceremonyclient"
+export SOURCE_URL="https://source.quilibrium.com/quilibrium/ceremonyclient.git"
 
 # Determine the script's path, whether called through a symlink or directly
 if [[ -L "$0" ]]; then
