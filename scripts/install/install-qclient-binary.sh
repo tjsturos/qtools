@@ -56,4 +56,4 @@ _qclient_completions() {
 
 complete -F _qclient_completions qclient
 
-source ~/.bashrc
+source $BASHRC_FILE

@@ -11,7 +11,7 @@ log() {
     if [ "$SHOULD_OUTPUT" != "false" ]; then
             echo "$LOG"
     fi
-    
+
     echo "$LOG" >> $QTOOLS_PATH/$LOG_OUTPUT_FILE
 }
 
@@ -124,7 +124,7 @@ remove_lines_matching_pattern() {
         echo "Usage: remove_lines_matching_pattern <file> <pattern>"
         return 1
     fi
-
+    
     # Use sed to remove lines matching the specified pattern
     sed -i "/$pattern/d" "$file"
 }

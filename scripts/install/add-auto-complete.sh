@@ -1,15 +1,8 @@
 #!/bin/bash
 
-if grep -qE "$pattern" "$bashrc_file"; then
-  echo "Pattern found in .bashrc. Removing it..."
-  # Use sed to remove the line containing the pattern
-  sed -i "/$pattern/d" "$bashrc_file"
-  echo "Pattern removed from .bashrc."
-fi
+install_package bash-completion bash-completion
 
-apt-get install bash-completion
-
-append_to_file ~/.bashrc "source /etc/profile.d/bash_completion.sh"
+append_to_file $BASHRC_FILE "source /etc/profile.d/bash_completion.sh" false
 
 source /etc/profile.d/bash_completion.sh
 
@@ -43,8 +36,8 @@ else
   joined_script_names=$(printf "%s " "${script_names[@]}")
   
   pattern="^complete -W '.*' qtools$"
-  remove_lines_matching_pattern "~/.bashrc" "$pattern"
-  append_to_file ~/.bashrc "complete -W '$joined_script_names' qtools" false
+  remove_lines_matching_pattern $BASHRC_FILE "$pattern"
+  append_to_file $BASHRC_FILE "complete -W '$joined_script_names' qtools" false
 fi
 
-source ~/.bashrc
+source $BASHRC_FILE

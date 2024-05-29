@@ -1,10 +1,8 @@
 #!/bin/bash
 cd $QUIL_PATH
 
-
 # Fetch the latest changes from the remote repository
 git fetch origin
-
 
 # Make sure we are using the release branch
 git checkout release
