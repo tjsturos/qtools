@@ -38,7 +38,7 @@ if [ $LOCAL != $REMOTE ]; then
     elif [[ "$OSTYPE" == "darwin"* ]]; then
         QUIL_BIN="node-$VERSION-darwin-arm64"
     else
-        echo "Unsupported OS for releases, please build from source."
+        log "Unsupported OS for releases, please build from source."
         exit 1
     fi
 
@@ -58,5 +58,5 @@ if [ $LOCAL != $REMOTE ]; then
 
     qtools start
 else
-    echo "Release branch is up-to-date. No restart required."
+    log "Release branch is up-to-date. No restart required."
 fi
