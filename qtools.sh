@@ -40,6 +40,7 @@ usage() {
   echo "  status                 - Get the status of the Quilibrium node service."
   echo "  debug                  - Start the node in debug mode."
   echo "  view-log               - View the log from the Quilibrium node service."
+  echo "  view-debug-log         - View the debug log from the Quilibrium DEBUG node service."
 
   echo "Tooling:"
   echo "  create-qtools-symlink  - Create a symlink for 'qtools' to /usr/local/bin."
@@ -125,7 +126,7 @@ case "$1" in
   make-backup|restore-backup)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/backup"
     ;;
-  view-log|debug)
+  view-log|debug|view-debug-log)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/diagnostics"
     ;;
   get-node-count|get-node-info|get-peer-info|get-token-info|get-node-version|get-peer-id)
