@@ -1,13 +1,16 @@
 #!/bin/bash
 log "Installing Go"
-wget https://go.dev/dl/go1.20.14.linux-amd64.tar.gz
-tar -xvf go1.20.14.linux-amd64.tar.gz
-mv go /usr/local
+GO_COMPRESSED_FILE=go1.20.14.linux-amd64.tar.gz
+wget https://go.dev/dl/$GO_COMPRESSED_FILE
+tar -xvf $GO_COMPRESSED_FILE
+mv go $GO_BIN_DIR
 
-remove_file  go1.20.14.linux-amd64.tar.gz false
+file_exists $GOROOT
 
-append_to_file $BASHRC_FILE "export GOROOT=/usr/local/go" false
-append_to_file $BASHRC_FILE "export GOPATH=$HOME/go" false
+remove_file $GO_COMPRESSED_FILE false
+
+append_to_file $BASHRC_FILE "export GOROOT=$GOROOT" false
+append_to_file $BASHRC_FILE "export GOPATH=$GOPATH" false
 append_to_file $BASHRC_FILE "export PATH=\$GOPATH/bin:\$GOROOT/bin:\$PATH" false
 
 source $BASHRC_FILE

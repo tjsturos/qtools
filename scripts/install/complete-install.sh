@@ -8,10 +8,6 @@ install_package git
 qtools install-go
 qtools add-auto-complete
 
-export GOROOT=/usr/local/go
-export GOPATH=/root/go
-export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
-
 cd /root/
 git clone $SOURCE_URL
 

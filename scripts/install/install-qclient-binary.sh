@@ -13,10 +13,10 @@ if [ -f "$QUIL_CLIENT_PATH/qclient" ]; then
 fi
 
 # remove previous build files
-GOEXPERIMENT=arenas go clean -v -n -a ./...
+GOEXPERIMENT=arenas $GOROOT clean -v -n -a ./...
 
 # Install
-GOEXPERIMENT=arenas go build -o /root/go/bin/qclient main.go > /dev/null 2>&1
+GOEXPERIMENT=arenas $GOROOT build -o $GOPATH/bin/qclient main.go > /dev/null 2>&1
 
 # verify install
 file_exists $QUIL_CLIENT_PATH/qclient
