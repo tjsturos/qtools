@@ -128,3 +128,24 @@ remove_lines_matching_pattern() {
     # Use sed to remove lines matching the specified pattern
     sed -i "/$pattern/d" "$file"
 }
+
+get_versioned_binary() {
+    # Extract version information
+    local VERSION=$(cat $QUIL_NODE_PATH/config/version.go | grep -A 1 "func GetVersion() \[\]byte {" | grep -Eo '0x[0-9a-fA-F]+' | xargs printf "%d.%d.%d")
+
+    # Determine the binary path based on OS and architecture
+    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+        if [[ "$arch" == arm* ]]; then
+            QUIL_BIN="node-$VERSION-linux-arm64"
+        else
+            QUIL_BIN="node-$VERSION-linux-amd64"
+        fi
+    elif [[ "$OSTYPE" == "darwin"* ]]; then
+        QUIL_BIN="node-$VERSION-darwin-arm64"
+    else
+        log "Unsupported OS for releases, please build from source."
+        exit 1
+    fi
+
+    return $QUIL_BIN
+}

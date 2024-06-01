@@ -8,24 +8,7 @@ check_execstart() {
     grep -q "^$START_SCRIPT" "$SERVICE_FILE"
 }
 
-# Extract version information
-VERSION=$(cat $QUIL_NODE_PATH/config/version.go | grep -A 1 "func GetVersion() \[\]byte {" | grep -Eo '0x[0-9a-fA-F]+' | xargs printf "%d.%d.%d")
-
-# Determine the binary path based on OS and architecture
-if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-    if [[ "$arch" == arm* ]]; then
-        QUIL_BIN="node-$VERSION-linux-arm64"
-    else
-        QUIL_BIN="node-$VERSION-linux-amd64"
-    fi
-elif [[ "$OSTYPE" == "darwin"* ]]; then
-    QUIL_BIN="node-$VERSION-darwin-arm64"
-else
-    log "Unsupported OS for releases, please build from source."
-    exit 1
-fi
-
-log "Found node binary for this OS: $QUIL_BIN"
+QUIL_BIN="$(get_versioned_binary)"
 
 # Define the new ExecStart line
 NEW_EXECSTART="ExecStart=$QUIL_NODE_PATH/$QUIL_BIN"
