@@ -25,7 +25,10 @@ BOOTSTRAP_PEER_COUNT=0
 for transformed_peer_id in "${transformed_peer_ids[@]}"; do
   for bootstrap_peer_id in $bootstrap_peer_ids; do
     if [[ "$transformed_peer_id" == "$bootstrap_peer_id" ]]; then
+      log "match found."
       ((BOOTSTRAP_PEER_COUNT++))
+    else
+        log "$transformed_peer_id != $bootstrap_peer_id"
     fi
   done
 done
