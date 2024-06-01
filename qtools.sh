@@ -54,6 +54,7 @@ usage() {
   echo "  get-peer-id            - Get the Peer ID of this node."
   echo "  get-node-version       - Get the version of this node."
   echo "  get-frame-count        - Get the current frame (maxFrame) of this node."
+  echo "  has-bootstrap-peers    - Determine if there are any bootstrap peers for this node."
 
   exit 1
 }
@@ -136,7 +137,7 @@ case "$1" in
   view-log|debug|view-debug-log)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/diagnostics"
     ;;
-  get-node-count|get-node-info|get-peer-info|get-token-info|get-node-version|get-peer-id|get-frame-count)
+  get-node-count|get-node-info|get-peer-info|get-token-info|get-node-version|get-peer-id|get-frame-count|has-bootstrap-peers)
     if ! command_exists grpcurl; then
       log "Command 'grpcurl' doesn't exist, proceeding to install."
       qtools install-grpc
