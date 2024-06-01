@@ -26,4 +26,4 @@ else
     log "Release branch is up-to-date. No restart required."
 fi
 
-log "Node update is complete.
+log "Node update is complete."
