@@ -1,5 +1,5 @@
 #!/bin/bash
-log "Starting self-update"
+log "Starting qTools update"
 
 cd $QTOOLS_PATH
 
