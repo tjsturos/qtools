@@ -103,6 +103,7 @@ source $QTOOLS_PATH/utils.sh
 install_package inotify-tools inotifywait
 install_package colordiff colordiff
 install_package jq jq
+install_package base58 base58
 
 # Remaining scripts need existance of the QTOOLS_BIN_PATH binary
 if [ ! -L "$QTOOLS_BIN_PATH" ]; then
