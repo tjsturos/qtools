@@ -77,6 +77,11 @@ export LOG_OUTPUT_FILE="debug.log"
 export BASHRC_FILE="$HOME/.bashrc"
 export SOURCE_URL="https://source.quilibrium.com/quilibrium/ceremonyclient.git"
 
+# Define Go vars
+export GOROOT=/usr/local/go
+export GO_PATH=$HOME/go
+export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+
 # Determine the script's path, whether called through a symlink or directly
 if [[ -L "$0" ]]; then
     # If $0 is a symlink, resolve it to the actual script path
