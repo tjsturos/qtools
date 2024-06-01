@@ -80,7 +80,7 @@ export SOURCE_URL="https://source.quilibrium.com/quilibrium/ceremonyclient.git"
 # Define Go vars
 export GO_BIN_DIR=/usr/local
 export GOROOT=$GO_BIN_DIR/go
-export GO_PATH=$HOME/go
+export GOPATH=$HOME/go
 export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
 
 # Determine the script's path, whether called through a symlink or directly

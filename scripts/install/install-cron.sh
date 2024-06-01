@@ -13,7 +13,7 @@ append_to_file $FILE_CRON "*/10 * * * * qtools self-update && qtools update-node
 crontab $FILE_CRON
 
 # Get the actual output of 'ufw status'
-actual_output=$(crontab -l)
+actual_output="$(crontab -l)"
 
 if [[ "$actual_output" == "$FILE_CRON" ]]; then
   echo "The crontab was successfully updated."
