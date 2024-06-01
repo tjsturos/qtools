@@ -32,10 +32,10 @@ else
   expected_file="expected.txt"
   actual_file="actual.txt"
   echo $expected_output >> $expected_file
-  echo $actual_output > $actual_output
+  echo $actual_output > $actual_file
   colordiff -u $expected_file $actual_file
-  rm $expected_file
-  rm $actual_file
+  remove_file $expected_file
+  remove_file $actual_file
   exit 1
 fi
 
