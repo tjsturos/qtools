@@ -137,6 +137,7 @@ case "$1" in
     ;;
   get-node-count|get-node-info|get-peer-info|get-token-info|get-node-version|get-peer-id)
     if ! command_exists grpcurl; then
+      log "Command 'grpcurl' doesn't exist, proceeding to install."
       qtools install-grpc
     fi
     export SERVICE_PATH="$QTOOLS_PATH/scripts/grpc"
