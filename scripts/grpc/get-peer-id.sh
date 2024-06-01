@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PEER_ID="$(grpcurl -plaintext localhost:8337 quilibrium.node.node.pb.NodeService.GetNodeInfo | grep -oP '"peerId":\s*"\K[^"]+')"
+PEER_ID="$(grpcurl -plaintext localhost:8337 quilibrium.node.node.pb.NodeService.GetNodeInfo 2> /dev/null | grep -oP '"peerId":\s*"\K[^"]+')"
 
 # Check if a Peer ID was found
 if [ ! -n "$PEER_ID" ]; then
