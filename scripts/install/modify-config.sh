@@ -27,10 +27,18 @@ modify_config_file() {
         sed -i 's/^ *listenRESTMultiaddr:.*$/  listenRESTMultiaddr: \/ip4\/127.0.0.1\/tcp\/8338/' "$MONITOR_DIR/$FILENAME"
     fi
 
-    # Check and add statsMultiaddr
-    if ! grep -q 'statsMultiaddr: "/dns/stats.quilibrium.com/tcp/443"' "$MONITOR_DIR/$FILENAME"; then
-        sed -i '/^ *engine: *$/a \  statsMultiaddr: "/dns/stats.quilibrium.com/tcp/443"' "$MONITOR_DIR/$FILENAME"
-    fi
+    # Check if statsMultiaddr is within the engine section and update or add it
+    awk -i inplace '
+    /^ *engine: *$/ {in_engine=1; print; next}
+    /^ *[^ ]/ {in_engine=0}
+    in_engine && /statsMultiaddr:/ {found=1; $0="  statsMultiaddr: \"/dns/stats.quilibrium.com/tcp/443\""}
+    {print}
+    END {
+        if (in_engine && !found) {
+            print "  statsMultiaddr: \"/dns/stats.quilibrium.com/tcp/443\""
+        }
+    }
+    ' "$MONITOR_DIR/$FILENAME"
 }
 
 # Wait for the directory to be created if it doesn't exist
