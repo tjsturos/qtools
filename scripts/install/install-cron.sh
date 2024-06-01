@@ -21,9 +21,9 @@ echo "$(crontab -l)" > $FILE_ACTUAL_OUTPUT
 diff="$(colordiff -u $FILE_CRON $FILE_ACTUAL_OUTPUT)"
 
 if [[ $diff ]]; then
-  echo -e "The crontab was contains some errors:\n$diff"
+  log "$(echo -e \"The crontab was contains some errors:\n$diff\")"
 else
-  echo "The crontab was successfully updated."
+  log "The crontab was successfully updated."
 fi
 
 remove_file $FILE_CRON false
