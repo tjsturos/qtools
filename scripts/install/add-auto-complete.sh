@@ -1,5 +1,5 @@
 #!/bin/bash
-log "Adding/updating autocomplete for qTools command"
+log "Adding/updating autocomplete for qtools command..."
 install_package bash-completion complete
 
 append_to_file $BASHRC_FILE "source /etc/profile.d/bash_completion.sh" false
@@ -42,4 +42,4 @@ fi
 
 source $BASHRC_FILE
 
-log "Finished adding auto-complete.  You may need to source ~/.bashrc (source ~/.bashrc) to get these latest changes if running in an interactive shell."
+log "Finished adding auto-complete."

@@ -5,7 +5,7 @@ if [ -d "$QUIL_PATH" ]; then
     CURRENT_REMOTE_URL="$(git remote get-url origin)"
 
     if [ "$CURRENT_REMOTE_URL" != "$SOURCE_URL" ]; then
-        log "Updating the git repo's source url from $CURRENT_REMOTE_URL to $SOURCE_URL."
+        log "Updating the git repo's source url from $CURRENT_REMOTE_URL to $SOURCE_URL..."
         git remote set-url origin $SOURCE_URL
 
         CHANGED_REMOTE_URL="$(git remote get-url origin)"

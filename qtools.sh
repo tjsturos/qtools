@@ -10,7 +10,7 @@ usage() {
   echo "Installation and Updates:"
   echo "  complete-install       - Do a full install of the ceremony client."
   echo "  update-node            - Perform an update on the ceremony client."
-  echo "  self-update            - Update the qTools code."
+  echo "  self-update            - Update the qtools code."
   echo "  update-kernel          - Update the Linux kernel on this server."
   echo "  update-service         - Update the Systemd services (live and debug)."
   echo "  install-go             - Install Go and setup Go environment."
