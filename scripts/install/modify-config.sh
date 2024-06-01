@@ -16,9 +16,21 @@ fi
 # Modifications to make to the config file
 modify_config_file() {
     log "Modifying Ceremony client's config.yml file."
-    sed -i 's/^ *listenGrpcMultiaddr:.*$/  listenGrpcMultiaddr: \/ip4\/127.0.0.1\/tcp\/8337/' $MONITOR_DIR/$FILENAME
-    sed -i 's/^ *listenRESTMultiaddr:.*$/  listenGrpcMultiaddr: \/ip4\/127.0.0.1\/tcp\/8338/' $MONITOR_DIR/$FILENAME
-    sed -i '/^ *engine: *$/a \  statsMultiaddr: "/dns/stats.quilibrium.com/tcp/443"' $MONITOR_DIR/$FILENAME
+
+    # Check and modify listenGrpcMultiaddr
+    if ! grep -q '^ *listenGrpcMultiaddr: \/ip4\/127.0.0.1\/tcp\/8337' "$MONITOR_DIR/$FILENAME"; then
+        sed -i 's/^ *listenGrpcMultiaddr:.*$/  listenGrpcMultiaddr: \/ip4\/127.0.0.1\/tcp\/8337/' "$MONITOR_DIR/$FILENAME"
+    fi
+
+    # Check and modify listenRESTMultiaddr
+    if ! grep -q '^ *listenRESTMultiaddr: \/ip4\/127.0.0.1\/tcp\/8338' "$MONITOR_DIR/$FILENAME"; then
+        sed -i 's/^ *listenRESTMultiaddr:.*$/  listenRESTMultiaddr: \/ip4\/127.0.0.1\/tcp\/8338/' "$MONITOR_DIR/$FILENAME"
+    fi
+
+    # Check and add statsMultiaddr
+    if ! grep -q 'statsMultiaddr: "/dns/stats.quilibrium.com/tcp/443"' "$MONITOR_DIR/$FILENAME"; then
+        sed -i '/^ *engine: *$/a \  statsMultiaddr: "/dns/stats.quilibrium.com/tcp/443"' "$MONITOR_DIR/$FILENAME"
+    fi
 }
 
 # Wait for the directory to be created if it doesn't exist
