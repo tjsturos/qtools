@@ -4,7 +4,7 @@ FILE_CRON=$QTOOLS_PATH/cron
 
 append_to_file $FILE_CRON "GOROOT=$GOROOT" false
 append_to_file $FILE_CRON "GOPATH=$GOPATH" false
-append_to_file $FILE_CRON "PATH=$GOPATH/bin:$GOROOT/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin" false
+append_to_file $FILE_CRON "PATH=\$GOPATH/bin:\$GOROOT/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin" false
 append_to_file $FILE_CRON "QTOOLS_PATH=$QTOOLS_PATH" false
 append_to_file $FILE_CRON "1 0 * * * qtools make-backup" false
 append_to_file $FILE_CRON "*/10 * * * * qtools self-update && qtools update-node" false
@@ -17,18 +17,13 @@ remove_file $FILE_CRON false
 
 expected_output="GOROOT=$GOROOT
 GOPATH=$GOPATH
-PATH=$GOPATH/bin:$GOROOT/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
+PATH=\$GOPATH/bin:\$GOROOT/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
 QTOOLS_PATH=$QTOOLS_PATH
 1 0 * * * qtools make-backup
 */10 * * * * qtools self-update && qtools update-node"
 
 # Get the actual output of 'ufw status'
 actual_output=$(crontab -l)
-
-
-
-
-
 
 if [[ "$actual_output" == "$expected_output" ]]; then
   echo "The crontab was successfully updated."
