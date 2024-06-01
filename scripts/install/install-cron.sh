@@ -1,4 +1,5 @@
 #!/bin/bash
+log "Updating this user's crontab for automated tasks"
 # The aim of this is to get the current cron tasks file, add the line to run the on-start.sh script every reboot.
 FILE_CRON=$QTOOLS_PATH/cron
 
