@@ -1,5 +1,7 @@
 #!/bin/bash
 
+log "Updating the service..."
+
 check_execstart() {
     SERVICE_FILE="$1"
     START_SCRIPT="$2"
@@ -8,8 +10,6 @@ check_execstart() {
 
 # Extract version information
 VERSION=$(cat $QUIL_NODE_PATH/config/version.go | grep -A 1 "func GetVersion() \[\]byte {" | grep -Eo '0x[0-9a-fA-F]+' | xargs printf "%d.%d.%d")
-
-log "Found version: $VERSION"
 
 # Determine the binary path based on OS and architecture
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
@@ -25,10 +25,13 @@ else
     exit 1
 fi
 
+log "Found node binary for this OS: $QUIL_BIN"
+
 # Define the new ExecStart line
 NEW_EXECSTART="ExecStart=$QUIL_NODE_PATH/$QUIL_BIN"
  
 if [ ! -f "$SYSTEMD_SERVICE_PATH/$QUIL_SERVICE_NAME" ]; then
+    log "No ceremonyclient service found.  Initializing service file..."
     cp $QTOOLS_PATH/$QUIL_SERVICE_NAME $SYSTEMD_SERVICE_PATH
 fi
 
@@ -45,6 +48,7 @@ fi
 
 
 if [ ! -f "$QUIL_DEBUG_SERVICE_FILE" ]; then
+    log "No debug ceremonyclient service found.  Adding service (inactive)."
     cp $QTOOLS_PATH/$QUIL_DEBUG_SERVICE_NAME $SYSTEMD_SERVICE_PATH
 fi
 

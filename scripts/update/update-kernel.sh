@@ -1,15 +1,15 @@
 #!/bin/bash
 
 log "Updating package list and upgrading all packages..."
-sudo apt update -y
-sudo apt upgrade -y
+sudo apt update -y &> /dev/null
+sudo apt upgrade -y &> /dev/null
 
 # Ensure all kernel-related packages are installed and up-to-date
 log "Upgrading kernel packages..."
-sudo apt install -y linux-generic
+sudo apt install -y linux-generic &> /dev/null
 
 # remove old packages
-apt-get autoremove -y
+sudo apt-get autoremove -y &> /dev/null
 
 # Reboot the system
 log "Rebooting the system to apply the new kernel..."
