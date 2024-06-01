@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-PEERS="$(grpcurl -plaintext -max-msg-sz 5000000 localhost:8337 quilibrium.node.node.pb.NodeService.GetPeerInfo | jq '.peerInfo | length')"
+PEERS="$(grpcurl -plaintext -max-msg-sz 5000000 localhost:8337 quilibrium.node.node.pb.NodeService.GetPeerInfo | jq '.peerInfo')"
 
 CONFIG_FILE=$QUIL_NODE_PATH/.config/config.yml
 base64_to_base58() {
