@@ -7,4 +7,4 @@ log "Got a binary of $QUIL_BIN"
 
 OUTPUT="$($QUIL_NODE_PATH/$QUIL_BIN -peer-id)"
 
-return "$(echo "$OUTPUT" | grep -oP 'Peer ID: \K.*')"
+echo "$(echo "$OUTPUT" | grep -oP 'Peer ID: \K.*')"
