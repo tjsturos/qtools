@@ -20,7 +20,7 @@ if [[ "$actual_output" == "$FILE_CRON" ]]; then
   exit 0
 else
   actual_file="actual.txt"
-  echo $actual_output > $actual_file
+  echo "$actual_output" > $actual_file
   colordiff -u $FILE_CRON $actual_file
   remove_file $FILE_CRON
   remove_file $actual_file
