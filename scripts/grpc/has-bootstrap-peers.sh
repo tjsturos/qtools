@@ -13,7 +13,7 @@ base64_to_base58() {
 peer_ids=$(echo "$PEERS" | jq -r '.peerInfo[].peerId')
 
 # Extract Qm... parts from YAML
-bootstrap_peer_ids=$(grep -oP '/p2p/\KQm\w+' "$yaml_file_path")
+bootstrap_peer_ids=$(grep -oP '/p2p/\KQm\w+' "$CONFIG_FILE")
 
 # Decode peerIds from base64 to base58
 transformed_peer_ids=()
