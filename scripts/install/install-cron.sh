@@ -2,7 +2,7 @@
 # The aim of this is to get the current cron tasks file, add the line to run the on-start.sh script every reboot.
 FILE_CRON=$QTOOLS_PATH/cron
 
-remove_file $FILE_CRON
+remove_file $FILE_CRON false
 
 append_to_file $FILE_CRON "GOROOT=$GOROOT" false
 append_to_file $FILE_CRON "GOPATH=$GOPATH" false
@@ -25,5 +25,5 @@ else
   echo "The crontab was successfully updated."
 fi
 
-remove_file $FILE_CRON
-remove_file $FILE_ACTUAL_OUTPUT
+remove_file $FILE_CRON false
+remove_file $FILE_ACTUAL_OUTPUT false
