@@ -15,19 +15,15 @@ append_to_file $FILE_CRON '*/10 * * * * qtools self-update && qtools update-node
 crontab $FILE_CRON
 
 # Get the actual output of 'ufw status'
-actual_output="$(crontab -l)"
+FILE_ACTUAL_OUTPUT="actual.txt"
+echo "$(crontab -l)" > $FILE_ACTUAL_OUTPUT
+diff="$(colordiff -u $FILE_CRON $FILE_ACTUAL_OUTPUT)"
 
-if [[ "$actual_output" == "$FILE_CRON" ]]; then
-  echo "The crontab was successfully updated."
-  remove_file $FILE_CRON
-  exit 0
+if [[ $diff ]]; then
+  echo -e "The crontab was contains some errors:\n$diff"
 else
-  actual_file="actual.txt"
-  echo "The crontab was contains some errors:"
-  echo "$actual_output" > $actual_file
-  colordiff -u $FILE_CRON $actual_file
-  remove_file $FILE_CRON
-  remove_file $actual_file
-  exit 1
+  echo "The crontab was successfully updated."
 fi
 
+remove_file $FILE_CRON
+remove_file $FILE_ACTUAL_OUTPUT
