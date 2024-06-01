@@ -12,29 +12,17 @@ append_to_file $FILE_CRON "*/10 * * * * qtools self-update && qtools update-node
 # Load the updated file back into the crontab
 crontab $FILE_CRON
 
-# Finally remove the file we initially created as it's not needed.
-remove_file $FILE_CRON false
-
-expected_output="GOROOT=$GOROOT
-GOPATH=$GOPATH
-PATH=\$GOPATH/bin:\$GOROOT/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
-QTOOLS_PATH=$QTOOLS_PATH
-1 0 * * * qtools make-backup
-*/10 * * * * qtools self-update && qtools update-node"
-
 # Get the actual output of 'ufw status'
 actual_output=$(crontab -l)
 
-if [[ "$actual_output" == "$expected_output" ]]; then
+if [[ "$actual_output" == "$FILE_CRON" ]]; then
   echo "The crontab was successfully updated."
   exit 0
 else
-  expected_file="expected.txt"
   actual_file="actual.txt"
-  echo $expected_output >> $expected_file
   echo $actual_output > $actual_file
-  colordiff -u $expected_file $actual_file
-  remove_file $expected_file
+  colordiff -u $FILE_CRON $actual_file
+  remove_file $FILE_CRON
   remove_file $actual_file
   exit 1
 fi
