@@ -146,6 +146,7 @@ get_versioned_binary() {
         log "Unsupported OS for releases, please build from source."
         exit 1
     fi
+    log "Found $QUIL_BIN for this OS"
 
     return $QUIL_BIN
 }
