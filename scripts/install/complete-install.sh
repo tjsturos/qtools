@@ -12,7 +12,7 @@ cd /root/
 git clone $SOURCE_URL
 
 # build the 'node' binary
-qtools install-node-binary
+# qtools install-node-binary
 qtools install-qclient-binary
 qtools install-grpc
 qtools setup-firewall
@@ -36,7 +36,7 @@ qtools disable-ssh-passwords
 
 source $QTOOLS_PATH/scripts/install/customization.sh
 
-log "Installation complete. Going for a reboot."
+# log "Installation complete. Going for a reboot."
 
 wait
 reboot
