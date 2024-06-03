@@ -15,8 +15,14 @@ updateCPUQuota() {
         local CPUQuota=$(echo "50 * $(grep -c ^processor /proc/cpuinfo)" | bc)%
         
         if grep -q "^\[Service\]" "$SERVICE_FILE"; then
-            # Append CPUQuota to the [Service] section
-            sed -i "/^\[Service\]/a CPUQuota=$CPUQuota" "$SERVICE_FILE"
+            # Check if CPUQuota is already present in the [Service] section
+            if grep -q "^CPUQuota=" "$SERVICE_FILE"; then
+                # Update the existing CPUQuota line
+                sed -i "s/^CPUQuota=.*/CPUQuota=$CPUQuota/" "$SERVICE_FILE"
+            else
+                # Append CPUQuota to the [Service] section
+                sed -i "/^\[Service\]/a CPUQuota=$CPUQuota" "$SERVICE_FILE"
+            fi
         else
             # If [Service] section does not exist, add it and append CPUQuota
             echo -e "[Service]\nCPUQuota=$CPUQuota" >> "$SERVICE_FILE"
