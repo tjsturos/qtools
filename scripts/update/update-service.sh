@@ -3,62 +3,64 @@
 log "Updating the service..."
 
 check_execstart() {
-    SERVICE_FILE="$1"
-    START_SCRIPT="$2"
+    local SERVICE_FILE="$1"
+    local START_SCRIPT="$2"
     grep -q "^$START_SCRIPT" "$SERVICE_FILE"
 }
 
-QUIL_BIN="$(get_versioned_binary)"
-RELOAD_NEEDED=false
+updateCPUQuota() {
+    local SERVICE_FILE="$1"
+    if ! lscpu | grep -q "Hypervisor vendor:     KVM"; then
+        # Calculate the CPUQuota value
+        local CPUQuota=$(echo "50 * $(grep -c ^processor /proc/cpuinfo)" | bc)%
+        
+        if grep -q "^\[Service\]" "$SERVICE_FILE"; then
+            # Append CPUQuota to the [Service] section
+            sed -i "/^\[Service\]/a CPUQuota=$CPUQuota" "$SERVICE_FILE"
+        else
+            # If [Service] section does not exist, add it and append CPUQuota
+            echo -e "[Service]\nCPUQuota=$CPUQuota" >> "$SERVICE_FILE"
+        fi
+        sudo systemctl daemon-reload
 
-# Define the new ExecStart line
+        log "Systemctl CPUQuota updated to $CPUQuota in $SERVICE_FILE"
+    fi
+}
+
+updateServiceBinary() {
+    local SERVICE_FILE="$1"
+    local NEW_EXECSTART="$2"
+    local QUIL_BIN="$(get_versioned_binary)"
+    # Define the new ExecStart line
+    
+    # Update the service file if needed
+    if ! check_execstart "$QUIL_SERVICE_FILE" "$NEW_EXECSTART"; then
+        # Use sed to replace the ExecStart line in the service file
+        sudo sed -i -e "/^ExecStart=/c\\$NEW_EXECSTART" "$QUIL_SERVICE_FILE"
+
+        # Reload the systemd manager configuration
+        sudo systemctl daemon-reload
+
+        log "Systemctl binary version updated to $QUIL_BIN"
+    fi
+}
+
+createServiceIfNone() {
+    local SERVICE_FILENAME="$1"
+    if [ ! -f "$SYSTEMD_SERVICE_PATH/$SERVICE_FILENAME" ]; then
+    log "No service found at $SYSTEMD_SERVICE_PATH/$SERVICE_FILENAME.  Creating service file..."
+    cp $QTOOLS_PATH/$SERVICE_FILENAME $SYSTEMD_SERVICE_PATH
+fi
+}
+
+# update normal service
+createServiceIfNone $QUIL_SERVICE_NAME
+updateCPUQuota $QUIL_SERVICE_FILE
 NEW_EXECSTART="ExecStart=$QUIL_NODE_PATH/$QUIL_BIN"
- 
-if [ ! -f "$SYSTEMD_SERVICE_PATH/$QUIL_SERVICE_NAME" ]; then
-    log "No ceremonyclient service found.  Initializing service file..."
-    cp $QTOOLS_PATH/$QUIL_SERVICE_NAME $SYSTEMD_SERVICE_PATH
-fi
+updateServiceBinary $QUIL_SERVICE_FILE $NEW_EXECSTART
 
-if ! lscpu | grep -q "Hypervisor vendor:     KVM"; then
-  # Calculate the CPUQuota value
-  CPUQuota=$(echo "50 * $(grep -c ^processor /proc/cpuinfo)" | bc)%
-  
-  if grep -q "^\[Service\]" "$QUIL_SERVICE_FILE"; then
-    # Append CPUQuota to the [Service] section
-    sed -i "/^\[Service\]/a CPUQuota=$CPUQuota" "$QUIL_SERVICE_FILE"
-  else
-    # If [Service] section does not exist, add it and append CPUQuota
-    echo -e "[Service]\nCPUQuota=$CPUQuota" >> "$QUIL_SERVICE_FILE"
-  fi
-  sudo systemctl daemon-reload
-  
-  log "Systemctl CPUQuota updated to $CPUQuota"
-fi
-
-# Update the service file if needed
-if ! check_execstart "$QUIL_SERVICE_FILE" "$NEW_EXECSTART"; then
-    # Use sed to replace the ExecStart line in the service file
-    sudo sed -i -e "/^ExecStart=/c\\$NEW_EXECSTART" "$QUIL_SERVICE_FILE"
-
-    # Reload the systemd manager configuration
-    sudo systemctl daemon-reload
-
-    log "Systemctl binary version updated to $QUIL_BIN"
-fi
-
-
-if [ ! -f "$QUIL_DEBUG_SERVICE_FILE" ]; then
-    log "No debug ceremonyclient service found.  Adding service (inactive)."
-    cp $QTOOLS_PATH/$QUIL_DEBUG_SERVICE_NAME $SYSTEMD_SERVICE_PATH
-fi
-
+# update Debug service
+createServiceIfNone $QUIL_DEBUG_SERVICE_NAME
 NEW_DEBUG_EXECSTART="ExecStart=$QUIL_NODE_PATH/$QUIL_BIN --debug"
-if ! check_execstart "$QUIL_DEBUG_SERVICE_FILE" "$NEW_DEBUG_EXECSTART"; then
-    # Use sed to replace the ExecStart line in the service file
-    sudo sed -i -e "/^ExecStart=/c\\$NEW_DEBUG_EXECSTART" "$QUIL_DEBUG_SERVICE_FILE"
-
-    # Reload the systemd manager configuration
-    sudo systemctl daemon-reload
-
-    log "DEBUG Systemctl binary version updated to $QUIL_BIN"
-fi
+updateCPUQuota $QUIL_DEBUG_SERVICE_FILE
+updateServiceBinary $QUIL_DEBUG_SERVICE_FILE $NEW_DEBUG_EXECSTART
