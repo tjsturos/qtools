@@ -14,22 +14,31 @@ updateCPUQuota() {
         # Calculate the CPUQuota value
         local CPUQuota=$(echo "50 * $(grep -c ^processor /proc/cpuinfo)" | bc)%
         
+        
+        # Check if the service file contains the [Service] section
         if grep -q "^\[Service\]" "$SERVICE_FILE"; then
             # Check if CPUQuota is already present in the [Service] section
             if grep -q "^CPUQuota=" "$SERVICE_FILE"; then
-                # Update the existing CPUQuota line
-                sed -i "s/^CPUQuota=.*/CPUQuota=$CPUQuota/" "$SERVICE_FILE"
+                # Get the current CPUQuota value
+                CURRENT_CPUQUOTA=$(grep "^CPUQuota=" "$SERVICE_FILE" | cut -d'=' -f2)
+                # Update the existing CPUQuota line only if the value is different
+                if [ "$CURRENT_CPUQUOTA" != "$CPUQuota" ]; then
+                    sed -i "s/^CPUQuota=.*/CPUQuota=$CPUQuota/" "$SERVICE_FILE"
+                    sudo systemctl daemon-reload
+                    log "Systemctl CPUQuota updated to $CPUQuota in $SERVICE_FILE"
+                fi
             else
                 # Append CPUQuota to the [Service] section
                 sed -i "/^\[Service\]/a CPUQuota=$CPUQuota" "$SERVICE_FILE"
+                sudo systemctl daemon-reload
+                log "Systemctl CPUQuota updated to $CPUQuota in $SERVICE_FILE"
             fi
         else
             # If [Service] section does not exist, add it and append CPUQuota
             echo -e "[Service]\nCPUQuota=$CPUQuota" >> "$SERVICE_FILE"
-        fi
-        sudo systemctl daemon-reload
-
-        log "Systemctl CPUQuota updated to $CPUQuota in $SERVICE_FILE"
+            sudo systemctl daemon-reload
+            log "Systemctl CPUQuota updated to $CPUQuota in $SERVICE_FILE"
+        fi   
     fi
 }
 
