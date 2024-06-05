@@ -41,6 +41,7 @@ usage() {
   echo "  debug                  - Start the node in debug mode."
   echo "  view-log               - View the log from the Quilibrium node service."
   echo "  view-debug-log         - View the debug log from the Quilibrium DEBUG node service."
+  echo "  get-ports-listening    - Detect if listening on ports 22, 8336, 8337."
 
   echo "Tooling:"
   echo "  create-qtools-symlink  - Create a symlink for 'qtools' to /usr/local/bin."
@@ -137,7 +138,7 @@ case "$1" in
   make-backup|restore-backup)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/backup"
     ;;
-  view-log|debug|view-debug-log)
+  view-log|debug|view-debug-log|get-ports-listening)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/diagnostics"
     ;;
   node-get-peer-id)
