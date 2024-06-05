@@ -59,6 +59,9 @@ usage() {
   echo "  has-bootstrap-peers    - Determine if there are any bootstrap peers for this node."
   echo "  node-get-peer-id       - Get the Peer ID without using grpcurl."
 
+  echo "Common command shortcuts:"
+  echo "  edit-config            - Edit the config file."
+
   exit 1
 }
 
@@ -126,6 +129,9 @@ fi
 case "$1" in
   remove-docker|purge|disable-ssh-passwords)
     export SERVICE_PATH="$QTOOLS_PATH/scripts"
+    ;;
+  edit-config)
+    export SERVICE_PATH="$QTOOLS_PATH/scripts/shortcuts"
     ;;
   start|stop|status|enable|restart)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/commands"
