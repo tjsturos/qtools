@@ -18,13 +18,13 @@ modify_config_file() {
     log "Modifying Ceremony client's config.yml file."
 
     # Check and modify listenGrpcMultiaddr
-    if ! grep -q '^ *listenGrpcMultiaddr: \/ip4\/127.0.0.1\/tcp\/8337' "$MONITOR_DIR/$FILENAME"; then
-        sed -i 's/^ *listenGrpcMultiaddr:.*$/  listenGrpcMultiaddr: \/ip4\/127.0.0.1\/tcp\/8337/' "$MONITOR_DIR/$FILENAME"
+    if ! grep -q '^listenGrpcMultiaddr: \/ip4\/127.0.0.1\/tcp\/8337' "$MONITOR_DIR/$FILENAME"; then
+        sed -i 's/^listenGrpcMultiaddr:.*$/listenGrpcMultiaddr: \/ip4\/127.0.0.1\/tcp\/8337/' "$MONITOR_DIR/$FILENAME"
     fi
 
     # Check and modify listenRESTMultiaddr
-    if ! grep -q '^ *listenRESTMultiaddr: \/ip4\/127.0.0.1\/tcp\/8338' "$MONITOR_DIR/$FILENAME"; then
-        sed -i 's/^ *listenRESTMultiaddr:.*$/  listenRESTMultiaddr: \/ip4\/127.0.0.1\/tcp\/8338/' "$MONITOR_DIR/$FILENAME"
+    if ! grep -q '^listenRESTMultiaddr: \/ip4\/127.0.0.1\/tcp\/8338' "$MONITOR_DIR/$FILENAME"; then
+        sed -i 's/^listenRESTMultiaddr:.*$/listenRESTMultiaddr: \/ip4\/127.0.0.1\/tcp\/8338/' "$MONITOR_DIR/$FILENAME"
     fi
 
     # Check if statsMultiaddr is within the engine section and update or add it
