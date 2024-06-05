@@ -1,8 +1,17 @@
 #!/bin/bash
 log "Installing Go"
 GO_COMPRESSED_FILE=go1.20.14.linux-amd64.tar.gz
-wget https://go.dev/dl/$GO_COMPRESSED_FILE
-tar -xvf $GO_COMPRESSED_FILE
+
+log "Downloading $GO_COMPRESSED_FILE..."
+wget https://go.dev/dl/$GO_COMPRESSED_FILE 
+
+log "Uncompressing $GO_COMPRESSED_FILE"
+tar -xvf $GO_COMPRESSED_FILE &> /dev/null
+
+if [ -f $GO_BIN_DIR ]; then
+    rm $GO_BIN_DIR
+fi
+
 mv go $GO_BIN_DIR
 
 file_exists $GOROOT
