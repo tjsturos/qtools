@@ -10,4 +10,6 @@ if [ ! -n "$PEER_ID" ]; then
     if [ -n "$PEER_ID" ]; then
         echo "$PEER_ID"
     fi
+else
+    echo "$PEER_ID"
 fi
