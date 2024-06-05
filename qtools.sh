@@ -139,7 +139,7 @@ case "$1" in
   make-backup|restore-backup)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/backup"
     ;;
-  view-log|debug|view-debug-log|get-ports-listening|detect-boostrap-peers)
+  view-log|debug|view-debug-log|get-ports-listening|detect-bootstrap-peers)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/diagnostics"
     ;;
   node-get-peer-id)
