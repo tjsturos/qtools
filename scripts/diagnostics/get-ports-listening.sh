@@ -1,8 +1,8 @@
 #!/bin/bash
 
-install_package netstat netstat
+install_package net-tools netstat
 
-PORTS_LISTENING="$(sudo netstat netstat -lntup)"
+PORTS_LISTENING="$(sudo netstat -lntup)"
 
 find_port() {
     PORT="$1"
