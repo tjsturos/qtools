@@ -46,7 +46,6 @@ updateServiceBinary() {
     local SERVICE_FILE="$1"
     local NEW_EXECSTART="$2"
     local QUIL_BIN="$3"
-    # Define the new ExecStart line
     
     # Update the service file if needed
     if ! check_execstart "$QUIL_SERVICE_FILE" "$NEW_EXECSTART"; then
