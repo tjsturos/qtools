@@ -45,7 +45,7 @@ updateCPUQuota() {
 updateServiceBinary() {
     local SERVICE_FILE="$1"
     local NEW_EXECSTART="$2"
-    local QUIL_BIN="$(get_versioned_binary)"
+    local QUIL_BIN="$3"
     # Define the new ExecStart line
     
     # Update the service file if needed
@@ -63,11 +63,12 @@ updateServiceBinary() {
 createServiceIfNone() {
     local SERVICE_FILENAME="$1"
     if [ ! -f "$SYSTEMD_SERVICE_PATH/$SERVICE_FILENAME" ]; then
-    log "No service found at $SYSTEMD_SERVICE_PATH/$SERVICE_FILENAME.  Creating service file..."
-    cp $QTOOLS_PATH/$SERVICE_FILENAME $SYSTEMD_SERVICE_PATH
-fi
+        log "No service found at $SYSTEMD_SERVICE_PATH/$SERVICE_FILENAME.  Creating service file..."
+        cp $QTOOLS_PATH/$SERVICE_FILENAME $SYSTEMD_SERVICE_PATH
+    fi
 }
 
+local QUIL_BIN="$(get_versioned_binary)"
 # update normal service
 createServiceIfNone $QUIL_SERVICE_NAME
 updateCPUQuota $QUIL_SERVICE_FILE
