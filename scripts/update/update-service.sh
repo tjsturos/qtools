@@ -68,7 +68,7 @@ createServiceIfNone() {
     fi
 }
 
-local QUIL_BIN="$(get_versioned_binary)"
+QUIL_BIN="$(get_versioned_binary)"
 # update normal service
 createServiceIfNone $QUIL_SERVICE_NAME
 updateCPUQuota $QUIL_SERVICE_FILE
