@@ -42,7 +42,7 @@ usage() {
   echo "  view-log               - View the log from the Quilibrium node service."
   echo "  view-debug-log         - View the debug log from the Quilibrium DEBUG node service."
   echo "  get-ports-listening    - Detect if listening on ports 22, 443, 8336, 8337."
-  echo "  detect-bootstrap-peers - Detect if lbootstrap peers know of node."
+  echo "  detect-bootstrap-peers - Detect if bootstrap peers know of node."
 
   echo "Tooling:"
   echo "  create-qtools-symlink  - Create a symlink for 'qtools' to /usr/local/bin."
@@ -56,7 +56,6 @@ usage() {
   echo "  get-peer-id            - Get the Peer ID of this node (uses both grpcurl and node commands)."
   echo "  get-node-version       - Get the version of this node."
   echo "  get-frame-count        - Get the current frame (maxFrame) of this node."
-  echo "  has-bootstrap-peers    - Determine if there are any bootstrap peers for this node."
   echo "  node-get-peer-id       - Get the Peer ID without using grpcurl."
 
   echo "Common command shortcuts:"
@@ -151,7 +150,7 @@ case "$1" in
   node-get-peer-id)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/node-commands"
     ;;
-  get-node-count|get-node-info|get-peer-info|get-token-info|get-node-version|get-peer-id|get-frame-count|has-bootstrap-peers)
+  get-node-count|get-node-info|get-peer-info|get-token-info|get-node-version|get-peer-id|get-frame-count)
     if ! command_exists grpcurl; then
       log "Command 'grpcurl' doesn't exist, proceeding to install."
       qtools install-grpc
