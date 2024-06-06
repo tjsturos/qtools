@@ -72,11 +72,11 @@ QUIL_BIN="$(get_versioned_binary)"
 # update normal service
 createServiceIfNone $QUIL_SERVICE_NAME
 updateCPUQuota $QUIL_SERVICE_FILE
-NEW_EXECSTART="ExecStart=$QUIL_NODE_PATH/$QUIL_BIN"
-updateServiceBinary $QUIL_SERVICE_FILE $NEW_EXECSTART
+NEW_EXECSTART="ExecStart=$QUIL_NODE_PATH/$QUIL_BIN" 
+updateServiceBinary $QUIL_SERVICE_FILE $NEW_EXECSTART "$QUIL_BIN"
 
 # update Debug service
 createServiceIfNone $QUIL_DEBUG_SERVICE_NAME
 NEW_DEBUG_EXECSTART="ExecStart=$QUIL_NODE_PATH/$QUIL_BIN --debug"
 updateCPUQuota $QUIL_DEBUG_SERVICE_FILE
-updateServiceBinary $QUIL_DEBUG_SERVICE_FILE $NEW_DEBUG_EXECSTART
+updateServiceBinary $QUIL_DEBUG_SERVICE_FILE $NEW_DEBUG_EXECSTART "$QUIL_BIN"
