@@ -43,6 +43,7 @@ usage() {
   echo "  view-debug-log           - View the debug log from the Quilibrium DEBUG node service."
   echo "  get-ports-listening      - Detect if listening on ports 22, 443, 8336, 8337."
   echo "  detect-bootstrap-peers   - Detect if bootstrap peers know of node."
+  echo "  record-unclaimed-rewards - Record the unclaimed rewards balance to a CSV file."
 
   echo "Tooling:"
   echo "  create-qtools-symlink    - Create a symlink for 'qtools' to /usr/local/bin."
@@ -147,7 +148,7 @@ case "$1" in
   make-backup|restore-backup)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/backup"
     ;;
-  view-log|debug|view-debug-log|get-ports-listening|detect-bootstrap-peers)
+  view-log|debug|view-debug-log|get-ports-listening|detect-bootstrap-peers|record-unclaimed-rewards)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/diagnostics"
     ;;
   node-get-peer-id|node-get-reward-balance)
