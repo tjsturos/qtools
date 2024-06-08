@@ -1,7 +1,7 @@
 #!/bin/bash
 # prints out balance in QUILs
-input="$($QUIL_BIN -balance)"
+INPUT="$($QUIL_NODE_PATH/$QUIL_BIN -balance)"
 
-unclaimed_balance=$(echo "$input" | grep "Unclaimed balance" | awk -F ": " '{print $2}' | awk '{print $1}')
+UNCLAIMED_BALANCE=$(echo "$INPUT" | grep "Unclaimed balance" | awk -F ": " '{print $2}' | awk '{print $1}')
 
-echo "$unclaimed_balance"
+echo "$UNCLAIMED_BALANCE"
