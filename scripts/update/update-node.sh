@@ -6,11 +6,11 @@ cd $QUIL_PATH
 git fetch origin 
 
 # Make sure we are using the release branch
-git checkout release
+git checkout release-cdn
 
 # Check if there are any new commits on the remote release branch
-LOCAL=$(git rev-parse release)
-REMOTE=$(git rev-parse origin/release)
+LOCAL=$(git rev-parse release-cdn)
+REMOTE=$(git rev-parse origin/release-cdn)
 if [ $LOCAL != $REMOTE ]; then  
     qtools stop
     log "The 'release' branch has been updated. Pulling changes and restarting service..."
