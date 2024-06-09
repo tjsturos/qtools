@@ -4,7 +4,7 @@
 get_unclaimed_balance() {
   # Replace with the actual command to get the unclaimed balance
   # For example: curl -s http://example.com/api/unclaimed_balance
-  echo "100.50"  # Placeholder value, replace with actual command
+  echo "$(qtools node-get-reward-balance)"  # Placeholder value, replace with actual command
 }
 
 # Path to the CSV file
