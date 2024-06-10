@@ -8,6 +8,8 @@ mkdir -p $PROCESS_DIR
 
 if [ "$DEBUG_MODE" == "true" ]; then
     echo "NODE_ARGS=\"--debug\"" > $PROCESS_DIR/main
+else
+    echo "NODE_ARGS=\"\"" > $PROCESS_DIR/main
 fi
 
 systemctl start $QUIL_SERVICE_NAME@main.service
