@@ -74,14 +74,6 @@ updateServiceBinary() {
     fi
 }
 
-createServiceIfNone() {
-    local SERVICE_FILENAME="$1"
-    if [ ! -f "$SYSTEMD_SERVICE_PATH/$SERVICE_FILENAME" ]; then
-        log "No service found at $SYSTEMD_SERVICE_PATH/$SERVICE_FILENAME.  Creating service file..."
-        cp $QTOOLS_PATH/$SERVICE_FILENAME $SYSTEMD_SERVICE_PATH
-    fi
-}
-
 QUIL_BIN="$(get_versioned_binary)"
 
 # update normal service
