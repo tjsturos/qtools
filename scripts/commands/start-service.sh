@@ -20,6 +20,7 @@ if [ "$IS_LINKED" == "true" ]; then
     log Node parent ID: $MAIN_PID;
 
     for ((i = 1 ; i <= $CORE_COUNT ; i++)); do
+        log "Starting service for core $i (parent-process=$NODE_PID)"
         echo "NODE_ARGS=\"--core=$(expr $i) --parent-process=$NODE_PID\"" > $PROCESS_DIR/$i
         systemctl start $QUIL_SERVICE_NAME@$i.service
     done
