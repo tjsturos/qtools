@@ -7,7 +7,7 @@ PROCESS_DIR=/tmp/quil-process-args
 mkdir -p $PROCESS_DIR
 
 if [ "$DEBUG_MODE" == "true" ]; then
-    echo "export NODE_ARGS=\"--debug\"" > $PROCESS_DIR/main
+    echo "NODE_ARGS=\"--debug\"" > $PROCESS_DIR/main
 fi
 
 systemctl start $QUIL_SERVICE_NAME@main.service
@@ -20,7 +20,7 @@ if [ "$IS_LINKED" == "true" ]; then
     log Node parent ID: $MAIN_PID;
 
     for I in {1..$CORE_COUNT}; do
-        echo "export NODE_ARGS=\"--core=$(expr $I) --parent-process=$NODE_PID\"" > $PROCESS_DIR/$I
+        echo "NODE_ARGS=\"--core=$(expr $I) --parent-process=$NODE_PID\"" > $PROCESS_DIR/$I
         systemctl start $QUIL_SERVICE_NAME@$I.service
     done
 fi
