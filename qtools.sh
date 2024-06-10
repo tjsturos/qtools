@@ -130,7 +130,7 @@ if [ ! -L "$QTOOLS_BIN_PATH" ]; then
   fi
 fi
 
-if [ ! command_exists 'yq' ]; then
+if ! command_exists 'yq'; then
   qtools install-yq
 fi
 
