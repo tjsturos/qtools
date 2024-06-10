@@ -151,5 +151,5 @@ get_versioned_binary() {
 }
 
 get_processor_count() {
-    grep -c ^processor /proc/cpuinfo
+    echo "$(grep -c ^processor /proc/cpuinfo)"
 }
