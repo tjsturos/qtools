@@ -19,7 +19,7 @@ if [ "$IS_LINKED" == "true" ]; then
     CORE_COUNT=$(get_processor_count)
     log Node parent ID: $MAIN_PID;
 
-    for I in {1..$CORE_COUNT}; do
+    for I in $( eval echo {1..$length} ); do
         echo "NODE_ARGS=\"--core=$(expr $I) --parent-process=$NODE_PID\"" > $PROCESS_DIR/$I
         systemctl start $QUIL_SERVICE_NAME@$I.service
     done
