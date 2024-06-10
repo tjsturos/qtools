@@ -82,7 +82,7 @@ export QUIL_GO_NODE_BIN=$HOME/go/bin/node
 export QTOOLS_BIN_PATH=/usr/local/bin/qtools
 export SYSTEMD_SERVICE_PATH=/lib/systemd/system
 export QUIL_SERVICE_NAME='ceremonyclient'
-export QUIL_SERVICE_FILE="$SYSTEMD_SERVICE_PATH/$QUIL_SERVICE_NAME.service"
+export QUIL_SERVICE_FILE="$SYSTEMD_SERVICE_PATH/$QUIL_SERVICE_NAME@.service"
 export LOG_OUTPUT_FILE="debug.log"
 export BASHRC_FILE="$HOME/.bashrc"
 
