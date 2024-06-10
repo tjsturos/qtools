@@ -15,6 +15,7 @@ fi
 systemctl start $QUIL_SERVICE_NAME@main.service
 
 IS_LINKED="$(yq e '.settings.slave' $QTOOLS_CONFIG_FILE)"
+echo "IS_LINKED=$IS_LINKED"
 if [ "$IS_LINKED" == "true" ]; then
     MAIN_PID="$(systemctl status $QUIL_SERVICE_NAME | grep 'Main PID' | awk '{print $3}')"
     # if is linked, then start the secondary processes
