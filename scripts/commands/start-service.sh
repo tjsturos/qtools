@@ -19,7 +19,7 @@ if [ "$IS_LINKED" == "true" ]; then
     MAIN_PID="$(systemctl status $QUIL_SERVICE_NAME | grep 'Main PID' | awk '{print $3}')"
     # if is linked, then start the secondary processes
     CORE_COUNT=$((get_processor_count))
-    log "Node parent ID: $MAIN_PID";
+    log "Node parent ID: $MAIN_PID, core count = $CORE_COUNT";
 
     for ((i = 1 ; i <= $CORE_COUNT ; i++)); do
         log "Starting service for core $i (parent-process=$NODE_PID)"
