@@ -50,7 +50,7 @@ updateCPUQuota() {
 
 createServiceIfNone() {
     local SERVICE_FILENAME="$1.service"
-    if [ ! -f "$SYSTEMD_SERVICE_PATH/$SERVICE_FILENAME." ]; then
+    if [ ! -f "$SYSTEMD_SERVICE_PATH/$SERVICE_FILENAME" ]; then
         log "No service found at $SYSTEMD_SERVICE_PATH/$SERVICE_FILENAME.  Creating service file..."
         cp $QTOOLS_PATH/$SERVICE_FILENAME $SYSTEMD_SERVICE_PATH
     fi
