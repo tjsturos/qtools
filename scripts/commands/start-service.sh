@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # start the main process
-DEBUG_MODE="$(yq '.settings.debug' $QTOOLS_CONFIG_FILE)"
+DEBUG_MODE="$(yq e '.settings.debug' $QTOOLS_CONFIG_FILE)"
 if [ $DEBUG_MODE == 'true']; then
     get_versioned_binary --debug
 else
@@ -9,7 +9,7 @@ else
 fi
 NODE_PID=$!
 
-IS_LINKED="$(yq '.settings.slave' $QTOOLS_CONFIG_FILE)"
+IS_LINKED="$(yq e '.settings.slave' $QTOOLS_CONFIG_FILE)"
 if [ $IS_LINKED == 'true' ]; then
     # if is linked, then start the secondary processes
     CORE_COUNT=$(get_processor_count)
