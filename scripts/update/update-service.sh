@@ -82,4 +82,4 @@ createServiceIfNone $QUIL_SERVICE_NAME
 updateCPUQuota $QUIL_SERVICE_FILE
 updateServiceBinary $QUIL_SERVICE_FILE "$NEW_EXECSTART" "$QUIL_BIN"
 
-
+echo "Update complete."
