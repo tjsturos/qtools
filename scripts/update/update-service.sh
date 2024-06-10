@@ -48,6 +48,31 @@ updateCPUQuota() {
     fi
 }
 
+createServiceIfNone() {
+    local SERVICE_FILENAME="$1.service"
+    if [ ! -f "$SYSTEMD_SERVICE_PATH/$SERVICE_FILENAME." ]; then
+        log "No service found at $SYSTEMD_SERVICE_PATH/$SERVICE_FILENAME.  Creating service file..."
+        cp $QTOOLS_PATH/$SERVICE_FILENAME $SYSTEMD_SERVICE_PATH
+    fi
+}
+
+updateServiceBinary() {
+    local SERVICE_FILE="$1"
+    local NEW_EXECSTART="$2"
+    local QUIL_BIN="$3"
+    local PARAMS="${4:-false}"
+    
+    # Update the service file if needed
+    if ! check_execstart "$QUIL_SERVICE_FILE" "$NEW_EXECSTART"; then
+        # Use sed to replace the ExecStart line in the service file
+        sudo sed -i -e "/^ExecStart=/c\\$NEW_EXECSTART" "$QUIL_SERVICE_FILE"
+
+        # Reload the systemd manager configuration
+        sudo systemctl daemon-reload
+
+        log "Systemctl binary version updated to $QUIL_BIN"
+    fi
+}
 
 createServiceIfNone() {
     local SERVICE_FILENAME="$1"
@@ -57,6 +82,12 @@ createServiceIfNone() {
     fi
 }
 
+QUIL_BIN="$(get_versioned_binary)"
+
 # update normal service
+NEW_EXECSTART="ExecStart=$QUIL_NODE_PATH/$QUIL_BIN \$NODE_ARGS" 
 createServiceIfNone $QUIL_SERVICE_NAME
 updateCPUQuota $QUIL_SERVICE_FILE
+updateServiceBinary $QUIL_SERVICE_FILE $NEW_EXECSTART "$QUIL_BIN"
+
+

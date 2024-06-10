@@ -5,8 +5,9 @@ Description=Quilibrium Ceremony Client Service
 Type=simple
 Restart=always
 RestartSec=5s
+EnvrionmentFile=/tmp/quil-process-args/%i
 WorkingDirectory=/root/ceremonyclient/node
-ExecStart=qtools start-service
+ExecStart=node-1.4.19-linux-amd64 $NODE_ARGS
 
 [Install]
 WantedBy=multi-user.target
