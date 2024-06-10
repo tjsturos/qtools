@@ -131,7 +131,7 @@ if [ ! -L "$QTOOLS_BIN_PATH" ]; then
 fi
 
 if ! command_exists 'yq'; then
-  qtools install-yq
+  source $QTOOLS_PATH/scripts/install/install-yq.sh
 fi
 
 export SOURCE_URL="$(yq e '.settings.source_repository.default' $QTOOLS_CONFIG_FILE)"
@@ -150,7 +150,7 @@ case "$1" in
   update-node|self-update|update-kernel|update-service|update-source-url)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/update"
     ;;
-  install-go|install-qclient-binary|complete-install|install-node-binary|install-cron|modify-config|create-qtools-symlink|setup-firewall|add-auto-complete|install-grpc|import-store)
+  install-go|install-qclient-binary|complete-install|install-node-binary|install-cron|modify-config|create-qtools-symlink|setup-firewall|add-auto-complete|install-grpc|import-store|install-yq)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/install"
     ;;
   make-backup|restore-backup)
