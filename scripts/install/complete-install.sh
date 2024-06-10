@@ -32,7 +32,11 @@ qtools start
 
 qtools restore-backup &
 qtools modify-config &
-qtools disable-ssh-passwords
+
+DISABLE_SSH_PASSWORDS="$(yq e '.settings.ssh.disable_password_login' $QTOOLS_CONFIG_FILE)"
+if [ $DISABLE_SSH_PASSWORDS == "true" ]; then
+    qtools disable-ssh-passwords
+fi
 
 source $QTOOLS_PATH/scripts/install/customization.sh
 

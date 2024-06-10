@@ -18,7 +18,8 @@ usage() {
   echo "  install-qclient-binary   - Install qClient binary for this node."
   echo "  install-grpc             - Install gRPC on the server for querying node info."
   echo "  import-store             - Import the store snapshot from Cherry Servers."
-  echo "  update-source-url        - Update the source URL for the Git Repo."          
+  echo "  update-source-url        - Update the source URL for the Git Repo."    
+  echo "  install-yq               - Install 'yq' binary for parsing config files"      
 
   echo "Configuration:"
   echo "  make-backup              - Make a local-only backup (on this server) of the config.yml and keys.yml files."
@@ -81,12 +82,11 @@ export QUIL_GO_NODE_BIN=$HOME/go/bin/node
 export QTOOLS_BIN_PATH=/usr/local/bin/qtools
 export SYSTEMD_SERVICE_PATH=/lib/systemd/system
 export QUIL_SERVICE_NAME='ceremonyclient.service'
-export QUIL_DEBUG_SERVICE_NAME='ceremonyclient-debug.service'
 export QUIL_SERVICE_FILE="$SYSTEMD_SERVICE_PATH/$QUIL_SERVICE_NAME"
-export QUIL_DEBUG_SERVICE_FILE="$SYSTEMD_SERVICE_PATH/$QUIL_DEBUG_SERVICE_NAME"
 export LOG_OUTPUT_FILE="debug.log"
 export BASHRC_FILE="$HOME/.bashrc"
-export SOURCE_URL="https://source.quilibrium.com/quilibrium/ceremonyclient.git"
+
+
 
 # Define Go vars
 export GO_BIN_DIR=/usr/local
@@ -109,6 +109,8 @@ QTOOLS_PATH=$(dirname "$SCRIPT_PATH")
 # common utils for scripts
 source $QTOOLS_PATH/utils.sh
 
+export QTOOLS_CONFIG_FILE="$QTOOLS_PATH/config.yml"
+
 install_package inotify-tools inotifywait
 install_package colordiff colordiff
 install_package jq jq
@@ -128,6 +130,12 @@ if [ ! -L "$QTOOLS_BIN_PATH" ]; then
   fi
 fi
 
+if [ ! command_exists 'yq' ]; then
+  qtools install-yq
+fi
+
+export SOURCE_URL="$(yq e '.settings.source_repository.default' $QTOOLS_CONFIG_FILE)"
+
 # Set environment variables based on the option
 case "$1" in
   remove-docker|purge|disable-ssh-passwords)
@@ -136,7 +144,7 @@ case "$1" in
   edit-config)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/shortcuts"
     ;;
-  start|stop|status|enable|restart)
+  start|stop|status|enable|restart|start-service)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/commands"
     ;;
   update-node|self-update|update-kernel|update-service|update-source-url)

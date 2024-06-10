@@ -149,3 +149,7 @@ get_versioned_binary() {
 
     echo "$QUIL_BIN"
 }
+
+get_processor_count() {
+    echo grep -c ^processor /proc/cpuinfo
+}

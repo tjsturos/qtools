@@ -1,0 +1,26 @@
+# settings: settings used when running these QTools scripts
+## slave: run this node in slave-machine mode (requires same config as master-machine)
+## cpulimit: when running a bare-metal machine, it is common to use cpu limiting
+#### enabled: when enabled will limit the CPUQuota variable in the service file
+#### limit_percentage: determines the amount to limit it by
+user: root
+quilibrium_repo_install_dir: .
+settings:
+    slave: false
+    cpulimit:
+        enabled: false
+        limit_percentage: 50
+    source_repository:
+        default: https://source.quilibrium.com/quilibrium/ceremonyclient.git
+        # more for notes at this point
+        backups:
+            - https://github.com/QuilibriumNetwork/ceremonyclient.git
+    ssh:
+        disable_password_login: true
+    docker:
+        # Not used currently
+        enabled: false
+    backups:
+        server_ip: 0.0.0.0
+        remote_backup_dir: backups
+    debug: false
