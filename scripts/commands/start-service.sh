@@ -3,9 +3,9 @@
 # start the main process
 DEBUG_MODE="$(yq e '.settings.debug' $QTOOLS_CONFIG_FILE)"
 if [ "$DEBUG_MODE" == "true" ]; then
-    get_versioned_binary --debug
+    get_versioned_binary --debug &
 else
-    get_versioned_binary
+    get_versioned_binary &
 fi
 NODE_PID=$!
 
@@ -18,6 +18,4 @@ if [ "$IS_LINKED" == "true" ]; then
     for I in {1..$CORE_COUNT}; do
         get_versioned_binary --core=$(expr $I) --parent-process=$NODE_PID &
     done
-fi
-
 fi
