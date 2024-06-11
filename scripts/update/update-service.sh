@@ -12,7 +12,7 @@ updateCPUQuota() {
     local SERVICE_FILE="$1"
     if ! lscpu | grep -q "Hypervisor vendor:     KVM"; then
         # Calculate the CPUQuota value
-        local CPUQuota=$(echo "50 * $(grep -c ^processor /proc/cpuinfo)" | bc)%
+        local CPUQuota=$(echo "70 * $(grep -c ^processor /proc/cpuinfo)" | bc)%
         
         
         # Check if the service file contains the [Service] section
