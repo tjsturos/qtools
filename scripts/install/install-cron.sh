@@ -11,7 +11,6 @@ append_to_file $FILE_CRON "GOROOT=$GOROOT" false
 append_to_file $FILE_CRON "GOPATH=$GOPATH" false
 append_to_file $FILE_CRON "PATH=\$GOPATH/bin:\$GOROOT/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin" false
 append_to_file $FILE_CRON "QTOOLS_PATH=$QTOOLS_PATH" false
-append_to_file $FILE_CRON '1 0 * * * qtools make-backup' false
 append_to_file $FILE_CRON '*/10 * * * * qtools self-update && qtools update-node' false
 append_to_file $FILE_CRON '*/10 * * * * qtools record-unclaimed-rewards' false
 append_to_file $FILE_CRON '*/10 * * * * qtools backup-store' false
