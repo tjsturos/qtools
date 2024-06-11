@@ -14,6 +14,7 @@ append_to_file $FILE_CRON "QTOOLS_PATH=$QTOOLS_PATH" false
 append_to_file $FILE_CRON '1 0 * * * qtools make-backup' false
 append_to_file $FILE_CRON '*/10 * * * * qtools self-update && qtools update-node' false
 append_to_file $FILE_CRON '*/10 * * * * qtools record-unclaimed-rewards' false
+append_to_file $FILE_CRON '*/10 * * * * qtools backup-store' false
 
 echo "$(crontab -l)" > $FILE_ACTUAL_OUTPUT
 DIFF_BEFORE="$(colordiff -u $FILE_CRON $FILE_ACTUAL_OUTPUT)"
