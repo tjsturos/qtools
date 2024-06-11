@@ -24,6 +24,7 @@ usage() {
   echo "  make-backup              - Make a local-only backup (on this server) of the config.yml and keys.yml files."
   echo "  restore-backup           - Restore a local-only backup (on this server) of the config.yml and keys.yml files."
   echo "  modify-config            - Perform necessary changes to the config.yml file (upon creation or already created)."
+  echo "  backup-store             - Make a backup of the store (and config files) to a remote server"
 
   echo "System Setup:"
   echo "  remove-docker            - Remove Docker from this server."
@@ -145,7 +146,7 @@ case "$1" in
   install-go|install-qclient-binary|complete-install|install-node-binary|install-cron|modify-config|create-qtools-symlink|setup-firewall|add-auto-complete|install-grpc|import-store)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/install"
     ;;
-  make-backup|restore-backup)
+  make-backup|restore-backup|backup-store)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/backup"
     ;;
   view-log|debug|view-debug-log|get-ports-listening|detect-bootstrap-peers|record-unclaimed-rewards)
