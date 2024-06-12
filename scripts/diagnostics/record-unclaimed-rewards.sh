@@ -16,7 +16,7 @@ if [[ ! -f "$CSV_FILE" ]]; then
 fi
 
 # Get the current timestamp
-TIMESTAMP=$(date +"%Y-%m-%d %H:%M:%S")
+TIMESTAMP=$(date +%s)
 
 # Get the unclaimed balance
 BALANCE=$(get_unclaimed_balance)
