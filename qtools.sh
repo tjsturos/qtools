@@ -14,11 +14,8 @@ usage() {
   echo "  update-kernel            - Update the Linux kernel on this server."
   echo "  update-service           - Update the Systemd services (live and debug)."
   echo "  install-go               - Install Go and setup Go environment."
-  echo "  install-node-binary      - Install node binary for this node."
-  echo "  install-qclient-binary   - Install qClient binary for this node."
   echo "  install-grpc             - Install gRPC on the server for querying node info."
-  echo "  import-store             - Import the store snapshot from Cherry Servers."
-  echo "  update-source-url        - Update the source URL for the Git Repo."          
+  echo "  import-store             - Import the store snapshot from Cherry Servers."    
 
   echo "Configuration:"
   echo "  make-backup              - Make a local-only backup (on this server) of the config.yml and keys.yml files."
@@ -140,10 +137,10 @@ case "$1" in
   start|stop|status|enable|restart)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/commands"
     ;;
-  update-node|self-update|update-kernel|update-service|update-source-url)
+  update-node|self-update|update-kernel|update-service)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/update"
     ;;
-  install-go|install-qclient-binary|complete-install|install-node-binary|install-cron|modify-config|create-qtools-symlink|setup-firewall|add-auto-complete|install-grpc|import-store)
+  install-go|complete-install|install-cron|modify-config|create-qtools-symlink|setup-firewall|add-auto-complete|install-grpc|import-store)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/install"
     ;;
   make-backup|restore-backup|backup-store)

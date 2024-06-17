@@ -129,23 +129,27 @@ remove_lines_matching_pattern() {
     sed -i "/$pattern/d" "$file"
 }
 
+get_release_version() {
+    curl -s https://releases.quilibrium.com/release | grep -oP "\-([0-9]\.?)+\-" | head -n 1 | tr -d'node-' | tr -d '-'
+}
+
+get_current_version() {
+    systemctl status $QUIL_SERVICE_NAME | grep -oP "\-([0-9]\.?)+\-" | head -n 1 | tr -d 'node-' | tr -d '-' 
+}
+
+get_os_arch() {
+    local os=$(uname -s | tr '[:upper:]' '[:lower:]')
+    local arch=$(uname -m)
+
+    case "$arch" in
+        x86_64) arch="amd64" ;;
+        aarch64) arch="arm64" ;;
+        *) echo "Unsupported architecture: $arch" ; exit 1 ;;
+    esac
+
+    echo "$os-$arch"
+}
+
 get_versioned_binary() {
-    # Extract version information
-    local VERSION=$(cat $QUIL_NODE_PATH/config/version.go | grep -A 1 "func GetVersion() \[\]byte {" | grep -Eo '0x[0-9a-fA-F]+' | xargs printf "%d.%d.%d")
-
-    # Determine the binary path based on OS and architecture
-    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-        if [[ "$arch" == arm* ]]; then
-            QUIL_BIN="node-$VERSION-linux-arm64"
-        else
-            QUIL_BIN="node-$VERSION-linux-amd64"
-        fi
-    elif [[ "$OSTYPE" == "darwin"* ]]; then
-        QUIL_BIN="node-$VERSION-darwin-arm64"
-    else
-        log "Unsupported OS for releases, please build from source."
-        exit 1
-    fi
-
-    echo "$QUIL_BIN"
+    echo "node-$(get_release_version)-$(get_os_arch)"
 }
