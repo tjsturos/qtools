@@ -1,0 +1,55 @@
+# settings: settings used when running these QTools scripts
+## linked_node: 
+#### enabled: true = run this node in linked mode (requires same config as other nodes)
+#### start_cpu_index: if you want to start with a specific core, default = 1
+#### end_cpu_index: define this as the last CPU to use, i.e. if you have 16, an want to use all, set to 16 or less
+#### process_start_index: the index that this machine should start from when defining the core to use with the binary
+## cpulimit: when running a bare-metal machine, it is common to use cpu limiting
+#### enabled: when enabled will limit the CPUQuota variable in the service file
+#### limit_percentage: determines the amount to limit it by
+## backups: 
+#### enabled: true = will back up
+#### server_ip: the location of the backup server
+#### remote_backup_dir: the custom location of the backup directory on the backup server to save to
+user: root
+quilibrium_repo_install_dir: .
+release_version: 1.4.19.1
+current_version: 1.4.19.1
+os_arch: linux-amd64
+service:
+    name: 'ceremonyclient'
+settings:
+    linked_node: 
+        enabled: false
+        # node-1.4.19.1-linux-amd64 --core=<cpu_index + process_index_offset>
+        start_cpu_index: 1
+        end_cpu_index: 2
+        process_index_offest: 0
+    cpulimit:
+        enabled: false
+        limit_percentage: 70
+    source_repository:
+        default: https://github.com/QuilibriumNetwork/ceremonyclient.git
+        # more for notes at this point
+        mirrors:
+            - https://source.quilibrium.com/quilibrium/ceremonyclient.git
+    install:
+        ssh:
+            disable_password_login: true
+        go:
+        # not implemented
+            install: false
+            version: 1.20.14
+        rust:
+        # not implemented
+            install: false
+            version: 0.0.0
+    docker:
+        # Not used currently
+        enabled: false
+    backups:
+        enabled: false
+        ssh_alias: backup-server
+        remote_backup_dir: /root/backups
+    debug: false
+    log_file: debug.log

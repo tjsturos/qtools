@@ -1,24 +1,16 @@
 #!/bin/bash
 
-if systemctl is-active --quiet "$QUIL_DEBUG_SERVICE_NAME"; then
-    log "Service $QUIL_DEBUG_SERVICE_NAME is running. Stopping the service."
-    sudo systemctl stop $QUIL_DEBUG_SERVICE_NAME
-    if [ $? -eq 0 ]; then
-        log "Service $QUIL_DEBUG_SERVICE_NAME was successfully stopped."
-    else
-        log "Failed to stop the service $QUIL_DEBUG_SERVICE_NAME."
-        return 1  # Exit the function if the service could not be stopped
-    fi
+if [ "$IS_LINKED" == "true" ]; then
+    # if is linked, then start the secondary processes
+    CORE_INDEX_START=$(yq e '.settings.linked_node.start_cpu_index' $QTOOLS_CONFIG_FILE)
+    CORE_INDEX_STOP=$(yq e '.settings.linked_node.end_cpu_index' $QTOOLS_CONFIG_FILE)
+
+    for ((i = $CORE_INDEX_START ; i <= $CORE_INDEX_STOP ; i++)); do
+        systemctl stop $QUIL_SERVICE_NAME@$i.service
+    done
+else
+    # otherwise just start the main process
+    systemctl stop $QUIL_SERVICE_NAME@main.service
 fi
 
-if systemctl is-active --quiet "$QUIL_SERVICE_NAME"; then
-    log "Service $QUIL_SERVICE_NAME is running. Stopping the service."
-    sudo systemctl stop $QUIL_SERVICE_NAME
-    if [ $? -eq 0 ]; then
-        log "Service $QUIL_SERVICE_NAME was successfully stopped."
-    else
-        log "Failed to stop the service $QUIL_SERVICE_NAME."
-        return 1  # Exit the function if the service could not be stopped
-    fi
-fi
-
+pgrep -f node | grep -v $$ | xargs -r kill -9

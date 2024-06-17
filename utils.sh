@@ -129,12 +129,36 @@ remove_lines_matching_pattern() {
     sed -i "/$pattern/d" "$file"
 }
 
-get_release_version() {
-    curl -s https://releases.quilibrium.com/release | grep -oP "\-([0-9]\.?)+\-" | head -n 1 | tr -d'node-' | tr -d '-'
+set_release_version() {
+    local new_version="$1"
+    yq -i ".release_version = \"$new_version\"" $QTOOLS_CONFIG_FILE
+}
+
+fetch_release_version() {
+    local RELEASE_VERSION="$(curl -s https://releases.quilibrium.com/release | grep -oP "\-([0-9]\.?)+\-" | head -n 1 | tr -d'node-' | tr -d '-')"
+    set_release_version $RELEASE_VERSION
+    echo $RELEASE_VERSION
+}
+
+set_current_version() {
+    local current_version="$1"
+    yq -i ".current_version = \"$current_version\"" $QTOOLS_CONFIG_FILE
 }
 
 get_current_version() {
-    systemctl status $QUIL_SERVICE_NAME | grep -oP "\-([0-9]\.?)+\-" | head -n 1 | tr -d 'node-' | tr -d '-' 
+    local CURRENT_VERSION=$(systemctl status $QUIL_SERVICE_NAME | grep -oP "\-([0-9]\.?)+\-" | head -n 1 | tr -d 'node-' | tr -d '-')
+    set_current_version $CURRENT_VERSION
+    echo $CURRENT_VERSION
+}
+
+fetch_available_files() {
+  local url=$1
+  curl -s "$url"
+}
+
+set_os_arch() {
+    local os_arch="$1"
+    yq ".os_arch = \"$os_arch\"" $QTOOLS_CONFIG_FILE
 }
 
 get_os_arch() {

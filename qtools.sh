@@ -78,13 +78,9 @@ export QUIL_CLIENT_PATH=$QUIL_PATH/client
 export QUIL_GO_NODE_BIN=$HOME/go/bin/node
 export QTOOLS_BIN_PATH=/usr/local/bin/qtools
 export SYSTEMD_SERVICE_PATH=/lib/systemd/system
-export QUIL_SERVICE_NAME='ceremonyclient.service'
-export QUIL_DEBUG_SERVICE_NAME='ceremonyclient-debug.service'
-export QUIL_SERVICE_FILE="$SYSTEMD_SERVICE_PATH/$QUIL_SERVICE_NAME"
-export QUIL_DEBUG_SERVICE_FILE="$SYSTEMD_SERVICE_PATH/$QUIL_DEBUG_SERVICE_NAME"
-export LOG_OUTPUT_FILE="debug.log"
+
+
 export BASHRC_FILE="$HOME/.bashrc"
-export SOURCE_URL="https://source.quilibrium.com/quilibrium/ceremonyclient.git"
 
 # Define Go vars
 export GO_BIN_DIR=/usr/local
@@ -126,6 +122,18 @@ if [ ! -L "$QTOOLS_BIN_PATH" ]; then
   fi
 fi
 
+if ! command_exists 'yq'; then
+  source $QTOOLS_PATH/scripts/install/install-yq.sh
+  if ! command_exists 'yq'; then
+    log "Could not install command 'yq'.  Please try again or install manually."
+  fi
+fi
+
+
+export LOG_OUTPUT_FILE="$(yq e '.settings.log_file' $QTOOLS_CONFIG_FILE)"
+export QUIL_SERVICE_NAME="$(yq e '.service.name' $QTOOLS_CONFIG_FILE)"
+export QUIL_SERVICE_FILE="$SYSTEMD_SERVICE_PATH/$QUIL_SERVICE_NAME@.service"
+
 # Set environment variables based on the option
 case "$1" in
   remove-docker|purge|disable-ssh-passwords)
@@ -151,7 +159,6 @@ case "$1" in
     ;;
   node-get-peer-id|node-get-reward-balance)
     cd $QUIL_NODE_PATH
-    export QUIL_BIN="$(get_versioned_binary)"
     export SERVICE_PATH="$QTOOLS_PATH/scripts/node-commands"
     ;;
   get-node-count|get-node-info|get-peer-info|get-token-info|get-node-version|get-peer-id|get-frame-count)
