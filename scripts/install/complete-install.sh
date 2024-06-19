@@ -7,9 +7,8 @@ DISABLE_SSH_PASSWORDS="$(yq '.settings.install.ssh.disable_ssh_login // "false"'
 
 cd $HOME
 
-source $QTOOLS_PATH/scripts/install/install-from-release.sh &
-
-wait
+qtools install-node-binary
+qtools update-service
 
 qtools add-auto-complete
 
