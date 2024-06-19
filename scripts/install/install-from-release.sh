@@ -1,5 +1,6 @@
 #!/bin/bash
 os_arch="$(get_os_arch)"
+log "Installing release files..."
 
 get_remote_quil_files() {
     local files="$1"
@@ -8,7 +9,7 @@ get_remote_quil_files() {
     while IFS= read -r file; do
         if [[ "$file" == *"$os_arch"* ]]; then
         local file_url="https://releases.quilibrium.com/${file}"
-        local dest_file="${QUIL_NODE_PATH}/${file}"
+        local dest_file="${dest_dir}/${file}"
 
         if [ ! -f "$dest_file" ]; then
             log "Downloading $file_url to $dest_file"
