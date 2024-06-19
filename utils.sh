@@ -135,7 +135,7 @@ set_release_version() {
 }
 
 fetch_release_version() {
-    local RELEASE_VERSION="$(curl -s https://releases.quilibrium.com/release | grep -oP "\-([0-9]\.?)+\-" | head -n 1 | tr -d'node-' | tr -d '-')"
+    local RELEASE_VERSION="$(curl -s https://releases.quilibrium.com/release | grep -oP "\-([0-9]\.?)+\-" | head -n 1 | tr -d 'node-' | tr -d '-')"
     set_release_version $RELEASE_VERSION
     echo $RELEASE_VERSION
 }
