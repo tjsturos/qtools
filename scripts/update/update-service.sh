@@ -5,12 +5,16 @@ log "Updating the service..."
 update_service_binary() {
     local NEW_EXECSTART="$1"
     local QUIL_BIN="$2"
+    local WORKING_DIR="$(yq '.service.working_dir') $QTOOLS_CONFIG_FILE"
     sudo sed -i -e "/^ExecStart=/c\\$NEW_EXECSTART" "$QUIL_SERVICE_FILE"
+    sudo sed -i -e "/^WorkingDirectory=/c\\$WORKING_DIR" "$QUIL_SERVICE_FILE"
     # Update the service file if needed
     sudo systemctl daemon-reload
 
     log "Systemctl binary version updated to $QUIL_BIN"
+    log "Service WorkingDirectory is: $WORKING_DIR"
 }
+
 
 updateCPUQuota() {
     local CPULIMIT=$(yq e '.settings.cpulimit.enabled' "$QTOOLS_CONFIG_FILE")
@@ -62,7 +66,7 @@ createServiceIfNone() {
 QUIL_BIN="node-$(fetch_release_version)-$(get_os_arch)"
 
 # update normal service
-NEW_EXECSTART="ExecStart=$QUIL_NODE_PATH/$QUIL_BIN \$NODE_ARGS" 
+NEW_EXECSTART="ExecStart=$QUIL_BIN \$NODE_ARGS" 
 createServiceIfNone $QUIL_SERVICE_NAME
 updateCPUQuota 
 update_service_binary "$NEW_EXECSTART" "$QUIL_BIN"
