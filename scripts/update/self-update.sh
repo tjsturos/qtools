@@ -6,7 +6,6 @@ cd $QTOOLS_PATH
 git pull &> /dev/null
 log "Changes fetched."
 qtools add-auto-complete
-qtools update-source-url
 qtools install-cron
 
 source ~/.bashrc
