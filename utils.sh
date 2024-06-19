@@ -173,9 +173,9 @@ get_os_arch() {
 }
 
 get_versioned_node() {
-    echo "node-$(get_release_version)-$(get_os_arch)"
+    echo "node-$(fetch_release_version)-$(get_os_arch)"
 }
 
 get_versioned_qclient() {
-    echo "qclient-$(get_release_version)-$(get_os_arch)"
+    echo "qclient-$(fetch_release_version)-$(get_os_arch)"
 }
