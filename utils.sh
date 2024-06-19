@@ -130,8 +130,7 @@ remove_lines_matching_pattern() {
 }
 
 set_release_version() {
-    local new_version="$1"
-    yq -i e '.release_version = strenv(new_version)' $QTOOLS_CONFIG_FILE
+    new_version="$1" yq -i e '.release_version = strenv(new_version)' $QTOOLS_CONFIG_FILE
 }
 
 fetch_release_version() {
@@ -141,8 +140,7 @@ fetch_release_version() {
 }
 
 set_current_version() {
-    local current_version="$1"
-    yq -i e '.current_version = strenv(current_version)' $QTOOLS_CONFIG_FILE
+    current_version="$1" yq -i e '.current_version = strenv(current_version)' $QTOOLS_CONFIG_FILE
 }
 
 get_current_version() {
