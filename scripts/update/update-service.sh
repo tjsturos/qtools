@@ -17,13 +17,13 @@ update_service_binary() {
 
 
 updateCPUQuota() {
-    local CPULIMIT=$(yq e '.settings.cpulimit.enabled' "$QTOOLS_CONFIG_FILE")
+    local CPULIMIT=$(yq '.settings.cpulimit.enabled' "$QTOOLS_CONFIG_FILE")
 
     if $CPULIMIT == 'true'; then
         # we only want to set CPU limits on bare-metal
         if ! lscpu | grep -q "Hypervisor vendor:     KVM"; then
             # Calculate the CPUQuota value
-            local CPU_LIMIT_PERCENT=$(yq e ".settings.cpulimit.limit_percentage" "$QTOOLS_CONFIG_FILE")
+            local CPU_LIMIT_PERCENT=$(yq ".settings.cpulimit.limit_percentage" "$QTOOLS_CONFIG_FILE")
             local CPU_QUOTA=$(echo "$CPU_LIMIT_PERCENT * $(get_processor_count)" | bc)%
             
             

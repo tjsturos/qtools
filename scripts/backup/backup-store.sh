@@ -1,10 +1,10 @@
 #!/bin/bash
-IS_BACKUP_ENABLED="$(yq e '.settings.backup.enabled)' $QTOOLS_CONFIG_FILE)"
+IS_BACKUP_ENABLED="$(yq '.settings.backup.enabled)' $QTOOLS_CONFIG_FILE)"
 
 if [ $IS_BACKUP_ENABLED == 'true' ]; then
   LOCAL_HOST_NAME=$(hostname)
-  REMOTE_DIR="$(yq e '.settings.backup.remote_backup_dir' $QTOOLS_CONFIG_FILE)/$LOCAL_HOST_NAME/"
-  SSH_ALIAS="$(yq e '.settings.backup.ssh_alias' $QTOOLS_CONFIG_FILE)"
+  REMOTE_DIR="$(yq '.settings.backup.remote_backup_dir' $QTOOLS_CONFIG_FILE)/$LOCAL_HOST_NAME/"
+  SSH_ALIAS="$(yq '.settings.backup.ssh_alias' $QTOOLS_CONFIG_FILE)"
 
   ssh -q -o BatchMode=yes -o ConnectTimeout=5 $SSH_ALIAS exit
 
