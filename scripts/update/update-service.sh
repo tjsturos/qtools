@@ -11,8 +11,8 @@ update_service_binary() {
     # Update the service file if needed
     sudo systemctl daemon-reload
 
-    log "Systemctl binary version updated to $QUIL_BIN"
-    log "Service WorkingDirectory is: $WORKING_DIR"
+    log "Service: $NEW_EXECSTART"
+    log "Service: $WORKING_DIR"
 }
 
 
