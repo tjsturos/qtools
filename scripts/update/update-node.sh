@@ -50,7 +50,7 @@ main() {
 
 main
 
-if [ "$updated_required" == "true" ]; then
+if [ "$restart_required" == "true" ]; then
   qtools update-service
   qtools restart
   set_current_version "$(get_current_version)"
