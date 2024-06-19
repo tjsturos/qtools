@@ -60,7 +60,7 @@ createServiceIfNone() {
     fi
 }
 
-QUIL_BIN="node-$available_version-$(get_os_arch)"
+QUIL_BIN="node-$(get_release_version)-$(get_os_arch)"
 
 # update normal service
 NEW_EXECSTART="ExecStart=$QUIL_NODE_PATH/$QUIL_BIN \$NODE_ARGS" 
