@@ -6,16 +6,14 @@ update_service_binary() {
     local NEW_EXECSTART="$1"
     local QUIL_BIN="$2"
     
-    # Update the service file if needed
-    if ! check_execstart "$QUIL_SERVICE_FILE" "$NEW_EXECSTART"; then
-        # Use sed to replace the ExecStart line in the service file
-        sudo sed -i -e "/^ExecStart=/c\\$NEW_EXECSTART" "$QUIL_SERVICE_FILE"
+    # Use sed to replace the ExecStart line in the service file
+    sudo sed -i -e "/^ExecStart=/c\\$NEW_EXECSTART" "$QUIL_SERVICE_FILE"
 
-        # Reload the systemd manager configuration
-        sudo systemctl daemon-reload
+    # Reload the systemd manager configuration
+    sudo systemctl daemon-reload
 
-        log "Systemctl binary version updated to $QUIL_BIN"
-    fi
+    log "Systemctl binary version updated to $QUIL_BIN"
+    
 }
 
 # Function to download all matching files if version is different
