@@ -62,7 +62,8 @@ usage() {
   echo "  node-get-rewards-balance - Get the rewards balance."
 
   echo "Common command shortcuts:"
-  echo "  edit-config              - Edit the config file."
+  echo "  edit-qtools-config              - Edit the qTools config file."
+  echo "  edit-quil-config              - Edit the Quil node config file."
 
   exit 1
 }
@@ -130,9 +131,12 @@ if ! command_exists 'yq'; then
   fi
 fi
 
+
+
 if [ ! -f $QTOOLS_PATH/config.yml ]; then
-  log "Did not find a config file for qTools.  Copy the sample config to a new config.yml file and retry. (cp $QTOOLS_PATH/config.sample.yml $QTOOLS_PATH/config.yml)"
-  exit 1
+  cp $QTOOLS_PATH/config.sample.yml $QTOOLS_PATH/config.yml
+  log "Copied the default config file (config.sample.yml) to make the initial config.yml file."  
+  log "To edit, use 'qtools edit-qtools-config' command"
 fi
 
 export QTOOLS_CONFIG_FILE=$QTOOLS_PATH/config.yml
@@ -145,7 +149,7 @@ case "$1" in
   remove-docker|purge|disable-ssh-passwords)
     export SERVICE_PATH="$QTOOLS_PATH/scripts"
     ;;
-  edit-config)
+  edit-qtools-config|edit-quil-config)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/shortcuts"
     ;;
   start|stop|status|enable|restart)
