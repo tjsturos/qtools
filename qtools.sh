@@ -130,6 +130,11 @@ if ! command_exists 'yq'; then
   fi
 fi
 
+if [ ! -f $QTOOLS_PATH/config.yml ]; then
+  log "Did not find a config file for qTools.  Copy the sample config to a new config.yml file and retry. (cp $QTOOLS_PATH/config.sample.yml $QTOOLS_PATH/config.yml)"
+  exit 1
+fi
+
 export QTOOLS_CONFIG_FILE=$QTOOLS_PATH/config.yml
 export LOG_OUTPUT_FILE="$(yq e '.settings.log_file' $QTOOLS_CONFIG_FILE)"
 export QUIL_SERVICE_NAME="$(yq e '.service.name' $QTOOLS_CONFIG_FILE)"
