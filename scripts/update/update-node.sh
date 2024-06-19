@@ -24,10 +24,6 @@ download_matching_files_if_different() {
       fi
     done <<< "$file_list"
 
-    qtools update-service
-
-    qtools restart
-    set_current_version "$(get_current_version)"
   else
     echo "Versions match. No download needed."
   fi
@@ -51,3 +47,7 @@ main() {
 }
 
 main
+
+qtools update-service
+qtools restart
+set_current_version "$(get_current_version)"
