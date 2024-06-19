@@ -25,7 +25,7 @@ if [ "$IS_LINKED" != "true" ]; then
     qtools modify-config &
 fi
 
-if [ $DISABLE_SSH_PASSWORDS == 'true' ]; then
+if [ "$DISABLE_SSH_PASSWORDS" == 'true' ]; then
     qtools disable-ssh-passwords
 fi
 
