@@ -3,8 +3,8 @@
 log "Updating the service..."
 
 update_service_binary() {
-    local NEW_EXECSTART="$1"
-    local QUIL_BIN="$2"
+    local QUIL_BIN="node-$(fetch_release_version)-$(get_os_arch)"
+    local NEW_EXECSTART="ExecStart=$QUIL_BIN \$NODE_ARGS"
     local WORKING_DIR="WorkingDirectory=$(yq '.service.working_dir' $QTOOLS_CONFIG_FILE)"
     sudo sed -i -e "/^ExecStart=/c\\$NEW_EXECSTART" "$QUIL_SERVICE_FILE"
     sudo sed -i -e "/^WorkingDirectory=/c\\$WORKING_DIR" "$QUIL_SERVICE_FILE"
@@ -63,10 +63,7 @@ createServiceIfNone() {
     fi
 }
 
-QUIL_BIN="node-$(fetch_release_version)-$(get_os_arch)"
-
 # update normal service
-NEW_EXECSTART="ExecStart=$QUIL_BIN \$NODE_ARGS" 
 createServiceIfNone $QUIL_SERVICE_NAME
 updateCPUQuota 
-update_service_binary "$NEW_EXECSTART" "$QUIL_BIN"
+update_service_binary
