@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # get settings
-DEBUG_MODE="$(yq '.settings.debug' $QTOOLS_CONFIG_FILE)"
-IS_LINKED="$(yq '.settings.linked_node.enabled' $QTOOLS_CONFIG_FILE)"
+DEBUG_MODE="$(yq '.settings.debug // "false"' $QTOOLS_CONFIG_FILE)"
+IS_LINKED="$(yq '.settings.linked_node.enabled // "false"' $QTOOLS_CONFIG_FILE)"
 
 # make folder for args for each process
 PROCESS_DIR=/tmp/quil-process-args

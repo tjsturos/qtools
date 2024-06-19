@@ -140,8 +140,8 @@ if [ ! -f $QTOOLS_PATH/config.yml ]; then
 fi
 
 export QTOOLS_CONFIG_FILE=$QTOOLS_PATH/config.yml
-export LOG_OUTPUT_FILE="$(yq '.settings.log_file' $QTOOLS_CONFIG_FILE)"
-export QUIL_SERVICE_NAME="$(yq '.service.name' $QTOOLS_CONFIG_FILE)"
+export LOG_OUTPUT_FILE="$(yq '.settings.log_file // "debug.log"' $QTOOLS_CONFIG_FILE)"
+export QUIL_SERVICE_NAME="$(yq '.service.file_name // "ceremonyclient"' $QTOOLS_CONFIG_FILE)"
 export QUIL_SERVICE_FILE="$SYSTEMD_SERVICE_PATH/$QUIL_SERVICE_NAME@.service"
 
 # Set environment variables based on the option

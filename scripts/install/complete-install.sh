@@ -2,9 +2,8 @@
 
 apt-get -q update
 
-INSTALL_METHOD="$(yq '.settings.install.method' $QTOOLS_CONFIG_FILE)"
-IS_LINKED="$(yq '.settings.linked_node.enabled' $QTOOLS_CONFIG_FILE)"
-DISABLE_SSH_PASSWORDS="$(yq '.settings.install.ssh.disable_ssh_login') $QTOOLS_CONFIG_FILE"
+IS_LINKED="$(yq '.settings.linked_node.enabled // "false"' $QTOOLS_CONFIG_FILE)"
+DISABLE_SSH_PASSWORDS="$(yq '.settings.install.ssh.disable_ssh_login // "false"') $QTOOLS_CONFIG_FILE"
 
 cd $HOME
 

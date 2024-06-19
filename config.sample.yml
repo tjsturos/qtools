@@ -17,8 +17,11 @@ release_version: 1.4.19.1
 current_version: 1.4.19.1
 os_arch: linux-amd64
 service:
-    name: ceremonyclient
+    # must run qtools update-service to load updated values
+    file_name: ceremonyclient
     working_dir: /root/ceremonyclient/node
+    restart_time: 5s
+    args: "" # args to be passed into the main process: e.g. node-1.4.19.1-linux-amd64 --debug
 settings:
     linked_node: 
         enabled: false
