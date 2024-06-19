@@ -2,19 +2,6 @@
 
 os_arch="$(get_os_arch)"
 current_version="$(get_current_version)"
-update_service_binary() {
-    local NEW_EXECSTART="$1"
-    local QUIL_BIN="$2"
-    
-    # Use sed to replace the ExecStart line in the service file
-    sudo sed -i -e "/^ExecStart=/c\\$NEW_EXECSTART" "$QUIL_SERVICE_FILE"
-
-    # Reload the systemd manager configuration
-    sudo systemctl daemon-reload
-
-    log "Systemctl binary version updated to $QUIL_BIN"
-    
-}
 
 # Function to download all matching files if version is different
 download_matching_files_if_different() {
@@ -36,9 +23,8 @@ download_matching_files_if_different() {
         fi
       fi
     done <<< "$file_list"
-    new_binary="node-$available_version-$os_arch"
-    new_execstart="ExecStart=$QUIL_NODE_PATH/$new_binary \$NODE_ARGS" 
-    update_service_binary $new_execstart $new_binary
+
+    qtools update-service
 
     qtools restart
     set_current_version "$(get_current_version)"

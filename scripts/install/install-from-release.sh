@@ -28,3 +28,5 @@ qclient_files=$(fetch_available_files "https://releases.quilibrium.com/qclient-r
 
 get_remote_quil_files $node_files $QUIL_NODE_PATH
 get_remote_quil_files $qclient_files $QUIL_CLIENT_PATH
+
+qtools update-service

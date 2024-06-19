@@ -16,7 +16,6 @@ qtools setup-firewall
 qtools install-cron
 
 # build out the appropriate service(s)
-qtools update-service
 qtools start
 
 # tells server to always start node service on reboot

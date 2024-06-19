@@ -3,7 +3,7 @@
 log "Updating the service..."
 
 update_service_binary() {
-    local QUIL_BIN="node-$(fetch_release_version)-$(get_os_arch)"
+    local QUIL_BIN="$(get_versioned_binary)"
     local INLINE_ARGS="$(yq '.service.args // ""' $QTOOLS_CONFIG_FILE)"
     local NEW_EXECSTART="ExecStart=$QUIL_NODE_PATH/$QUIL_BIN \$NODE_ARGS $INLINE_ARGS"
     local WORKING_DIR="WorkingDirectory=$(yq '.service.working_dir' $QTOOLS_CONFIG_FILE)"
@@ -12,12 +12,12 @@ update_service_binary() {
     sudo sed -i -e "/^WorkingDirectory=/c\\$WORKING_DIR" "$QUIL_SERVICE_FILE"
     sudo sed -i -e "/^RestartSec=/c\\$RESTART_SEC" "$QUIL_SERVICE_FILE"
     # Update the service file if needed
+    sudo chmod +x $QUIL_NODE_PATH/$QUIL_BIN
     sudo systemctl daemon-reload
 
     log "Service: $NEW_EXECSTART"
     log "Service: $WORKING_DIR"
 }
-
 
 updateCPUQuota() {
     local CPULIMIT=$(yq '.settings.cpulimit.enabled' "$QTOOLS_CONFIG_FILE")
@@ -28,7 +28,6 @@ updateCPUQuota() {
             # Calculate the CPUQuota value
             local CPU_LIMIT_PERCENT=$(yq ".settings.cpulimit.limit_percentage" "$QTOOLS_CONFIG_FILE")
             local CPU_QUOTA=$(echo "$CPU_LIMIT_PERCENT * $(get_processor_count)" | bc)%
-            
             
             # Check if the service file contains the [Service] section
             if grep -q "^\[Service\]" "$QUIL_SERVICE_FILE"; then
