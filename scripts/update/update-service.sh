@@ -5,7 +5,7 @@ log "Updating the service..."
 update_service_binary() {
     local NEW_EXECSTART="$1"
     local QUIL_BIN="$2"
-    local WORKING_DIR="$(yq '.service.working_dir') $QTOOLS_CONFIG_FILE"
+    local WORKING_DIR="$(yq '.service.working_dir' $QTOOLS_CONFIG_FILE)"
     sudo sed -i -e "/^ExecStart=/c\\$NEW_EXECSTART" "$QUIL_SERVICE_FILE"
     sudo sed -i -e "/^WorkingDirectory=/c\\$WORKING_DIR" "$QUIL_SERVICE_FILE"
     # Update the service file if needed
