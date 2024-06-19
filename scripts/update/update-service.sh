@@ -13,7 +13,6 @@ update_service_binary() {
 }
 
 updateCPUQuota() {
-    local SERVICE_FILE="$1"
     local CPULIMIT=$(yq e '.settings.cpulimit.enabled' "$QTOOLS_CONFIG_FILE")
 
     if $CPULIMIT == 'true'; then
@@ -25,28 +24,28 @@ updateCPUQuota() {
             
             
             # Check if the service file contains the [Service] section
-            if grep -q "^\[Service\]" "$SERVICE_FILE"; then
+            if grep -q "^\[Service\]" "$QUIL_SERVICE_FILE"; then
                 # Check if CPUQuota is already present in the [Service] section
-                if grep -q "^CPUQuota=" "$SERVICE_FILE"; then
+                if grep -q "^CPUQuota=" "$QUIL_SERVICE_FILE"; then
                     # Get the current CPUQuota value
-                    CURRENT_CPUQUOTA=$(grep "^CPUQuota=" "$SERVICE_FILE" | cut -d'=' -f2)
+                    CURRENT_CPUQUOTA=$(grep "^CPUQuota=" "$QUIL_SERVICE_FILE" | cut -d'=' -f2)
                     # Update the existing CPUQuota line only if the value is different
                     if [ "$CURRENT_CPUQUOTA" != "$CPU_QUOTA" ]; then
-                        sed -i "s/^CPUQuota=.*/CPUQuota=$CPU_QUOTA/" "$SERVICE_FILE"
+                        sed -i "s/^CPUQuota=.*/CPUQuota=$CPU_QUOTA/" "$QUIL_SERVICE_FILE"
                         sudo systemctl daemon-reload
-                        log "Systemctl CPUQuota updated to $CPU_QUOTA in $SERVICE_FILE"
+                        log "Systemctl CPUQuota updated to $CPU_QUOTA in $QUIL_SERVICE_FILE"
                     fi
                 else
                     # Append CPUQuota to the [Service] section
-                    sed -i "/^\[Service\]/a CPUQuota=$CPU_QUOTA" "$SERVICE_FILE"
+                    sed -i "/^\[Service\]/a CPUQuota=$CPU_QUOTA" "$QUIL_SERVICE_FILE"
                     sudo systemctl daemon-reload
-                    log "Systemctl CPUQuota updated to $CPU_QUOTA in $SERVICE_FILE"
+                    log "Systemctl CPUQuota updated to $CPU_QUOTA in $QUIL_SERVICE_FILE"
                 fi
             else
                 # If [Service] section does not exist, add it and append CPUQuota
-                echo -e "[Service]\nCPUQuota=$CPU_QUOTA" >> "$SERVICE_FILE"
+                echo -e "[Service]\nCPUQuota=$CPU_QUOTA" >> "$QUIL_SERVICE_FILE"
                 sudo systemctl daemon-reload
-                log "Systemctl CPUQuota updated to $CPU_QUOTA in $SERVICE_FILE"
+                log "Systemctl CPUQuota updated to $CPU_QUOTA in $QUIL_SERVICE_FILE"
             fi   
         fi
     fi
@@ -65,5 +64,5 @@ QUIL_BIN="node-$(fetch_release_version)-$(get_os_arch)"
 # update normal service
 NEW_EXECSTART="ExecStart=$QUIL_NODE_PATH/$QUIL_BIN \$NODE_ARGS" 
 createServiceIfNone $QUIL_SERVICE_NAME
-updateCPUQuota $QUIL_SERVICE_FILE
-update_service_binary $QUIL_SERVICE_FILE "$NEW_EXECSTART" "$QUIL_BIN"
+updateCPUQuota 
+update_service_binary "$NEW_EXECSTART" "$QUIL_BIN"
