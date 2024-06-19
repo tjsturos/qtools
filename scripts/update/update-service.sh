@@ -2,6 +2,22 @@
 
 log "Updating the service..."
 
+update_service_binary() {
+    local NEW_EXECSTART="$1"
+    local QUIL_BIN="$2"
+    
+    # Update the service file if needed
+    if ! check_execstart "$QUIL_SERVICE_FILE" "$NEW_EXECSTART"; then
+        # Use sed to replace the ExecStart line in the service file
+        sudo sed -i -e "/^ExecStart=/c\\$NEW_EXECSTART" "$QUIL_SERVICE_FILE"
+
+        # Reload the systemd manager configuration
+        sudo systemctl daemon-reload
+
+        log "Systemctl binary version updated to $QUIL_BIN"
+    fi
+}
+
 updateCPUQuota() {
     local SERVICE_FILE="$1"
     local CPULIMIT=$(yq e '.settings.cpulimit.enabled' "$QTOOLS_CONFIG_FILE")
@@ -56,4 +72,4 @@ QUIL_BIN="node-$available_version-$(get_os_arch)"
 NEW_EXECSTART="ExecStart=$QUIL_NODE_PATH/$QUIL_BIN \$NODE_ARGS" 
 createServiceIfNone $QUIL_SERVICE_NAME
 updateCPUQuota $QUIL_SERVICE_FILE
-updateServiceBinary $QUIL_SERVICE_FILE "$NEW_EXECSTART" "$QUIL_BIN"
+update_service_binary $QUIL_SERVICE_FILE "$NEW_EXECSTART" "$QUIL_BIN"
