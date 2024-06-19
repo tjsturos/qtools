@@ -129,7 +129,7 @@ if ! command_exists 'yq'; then
   fi
 fi
 
-
+export QTOOLS_CONFIG_FILE=$QTOOLS_PATH/config.yml
 export LOG_OUTPUT_FILE="$(yq e '.settings.log_file' $QTOOLS_CONFIG_FILE)"
 export QUIL_SERVICE_NAME="$(yq e '.service.name' $QTOOLS_CONFIG_FILE)"
 export QUIL_SERVICE_FILE="$SYSTEMD_SERVICE_PATH/$QUIL_SERVICE_NAME@.service"
