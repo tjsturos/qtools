@@ -5,7 +5,7 @@ log "Updating the service..."
 update_service_binary() {
     local QUIL_BIN="node-$(fetch_release_version)-$(get_os_arch)"
     local INLINE_ARGS="$(yq '.service.args // ""' $QTOOLS_CONFIG_FILE)"
-    local NEW_EXECSTART="ExecStart=$QUIL_BIN \$NODE_ARGS $INLINE_ARGS"
+    local NEW_EXECSTART="ExecStart=$QUIL_NODE_PATH/$QUIL_BIN \$NODE_ARGS $INLINE_ARGS"
     local WORKING_DIR="WorkingDirectory=$(yq '.service.working_dir' $QTOOLS_CONFIG_FILE)"
     local RESTART_SEC="RestartSec=$(yq '.service.restart_time // "5s"' $QTOOLS_CONFIG_FILE)"
     sudo sed -i -e "/^ExecStart=/c\\$NEW_EXECSTART" "$QUIL_SERVICE_FILE"
