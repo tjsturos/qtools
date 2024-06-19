@@ -14,6 +14,7 @@ usage() {
   echo "  update-kernel            - Update the Linux kernel on this server."
   echo "  update-service           - Update the Systemd services (live and debug)."
   echo "  install-go               - Install Go and setup Go environment."
+  echo "  install-yq               - Install yq library."
   echo "  install-grpc             - Install gRPC on the server for querying node info."
   echo "  import-store             - Import the store snapshot from Cherry Servers."    
 
@@ -148,7 +149,7 @@ case "$1" in
   update-node|self-update|update-kernel|update-service)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/update"
     ;;
-  install-go|complete-install|install-cron|modify-config|create-qtools-symlink|setup-firewall|add-auto-complete|install-grpc|import-store)
+  install-go|install-yq|complete-install|install-cron|modify-config|create-qtools-symlink|setup-firewall|add-auto-complete|install-grpc|import-store)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/install"
     ;;
   make-backup|restore-backup|backup-store)
