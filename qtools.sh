@@ -80,6 +80,7 @@ export QUIL_NODE_PATH=$QUIL_PATH/node
 export QUIL_CLIENT_PATH=$QUIL_PATH/client
 export QUIL_GO_NODE_BIN=$HOME/go/bin/node
 export QTOOLS_BIN_PATH=/usr/local/bin/qtools
+export QUIL_QCLIENT_BIN=/usr/local/bin/qclient
 export SYSTEMD_SERVICE_PATH=/lib/systemd/system
 
 export BASHRC_FILE="$HOME/.bashrc"
