@@ -172,6 +172,10 @@ get_os_arch() {
     echo "$os-$arch"
 }
 
-get_versioned_binary() {
+get_versioned_node() {
     echo "node-$(get_release_version)-$(get_os_arch)"
+}
+
+get_versioned_qclient() {
+    echo "qclient-$(get_release_version)-$(get_os_arch)"
 }

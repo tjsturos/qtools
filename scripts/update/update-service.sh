@@ -3,7 +3,7 @@
 log "Updating the service..."
 
 update_service_binary() {
-    local QUIL_BIN="$(get_versioned_binary)"
+    local QUIL_BIN="$(get_versioned_node)"
     local INLINE_ARGS="$(yq '.service.args // ""' $QTOOLS_CONFIG_FILE)"
     local NEW_EXECSTART="ExecStart=$QUIL_NODE_PATH/$QUIL_BIN \$NODE_ARGS $INLINE_ARGS"
     local WORKING_DIR="WorkingDirectory=$(yq '.service.working_dir' $QTOOLS_CONFIG_FILE)"

@@ -15,8 +15,8 @@ usage() {
   echo "  update-service           - Update the Systemd services (live and debug)."
   echo "  install-go               - Install Go and setup Go environment."
   echo "  install-yq               - Install yq library."
-  echo "  install-grpc             - Install gRPC on the server for querying node info."
-  echo "  import-store             - Import the store snapshot from Cherry Servers."    
+  echo "  install-grpc             - Install gRPC on the server for querying node info."  
+  echo "  install-qclient          - Download QClient binary from releases site."   
 
   echo "Configuration:"
   echo "  make-backup              - Make a local-only backup (on this server) of the config.yml and keys.yml files."
@@ -81,7 +81,6 @@ export QUIL_GO_NODE_BIN=$HOME/go/bin/node
 export QTOOLS_BIN_PATH=/usr/local/bin/qtools
 export SYSTEMD_SERVICE_PATH=/lib/systemd/system
 
-
 export BASHRC_FILE="$HOME/.bashrc"
 
 # Define Go vars
@@ -131,8 +130,6 @@ if ! command_exists 'yq'; then
   fi
 fi
 
-
-
 if [ ! -f $QTOOLS_PATH/config.yml ]; then
   cp $QTOOLS_PATH/config.sample.yml $QTOOLS_PATH/config.yml
   log "Copied the default config file (config.sample.yml) to make the initial config.yml file."  
@@ -158,7 +155,7 @@ case "$1" in
   update-node|self-update|update-kernel|update-service)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/update"
     ;;
-  install-go|install-yq|complete-install|install-cron|modify-config|create-qtools-symlink|setup-firewall|add-auto-complete|install-grpc|import-store)
+  install-go|install-yq|complete-install|install-cron|modify-config|create-qtools-symlink|setup-firewall|add-auto-complete|install-grpc|install-qclient)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/install"
     ;;
   make-backup|restore-backup|backup-store)
