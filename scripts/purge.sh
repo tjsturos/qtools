@@ -8,16 +8,17 @@ qtools make-backup
 
 # remove old node code
 remove_directory $QUIL_PATH
-remove_file $QUIL_GO_NODE_BIN
 
-cd /root/
-# reinstall
-git clone $SOURCE_URL
+cd $HOME
 
-qtools install-node-binary
+source $QTOOLS_PATH/scripts/install/install-from-release.sh &
+
+wait
 
 qtools restore-backup
 
 qtools start
+
+qtools enable
 
 
