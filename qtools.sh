@@ -17,6 +17,7 @@ usage() {
   echo "  install-yq               - Install yq library."
   echo "  install-grpc             - Install gRPC on the server for querying node info."  
   echo "  install-qclient          - Download QClient binary from releases site."   
+  echo "  install-node-binary      - Download Node binary (and signatures) from releases site."   
 
   echo "Configuration:"
   echo "  make-backup              - Make a local-only backup (on this server) of the config.yml and keys.yml files."
@@ -155,7 +156,7 @@ case "$1" in
   update-node|self-update|update-kernel|update-service)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/update"
     ;;
-  install-go|install-yq|complete-install|install-cron|modify-config|create-qtools-symlink|setup-firewall|add-auto-complete|install-grpc|install-qclient)
+  install-go|install-node-binary|install-yq|complete-install|install-cron|modify-config|create-qtools-symlink|setup-firewall|add-auto-complete|install-grpc|install-qclient)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/install"
     ;;
   make-backup|restore-backup|backup-store)
