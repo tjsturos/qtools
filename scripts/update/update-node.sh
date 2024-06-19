@@ -2,6 +2,7 @@
 
 os_arch="$(get_os_arch)"
 current_version="$(get_current_version)"
+restart_required="false"
 
 # Function to download all matching files if version is different
 download_matching_files_if_different() {
@@ -10,6 +11,7 @@ download_matching_files_if_different() {
   local base_url=$3
 
   if [[ "$current_version" != "$available_version" ]]; then
+    restart_required="true"
     while IFS= read -r file; do
       if [[ "$file" == *"$available_version"*"$os_arch"* ]]; then
         local file_url="${base_url}/${file}"
@@ -48,6 +50,9 @@ main() {
 
 main
 
-qtools update-service
-qtools restart
-set_current_version "$(get_current_version)"
+if [ "$updated_required" == "true" ]; then
+  qtools update-service
+  qtools restart
+  set_current_version "$(get_current_version)"
+fi
+
