@@ -134,7 +134,7 @@ set_release_version() {
 }
 
 fetch_release_version() {
-    local RELEASE_VERSION="$(curl -s https://releases.quilibrium.com/release | grep -oP "\-([0-9]\.?)+\-" | head -n 1 | tr -d 'node-' | tr -d '-')"
+    local RELEASE_VERSION="$(curl -s https://releases.quilibrium.com/release | grep -oP "\-([0-9]+\.?)+\-" | head -n 1 | tr -d 'node-')"
     set_release_version $RELEASE_VERSION
     echo $RELEASE_VERSION
 }
@@ -144,7 +144,7 @@ set_current_version() {
 }
 
 get_current_version() {
-    local CURRENT_VERSION=$(systemctl status $QUIL_SERVICE_NAME | grep -oP "\-([0-9]\.?)+\-" | head -n 1 | tr -d 'node-' | tr -d '-')
+    local CURRENT_VERSION=$(systemctl status $QUIL_SERVICE_NAME | grep -oP "\-([0-9]+\.)+([0-9]+)\-" | head -n 1 | tr -d 'node-')
     set_current_version $CURRENT_VERSION
     echo $CURRENT_VERSION
 }
