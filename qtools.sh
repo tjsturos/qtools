@@ -168,6 +168,7 @@ case "$1" in
     ;;
   node-get-peer-id|node-get-reward-balance)
     cd $QUIL_NODE_PATH
+    export QUIL_BIN=$(get_versioned_node)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/node-commands"
     ;;
   get-node-count|get-node-info|get-peer-info|get-token-info|get-node-version|get-peer-id|get-frame-count)
