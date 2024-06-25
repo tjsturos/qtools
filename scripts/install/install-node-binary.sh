@@ -1,6 +1,6 @@
 #!/bin/bash
 
-os_arch="$(get_os_arch)"
+OS_ARCH="$(get_os_arch)"
 log "Downloading release files..."
 
 mkdir -p $QUIL_NODE_PATH

@@ -166,7 +166,7 @@ get_remote_quil_files() {
     local dest_dir=$2
 
     while IFS= read -r file; do
-        if [[ "$file" == *"$os_arch"* ]]; then
+        if [[ "$file" == *"$OS_ARCH"* ]]; then
         local file_url="https://releases.quilibrium.com/${file}"
         local dest_file="${dest_dir}/${file}"
 
@@ -181,8 +181,8 @@ get_remote_quil_files() {
 }
 
 set_os_arch() {
-    local os_arch="$1"
-    yq ".os_arch = \"$os_arch\"" $QTOOLS_CONFIG_FILE
+    local OS_ARCH="$1"
+    yq ".os_arch = \"$OS_ARCH\"" $QTOOLS_CONFIG_FILE
 }
 
 get_os_arch() {
