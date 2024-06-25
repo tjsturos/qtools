@@ -55,6 +55,7 @@ main
 if [ "$restart_required" == "true" ]; then
   qtools update-service
   qtools restart
+  sleep 10
   set_current_version "$(get_current_version)"
 fi
 
