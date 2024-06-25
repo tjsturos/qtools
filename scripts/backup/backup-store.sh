@@ -1,5 +1,5 @@
 #!/bin/bash
-IS_BACKUP_ENABLED="$(yq '.settings.backups.enabled // "false")' $QTOOLS_CONFIG_FILE)"
+IS_BACKUP_ENABLED="$(yq '.settings.backups.enabled' $QTOOLS_CONFIG_FILE)"
 
 if [ "$IS_BACKUP_ENABLED" == 'true' ]; then
   LOCAL_HOST_NAME=$(hostname)

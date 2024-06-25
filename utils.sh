@@ -144,7 +144,7 @@ set_current_version() {
 }
 
 get_current_version() {
-    local IS_LINKED="$(yq '.settings.linked_node.enabled // "false"' $QTOOLS_CONFIG_FILE)"
+    local IS_LINKED="$(yq '.settings.linked_node.enabled' $QTOOLS_CONFIG_FILE)"
 
     if [ "$IS_LINKED" == "false" ]; then
         local CURRENT_VERSION=$(systemctl status $QUIL_SERVICE_NAME@main | grep -oP "\-([0-9]+\.)+([0-9]+)\-" | head -n 1 | tr -d 'node-')
