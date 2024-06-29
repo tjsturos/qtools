@@ -5,7 +5,7 @@ LOCAL_HOSTNAME=$(hostname)
 if [ "$IS_BACKUP_ENABLED" == 'true' ]; then
   REMOTE_DIR="$(yq '.settings.backups.remote_backup_dir' $QTOOLS_CONFIG_FILE)/$LOCAL_HOSTNAME/"
   SSH_ALIAS="$(yq '.settings.backups.ssh_alias' $QTOOLS_CONFIG_FILE)"
-  log "Backing up $LOCAL_HOSTNAME to remote $SSH_ALIAS:$REMOTE_DIR."
+  log "Backing up $LOCAL_HOSTNAME to remote $SSH_ALIAS:$REMOTE_DIR"
 
   ssh -q -o BatchMode=yes -o ConnectTimeout=5 $SSH_ALIAS exit
 
