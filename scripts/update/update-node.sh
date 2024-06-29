@@ -35,7 +35,7 @@ main() {
   local available_qclient_files=$(fetch_available_files "https://releases.quilibrium.com/qclient-release")
 
   # Extract the version from the available files
-  local available_version=$(echo "$available_files" | grep -oP 'node-([0-9\.]+)+' | head -n 1 | )
+  local available_version=$(echo "$available_files" | grep -oP 'node-([0-9\.]+)+' | head -n 1 | tr -d 'node-')
   local available_qclient_version=$(echo "$available_qclient_files" | grep -oP 'qclient-([0-9\.]+)+' | head -n 1 | tr -d 'node-')
 
   if [[ "$current_version" != "$available_version" ]]; then
