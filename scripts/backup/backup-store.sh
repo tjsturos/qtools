@@ -1,10 +1,11 @@
 #!/bin/bash
 IS_BACKUP_ENABLED="$(yq '.settings.backups.enabled' $QTOOLS_CONFIG_FILE)"
+LOCAL_HOSTNAME=$(hostname)
 
 if [ "$IS_BACKUP_ENABLED" == 'true' ]; then
-  LOCAL_HOST_NAME=$(hostname)
-  REMOTE_DIR="$(yq '.settings.backups.remote_backup_dir' $QTOOLS_CONFIG_FILE)/$LOCAL_HOST_NAME/"
+  REMOTE_DIR="$(yq '.settings.backups.remote_backup_dir' $QTOOLS_CONFIG_FILE)/$LOCAL_HOSTNAME/"
   SSH_ALIAS="$(yq '.settings.backups.ssh_alias' $QTOOLS_CONFIG_FILE)"
+  log "Backing up $LOCAL_HOSTNAME to remote $SSH_ALIAS:$REMOTE_DIR."
 
   ssh -q -o BatchMode=yes -o ConnectTimeout=5 $SSH_ALIAS exit
 
@@ -15,4 +16,6 @@ if [ "$IS_BACKUP_ENABLED" == 'true' ]; then
 
   ssh $SSH_ALIAS "mkdir -p $REMOTE_DIR"
   rsync -avz --ignore-existing -e ssh "$QUIL_NODE_PATH/.config" "$SSH_ALIAS:$REMOTE_DIR"
+else
+  log "Backup for $LOCAL_HOSTNAME is not enabled. Modify the qtools config to enable."
 fi
