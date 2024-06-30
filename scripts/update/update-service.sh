@@ -17,6 +17,7 @@ update_service_binary() {
 
     log "Service: $NEW_EXECSTART"
     log "Service: $WORKING_DIR"
+    log "Service: $RESTART_SEC"
 }
 
 updateCPUQuota() {
