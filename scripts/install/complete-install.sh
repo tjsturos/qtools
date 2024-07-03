@@ -25,8 +25,12 @@ qtools enable
 if [ "$IS_LINKED" != "true" ]; then
     # This first command generates a default config file
     BINARY_NAME="$(get_versioned_node)"
-    $QUIL_NODE_PATH/$BINARY_NAME -peer-id
-    qtools modify-config &
+    BINARY_FILE=$QUIL_NODE_PATH/$BINARY_NAME
+    $BINARY_FILE -peer-id
+    sleep 3
+    if [ -f $BINARY_FILE ]; then 
+        qtools modify-config
+    fi
 fi
 
 if [ "$DISABLE_SSH_PASSWORDS" == 'true' ]; then
