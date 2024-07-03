@@ -8,8 +8,8 @@ wget https://go.dev/dl/$GO_COMPRESSED_FILE
 log "Uncompressing $GO_COMPRESSED_FILE"
 tar -xvf $GO_COMPRESSED_FILE &> /dev/null
 
-if [ -f $GO_BIN_DIR ]; then
-    sudo rm $GO_BIN_DIR
+if [ -d $GO_BIN_DIR ]; then
+    sudo rm -r $GO_BIN_DIR
 fi
 
 sudo mv go $GO_BIN_DIR
