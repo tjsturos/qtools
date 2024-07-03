@@ -44,4 +44,4 @@ source $QTOOLS_PATH/scripts/install/customization.sh
 # log "Installation complete. Going for a reboot."
 
 wait
-reboot
+sudo systemctl reboot
