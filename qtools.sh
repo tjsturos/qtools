@@ -91,6 +91,8 @@ export GOROOT=$GO_BIN_DIR/go
 export GOPATH=$HOME/go
 export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
 
+
+
 # Determine the script's path, whether called through a symlink or directly
 if [[ -L "$0" ]]; then
     # If $0 is a symlink, resolve it to the actual script path
@@ -105,6 +107,21 @@ QTOOLS_PATH=$(dirname "$SCRIPT_PATH")
 
 # common utils for scripts
 source $QTOOLS_PATH/utils.sh
+
+if ! command_exists 'yq'; then
+  source $QTOOLS_PATH/scripts/install/install-yq.sh
+  if ! command_exists 'yq'; then
+    log "Could not install command 'yq'.  Please try again or install manually."
+  fi
+fi
+
+export QTOOLS_CONFIG_FILE=$QTOOLS_PATH/config.yml
+
+if [ ! -f "$QTOOLS_CONFIG_FILE" ]; then
+  cp $QTOOLS_PATH/config.sample.yml $QTOOLS_PATH/config.yml
+  log "Copied the default config file (config.sample.yml) to make the initial config.yml file."  
+  log "To edit, use 'qtools edit-qtools-config' command"
+fi
 
 install_package inotify-tools inotifywait
 install_package colordiff colordiff
@@ -125,20 +142,7 @@ if [ ! -L "$QTOOLS_BIN_PATH" ]; then
   fi
 fi
 
-if ! command_exists 'yq'; then
-  source $QTOOLS_PATH/scripts/install/install-yq.sh
-  if ! command_exists 'yq'; then
-    log "Could not install command 'yq'.  Please try again or install manually."
-  fi
-fi
 
-export QTOOLS_CONFIG_FILE=$QTOOLS_PATH/config.yml
-
-if [ ! -f "$QTOOLS_CONFIG_FILE" ]; then
-  cp $QTOOLS_PATH/config.sample.yml $QTOOLS_PATH/config.yml
-  log "Copied the default config file (config.sample.yml) to make the initial config.yml file."  
-  log "To edit, use 'qtools edit-qtools-config' command"
-fi
 
 export LOG_OUTPUT_FILE="$(yq '.settings.log_file' $QTOOLS_CONFIG_FILE)"
 export QUIL_SERVICE_NAME="$(yq '.service.file_name' $QTOOLS_CONFIG_FILE)"
