@@ -162,20 +162,21 @@ fetch_available_files() {
 }
 
 get_remote_quil_files() {
-    local files="$1"
+    local files=("${!1}")
     local dest_dir=$2
 
     while IFS= read -r file; do
         if [[ "$file" == *"$OS_ARCH"* ]]; then
-        local file_url="https://releases.quilibrium.com/${file}"
-        local dest_file="${dest_dir}/${file}"
+            local file_url="https://releases.quilibrium.com/${file}"
+            local dest_file="${dest_dir}/${file}"
 
-        if [ ! -f "$dest_file" ]; then
-            log "Downloading $file_url to $dest_file"
-            curl -o "$dest_file" "$file_url"
-        else
-            log "File $dest_file already exists"
-        fi
+            if [ ! -f "$dest_file" ]; then
+                log "Downloading $file_url to $dest_file"
+                curl -o "$dest_file" "$file_url"
+            else
+                log "File $dest_file already exists"
+            fi
+        
         fi
     done <<< "$files"
 }
