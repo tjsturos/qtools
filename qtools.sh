@@ -132,13 +132,14 @@ if ! command_exists 'yq'; then
   fi
 fi
 
-if [ ! -f $QTOOLS_PATH/config.yml ]; then
+export QTOOLS_CONFIG_FILE=$QTOOLS_PATH/config.yml
+
+if [ ! -f "$QTOOLS_CONFIG_FILE" ]; then
   cp $QTOOLS_PATH/config.sample.yml $QTOOLS_PATH/config.yml
   log "Copied the default config file (config.sample.yml) to make the initial config.yml file."  
   log "To edit, use 'qtools edit-qtools-config' command"
 fi
 
-export QTOOLS_CONFIG_FILE=$QTOOLS_PATH/config.yml
 export LOG_OUTPUT_FILE="$(yq '.settings.log_file' $QTOOLS_CONFIG_FILE)"
 export QUIL_SERVICE_NAME="$(yq '.service.file_name' $QTOOLS_CONFIG_FILE)"
 export QUIL_SERVICE_FILE="$SYSTEMD_SERVICE_PATH/$QUIL_SERVICE_NAME@.service"
