@@ -1,8 +1,20 @@
 #!/bin/bash
-BACKUP_DIR=$HOME/quil-backup
-RESTORE_DIR=$QUIL_NODE_PATH/.config
+IS_BACKUP_ENABLED="$(yq '.settings.backups.enabled' $QTOOLS_CONFIG_FILE)"
+LOCAL_HOSTNAME=$(hostname)
 
-# Wait for the directory to be created if it doesn't exist
-qtools stop
-cp -r $BACKUP_DIR/.config $RESTORE_DIR
-qtools start
+if [ "$IS_BACKUP_ENABLED" == 'true' ]; then
+  REMOTE_DIR="$(yq '.settings.backups.remote_backup_dir' $QTOOLS_CONFIG_FILE)/$LOCAL_HOSTNAME/"
+  SSH_ALIAS="$(yq '.settings.backups.ssh_alias' $QTOOLS_CONFIG_FILE)"
+  log "Restoring $LOCAL_HOSTNAME from remote $SSH_ALIAS:$REMOTE_DIR"
+
+  ssh -q -o BatchMode=yes -o ConnectTimeout=5 $SSH_ALIAS exit
+
+  if [ $? -ne 0 ]; then
+    echo "SSH alias $SSH_ALIAS does not exist or is not reachable."
+    exit 1
+  fi
+
+  rsync -avz --ignore-existing -e ssh "$SSH_ALIAS:$REMOTE_DIR" "$QUIL_NODE_PATH/.config"
+else
+  log "Restore for $LOCAL_HOSTNAME is not enabled. Modify the qtools config to enable."
+fi
