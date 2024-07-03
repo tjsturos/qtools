@@ -108,8 +108,8 @@ export QTOOLS_CONFIG_FILE=$QTOOLS_PATH/config.yml
 
 if [ ! -f "$QTOOLS_CONFIG_FILE" ]; then
   cp $QTOOLS_PATH/config.sample.yml $QTOOLS_PATH/config.yml
-  log "Copied the default config file (config.sample.yml) to make the initial config.yml file."  
-  log "To edit, use 'qtools edit-qtools-config' command"
+  echo "Copied the default config file (config.sample.yml) to make the initial config.yml file."  
+  echo "To edit, use 'qtools edit-qtools-config' command"
 fi
 
 export LOG_OUTPUT_FILE="$(yq '.settings.log_file' $QTOOLS_CONFIG_FILE)"
