@@ -12,7 +12,7 @@ if [ -d $GOROOT ]; then
     sudo rm -r $GOROOT
 fi
 
-sudo mv go $GO_BIN_DIR
+sudo mv go $GOROOT
 
 file_exists $GOROOT
 

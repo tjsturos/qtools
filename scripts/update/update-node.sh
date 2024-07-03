@@ -44,7 +44,9 @@ main() {
     rm $QUIL_NODE_PATH/node-*
     # Download all matching files if necessary
     download_matching_files_if_different "$release_version" "$available_files" "https://releases.quilibrium.com"
+    sudo chmod +x $QUIL_NODE_PATH/$(get_versioned_node)
     download_matching_files_if_different "$release_version" "$available_qclient_files" "https://releases.quilibrium.com"
+    sudo chmod +x $QUIL_CLIENT_PATH/$(get_versioned_qclient)
   else 
     log "The current version ($current_version) matches ($available_version).  "
   fi
