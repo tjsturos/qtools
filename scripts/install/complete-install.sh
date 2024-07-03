@@ -5,7 +5,7 @@ sudo apt-get -q update
 IS_LINKED="$(yq '.settings.linked_node.enabled' $QTOOLS_CONFIG_FILE)"
 DISABLE_SSH_PASSWORDS="$(yq '.settings.install.ssh.disable_ssh_login') $QTOOLS_CONFIG_FILE"
 
-cd 
+cd $QUIL_HOME
 
 qtools install-node-binary
 qtools install-qclient
@@ -15,8 +15,6 @@ qtools install-go
 qtools install-grpc
 qtools setup-firewall
 qtools install-cron
-
-
 
 if [ "$IS_LINKED" != "true" ]; then
     # This first command generates a default config file
@@ -41,7 +39,4 @@ fi
 
 source $QTOOLS_PATH/scripts/install/customization.sh
 
-# log "Installation complete. Going for a reboot."
-
-wait
 sudo systemctl reboot

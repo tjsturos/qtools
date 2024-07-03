@@ -140,16 +140,13 @@ if [ ! -L "$QTOOLS_BIN_PATH" ]; then
   source $QTOOLS_PATH/scripts/install/create-qtools-symlink.sh
 
   if [ ! -L "$QTOOLS_BIN_PATH" ]; then
-    log "Attempted to install $QTOOLS_BIN_PATH, but failed. This is required to proceed. Try \"ln -s $QTOOLS_PATH/qtools.sh /usr/local/bin/qtools\" manually."
+    log "Attempted to install $QTOOLS_BIN_PATH, but failed. This is required to proceed. Try \"sudo ln -s $QTOOLS_PATH/qtools.sh /usr/local/bin/qtools\" manually."
     exit 1
   else
     log "$QTOOLS_BIN_PATH installed successfully."
     qtools add-auto-complete
   fi
 fi
-
-
-
 
 export QUIL_SERVICE_NAME="$(yq '.service.file_name' $QTOOLS_CONFIG_FILE)"
 export QUIL_SERVICE_FILE="$SYSTEMD_SERVICE_PATH/$QUIL_SERVICE_NAME@.service"
