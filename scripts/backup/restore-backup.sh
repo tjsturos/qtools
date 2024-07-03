@@ -14,7 +14,7 @@ if [ "$IS_BACKUP_ENABLED" == 'true' ]; then
     exit 1
   fi
 
-  rsync -avz --ignore-existing -e ssh "$SSH_ALIAS:$REMOTE_DIR" "$QUIL_NODE_PATH/.config"
+  rsync -avz --ignore-existing -e ssh "$SSH_ALIAS:$REMOTE_DIR" "$QUIL_NODE_PATH/"
 else
   log "Restore for $LOCAL_HOSTNAME is not enabled. Modify the qtools config to enable."
 fi
