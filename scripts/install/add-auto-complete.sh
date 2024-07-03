@@ -37,7 +37,7 @@ else
   
   pattern="^complete -W '.*' qtools$"
   remove_lines_matching_pattern $BASHRC_FILE "$pattern"
-  append_to_file $BASHRC_FILE "complete -W \'$joined_script_names\' qtools" false
+  append_to_file $BASHRC_FILE "complete -W '$joined_script_names' qtools" false
 fi
 
 source $BASHRC_FILE

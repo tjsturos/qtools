@@ -24,7 +24,7 @@ append_to_file() {
         
         log "Adding $CONTENT to $FILE" $LOG_OUTPUT
         
-        sudo -- sh -c "echo '$CONTENT' >> $FILE"
+        sudo -- sh -c "echo \"$CONTENT\" >> $FILE"
     else
         log "$CONTENT already found in $FILE. Skipping." $LOG_OUTPUT
     fi
