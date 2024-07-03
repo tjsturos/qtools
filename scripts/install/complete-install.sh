@@ -16,11 +16,7 @@ qtools install-grpc
 qtools setup-firewall
 qtools install-cron
 
-# build out the appropriate service(s)
-qtools start
 
-# tells server to always start node service on reboot
-qtools enable
 
 if [ "$IS_LINKED" != "true" ]; then
     # This first command generates a default config file
@@ -32,6 +28,12 @@ if [ "$IS_LINKED" != "true" ]; then
         qtools modify-config
     fi
 fi
+
+# build out the appropriate service(s)
+qtools start
+
+# tells server to always start node service on reboot
+qtools enable
 
 if [ "$DISABLE_SSH_PASSWORDS" == 'true' ]; then
     qtools disable-ssh-passwords
