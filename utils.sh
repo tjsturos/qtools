@@ -12,7 +12,7 @@ log() {
             echo "$LOG"
     fi
 
-    echo "$LOG" >> $QTOOLS_PATH/$LOG_OUTPUT_FILE
+    echo "$LOG" >> "$QTOOLS_PATH/$LOG_OUTPUT_FILE"
 }
 
 append_to_file() {

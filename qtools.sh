@@ -104,6 +104,8 @@ fi
 
 # Get the directory where the script is located
 QTOOLS_PATH=$(dirname "$SCRIPT_PATH")
+export QTOOLS_CONFIG_FILE=$QTOOLS_PATH/config.yml
+export LOG_OUTPUT_FILE="$(yq '.settings.log_file' $QTOOLS_CONFIG_FILE)"
 
 # common utils for scripts
 source $QTOOLS_PATH/utils.sh
@@ -114,9 +116,12 @@ if ! command_exists 'yq'; then
     log "Could not install command 'yq'.  Please try again or install manually."
     exit 1
   fi
+  # many util scripts require the log
+  export LOG_OUTPUT_FILE="$(yq '.settings.log_file' $QTOOLS_CONFIG_FILE)"
+  source $QTOOLS_PATH/utils.sh
 fi
 
-export QTOOLS_CONFIG_FILE=$QTOOLS_PATH/config.yml
+
 
 if [ ! -f "$QTOOLS_CONFIG_FILE" ]; then
   cp $QTOOLS_PATH/config.sample.yml $QTOOLS_PATH/config.yml
@@ -145,7 +150,7 @@ fi
 
 
 
-export LOG_OUTPUT_FILE="$(yq '.settings.log_file' $QTOOLS_CONFIG_FILE)"
+
 export QUIL_SERVICE_NAME="$(yq '.service.file_name' $QTOOLS_CONFIG_FILE)"
 export QUIL_SERVICE_FILE="$SYSTEMD_SERVICE_PATH/$QUIL_SERVICE_NAME@.service"
 export OS_ARCH="$(get_os_arch)"
