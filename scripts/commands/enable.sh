@@ -8,9 +8,9 @@ if [ "$IS_LINKED" == "true" ]; then
 
     for ((i = $CORE_INDEX_START ; i <= $CORE_INDEX_STOP ; i++)); do
         NODE_ARGS="$NODE_ARGS --core=$(expr $i)" 
-        systemctl enable $QUIL_SERVICE_NAME@$i.service
+        sudo systemctl enable $QUIL_SERVICE_NAME@$i.service
     done
 else
     # otherwise just start the main process
-    systemctl enable $QUIL_SERVICE_NAME@main.service
+    sudo systemctl enable $QUIL_SERVICE_NAME@main.service
 fi

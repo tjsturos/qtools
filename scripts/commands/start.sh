@@ -24,13 +24,13 @@ if [ "$IS_LINKED" == "true" ]; then
     for ((i = $CORE_INDEX_START ; i <= $CORE_INDEX_STOP ; i++)); do
         INDEX=$(expr $i + $NODE_PROCESS_START)
         PORT=$(expr $INDEX + 40000)
-        ufw allow $PORT
+        sudo ufw allow $PORT
         NODE_ARGS="$NODE_ARGS --core=$INDEX" 
         echo $NODE_ARGS > $PROCESS_DIR/$i
-        systemctl start $QUIL_SERVICE_NAME@$i.service
+        sudo systemctl start $QUIL_SERVICE_NAME@$i.service
     done
 else
     # otherwise just start the main process
     echo $NODE_ARGS > $PROCESS_DIR/main
-    systemctl start $QUIL_SERVICE_NAME@main.service
+    sudo systemctl start $QUIL_SERVICE_NAME@main.service
 fi
