@@ -11,6 +11,14 @@ update_or_add_line() {
     fi
 }
 
+get_processor_count() {
+  # Get the CPU count using the nproc command
+  cpu_count=$(nproc)
+
+  # Print the CPU count
+  echo $cpu_count
+}
+
 update_service_binary() {
     local QUIL_BIN="$(get_versioned_node)"
     # local INLINE_ARGS="$(yq '.service.args' $QTOOLS_CONFIG_FILE)"
