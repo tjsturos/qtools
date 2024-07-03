@@ -5,7 +5,7 @@ CONFIG_DIR="$QUIL_NODE_PATH/.config"
 # Filename to watch for
 FILENAME="config.yml"
 
-CONFIG_FILE=$CONFIG_FILE
+CONFIG_FILE=$CONFIG_DIR/$FILENAME
 
 # Modifications to make to the config file
 modify_config_file() {
