@@ -105,6 +105,13 @@ fi
 # Get the directory where the script is located
 QTOOLS_PATH=$(dirname "$SCRIPT_PATH")
 export QTOOLS_CONFIG_FILE=$QTOOLS_PATH/config.yml
+
+if [ ! -f "$QTOOLS_CONFIG_FILE" ]; then
+  cp $QTOOLS_PATH/config.sample.yml $QTOOLS_PATH/config.yml
+  log "Copied the default config file (config.sample.yml) to make the initial config.yml file."  
+  log "To edit, use 'qtools edit-qtools-config' command"
+fi
+
 export LOG_OUTPUT_FILE="$(yq '.settings.log_file' $QTOOLS_CONFIG_FILE)"
 
 # common utils for scripts
@@ -119,14 +126,6 @@ if ! command_exists 'yq'; then
   # many util scripts require the log
   export LOG_OUTPUT_FILE="$(yq '.settings.log_file' $QTOOLS_CONFIG_FILE)"
   source $QTOOLS_PATH/utils.sh
-fi
-
-
-
-if [ ! -f "$QTOOLS_CONFIG_FILE" ]; then
-  cp $QTOOLS_PATH/config.sample.yml $QTOOLS_PATH/config.yml
-  log "Copied the default config file (config.sample.yml) to make the initial config.yml file."  
-  log "To edit, use 'qtools edit-qtools-config' command"
 fi
 
 install_package inotify-tools inotifywait
