@@ -15,7 +15,7 @@ if [ "$IS_BACKUP_ENABLED" == 'true' ]; then
   fi
 
   ssh $SSH_ALIAS "mkdir -p $REMOTE_DIR"
-  rsync -avz --ignore-existing -e ssh "$QUIL_NODE_PATH/.config" "$SSH_ALIAS:$REMOTE_DIR"
+  rsync -avz --delete -e ssh "$QUIL_NODE_PATH/.config" "$SSH_ALIAS:$REMOTE_DIR"
 else
   log "Backup for $LOCAL_HOSTNAME is not enabled. Modify the qtools config to enable."
 fi
