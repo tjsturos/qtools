@@ -112,6 +112,7 @@ if ! command_exists 'yq'; then
   source $QTOOLS_PATH/scripts/install/install-yq.sh
   if ! command_exists 'yq'; then
     log "Could not install command 'yq'.  Please try again or install manually."
+    exit 1
   fi
 fi
 

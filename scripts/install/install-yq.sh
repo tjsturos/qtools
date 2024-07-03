@@ -6,7 +6,7 @@ sudo wget -q https://github.com/mikefarah/yq/releases/download/${VERSION}/${COMP
 tar -xzf $COMPRESSED_FILENAME &> /dev/null
 
 if [ -f /usr/bin/yq ]; then
-    rm /usr/bin/yq
+    sudo rm /usr/bin/yq
 fi
 
 sudo mv $BINARY /usr/bin/yq

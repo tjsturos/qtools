@@ -36,7 +36,7 @@ remove_directory() {
     if [ -d "$DIRECTORY" ]; then
         log "Directory $DIRECTORY found.  Removing." $LOG_OUTPUT
         
-        rm -rf $DIRECTORY
+        sudo rm -rf $DIRECTORY
         if [ ! -d $DIRECTORY ]; then
             log "Directory $DIRECTORY deletion was successful." $LOG_OUTPUT
         else
@@ -51,7 +51,7 @@ remove_file() {
     if [ -f "$FILE" ]; then
         log "File $FILE found.  Removing." $LOG_OUTPUT
         
-        rm $FILE
+        sudo rm $FILE
         if [ ! -f $FILE ]; then
             log "File $FILE deletion was successful." $LOG_OUTPUT
         else
