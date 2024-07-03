@@ -62,19 +62,19 @@ updateCPUQuota() {
                     CURRENT_CPUQUOTA=$(grep "^CPUQuota=" "$QUIL_SERVICE_FILE" | cut -d'=' -f2)
                     # Update the existing CPUQuota line only if the value is different
                     if [ "$CURRENT_CPUQUOTA" != "$CPU_QUOTA" ]; then
-                        sed -i "s/^CPUQuota=.*/CPUQuota=$CPU_QUOTA/" "$QUIL_SERVICE_FILE"
+                        sudo sed -i "s/^CPUQuota=.*/CPUQuota=$CPU_QUOTA/" "$QUIL_SERVICE_FILE"
                         sudo systemctl daemon-reload
                         log "Systemctl CPUQuota updated to $CPU_QUOTA in $QUIL_SERVICE_FILE"
                     fi
                 else
                     # Append CPUQuota to the [Service] section
-                    sed -i "/^\[Service\]/a CPUQuota=$CPU_QUOTA" "$QUIL_SERVICE_FILE"
+                    sudo sed -i "/^\[Service\]/a CPUQuota=$CPU_QUOTA" "$QUIL_SERVICE_FILE"
                     sudo systemctl daemon-reload
                     log "Systemctl CPUQuota updated to $CPU_QUOTA in $QUIL_SERVICE_FILE"
                 fi
             else
                 # If [Service] section does not exist, add it and append CPUQuota
-                echo -e "[Service]\nCPUQuota=$CPU_QUOTA" >> "$QUIL_SERVICE_FILE"
+                sudo -- sh -c "echo -e \"[Service]\nCPUQuota=$CPU_QUOTA\" >> \"$QUIL_SERVICE_FILE\""
                 sudo systemctl daemon-reload
                 log "Systemctl CPUQuota updated to $CPU_QUOTA in $QUIL_SERVICE_FILE"
             fi   
