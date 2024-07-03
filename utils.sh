@@ -24,7 +24,7 @@ append_to_file() {
         
         log "Adding $CONTENT to $FILE" $LOG_OUTPUT
         
-        echo "$CONTENT" >> $FILE
+        echo "$CONTENT" | sudo tee -a$FILE
     else
         log "$CONTENT already found in $FILE. Skipping." $LOG_OUTPUT
     fi
@@ -71,15 +71,6 @@ file_exists() {
     fi
 }
 
-# Function to monitor for the directory creation
-wait_for_directory() {
-    DIRECTORY="$1"
-    while [ ! -d "$DIRECTORY" ]; do
-        log "Waiting for directory '$DIRECTORY' to be created..."
-        sleep 2
-    done
-    log "Directory '$DIRECTORY' has been created."
-}
 
 command_exists() {
   command -v "$1" >/dev/null 2>&1
@@ -126,7 +117,7 @@ remove_lines_matching_pattern() {
     fi
 
     # Use sed to remove lines matching the specified pattern
-    sed -i "/$pattern/d" "$file"
+    sudo sed -i "/$pattern/d" "$file"
 }
 
 set_release_version() {
