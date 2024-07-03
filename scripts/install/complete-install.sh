@@ -1,18 +1,17 @@
 #/bin/bash
 
-apt-get -q update
+sudo apt-get -q update
 
 IS_LINKED="$(yq '.settings.linked_node.enabled' $QTOOLS_CONFIG_FILE)"
 DISABLE_SSH_PASSWORDS="$(yq '.settings.install.ssh.disable_ssh_login') $QTOOLS_CONFIG_FILE"
 
-cd $HOME
+cd 
 
 qtools install-node-binary
 qtools install-qclient
 qtools update-service
 
-qtools add-auto-complete
-
+qtools install-go
 qtools install-grpc
 qtools setup-firewall
 qtools install-cron
@@ -24,6 +23,9 @@ qtools start
 qtools enable
 
 if [ "$IS_LINKED" != "true" ]; then
+    # This first command generates a default config file
+    BINARY_NAME="$(get_versioned_node)"
+    $QUIL_NODE_PATH/$BINARY_NAME -peer-id
     qtools modify-config &
 fi
 

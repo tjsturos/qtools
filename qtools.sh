@@ -144,6 +144,7 @@ if [ ! -L "$QTOOLS_BIN_PATH" ]; then
     exit 1
   else
     log "$QTOOLS_BIN_PATH installed successfully."
+    qtools add-auto-complete
   fi
 fi
 

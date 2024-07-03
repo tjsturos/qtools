@@ -1,10 +1,10 @@
 #!/bin/bash
 
 log "Setting up firewall"
-echo "y" | ufw enable
-ufw allow 22
-ufw allow 8336
-ufw allow 443
+echo "y" | sudo ufw enable
+sudo ufw allow 22
+sudo ufw allow 8336
+sudo ufw allow 443
 
 expected_rules=(
   "22                         ALLOW       Anywhere"
@@ -16,7 +16,7 @@ expected_rules=(
 )
 
 # Get the actual output of 'ufw status'
-actual_output=$(ufw status)
+actual_output=$(sudo ufw status)
 
 # Check if UFW is active
 if ! echo "$actual_output" | grep -q "Status: active"; then
