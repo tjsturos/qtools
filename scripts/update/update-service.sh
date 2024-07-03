@@ -13,8 +13,8 @@ update_or_add_line() {
 
 update_service_binary() {
     local QUIL_BIN="$(get_versioned_node)"
-    local INLINE_ARGS="$(yq '.service.args' $QTOOLS_CONFIG_FILE)"
-    local NEW_EXECSTART="$QUIL_NODE_PATH/$QUIL_BIN \$NODE_ARGS $INLINE_ARGS"
+    # local INLINE_ARGS="$(yq '.service.args' $QTOOLS_CONFIG_FILE)"
+    local NEW_EXECSTART="$QUIL_NODE_PATH/$QUIL_BIN \$NODE_ARGS"
     local WORKING_DIR="$(yq '.service.working_dir' $QTOOLS_CONFIG_FILE)"
     local RESTART_SEC="$(yq '.service.restart_time' $QTOOLS_CONFIG_FILE)"
     local CURRENT_USER=$(whoami)
