@@ -24,7 +24,7 @@ append_to_file() {
         
         log "Adding $CONTENT to $FILE" $LOG_OUTPUT
         
-        echo "$CONTENT" | sudo tee -a$FILE
+        echo "$CONTENT" | sudo tee -a $FILE
     else
         log "$CONTENT already found in $FILE. Skipping." $LOG_OUTPUT
     fi
