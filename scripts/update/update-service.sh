@@ -2,22 +2,38 @@
 
 log "Updating the service..."
 
+update_or_add_line() {
+    local KEY=$1
+    local VALUE=$2
+    sudo sed -i -e "/^$KEY=/c\\$KEY=$VALUE" "$QUIL_SERVICE_FILE"
+    if ! grep -q "^$KEY=" "$QUIL_SERVICE_FILE"; then
+        sudo sed -i "/\[Service\]/a $KEY=$VALUE" "$QUIL_SERVICE_FILE"
+    fi
+}
+
 update_service_binary() {
     local QUIL_BIN="$(get_versioned_node)"
     local INLINE_ARGS="$(yq '.service.args' $QTOOLS_CONFIG_FILE)"
-    local NEW_EXECSTART="ExecStart=$QUIL_NODE_PATH/$QUIL_BIN \$NODE_ARGS $INLINE_ARGS"
-    local WORKING_DIR="WorkingDirectory=$(yq '.service.working_dir' $QTOOLS_CONFIG_FILE)"
-    local RESTART_SEC="RestartSec=$(yq '.service.restart_time' $QTOOLS_CONFIG_FILE)"
-    sudo sed -i -e "/^ExecStart=/c\\$NEW_EXECSTART" "$QUIL_SERVICE_FILE"
-    sudo sed -i -e "/^WorkingDirectory=/c\\$WORKING_DIR" "$QUIL_SERVICE_FILE"
-    sudo sed -i -e "/^RestartSec=/c\\$RESTART_SEC" "$QUIL_SERVICE_FILE"
-    # Update the service file if needed
+    local NEW_EXECSTART="$QUIL_NODE_PATH/$QUIL_BIN \$NODE_ARGS $INLINE_ARGS"
+    local WORKING_DIR="$(yq '.service.working_dir' $QTOOLS_CONFIG_FILE)"
+    local RESTART_SEC="$(yq '.service.restart_time' $QTOOLS_CONFIG_FILE)"
+    local CURRENT_USER=$(whoami)
+    local CURRENT_GROUP=$(id -gn)
+
+    update_or_add_line "ExecStart" "$NEW_EXECSTART"
+    update_or_add_line "WorkingDirectory" "$WORKING_DIR"
+    update_or_add_line "RestartSec" "$RESTART_SEC"
+    update_or_add_line "User" "$CURRENT_USER"
+    update_or_add_line "Group" "$CURRENT_GROUP"
+
     sudo chmod +x $QUIL_NODE_PATH/$QUIL_BIN
     sudo systemctl daemon-reload
 
-    log "Service: $NEW_EXECSTART"
-    log "Service: $WORKING_DIR"
-    log "Service: $RESTART_SEC"
+    log "Service: ExecStart=$NEW_EXECSTART"
+    log "Service: WorkingDirectory=$WORKING_DIR"
+    log "Service: RestartSec=$RESTART_SEC"
+    log "Service: User=$CURRENT_USER"
+    log "Service: Group=$CURRENT_GROUP"
 }
 
 updateCPUQuota() {
