@@ -23,5 +23,7 @@ TIMESTAMP=$(date +%s)
 # Get the unclaimed balance
 BALANCE=$(get_unclaimed_balance)
 
-# Append the timestamp and balance to the CSV file
-echo "$TIMESTAMP,$BALANCE" >> "$CSV_FILE"
+if [ ! -z "$BALANCE" ]; then
+  # Append the timestamp and balance to the CSV file
+  echo "$TIMESTAMP,$BALANCE" >> "$CSV_FILE"
+fi
