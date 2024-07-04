@@ -202,5 +202,8 @@ if [ ! -f "$SCRIPT" ]; then
   exit 1
 fi
 
+# remove the script name
+shift 1
+
 # Source the provided script
-source "$SCRIPT"
+source "$SCRIPT" "$@"
