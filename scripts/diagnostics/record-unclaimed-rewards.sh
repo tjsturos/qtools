@@ -10,7 +10,7 @@ get_unclaimed_balance() {
 TYPE="$1"
 
 # Path to the CSV file
-CSV_FILE="$QTOOLS_PATH/unclaimed_$TYPE_balance.csv"
+CSV_FILE="$QTOOLS_PATH/unclaimed_$TYPE\_balance.csv"
 
 # Check if the CSV file exists, if not, create it with headers
 if [[ ! -f "$CSV_FILE" ]]; then
