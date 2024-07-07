@@ -3,6 +3,11 @@
 
 current_version="$(get_current_version)"
 restart_required="false"
+force_update="false"
+
+if [[ "$1" == "--force" ]]; then
+  force_update="true"
+fi
 
 # Function to download all matching files if version is different
 download_matching_files_if_different() {
@@ -38,7 +43,7 @@ main() {
   local available_version=$(echo "$available_files" | grep -oP 'node-([0-9\.]+)+' | head -n 1 | tr -d 'node-')
   local available_qclient_version=$(echo "$available_qclient_files" | grep -oP 'qclient-([0-9\.]+)+' | head -n 1 | tr -d 'node-')
 
-  if [[ "$current_version" != "$available_version" ]]; then
+  if [[ "$current_version" != "$available_version" ]] || [[ $force_update == "true" ]]; then
     restart_required="true"
     rm $QUIL_CLIENT_PATH/qclient-*
     rm $QUIL_NODE_PATH/node-*
