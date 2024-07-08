@@ -44,6 +44,7 @@ usage() {
   echo "  get-ports-listening      - Detect if listening on ports 22, 443, 8336, 8337."
   echo "  detect-bootstrap-peers   - Detect if bootstrap peers know of node."
   echo "  record-unclaimed-rewards - Record the unclaimed rewards balance to a CSV file."
+  echo "  get-hourly-reward-rate   - Get the average hourly reward rate over the last 24 hours (needs to have been running for at least 24 hours)."
 
   echo "Tooling:"
   echo "  create-qtools-symlink    - Create a symlink for 'qtools' to /usr/local/bin."
@@ -172,7 +173,7 @@ case "$1" in
   make-backup|restore-backup|backup-store)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/backup"
     ;;
-  view-log|debug|view-debug-log|get-ports-listening|detect-bootstrap-peers|record-unclaimed-rewards)
+  view-log|debug|view-debug-log|get-ports-listening|detect-bootstrap-peers|record-unclaimed-rewards|get-hourly-reward-rate)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/diagnostics"
     ;;
   node-get-peer-id|node-get-reward-balance)
