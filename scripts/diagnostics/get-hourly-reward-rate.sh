@@ -35,26 +35,26 @@ prev_balance=0
 first_line=true
 
 # Find the start index for the specified number of hours
-start_index=$((num_lines - hours + 1))
+start_index=$((num_lines - hours))
 
 # Process the specified number of hours of data
 for ((i=start_index; i<num_lines; i++)); do
   # Read the line
   line=${lines[$i]}
-  
+
   # Extract the timestamp and balance
   IFS=',' read -r timestamp balance <<< "$line"
-  
+
   if [[ "$first_line" == true ]]; then
     prev_balance=$balance
     first_line=false
     continue
   fi
-  
+
   # Calculate the difference between the current and previous balance
   increase=$(echo "$balance - $prev_balance" | bc)
   total_increase=$(echo "$total_increase + $increase" | bc)
-  
+
   # Update the previous balance
   prev_balance=$balance
 done
