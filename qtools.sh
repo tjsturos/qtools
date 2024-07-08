@@ -41,31 +41,30 @@ usage() {
   echo "  debug                    - Start the node in debug mode."
   echo "  view-log                 - View the log from the Quilibrium node service."
   echo "  view-debug-log           - View the debug log from the Quilibrium DEBUG node service."
-  echo "  get-ports-listening      - Detect if listening on ports 22, 443, 8336, 8337."
+  echo "  ports-listening          - Detect if listening on ports 22, 443, 8336, 8337."
   echo "  detect-bootstrap-peers   - Detect if bootstrap peers know of node."
   echo "  record-unclaimed-rewards - Record the unclaimed rewards balance to a CSV file."
-  echo "  get-hourly-reward-rate   - Get the average hourly reward rate over the last 24 hours (needs to have been running for at least 24 hours)."
+  echo "  hourly-reward-rate       - Get the average hourly reward rate over the last 24 hours (needs to have been running for at least 24 hours)."
 
   echo "Tooling:"
   echo "  create-qtools-symlink    - Create a symlink for 'qtools' to /usr/local/bin."
   echo "  add-auto-complete        - Add autocomplete for the 'qtools' command."
 
   echo "Network Information:"
-  echo "  get-token-info           - Get network information on tokens."
-  echo "  get-peer-info            - Get network information on peers."
-  echo "  get-node-count           - Get the number of nodes on the network."
-  echo "  get-node-info            - Get information about this node."
-  echo "  get-peer-id              - Get the Peer ID of this node (uses both grpcurl and node commands)."
-  echo "  get-node-version         - Get the version of this node."
-  echo "  get-frame-count          - Get the current frame (maxFrame) of this node."
+  echo "  token-info               - Get network information on tokens."
+  echo "  peer-info                - Get network information on peers."
+  echo "  node-count               - Get the number of nodes on the network."
+  echo "  node-info                - Get information about this node."
+  echo "  peer-id                  - Get the Peer ID of this node (uses both grpcurl and node commands)."
+  echo "  node-version             - Get the version of this node."
+  echo "  frame-count              - Get the current frame (maxFrame) of this node."
   
   echo "Node Commands"
-  echo "  node-get-peer-id         - Get the Peer ID without using grpcurl."
-  echo "  node-get-rewards-balance - Get the rewards balance."
+  echo "  unclaimed-balance - Get the rewards balance."
 
   echo "Common command shortcuts:"
-  echo "  edit-qtools-config              - Edit the qTools config file."
-  echo "  edit-quil-config              - Edit the Quil node config file."
+  echo "  edit-qtools-config       - Edit the qTools config file."
+  echo "  edit-quil-config         - Edit the Quil node config file."
 
   exit 1
 }
@@ -173,7 +172,7 @@ case "$1" in
   make-backup|restore-backup|backup-store)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/backup"
     ;;
-  view-log|debug|view-debug-log|get-ports-listening|detect-bootstrap-peers|record-unclaimed-rewards|get-hourly-reward-rate)
+  view-log|debug|view-debug-log|ports-listening|detect-bootstrap-peers|record-unclaimed-rewards|hourly-reward-rate)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/diagnostics"
     ;;
   peer-id|unclaimed-balance)
