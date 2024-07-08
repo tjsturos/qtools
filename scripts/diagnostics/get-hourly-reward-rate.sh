@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define the file path
-file_path="$QTOOLS_PATH/unclaimed_hourly_balance.sh"  # Replace with your actual file path
+file_path="$QTOOLS_PATH/unclaimed_hourly_balance.csv"  # Replace with your actual file path
 
 # Check if the file exists
 if [[ ! -f "$file_path" ]]; then
