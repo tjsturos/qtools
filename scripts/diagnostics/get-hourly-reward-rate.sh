@@ -9,8 +9,11 @@ if [[ ! -f "$file_path" ]]; then
   exit 1
 fi
 
+# Read the number of hours from the user, default to 24 if not provided
+hours=${1:-24}
+
 # Read the CSV file and process the data
-# Extract the header and the last 24 lines
+# Extract the header and the rest of the data
 header=$(head -n 1 "$file_path")
 data=$(tail -n +2 "$file_path")
 
@@ -20,15 +23,21 @@ IFS=$'\n' read -d '' -r -a lines <<< "$data"
 # Get the number of lines
 num_lines=${#lines[@]}
 
+# Adjust hours if there are fewer records than the specified number of hours
+if [[ $num_lines -lt $hours ]]; then
+  hours=$num_lines
+  echo "Not enough records for the specified number of hours. Defaulting to the maximum available records: $hours hours."
+fi
+
 # Initialize variables
 total_increase=0
 prev_balance=0
 first_line=true
 
-# Find the start index for the last 24 hours
-start_index=$((num_lines - 23))
+# Find the start index for the specified number of hours
+start_index=$((num_lines - hours + 1))
 
-# Process the last 24 hours of data
+# Process the specified number of hours of data
 for ((i=start_index; i<num_lines; i++)); do
   # Read the line
   line=${lines[$i]}
@@ -51,7 +60,7 @@ for ((i=start_index; i<num_lines; i++)); do
 done
 
 # Calculate the average increase
-average_increase=$(echo "scale=10; $total_increase / 23" | bc)
+average_increase=$(echo "scale=10; $total_increase / ($hours - 1)" | bc)
 
 # Output the result
 echo "$average_increase"
