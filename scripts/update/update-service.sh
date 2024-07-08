@@ -79,6 +79,9 @@ updateCPUQuota() {
                 log "Systemctl CPUQuota updated to $CPU_QUOTA in $QUIL_SERVICE_FILE"
             fi   
         fi
+    else
+        sudo sed -i "/^CPUQuota=/d" "$QUIL_SERVICE_FILE"
+        log "CPUQuota not enabled."
     fi
 }
 
