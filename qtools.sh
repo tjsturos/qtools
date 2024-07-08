@@ -176,7 +176,7 @@ case "$1" in
   view-log|debug|view-debug-log|get-ports-listening|detect-bootstrap-peers|record-unclaimed-rewards|get-hourly-reward-rate)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/diagnostics"
     ;;
-  peer-id|reward-balance)
+  peer-id|unclaimed-balance)
     cd $QUIL_NODE_PATH
     export QUIL_BIN=$(get_versioned_node)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/node-commands"
