@@ -155,10 +155,10 @@ export OS_ARCH="$(get_os_arch)"
 
 # Set environment variables based on the option
 case "$1" in
-  remove-docker|purge|disable-ssh-passwords)
+  remove-docker|purge)
     export SERVICE_PATH="$QTOOLS_PATH/scripts"
     ;;
-  edit-qtools-config|edit-quil-config)
+  edit-qtools-config|edit-quil-config|update-hostname|disable-ssh-passwords)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/shortcuts"
     ;;
   start|stop|status|enable|restart)
@@ -176,7 +176,7 @@ case "$1" in
   view-log|debug|view-debug-log|get-ports-listening|detect-bootstrap-peers|record-unclaimed-rewards|get-hourly-reward-rate)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/diagnostics"
     ;;
-  node-get-peer-id|node-get-reward-balance)
+  peer-id|reward-balance)
     cd $QUIL_NODE_PATH
     export QUIL_BIN=$(get_versioned_node)
     export SERVICE_PATH="$QTOOLS_PATH/scripts/node-commands"
