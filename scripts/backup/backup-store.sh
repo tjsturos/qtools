@@ -1,17 +1,21 @@
 #!/bin/bash
-#!/bin/bash
 IS_BACKUP_ENABLED="$(yq '.settings.backups.enabled' $QTOOLS_CONFIG_FILE)"
 LOCAL_HOSTNAME=$(hostname)
 
 if [ "$IS_BACKUP_ENABLED" == 'true' ]; then
-  REMOTE_DIR="$(yq '.settings.backups.remote_backup_dir' $QTOOLS_CONFIG_FILE)/$LOCAL_HOSTNAME/"
+  NODE_BACKUP_DIR="$(yq '.settings.backups.node_backup_dir' $QTOOLS_CONFIG_FILE)"
+  # see if there the default save dir is overriden
+  if [ -z "$NODE_BACKUP_DIR" ]; then
+    NODE_BACKUP_DIR="$LOCAL_HOSTNAME"
+  fi
+  REMOTE_DIR="$(yq '.settings.backups.remote_backup_dir' $QTOOLS_CONFIG_FILE)/$NODE_BACKUP_DIR/"
   SSH_ALIAS="$(yq '.settings.backups.ssh_alias' $QTOOLS_CONFIG_FILE)"
   REMOTE_URL="$(yq '.settings.backups.backup_url' $QTOOLS_CONFIG_FILE)"
   REMOTE_USER="$(yq '.settings.backups.remote_user' $QTOOLS_CONFIG_FILE)"
   SSH_KEY_PATH="$(yq '.settings.backups.ssh_key_path' $QTOOLS_CONFIG_FILE)"
 
   # Check if any required variable is empty
-  if [ -z "$REMOTE_DIR" ] || [ -z "$SSH_ALIAS" ] || [ -z "$REMOTE_URL" ] || [ -z "$REMOTE_USER" ] || [ -z "$SSH_KEY_PATH" ]; then
+  if [ "$REMOTE_DIR" == "/$NODE_BACKUP_DIR/" ] || [ -z "$SSH_ALIAS" ] || [ -z "$REMOTE_URL" ] || [ -z "$REMOTE_USER" ] || [ -z "$SSH_KEY_PATH" ]; then
     echo "One or more required backup settings are missing in the configuration."
     exit 1
   fi
