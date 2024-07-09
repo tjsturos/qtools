@@ -51,9 +51,10 @@ usage() {
 }
 
 
-if [ -z "$1" ]; then
+if [ -z "$1" ] || [ "$1" == "--help" ] || [ "$1" == '-h' ]; then
   usage
 fi
+
 
 # Load environment variables to be made available in all scripts
 export DEBIAN_FRONTEND=noninteractive
