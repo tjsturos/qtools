@@ -1,4 +1,12 @@
 #!/bin/bash
+# Determine the script's path, whether called through a symlink or directly
+if [[ -L "$0" ]]; then
+    # If $0 is a symlink, resolve it to the actual script path
+    SCRIPT_PATH=$(readlink -f "$0")
+else
+    # If $0 is not a symlink, use the direct path
+    SCRIPT_PATH=$(realpath "$0")
+fi
 
 # Get the directory where the script is located
 QTOOLS_PATH=$(dirname "$SCRIPT_PATH")
@@ -65,14 +73,6 @@ export GOROOT=$GO_BIN_DIR/go
 export GOPATH=$HOME/go
 export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
 
-# Determine the script's path, whether called through a symlink or directly
-if [[ -L "$0" ]]; then
-    # If $0 is a symlink, resolve it to the actual script path
-    SCRIPT_PATH=$(readlink -f "$0")
-else
-    # If $0 is not a symlink, use the direct path
-    SCRIPT_PATH=$(realpath "$0")
-fi
 
 export QTOOLS_CONFIG_FILE=$QTOOLS_PATH/config.yml
 
