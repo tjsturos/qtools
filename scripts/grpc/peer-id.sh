@@ -1,5 +1,5 @@
 #!/bin/bash
-# HELP: Gets this node's Peer ID. Attempts to use grpcurl to get the peer id, but in the event of failure, will use the node binary's -peer-id command.
+# HELP: Gets this node\'s Peer ID. Attempts to use grpcurl to get the peer id, but in the event of failure, will use the node binary\'s -peer-id command.
 
 PEER_ID="$(grpcurl -plaintext localhost:8337 quilibrium.node.node.pb.NodeService.GetNodeInfo 2> /dev/null | grep -oP '"peerId":\s*"\K[^"]+')"
 

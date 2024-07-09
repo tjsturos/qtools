@@ -1,5 +1,5 @@
 #!/bin/bash
-# HELP: Gets the node application service's current status.
+# HELP: Gets the node application service\'s current status.
 # Usage: qtools status
 
 if [ "$IS_LINKED" == "true" ]; then

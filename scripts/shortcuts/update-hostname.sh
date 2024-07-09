@@ -1,5 +1,5 @@
 #!/bin/bash
-# HELP: Updates this node's server's hostname. Requires an input for the new hostname.
+# HELP: Updates this node\'s server\'s hostname. Requires an input for the new hostname.
 # PARAM: <string>: name of the machine to use
 # Usage: qtools update-hostname quil-miner-101
 

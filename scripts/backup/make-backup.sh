@@ -1,5 +1,5 @@
 #!/bin/bash
-# HELP: Creates a local backup of this node's config directory.
+# HELP: Creates a local backup of this node\'s .config directory.
 
 BACKUP_DIR=~/quil-backup
 # Create the directory if it doesn't exist

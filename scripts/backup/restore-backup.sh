@@ -1,7 +1,7 @@
 #!/bin/bash
-# HELP: Will restore a backup (if enabled) based on the qtools config settings, otherwise will look for a backup directory with this node's hostname.
+# HELP: Will restore a backup (if enabled) based on the qtools config settings, otherwise will look for a backup directory with this node\'s hostname.
 # PARAM: --hostname <string>: the hostname to use when restoring the config directory.
-# Usage: qtools restore-backup # Will default to this machine's hostname if not defined in the qtools/config.yml
+# Usage: qtools restore-backup # Will default to this machine\'s hostname if not defined in the qtools/config.yml
 # Usage: qtools restore-backup --hostname quil-miner-101 # Will look for a ~/backups/quil-miner-101 directory on the backup server.
 
 IS_BACKUP_ENABLED="$(yq '.settings.backups.enabled' $QTOOLS_CONFIG_FILE)"

@@ -1,5 +1,5 @@
 #!/bin/bash
-# HELP: A shortcut to edit the node's config file.
+# HELP: A shortcut to edit the node\'s config file.
 FILE_QUIL_CONFIG="$QUIL_NODE_PATH/.config/config.yml"
 install_package nano nano false
 if [ -f "$FILE_QUIL_CONFIG" ]; then

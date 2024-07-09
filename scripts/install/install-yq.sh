@@ -1,4 +1,5 @@
 #!/bin/bash
+# HELP: Installs \'yq\' version 4.20.1 for parsing config files.
 VERSION=v4.20.1
 BINARY=yq_linux_amd64
 COMPRESSED_FILENAME=${BINARY}.tar.gz
