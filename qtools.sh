@@ -27,12 +27,12 @@ usage() {
         fi
         
         if [ ! -z "$params" ]; then
-          echo "      Params:"
+          echo "        Params:"
           echo "$params"
         fi
         
         if [ ! -z "$usage_lines" ]; then
-          echo "      Usage:"
+          echo "        Usage:"
           echo "$usage_lines"
         fi
       fi
