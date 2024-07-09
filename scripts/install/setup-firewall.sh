@@ -1,5 +1,5 @@
 #!/bin/bash
-# HELP: Sets up the firewall to enable ports 22 (ssh), 8336 (other nodes), and 443 (general encrypted traffic)
+# HELP: Sets up the firewall to enable ports 22 (ssh), 8336 (other nodes), and 443 (general encrypted traffic).
 
 log "Setting up firewall"
 echo "y" | sudo ufw enable

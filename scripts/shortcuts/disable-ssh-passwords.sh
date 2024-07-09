@@ -1,5 +1,5 @@
 #!/bin/bash
-# HELP: Will change the SSH config to disallow using passwords to login to this node.  Will require at least one public key in the ~/.ssh/authorized_keys file to complete this script.
+# HELP: Will change the SSH config to disallow using passwords to login to this node.
 
 # Function to edit sshd_config safely
 edit_sshd_config() {
