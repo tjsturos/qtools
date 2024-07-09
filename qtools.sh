@@ -14,7 +14,7 @@ QTOOLS_PATH=$(dirname "$SCRIPT_PATH")
 # Function to display usage information
 usage() {
   echo "Usage: $0 <command> <params>"
-  echo "Note that autocomplete should be installed.  If it doesn't work, run 'qtools add-auto-complete' and try again."
+  echo "Note that autocomplete should be installed.  If it doesn't work, run 'qtools add-auto-complete && source ~/.bashrc' and try again."
   echo ""
   echo "Options:"
 
