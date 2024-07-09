@@ -121,7 +121,7 @@ export OS_ARCH="$(get_os_arch)"
 find_script() {
   for dir in $QTOOLS_PATH/scripts/*/; do
     if [ -f "$dir/$1.sh" ]; then
-      export SERVICE_PATH="$dir"
+      export SERVICE_PATH="${dir%/}"
       return 0
     fi
   done

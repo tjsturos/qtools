@@ -7,7 +7,7 @@
 # get settings
 DEBUG_MODE="$(yq '.settings.debug' $QTOOLS_CONFIG_FILE)"
 
-if [ "$1" == "--debug" ];
+if [ "$1" == "--debug" ]; then
     DEBUG_MODE="true"
 fi
 
