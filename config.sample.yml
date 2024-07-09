@@ -53,6 +53,7 @@ settings:
         enabled: false
     backups:
         enabled: false
+        restore_on_install: false
         node_backup_dir: ""
         backup_url: backups.qcommander.sh
         remote_user: root
