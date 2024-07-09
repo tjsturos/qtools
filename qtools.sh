@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Get the directory where the script is located
+QTOOLS_PATH=$(dirname "$SCRIPT_PATH")
+
 # Function to display usage information
 usage() {
   echo "Usage: $0 <option>"
@@ -68,8 +71,6 @@ else
     SCRIPT_PATH=$(realpath "$0")
 fi
 
-# Get the directory where the script is located
-QTOOLS_PATH=$(dirname "$SCRIPT_PATH")
 export QTOOLS_CONFIG_FILE=$QTOOLS_PATH/config.yml
 
 if [ ! -f "$QTOOLS_CONFIG_FILE" ]; then
