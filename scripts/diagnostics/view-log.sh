@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# HELP: Views the logs for the node application.
+
 if [ "$IS_LINKED" != "true" ]; then
     # if is linked, then start the secondary processes
     # otherwise just start the main process

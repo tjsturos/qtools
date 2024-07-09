@@ -1,6 +1,7 @@
 #!/bin/bash
+# HELP: Installs Go 1.22.4 on this node.
 log "Installing Go"
-GO_COMPRESSED_FILE=go1.20.14.linux-amd64.tar.gz
+GO_COMPRESSED_FILE=go1.22.4.linux-amd64.tar.gz
 
 log "Downloading $GO_COMPRESSED_FILE..."
 wget https://go.dev/dl/$GO_COMPRESSED_FILE 

@@ -1,4 +1,5 @@
 #!/bin/bash
+# HELP: installs the qtools shortcut to allow it to be used anywhere.
 
 if [ -L "$QTOOLS_BIN_PATH" ]; then
     log "Removing existing qtools shortcut"

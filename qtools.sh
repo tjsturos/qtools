@@ -1,73 +1,41 @@
 #!/bin/bash
 
-# Check if the parameter is provided
+# Function to display usage information
 usage() {
   echo "Usage: $0 <option>"
   echo "Note that autocomplete should be installed.  If it doesn't work, run 'qtools add-auto-complete' and try again."
   echo ""
   echo "Options:"
 
-  echo "Installation and Updates:"
-  echo "  complete-install         - Do a full install of the ceremony client."
-  echo "  update-node              - Perform an update on the ceremony client."
-  echo "  self-update              - Update the qtools code."
-  echo "  update-kernel            - Update the Linux kernel on this server."
-  echo "  update-service           - Update the Systemd services (live and debug)."
-  echo "  install-go               - Install Go and setup Go environment."
-  echo "  install-yq               - Install yq library."
-  echo "  install-grpc             - Install gRPC on the server for querying node info."  
-  echo "  install-qclient          - Download QClient binary from releases site."   
-  echo "  install-node-binary      - Download Node binary (and signatures) from releases site."   
-
-  echo "Configuration:"
-  echo "  make-backup              - Make a local-only backup (on this server) of the config.yml and keys.yml files."
-  echo "  restore-backup           - Restore a local-only backup (on this server) of the config.yml and keys.yml files."
-  echo "  modify-config            - Perform necessary changes to the config.yml file (upon creation or already created)."
-  echo "  backup-store             - Make a backup of the store (and config files) to a remote server"
-
-  echo "System Setup:"
-  echo "  remove-docker            - Remove Docker from this server."
-  echo "  install-cron             - Install necessary scheduled tasks for the node."
-  echo "  setup-firewall           - Install firewall for this server."
-  echo "  disable-ssh-passwords    - Disable logging into this server via password."
-
-  echo "Node Management:"
-  echo "  purge-node               - Remove Node and re-install (performs local-only backup of config files)."
-  echo "  start                    - Start the Quilibrium node service."
-  echo "  restart                  - Restart the Quilibrium node service."
-  echo "  stop                     - Stop the Quilibrium node service."
-  echo "  enable                   - Enable the Quilibrium node service (for starting on reboot)."
-  echo "  status                   - Get the status of the Quilibrium node service."
-  echo "  debug                    - Start the node in debug mode."
-  echo "  view-log                 - View the log from the Quilibrium node service."
-  echo "  view-debug-log           - View the debug log from the Quilibrium DEBUG node service."
-  echo "  ports-listening          - Detect if listening on ports 22, 443, 8336, 8337."
-  echo "  detect-bootstrap-peers   - Detect if bootstrap peers know of node."
-  echo "  record-unclaimed-rewards - Record the unclaimed rewards balance to a CSV file."
-  echo "  hourly-reward-rate       - Get the average hourly reward rate over the last 24 hours (needs to have been running for at least 24 hours)."
-
-  echo "Tooling:"
-  echo "  create-qtools-symlink    - Create a symlink for 'qtools' to /usr/local/bin."
-  echo "  add-auto-complete        - Add autocomplete for the 'qtools' command."
-
-  echo "Network Information:"
-  echo "  token-info               - Get network information on tokens."
-  echo "  peer-info                - Get network information on peers."
-  echo "  node-count               - Get the number of nodes on the network."
-  echo "  node-info                - Get information about this node."
-  echo "  peer-id                  - Get the Peer ID of this node (uses both grpcurl and node commands)."
-  echo "  node-version             - Get the version of this node."
-  echo "  frame-count              - Get the current frame (maxFrame) of this node."
-  
-  echo "Node Commands"
-  echo "  unclaimed-balance - Get the rewards balance."
-
-  echo "Common command shortcuts:"
-  echo "  edit-qtools-config       - Edit the qTools config file."
-  echo "  edit-quil-config         - Edit the Quil node config file."
+  for dir in $QTOOLS_PATH/scripts/*/; do
+    echo "  $(basename "$dir"):"
+    for script in "$dir"*.sh; do
+      script_name=$(basename "$script" .sh)
+      help_description=$(grep "# HELP:" "$script" | cut -d: -f2- | xargs)
+      params=$(grep "# PARAM" "$script" | cut -d: -f2- | xargs -I{} echo "        - {}")
+      usage_lines=$(grep "# Usage:" "$script" | cut -d: -f2- | xargs -I{} echo "        - {}")
+      
+      if [ -z "$help_description" ]; then
+        echo "    - $script_name"
+      else
+        echo "    - $script_name: $help_description"
+      fi
+      
+      if [ ! -z "$params" ]; then
+        echo "      Params:"
+        echo "$params"
+      fi
+      
+      if [ ! -z "$usage_lines" ]; then
+        echo "      Usage:"
+        echo "$usage_lines"
+      fi
+    done
+  done
 
   exit 1
 }
+
 
 if [ -z "$1" ]; then
   usage
@@ -91,8 +59,6 @@ export GOROOT=$GO_BIN_DIR/go
 export GOPATH=$HOME/go
 export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
 
-
-
 # Determine the script's path, whether called through a symlink or directly
 if [[ -L "$0" ]]; then
     # If $0 is a symlink, resolve it to the actual script path
@@ -112,21 +78,17 @@ if [ ! -f "$QTOOLS_CONFIG_FILE" ]; then
   echo "To edit, use 'qtools edit-qtools-config' command"
 fi
 
-export LOG_OUTPUT_FILE="$(yq '.settings.log_file' $QTOOLS_CONFIG_FILE)"
-
-# common utils for scripts
-source $QTOOLS_PATH/utils.sh
-
 if ! command_exists 'yq'; then
   source $QTOOLS_PATH/scripts/install/install-yq.sh
   if ! command_exists 'yq'; then
-    log "Could not install command 'yq'.  Please try again or install manually."
+    echo "Could not install command 'yq'.  Please try again or install manually."
     exit 1
   fi
-  # many util scripts require the log
-  export LOG_OUTPUT_FILE="$(yq '.settings.log_file' $QTOOLS_CONFIG_FILE)"
-  source $QTOOLS_PATH/utils.sh
 fi
+
+# many util scripts require the log
+export LOG_OUTPUT_FILE="$(yq '.settings.log_file' $QTOOLS_CONFIG_FILE)"
+source $QTOOLS_PATH/utils.sh
 
 install_package inotify-tools inotifywait
 install_package colordiff colordiff
@@ -152,46 +114,36 @@ export QUIL_SERVICE_NAME="$(yq '.service.file_name' $QTOOLS_CONFIG_FILE)"
 export QUIL_SERVICE_FILE="$SYSTEMD_SERVICE_PATH/$QUIL_SERVICE_NAME@.service"
 export OS_ARCH="$(get_os_arch)"
 
+# Function to find the script and set SERVICE_PATH
+find_script() {
+  for dir in $QTOOLS_PATH/scripts/*/; do
+    if [ -f "$dir/$1.sh" ]; then
+      export SERVICE_PATH="$dir"
+      return 0
+    fi
+  done
+  return 1
+}
+
 # Set environment variables based on the option
 case "$1" in
-  remove-docker|purge)
-    export SERVICE_PATH="$QTOOLS_PATH/scripts"
-    ;;
-  edit-qtools-config|edit-quil-config|update-hostname|disable-ssh-passwords)
-    export SERVICE_PATH="$QTOOLS_PATH/scripts/shortcuts"
-    ;;
-  start|stop|status|enable|restart)
-    export SERVICE_PATH="$QTOOLS_PATH/scripts/commands"
-    ;;
-  update-node|self-update|update-kernel|update-service)
-    export SERVICE_PATH="$QTOOLS_PATH/scripts/update"
-    ;;
-  install-go|install-node-binary|install-yq|complete-install|install-cron|modify-config|create-qtools-symlink|setup-firewall|add-auto-complete|install-grpc|install-qclient)
-    export SERVICE_PATH="$QTOOLS_PATH/scripts/install"
-    ;;
-  make-backup|restore-backup|backup-store)
-    export SERVICE_PATH="$QTOOLS_PATH/scripts/backup"
-    ;;
-  view-log|debug|view-debug-log|ports-listening|detect-bootstrap-peers|record-unclaimed-rewards|hourly-reward-rate)
-    export SERVICE_PATH="$QTOOLS_PATH/scripts/diagnostics"
-    ;;
   peer-id|unclaimed-balance)
     cd $QUIL_NODE_PATH
     export QUIL_BIN=$(get_versioned_node)
-    export SERVICE_PATH="$QTOOLS_PATH/scripts/node-commands"
     ;;
   get-node-count|get-node-info|get-peer-info|get-token-info|get-node-version|get-peer-id|get-frame-count)
     if ! command_exists grpcurl; then
       log "Command 'grpcurl' doesn't exist, proceeding to install."
       qtools install-grpc
     fi
-    export SERVICE_PATH="$QTOOLS_PATH/scripts/grpc"
-    ;;
-  *)
-    echo "Invalid option: $1"
-    usage
     ;;
 esac
+
+# Find the script and set SERVICE_PATH
+if ! find_script "$1"; then
+  echo "Invalid option: $1"
+  usage
+fi
 
 # Construct the full filename
 SCRIPT="$SERVICE_PATH/$1.sh"

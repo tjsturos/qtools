@@ -1,4 +1,5 @@
 #!/bin/bash
+# HELP: Will attempt to clean out all references to docker and the setup it used.
 
 cd $QUIL_PATH
 

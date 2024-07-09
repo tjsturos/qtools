@@ -1,4 +1,5 @@
 #!/bin/bash
+# HELP: Installs new Linux kernals and removes old packages.
 
 log "Updating package list and upgrading all packages..."
 sudo apt update -y &> /dev/null

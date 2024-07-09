@@ -1,4 +1,6 @@
 #!/bin/bash
+# HELP: Backs up store (if enabled in qtools config) to remote location.
+
 IS_BACKUP_ENABLED="$(yq '.settings.backups.enabled' $QTOOLS_CONFIG_FILE)"
 LOCAL_HOSTNAME=$(hostname)
 

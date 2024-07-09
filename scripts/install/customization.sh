@@ -1,4 +1,5 @@
 #/bin/bash
+# IGNORE
 
 # make sure bandwidth is optimized 
 FILE_SYSCTL=/etc/sysctl.conf

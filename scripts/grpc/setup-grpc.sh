@@ -1,7 +1,6 @@
 #!/bin/bash
 
-# This script installs grpcurl, jq, and base58 if they are not already installed,
-# then retrieves peer information from a Quilibrium node.
+# HELP: This script installs grpcurl, jq, and base58 if they are not already installed, then retrieves peer information from a Quilibrium node.
 
 # Welcome
 echo "✨ This script will retrieve your Qnode peer manifest ✨"

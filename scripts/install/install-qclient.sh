@@ -1,4 +1,5 @@
 #!/bin/bash
+# HELP: Installs the latest qclient from the CDN.
 
 CURRENT_QCLIENT_BINARY="$(get_versioned_qclient)"
 

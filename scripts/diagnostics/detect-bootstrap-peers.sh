@@ -1,4 +1,5 @@
 #!/bin/bash
+# HELP: Checks the Quilibrium Dashboard to see if this peer can be seen.
 
 # Function to check a peer
 check_peer() {

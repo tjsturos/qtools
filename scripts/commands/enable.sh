@@ -1,4 +1,7 @@
 #!/bin/bash
+# HELP: Enables the node application service, allowing it to start on system boot. Note: this does not start the node service immediately.
+
+# Usage: qtools enable
 
 if [ "$IS_LINKED" == "true" ]; then
     # if is linked, then start the secondary processes

@@ -1,4 +1,5 @@
 #!/bin/bash
+# HELP: Installs all the automated taks for this node.  Currently, it runs qtools & node updates, as well as backups (if enabled) every 10 minutes.  It also records the unclaimed balances on different intervals (every hour, 1x a day, 1x week, 1x month).
 log "Updating this user's crontab for automated tasks..."
 
 # The aim of this is to get the current cron tasks file, add the line to run the on-start.sh script every reboot.

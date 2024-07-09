@@ -1,4 +1,8 @@
 #!/bin/bash
+# HELP: Will return the average hourly rate, by default will use the last 24 hours.  Can set optional param to limit or expand range.
+# PARAM 1: <integer> The number of hours to use to average
+# Usage: qtools hourly-reward-rate 1 
+# Usage: qtools hourly-reward-rate
 
 # Define the file path
 file_path="$QTOOLS_PATH/unclaimed_hourly_balance.csv"  # Replace with your actual file path

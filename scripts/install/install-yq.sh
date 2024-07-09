@@ -10,4 +10,4 @@ if [ -f /usr/bin/yq ]; then
 fi
 
 sudo mv $BINARY /usr/bin/yq
-remove_file $COMPRESSED_FILENAME false
+sudo rm $COMPRESSED_FILENAME

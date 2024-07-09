@@ -1,5 +1,8 @@
 #!/bin/bash
-
+# HELP: Updates the node, if needed, to the latest version of the node software.
+# PARAM: --force: used to force an update, regardless of what is running
+# Usage: qtools update-node
+# Usage: qtools update-node --force
 
 current_version="$(get_current_version)"
 restart_required="false"

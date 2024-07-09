@@ -1,4 +1,6 @@
 #!/bin/bash
+# HELP: Updates the Qtools suite, as well as adding auto-complete and installing any new cron tasks.
+
 log "Starting qtools update..."
 
 cd $QTOOLS_PATH

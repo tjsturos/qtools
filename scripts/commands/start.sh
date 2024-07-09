@@ -1,7 +1,16 @@
 #!/bin/bash
+# HELP: Starts the node application service. If .settings.debug is set to true or use --debug flag, this will start node in debug mode.
+# PARAM: --debug: will start the node application in debug mode
+# Usage: qtools start
+# Usage: qtools start --debug
 
 # get settings
 DEBUG_MODE="$(yq '.settings.debug' $QTOOLS_CONFIG_FILE)"
+
+if [ "$1" == "--debug" ];
+    DEBUG_MODE="true"
+fi
+
 IS_LINKED="$(yq '.settings.linked_node.enabled' $QTOOLS_CONFIG_FILE)"
 
 # make folder for args for each process

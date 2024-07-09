@@ -1,4 +1,5 @@
 #!/bin/bash
+# HELP: Installs the node files from the CDN.
 
 OS_ARCH="$(get_os_arch)"
 log "Downloading release files..."

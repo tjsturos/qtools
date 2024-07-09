@@ -1,9 +1,9 @@
 #!/bin/bash
+# HELP: Will change the SSH config to disallow using passwords to login to this node.  Will require at least one public key in the ~/.ssh/authorized_keys file to complete this script.
 
 # Function to edit sshd_config safely
 edit_sshd_config() {
     local sshd_config="/etc/ssh/sshd_config"
-
     # Ensure the script is run as root
     if [[ $EUID -ne 0 ]]; then
         log "This script must be run as root" 1>&2
@@ -35,8 +35,14 @@ restart_ssh_service() {
   fi
 }
 
+# Do not complete this action if the user does not actually have any authorized keys to use to log back into this node.
+if [ -z "$(cat ~/.ssh/authorized_keys)" ]; then
+  log "You must have at least one authorized key to complete this action-- if you do not have at least one authorized key, you will not be able to log back in."
+  exit 1
+fi
+
 # Main script execution
 edit_sshd_config
 restart_ssh_service
 
-echo "Password logins via SSH have been disabled."
+log "Password logins via SSH have been disabled."

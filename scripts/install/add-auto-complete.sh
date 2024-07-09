@@ -1,4 +1,5 @@
 #!/bin/bash
+# HELP: Adds tab autocomplete for the qtools command for available commands.
 log "Adding/updating autocomplete for qtools command..."
 install_package bash-completion complete
 

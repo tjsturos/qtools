@@ -1,4 +1,5 @@
 #!/bin/bash
+# HELP: Looks at listening ports on this machine and determines if 22, 8336, or 8337 is listening.
 
 install_package net-tools netstat
 

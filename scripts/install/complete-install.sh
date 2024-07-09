@@ -1,4 +1,5 @@
 #/bin/bash
+# HELP: Runs a complete install of the node.
 
 sudo apt-get -q update
 

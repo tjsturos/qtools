@@ -1,4 +1,6 @@
 #!/bin/bash
+# HELP: Stops the node application service. Will also clean up any leftover node processes (if any).
+# Usage: qtools stop
 
 if [ "$IS_LINKED" == "true" ]; then
     # if is linked, then start the secondary processes

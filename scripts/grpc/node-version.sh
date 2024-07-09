@@ -1,4 +1,6 @@
 #!/bin/bash
+# HELP: Prints this node's version that is running in the service.
+
 IS_LINKED="$(yq '.settings.linked_node.enabled' $QTOOLS_CONFIG_FILE)"
 
 if [ "$IS_LINKED" == "false" ]; then
