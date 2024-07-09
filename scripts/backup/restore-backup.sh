@@ -37,7 +37,7 @@ if [ "$IS_BACKUP_ENABLED" == 'true' ]; then
   ssh -i $SSH_KEY_PATH -q -o BatchMode=yes -o ConnectTimeout=5 $REMOTE_USER@$REMOTE_URL exit
 
   if [ $? -ne 0 ]; then
-    echo "SSH alias $REMOTE_URL does not exist or is not reachable or must be connected to initially. Try 'ssh -i $SSH_KEY_PATH $REMOTE_USER@$REMOTE_URL' and accept the fingerprint, then try again."
+    echo "SSH $REMOTE_URL does not exist or is not reachable or must be connected to initially. Try 'ssh -i $SSH_KEY_PATH $REMOTE_USER@$REMOTE_URL' and accept the fingerprint, then try again."
     exit 1
   fi
 
