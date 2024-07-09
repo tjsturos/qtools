@@ -14,7 +14,7 @@ usage() {
     echo "  $(basename "$dir"):"
     for script in "$dir"*.sh; do
       script_name=$(basename "$script" .sh)
-      ignore_script="$(grep '# IGNORE')"
+      ignore_script="$(grep '# IGNORE' $script)"
       if [ -z $ignore_script ]; then
         help_description=$(grep "# HELP:" "$script" | cut -d: -f2- | xargs)
         params=$(grep "# PARAM" "$script" | cut -d: -f2- | xargs -I{} echo "        - {}")
