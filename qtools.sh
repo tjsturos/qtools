@@ -14,24 +14,27 @@ usage() {
     echo "  $(basename "$dir"):"
     for script in "$dir"*.sh; do
       script_name=$(basename "$script" .sh)
-      help_description=$(grep "# HELP:" "$script" | cut -d: -f2- | xargs)
-      params=$(grep "# PARAM" "$script" | cut -d: -f2- | xargs -I{} echo "        - {}")
-      usage_lines=$(grep "# Usage:" "$script" | cut -d: -f2- | xargs -I{} echo "        - {}")
-      
-      if [ -z "$help_description" ]; then
-        echo "    - $script_name"
-      else
-        echo "    - $script_name: $help_description"
-      fi
-      
-      if [ ! -z "$params" ]; then
-        echo "      Params:"
-        echo "$params"
-      fi
-      
-      if [ ! -z "$usage_lines" ]; then
-        echo "      Usage:"
-        echo "$usage_lines"
+      ignore_script="$(grep '# IGNORE')"
+      if [ -z $ignore_script ]; then
+        help_description=$(grep "# HELP:" "$script" | cut -d: -f2- | xargs)
+        params=$(grep "# PARAM" "$script" | cut -d: -f2- | xargs -I{} echo "        - {}")
+        usage_lines=$(grep "# Usage:" "$script" | cut -d: -f2- | xargs -I{} echo "        - {}")
+        
+        if [ -z "$help_description" ]; then
+          echo "    - $script_name"
+        else
+          echo "    - $script_name: $help_description"
+        fi
+        
+        if [ ! -z "$params" ]; then
+          echo "      Params:"
+          echo "$params"
+        fi
+        
+        if [ ! -z "$usage_lines" ]; then
+          echo "      Usage:"
+          echo "$usage_lines"
+        fi
       fi
     done
   done
