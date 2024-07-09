@@ -17,8 +17,8 @@ usage() {
       ignore_script="$(grep '# IGNORE' $script)"
       if [ -z "$ignore_script" ]; then
         help_description=$(grep "# HELP:" "$script" | cut -d: -f2- | xargs)
-        params=$(grep "# PARAM" "$script" | cut -d: -f2- | xargs -I{} echo "        - {}")
-        usage_lines=$(grep "# Usage:" "$script" | cut -d: -f2- | xargs -I{} echo "        - {}")
+        params=$(grep "# PARAM" "$script" | cut -d: -f2- | xargs -I{} echo "          {}")
+        usage_lines=$(grep "# Usage:" "$script" | cut -d: -f2- | xargs -I{} echo "          {}")
         
         if [ -z "$help_description" ]; then
           echo "    - $script_name"
