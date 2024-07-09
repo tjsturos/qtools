@@ -8,14 +8,14 @@ DISABLE_SSH_PASSWORDS="$(yq '.settings.install.ssh.disable_ssh_login') $QTOOLS_C
 
 cd $QUIL_HOME
 
-$QTOOLS_PATH/qtools.sh install-node-binary
-$QTOOLS_PATH/qtools.sh install-qclient
-$QTOOLS_PATH/qtools.sh update-service
+qtools install-node-binary
+qtools install-qclient
+qtools update-service
 
-$QTOOLS_PATH/qtools.sh install-go
-$QTOOLS_PATH/qtools.sh install-grpc
-$QTOOLS_PATH/qtools.sh setup-firewall
-$QTOOLS_PATH/qtools.sh install-cron
+qtools install-go
+qtools install-grpc
+qtools setup-firewall
+qtools install-cron
 
 if [ "$IS_LINKED" != "true" ]; then
     # This first command generates a default config file
@@ -24,15 +24,15 @@ if [ "$IS_LINKED" != "true" ]; then
     $BINARY_FILE -peer-id
     sleep 3
     if [ -f $BINARY_FILE ]; then 
-        $QTOOLS_PATH/qtools.sh modify-config
+        qtools modify-config
     fi
 fi
 
 # tells server to always start node service on reboot
-$QTOOLS_PATH/qtools.sh enable
+qtools enable
 
 if [ "$DISABLE_SSH_PASSWORDS" == 'true' ]; then
-    $QTOOLS_PATH/qtools.sh disable-ssh-passwords
+    qtools disable-ssh-passwords
 fi
 
 source $QTOOLS_PATH/scripts/install/customization.sh
