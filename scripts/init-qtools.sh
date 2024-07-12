@@ -19,7 +19,9 @@ else
 fi
 
 export LOG_OUTPUT_FILE="$(yq '.settings.log_file' $QTOOLS_CONFIG_FILE)"
+echo "$LOG_OUTPUT_FILE"
 source $QTOOLS_PATH/utils.sh
+echo "after utils"
 
 log "installing requisite software"
 install_package colordiff colordiff
