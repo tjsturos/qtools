@@ -9,7 +9,8 @@ else
 fi
 
 # Get the directory where the script is located
-QTOOLS_PATH=$(dirname "$SCRIPT_PATH")
+export QTOOLS_PATH=$(dirname "$SCRIPT_PATH")
+
 
 # Function to display usage information
 usage() {
@@ -55,7 +56,6 @@ if [ -z "$1" ] || [ "$1" == "--help" ] || [ "$1" == '-h' ]; then
   usage
 fi
 
-
 # Load environment variables to be made available in all scripts
 export DEBIAN_FRONTEND=noninteractive
 export QUIL_PATH=$HOME/ceremonyclient
@@ -73,49 +73,16 @@ export GO_BIN_DIR=/usr/local
 export GOROOT=$GO_BIN_DIR/go
 export GOPATH=$HOME/go
 export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
-
-
 export QTOOLS_CONFIG_FILE=$QTOOLS_PATH/config.yml
 
-if [ ! -f "$QTOOLS_CONFIG_FILE" ]; then
-  cp $QTOOLS_PATH/config.sample.yml $QTOOLS_PATH/config.yml
-  echo "Copied the default config file (config.sample.yml) to make the initial config.yml file."  
-  echo "To edit, use 'qtools edit-qtools-config' command"
-  $QTOOLS_PATH/qtools.sh "$@"
+if [ "$1" == "init-qtools" ]; then
+  source $QTOOLS_PATH/scripts/init-qtools.sh
   exit 0
-fi
-
-if ! command -v "yq" >/dev/null 2>&1; then
-  echo "Installing yq"
-  source $QTOOLS_PATH/scripts/install/install-yq.sh
-  if ! command -v "yq" >/dev/null 2>&1; then
-    echo "Could not install command 'yq'.  Please try again or install manually."
-    exit 1
-  fi
 fi
 
 # many util scripts require the log
 export LOG_OUTPUT_FILE="$(yq '.settings.log_file' $QTOOLS_CONFIG_FILE)"
 source $QTOOLS_PATH/utils.sh
-
-install_package colordiff colordiff
-install_package jq jq
-install_package base58 base58
-
-# Remaining scripts need existance of the QTOOLS_BIN_PATH binary
-if [ ! -L "$QTOOLS_BIN_PATH" ]; then
-  # Attempt to install it.
-  log "$QTOOLS_BIN_PATH not found.  Attempting to install."
-  source $QTOOLS_PATH/scripts/install/create-qtools-symlink.sh
-
-  if [ ! -L "$QTOOLS_BIN_PATH" ]; then
-    log "Attempted to install $QTOOLS_BIN_PATH, but failed. This is required to proceed. Try \"sudo ln -s $QTOOLS_PATH/qtools.sh /usr/local/bin/qtools\" manually."
-    exit 1
-  else
-    log "$QTOOLS_BIN_PATH installed successfully."
-    qtools add-auto-complete
-  fi
-fi
 
 export QUIL_SERVICE_NAME="$(yq '.service.file_name' $QTOOLS_CONFIG_FILE)"
 export QUIL_SERVICE_FILE="$SYSTEMD_SERVICE_PATH/$QUIL_SERVICE_NAME@.service"
