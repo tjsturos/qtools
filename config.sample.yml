@@ -8,10 +8,10 @@
 #### enabled: when enabled will limit the CPUQuota variable in the service file
 #### limit_percentage: determines the amount to limit it by
 ## backups: 
-#### enabled: true = will back up
+#### enabled: true = will back up (default to false due to needing to set up backup)
 #### server_ip: the location of the backup server
 #### remote_backup_dir: the custom location of the backup directory on the backup server to save to
-user: root
+user: ubuntu
 quilibrium_repo_install_dir: .
 release_version: 1.4.19.1
 current_version: 1.4.19.1
@@ -19,7 +19,7 @@ os_arch: linux-amd64
 service:
     # must run qtools update-service to load updated values
     file_name: ceremonyclient
-    working_dir: /root/ceremonyclient/node
+    working_dir: /home/ubuntu/ceremonyclient/node
     restart_time: 5s
     args: "" # args to be passed into the main process: e.g. node-1.4.19.1-linux-amd64 --debug
 settings:
@@ -29,6 +29,10 @@ settings:
         start_cpu_index: 1
         end_cpu_index: 2
         process_index_offest: 0
+    statistics:
+        enabled: true
+    listenAddr:
+        mode: "udp"
     cpulimit:
         enabled: false
         limit_percentage: 70

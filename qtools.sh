@@ -77,8 +77,6 @@ export QTOOLS_CONFIG_FILE=$QTOOLS_PATH/config.yml
 
 
 # many util scripts require the log
-
-
 if [ "$1" == "init-qtools" ]; then
   source $QTOOLS_PATH/scripts/init-qtools.sh
   exit 0

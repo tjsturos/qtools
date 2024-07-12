@@ -20,10 +20,10 @@ remove_directory /var/lib/containerd false
 remove_directory ~/.docker false
 
 remove_file /usr/share/keyrings/docker-archive-keyring.gpg false
-remove_file /root/docker-ce false
-remove_file /root/apt false
-remove_file /root/updateapt-cache false
-remove_file /root/policy false
+remove_file ~/docker-ce false
+remove_file ~/apt false
+remove_file ~/updateapt-cache false
+remove_file ~/policy false
 
 remove_directory $QUIL_PATH false
 

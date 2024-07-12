@@ -5,10 +5,10 @@ Description=Quilibrium Ceremony Client Service
 Type=simple
 Restart=always
 RestartSec=5s
-User=root
-Group=root
+User=ubuntu
+Group=ubuntu
 EnvironmentFile=/tmp/quil-process-args/%i
-WorkingDirectory=/root/ceremonyclient/node
+WorkingDirectory=/home/ubuntu/ceremonyclient/node
 ExecStart=node-1.4.19-linux-amd64 $NODE_ARGS
 
 [Install]
