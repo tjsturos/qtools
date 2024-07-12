@@ -16,6 +16,9 @@ if ! command -v "yq" >/dev/null 2>&1; then
   fi
 fi
 
+export LOG_OUTPUT_FILE="$(yq '.settings.log_file' $QTOOLS_CONFIG_FILE)"
+source $QTOOLS_PATH/utils.sh
+
 install_package colordiff colordiff
 install_package jq jq
 install_package base58 base58

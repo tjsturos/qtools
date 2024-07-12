@@ -75,12 +75,15 @@ export GOPATH=$HOME/go
 export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
 export QTOOLS_CONFIG_FILE=$QTOOLS_PATH/config.yml
 
+
+# many util scripts require the log
+
+
 if [ "$1" == "init-qtools" ]; then
   source $QTOOLS_PATH/scripts/init-qtools.sh
   exit 0
 fi
 
-# many util scripts require the log
 export LOG_OUTPUT_FILE="$(yq '.settings.log_file' $QTOOLS_CONFIG_FILE)"
 source $QTOOLS_PATH/utils.sh
 
