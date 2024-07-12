@@ -1,4 +1,5 @@
 #!/bin/bash
+
 # Determine the script's path, whether called through a symlink or directly
 if [[ -L "$0" ]]; then
     # If $0 is a symlink, resolve it to the actual script path
@@ -51,13 +52,13 @@ usage() {
   exit 1
 }
 
-
 if [ -z "$1" ] || [ "$1" == "--help" ] || [ "$1" == '-h' ]; then
   usage
 fi
 
 # Load environment variables to be made available in all scripts
 export DEBIAN_FRONTEND=noninteractive
+export USER="$(whoami)"
 export QUIL_PATH=$HOME/ceremonyclient
 export QUIL_NODE_PATH=$QUIL_PATH/node
 export QUIL_CLIENT_PATH=$QUIL_PATH/client

@@ -47,5 +47,4 @@ else
    log "qtools link already exists"
 fi
 
-log "Going to install autocomplete"
 source $QTOOLS_PATH/qtools.sh add-auto-complete
