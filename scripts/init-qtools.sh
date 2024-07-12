@@ -17,7 +17,8 @@ if ! command -v "yq" >/dev/null 2>&1; then
 else 
   echo "yq already installed"
 fi
-
+echo "Config file: $QTOOLS_CONFIG_FILE"
+echo "Log file: $(yq '.settings.log_file' $QTOOLS_CONFIG_FILE)"
 export LOG_OUTPUT_FILE="$(yq '.settings.log_file' $QTOOLS_CONFIG_FILE)"
 echo "$LOG_OUTPUT_FILE"
 source $QTOOLS_PATH/utils.sh
