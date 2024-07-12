@@ -59,7 +59,7 @@ settings:
         enabled: false
         restore_on_install: false
         node_backup_dir: ""
-        backup_url: backups.qcommander.sh
+        backup_url: backups.example.com
         remote_user: root
         ssh_key_path: ~/.ssh/backup-server
         remote_backup_dir: /root/backups
