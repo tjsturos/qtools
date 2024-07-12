@@ -86,6 +86,7 @@ if [ ! -f "$QTOOLS_CONFIG_FILE" ]; then
 fi
 
 if ! command -v "yq" >/dev/null 2>&1; then
+  echo "Installing yq"
   source $QTOOLS_PATH/scripts/install/install-yq.sh
   if ! command -v "yq" >/dev/null 2>&1; then
     echo "Could not install command 'yq'.  Please try again or install manually."
