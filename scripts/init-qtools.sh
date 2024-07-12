@@ -5,6 +5,8 @@ if [ ! -f "$QTOOLS_CONFIG_FILE" ]; then
   cp $QTOOLS_PATH/config.sample.yml $QTOOLS_PATH/config.yml
   echo "Copied the default config file (config.sample.yml) to make the initial config.yml file."  
   echo "To edit, use 'qtools edit-qtools-config' command"
+  yq ".user = \"$USER\"" $QTOOLS_CONFIG_FILE
+  yq ".service.working_dir = \"$HOME/ceremonyclient/node\"" $QTOOLS_CONFIG_FILE
 fi
 
 if ! command -v "yq" >/dev/null 2>&1; then
