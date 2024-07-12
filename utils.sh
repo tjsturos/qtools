@@ -1,4 +1,70 @@
 
+
+qyaml() {
+  local key_path=$1
+  local file_path=$2
+
+  if [[ ! -f $file_path ]]; then
+    echo "File not found: $file_path"
+    return 1
+  fi
+
+  # Convert the period-separated key path string into an array
+  if [[ $key_path == .* ]]; then
+    key_path=${key_path:1}
+  fi
+
+  IFS='.' read -r -a keys <<< "$key_path"
+
+  local value=""
+  local indent=""
+  local key
+  local found=0
+
+  while IFS= read -r line; do
+    # Check for comments and empty lines
+    if [[ $line =~ ^[[:space:]]*# ]] || [[ -z $line ]]; then
+      continue
+    fi
+
+    # Strip leading whitespace to find indentation
+    local stripped_line=$(echo "$line" | sed -e 's/^[[:space:]]*//')
+
+    # Check if the line matches the current key in the sequence
+    if [[ $stripped_line =~ ^${keys[found]}: ]]; then
+      # Update indentation level
+      indent=$(echo "$line" | sed -e 's/[^\t ]//g')
+      value=$(echo "$stripped_line" | sed -e "s/^${keys[found]}:[[:space:]]*//")
+
+      # Move to the next key in the sequence
+      found=$((found + 1))
+
+      # If the value is not empty, break early
+      if [[ -n $value ]]; then
+        break
+      fi
+
+      # If we've found all keys, break
+      if [[ $found -eq ${#keys[@]} ]]; then
+        break
+      fi
+    elif [[ $found -gt 0 && $line =~ ^$indent ]]; then
+      # Check for nested values if indentation matches
+      local nested_value=$(echo "$stripped_line" | sed -e 's/^[[:space:]]*//')
+      value="${value} ${nested_value}"
+    elif [[ $found -gt 0 && ! $line =~ ^$indent ]]; then
+      # Exit if indentation level is less than expected
+      break
+    fi
+  done < "$file_path"
+
+  if [[ $found -eq ${#keys[@]} ]]; then
+    echo "$value"
+  else
+    echo "Value not found."
+  fi
+}
+
 log() {
     MESSAGE="$1"
     SHOULD_OUTPUT="${2:-true}"

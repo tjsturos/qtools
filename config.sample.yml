@@ -42,6 +42,10 @@ settings:
         mirrors:
             - https://source.quilibrium.com/quilibrium/ceremonyclient.git
     install:
+        yq: 
+            version: "v4.20.1"
+            binary: "yq_linux_amd64"
+            binary_install_dir: /usr/bin/
         ssh:
             disable_password_login: true
         go:
