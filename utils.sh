@@ -197,3 +197,5 @@ get_versioned_node() {
 get_versioned_qclient() {
     echo "qclient-$(fetch_release_version)-$(get_os_arch)"
 }
+
+echo "utils"
