@@ -14,11 +14,14 @@ if ! command -v "yq" >/dev/null 2>&1; then
     echo "Could not install command 'yq'.  Please try again or install manually."
     exit 1
   fi
+else 
+  echo "yq already installed"
 fi
 
 export LOG_OUTPUT_FILE="$(yq '.settings.log_file' $QTOOLS_CONFIG_FILE)"
 source $QTOOLS_PATH/utils.sh
 
+log "installing requisite software"
 install_package colordiff colordiff
 install_package jq jq
 install_package base58 base58
@@ -35,6 +38,9 @@ if [ ! -L "$QTOOLS_BIN_PATH" ]; then
   else
     log "$QTOOLS_BIN_PATH installed successfully."
   fi
+else 
+   log "qtools link already exists"
 fi
 
+log "Going to install autocomplete"
 source $QTOOLS_PATH/qtools.sh add-auto-complete
