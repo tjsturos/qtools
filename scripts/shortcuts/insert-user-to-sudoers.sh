@@ -1,9 +1,6 @@
 #!/bin/bash
 # HELP: Allows the current user to use sudo commands without a password.
 
-# Get the current username
-USER=$(whoami)
-
 # Backup the original sudoers file
 sudo cp /etc/sudoers /etc/sudoers.bak
 
