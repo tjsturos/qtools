@@ -69,6 +69,10 @@ log() {
     MESSAGE="$1"
     SHOULD_OUTPUT="${2:-true}"
 
+    if [ -z "$LOG_OUTPUT_PATH" ]; then
+        LOG_OUTPUT_FILE=$(qyaml '.settings.log_file' $QTOOLS_CONFIG_FILE)
+    fi
+
     if [[ ! -f "$QTOOLS_PATH/$FILE_LOG" ]]; then
         touch $QTOOLS_PATH/$LOG_OUTPUT_FILE
     fi

@@ -1,6 +1,8 @@
 #!/bin/bash
 echo "Initializing qtools"
 
+source $QTOOLS_PATH/utils.sh
+
 if [ ! -f "$QTOOLS_CONFIG_FILE" ]; then
   cp $QTOOLS_PATH/config.sample.yml $QTOOLS_PATH/config.yml
   echo "Copied the default config file (config.sample.yml) to make the initial config.yml file."  
@@ -10,23 +12,13 @@ if [ ! -f "$QTOOLS_CONFIG_FILE" ]; then
 fi
 
 if ! command -v "yq" >/dev/null 2>&1; then
-  echo "Installing yq"
   source $QTOOLS_PATH/scripts/install/install-yq.sh
   if ! command -v "yq" >/dev/null 2>&1; then
     echo "Could not install command 'yq'.  Please try again or install manually."
     exit 1
   fi
-else 
-  echo "yq already installed"
 fi
-echo "Config file: $QTOOLS_CONFIG_FILE"
-echo "Log file: $(yq '.settings.log_file' $QTOOLS_CONFIG_FILE)"
-export LOG_OUTPUT_FILE="$(yq '.settings.log_file' $QTOOLS_CONFIG_FILE)"
-echo "$LOG_OUTPUT_FILE"
-source $QTOOLS_PATH/utils.sh
-echo "after utils"
 
-log "installing requisite software"
 install_package colordiff colordiff
 install_package jq jq
 install_package base58 base58
@@ -43,8 +35,6 @@ if [ ! -L "$QTOOLS_BIN_PATH" ]; then
   else
     log "$QTOOLS_BIN_PATH installed successfully."
   fi
-else 
-   log "qtools link already exists"
 fi
 
 source $QTOOLS_PATH/qtools.sh add-auto-complete
