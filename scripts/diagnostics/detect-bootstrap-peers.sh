@@ -30,11 +30,5 @@ check_peer() {
     rm /tmp/peer_response.json
 }
 
-# Main script
-if [[ $# -ne 1 ]]; then
-    echo "Usage: $0 <peer-id>"
-    exit 1
-fi
-
-peer_id="$(qtools get-peer-id)"
+peer_id="$(qtools peer-id)"
 check_peer "$peer_id"
