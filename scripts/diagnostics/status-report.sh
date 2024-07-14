@@ -140,7 +140,7 @@ check_peer_id
 check_frame_count
 check_ports_status
 check_service_status "ceremonyclient@main.service"
-check_command_installed "grpcurl" "grpcurl --version"
+check_command_installed "grpcurl"
 check_command_installed "go" "go version"
 check_command_installed "yq" "yq --version"
 check_hourly_reward_rate
