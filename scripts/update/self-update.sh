@@ -10,8 +10,8 @@ log "Changes fetched."
 qtools add-auto-complete
 qtools install-cron
 
-source ~/.bashrc
+# source ~/.bashrc
 
 log "Finished qtools update."
 
-exit 0
+# exit 0
