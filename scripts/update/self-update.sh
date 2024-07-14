@@ -13,3 +13,5 @@ qtools install-cron
 source ~/.bashrc
 
 log "Finished qtools update."
+
+exit 0
