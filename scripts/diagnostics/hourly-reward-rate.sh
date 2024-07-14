@@ -102,5 +102,8 @@ fi
 # Calculate the average increase
 average_increase=$(echo "scale=10; $total_increase / $valid_intervals" | bc)
 
+# Format the result to always have a leading zero before the decimal point
+formatted_increase=$(echo "$average_increase" | awk '{printf "%.10f", $0}')
+
 # Output the result
-echo "$average_increase"
+echo "$formatted_increase"

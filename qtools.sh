@@ -135,3 +135,5 @@ shift 1
 
 # Source the provided script
 source "$SCRIPT" "$@"
+
+exit 0
