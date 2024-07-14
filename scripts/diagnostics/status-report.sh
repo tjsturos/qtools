@@ -125,12 +125,12 @@ check_backup_status() {
         fi
 
         echo -e "${GREEN_CHECK} Backup Status:"
-        echo -e "  Enabled: $enabled"
-        echo -e "  Node Backup Directory: $node_backup_dir"
-        echo -e "  Backup URL: $backup_url"
-        echo -e "  Remote User: $remote_user"
-        echo -e "  SSH Key Path: $ssh_key_path"
-        echo -e "  Remote Backup Directory: $remote_backup_dir"
+        echo -e "    Enabled: $enabled"
+        echo -e "    Node Backup Directory: $node_backup_dir"
+        echo -e "    Backup URL: $backup_url"
+        echo -e "    Remote User: $remote_user"
+        echo -e "    SSH Key Path: $ssh_key_path"
+        echo -e "    Remote Backup Directory: $remote_backup_dir"
     else
         echo -e "${RED_CROSS} Backups are not enabled"
     fi
