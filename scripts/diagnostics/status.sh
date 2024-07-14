@@ -17,7 +17,7 @@ check_ports_status() {
     done <<< "$PORTS_ACTUAL_OUTPUT"
 
     if $ALL_PORTS_FUNCTIONAL; then
-        echo "${GREEN_CHECK} All ports functional"
+        echo -e "${GREEN_CHECK} All ports functional"
     fi
 }
 
@@ -32,8 +32,7 @@ check_hourly_reward_rate() {
 }
 
 check_service_status() {
-    local service_name=$1
-    local output=$(qtools status "$service_name")
+    local output=$(qtools status)
 
     if echo "$output" | grep -q "Active: active (running)"; then
         echo -e "${GREEN_CHECK} Node is running"
