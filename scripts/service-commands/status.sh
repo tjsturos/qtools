@@ -8,9 +8,9 @@ if [ "$IS_LINKED" == "true" ]; then
     CORE_INDEX_STOP=$(yq '.settings.linked_node.end_cpu_index' $QTOOLS_CONFIG_FILE)
 
     for ((i = $CORE_INDEX_START ; i <= $CORE_INDEX_STOP ; i++)); do
-        sudo systemctl status $QUIL_SERVICE_NAME@$i.service
+        sudo systemctl status $QUIL_SERVICE_NAME@$i.service --no-pager
     done
 else
     # otherwise just start the main process
-    sudo systemctl status $QUIL_SERVICE_NAME@main.service
+    sudo systemctl status $QUIL_SERVICE_NAME@main.service --no-pager
 fi
