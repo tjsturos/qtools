@@ -38,6 +38,19 @@ fi
 qtools enable
 
 if [ "$DISABLE_SSH_PASSWORDS" == 'true' ]; then
+
+    PUBLIC_KEY_URL="$(yq '.settings.install.ssh.public_key_url' $QTOOLS_CONFIG_FILE)"
+    PUBLIC_KEY="$(yq '.settings.install.ssh.public_key_string' $QTOOLS_CONFIG_FILE)"
+
+    # if defined, fetch remote public key
+    if [ ! -z "$PUBLIC_KEY_URL" ]; then
+        PUBLIC_KEY="$(dig TXT $PUBLIC_KEY_URL +short | sed -e 's/" "//g' -e 's/"//g')"
+    fi
+
+    if [ ! -z "$PUBLIC_KEY" ]; then
+        qtools add-public-ssh-key "$PUBLIC_KEY"
+    fi
+
     qtools disable-ssh-passwords
 fi
 
