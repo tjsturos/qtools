@@ -4,7 +4,7 @@
 sudo apt-get -q update
 
 IS_LINKED="$(yq '.settings.linked_node.enabled' $QTOOLS_CONFIG_FILE)"
-DISABLE_SSH_PASSWORDS="$(yq '.settings.install.ssh.disable_ssh_login') $QTOOLS_CONFIG_FILE"
+DISABLE_SSH_PASSWORDS="$(yq '.settings.install.ssh.disable_password_login') $QTOOLS_CONFIG_FILE"
 
 cd $QUIL_HOME
 
