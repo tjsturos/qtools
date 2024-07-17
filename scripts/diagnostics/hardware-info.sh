@@ -15,9 +15,9 @@ get_is_hyperthreading_enabled() {
     CORE_COUNT=$(cat /proc/cpuinfo | grep "cpu cores" | awk '{print $4}' | uniq)
     SIBLINGS=$(cat /proc/cpuinfo | grep siblings | awk '{print $3}' | uniq)
     if [ "$SIBLINGS" -gt "$CORE_COUNT" ]; then
-        echo "\e[32true\e[0m"
+        echo "\e[32mtrue\e[0m"
     else
-        echo "\e[31false\e[0m"
+        echo "\e[31mfalse\e[0m"
     fi
 }
 
