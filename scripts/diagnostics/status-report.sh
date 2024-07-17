@@ -146,3 +146,4 @@ check_command_installed "yq" "yq --version"
 check_hourly_reward_rate
 check_unclaimed_balance
 check_backup_status
+qtools hardware-info
