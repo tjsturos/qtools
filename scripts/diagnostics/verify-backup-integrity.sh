@@ -37,12 +37,10 @@ if [ "$IS_BACKUP_ENABLED" == 'true' ]; then
         local size=$2
 
         while IFS= read -r remote_file; do
-            remote_file_path=$(echo "$remote_file" | awk '{print $1}')
+            remote_file_name=$(echo "$remote_file" | awk '{print $1}' | xargs basename)
             remote_file_size=$(echo "$remote_file" | awk '{print $2}')
-            remote_file_relative=$(echo "$remote_file_path" | sed "s|$REMOTE_PATH||")
-            echo "$file vs $remote_file_relative"
-            echo "$size vs $remote_file_size"
-            if [ "$file" == "$remote_file_relative" ] && [ "$size" == "$remote_file_size" ]; then
+
+            if [ "$file" == "$remote_file_name" ] && [ "$size" == "$remote_file_size" ]; then
                 return 0
             fi
         done <<< "$remote_files"
@@ -52,23 +50,35 @@ if [ "$IS_BACKUP_ENABLED" == 'true' ]; then
 
     # Check local files against remote
     while IFS= read -r local_file; do
-        local_file_path=$(echo "$local_file" | awk '{print $1}')
+        local_file_name=$(echo "$local_file" | awk '{print $1}' | xargs basename)
         local_file_size=$(echo "$local_file" | awk '{print $2}')
-        local_file_relative=$(echo "$local_file_path" | sed "s|$LOCAL_PATH||")
 
-        if ! file_exists_in_remote "$local_file_relative" "$local_file_size"; then
-            echo "File $local_file_relative is missing or size mismatch in remote backup."
+        if ! file_exists_in_remote "$local_file_name" "$local_file_size"; then
+            echo "File $local_file_name is missing or size mismatch in remote backup."
             exit 1
         fi
     done <<< "$local_files"
 
     # Check remote files against local (to ensure no old files exist)
-    while IFS= read -r remote_file; do
-        remote_file_path=$(echo "$remote_file" | awk '{print $1}')
-        remote_file_relative=$(echo "$remote_file_path" | sed "s|$REMOTE_PATH||")
+    function file_exists_in_local {
+        local file=$1
 
-        if ! grep -q "$remote_file_relative" <<< "$local_files"; then
-            echo "Old file $remote_file_relative exists in remote backup but not locally."
+        while IFS= read -r local_file; do
+            local_file_name=$(echo "$local_file" | awk '{print $1}' | xargs basename)
+
+            if [ "$file" == "$local_file_name" ]; then
+                return 0
+            fi
+        done <<< "$local_files"
+
+        return 1
+    }
+
+    while IFS= read -r remote_file; do
+        remote_file_name=$(echo "$remote_file" | awk '{print $1}' | xargs basename)
+
+        if ! file_exists_in_local "$remote_file_name"; then
+            echo "Old file $remote_file_name exists in remote backup but not locally."
             exit 1
         fi
     done <<< "$remote_files"
