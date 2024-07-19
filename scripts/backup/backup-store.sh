@@ -21,11 +21,6 @@ if [ "$IS_BACKUP_ENABLED" == 'true' ]; then
     exit 1
   fi
 
-  if [ ! -f $SSH_KEY_PATH ]; then
-    echo "SSH key $SSH_KEY_PATH does not exist"
-    exit 1
-  fi
-
   ssh -i $SSH_KEY_PATH -q -o BatchMode=yes -o ConnectTimeout=5 $REMOTE_USER@$REMOTE_URL exit
 
   if [ $? -ne 0 ]; then
