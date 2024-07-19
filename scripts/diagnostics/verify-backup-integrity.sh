@@ -7,7 +7,7 @@ if [ "$IS_BACKUP_ENABLED" == 'true' ]; then
     if [ -z "$NODE_BACKUP_DIR" ]; then
         NODE_BACKUP_DIR="$(hostname)"
     fi
-    LOCAL_PATH="$QUIL_PATH/app/.config"
+    LOCAL_PATH="$QUIL_PATH/node/.config"
     REMOTE_PATH="~/backups/$NODE_BACKUP_DIR/.config"
     REMOTE_URL="$(yq '.settings.backups.backup_url' $QTOOLS_CONFIG_FILE)"
     REMOTE_USER="$(yq '.settings.backups.remote_user' $QTOOLS_CONFIG_FILE)"
