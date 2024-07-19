@@ -8,7 +8,8 @@ if [ "$IS_BACKUP_ENABLED" == 'true' ]; then
         NODE_BACKUP_DIR="$(hostname)"
     fi
     LOCAL_PATH="$QUIL_PATH/node/.config"
-    REMOTE_PATH="~/backups/$NODE_BACKUP_DIR/.config"
+    REMOTE_DIR="$(yq '.settings.backups.remote_backup_dir' $QTOOLS_CONFIG_FILE)/$NODE_BACKUP_DIR/"
+    REMOTE_PATH="$REMOTE_DIR/$NODE_BACKUP_DIR/.config"
     REMOTE_URL="$(yq '.settings.backups.backup_url' $QTOOLS_CONFIG_FILE)"
     REMOTE_USER="$(yq '.settings.backups.remote_user' $QTOOLS_CONFIG_FILE)"
     SSH_KEY_PATH="$(yq '.settings.backups.ssh_key_path' $QTOOLS_CONFIG_FILE)"
@@ -39,7 +40,8 @@ if [ "$IS_BACKUP_ENABLED" == 'true' ]; then
             remote_file_path=$(echo "$remote_file" | awk '{print $1}')
             remote_file_size=$(echo "$remote_file" | awk '{print $2}')
             remote_file_relative=$(echo "$remote_file_path" | sed "s|$REMOTE_PATH||")
-
+            echo "$file vs $remote_file_relative"
+            echo "$size vs $remote_file_size"
             if [ "$file" == "$remote_file_relative" ] && [ "$size" == "$remote_file_size" ]; then
                 return 0
             fi
