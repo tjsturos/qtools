@@ -31,7 +31,7 @@ if [ "$IS_BACKUP_ENABLED" == 'true' ]; then
   # Check if the remote directory does not exist before creating it
   ssh -i $SSH_KEY_PATH $REMOTE_USER@$REMOTE_URL "test -d $REMOTE_DIR || mkdir -p $REMOTE_DIR"
 
-  rsync -avzrP --delete-after -e "ssh -i $SSH_KEY_PATH" "$QUIL_NODE_PATH/.config" "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR"
+  rsync -avzrP --delete-after -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no" "$QUIL_NODE_PATH/.config" "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR"
 else
   log "Backup for $LOCAL_HOSTNAME is not enabled. Modify the qtools config (qtools edit-qtools-config) to enable."
 fi
