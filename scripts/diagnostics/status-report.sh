@@ -41,7 +41,7 @@ check_service_status() {
     local output=$(qtools status)
 
     if echo "$output" | grep -q "Active: active (running)"; then
-        echo -e "${GREEN_CHECK} Node is running"
+        echo -e "${GREEN_CHECK} Node service is running (active)"
 
         # Extract and display the version and uptime
         local version=$(qtools node-version)
@@ -49,9 +49,9 @@ check_service_status() {
         echo -e "${GREEN_CHECK} Node Version: $version"
         echo -e "${GREEN_CHECK} Node Uptime: $uptime"
     elif echo "$output" | grep -q "Active: inactive (dead)"; then
-        echo -e "${RED_CROSS} Node is not running"
+        echo -e "${RED_CROSS} Node service is not running (dead)"
     elif echo "$output" | grep -q "Active: activating (auto-restart)"; then
-        echo -e "${WARNING} Node is trying to restart"
+        echo -e "${WARNING} Node is trying to restart (activating with auto-restart)"
     else 
         echo -e "Unable to determine the status of the node"
     fi
