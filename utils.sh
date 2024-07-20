@@ -92,7 +92,7 @@ get_last_started_at() {
 is_app_finished_starting() {
     local UPTIME="$(get_last_started_at)"
     local PEER_TEXT=$(sudo journalctl -u $QUIL_SERVICE_NAME@main --no-hostname -S "${UPTIME}" | grep 'peers in store')
-    if [ -z "$PEER_TEXT"]; then
+    if [ -z "$PEER_TEXT" ]; then
         echo "false"
     else
         echo "true"
