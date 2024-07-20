@@ -10,7 +10,7 @@ find_port() {
     local DETECT_PORT_LISTENING="$(echo $PORTS_LISTENING | grep $PORT)"
 
     if [ -z "$DETECT_PORT_LISTENING" ]; then
-        if "$PORT" == "8337"; then
+        if [ "${PORT}" == "8337" ]; then
             # determine app status-- if the app hasn't reached a certain point yet, then it won't be listening
             # on port 8337 yet, so saying it wasn't found listening is not very helpful.
             local uptime=$(echo "qtools status" | grep -oP 'since \K\S+ \S+')
