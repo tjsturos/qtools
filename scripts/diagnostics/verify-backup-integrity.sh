@@ -2,6 +2,8 @@
 IS_BACKUP_ENABLED="$(yq '.settings.backups.enabled' $QTOOLS_CONFIG_FILE)"
 
 if [ "$IS_BACKUP_ENABLED" == 'true' ]; then
+    qtools backup-store
+    wait
     NODE_BACKUP_DIR="$(yq '.settings.backups.node_backup_dir' $QTOOLS_CONFIG_FILE)"
     # see if there the default save dir is overriden
     if [ -z "$NODE_BACKUP_DIR" ]; then
