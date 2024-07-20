@@ -13,12 +13,12 @@ find_port() {
         if [ "${PORT}" == "8337" ]; then
             # determine app status-- if the app hasn't reached a certain point yet, then it won't be listening
             # on port 8337 yet, so saying it wasn't found listening is not very helpful.
-            local uptime="$(echo "$(sudo systemctl status ceremonyclient@main)" | grep -oP '\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}' -m1)"
-            local streaming_text=$(sudo journalctl -u ceremonyclient@main --no-hostname -S "${uptime}" | grep 'begin streaming')
-            local app_text=$(sudo journalctl -u ceremonyclient@main --no-hostname -S "${uptime}" | grep 'peers in store')
-            if [ -z "$streaming_text" ] && [ -z "$app_text"]; then
+            IS_APP_FINISHED_STARTING="$(is_app_finished_starting)"
+            UPTIME="$(get_last_started_at)"
+            local streaming_text=$(sudo journalctl -u $QUIL_SERVICE_NAME@main --no-hostname -S "${uptime}" | grep 'begin streaming')
+            if [ $IS_APP_FINISHED_STARTING == "false" ]; then
                 echo "App is still starting up, port 8337 will not be ready yet."
-            elif [ ! -z "$app_text" ] && [ -z "$streaming_text" ]; then
+            elif [ -z "$streaming_text" ]; then
                 echo "Port $PORT not found listening. App has started. There is a misconfiguration in your Quil Node Config file."
             else
                 echo "Port $PORT was found listening."

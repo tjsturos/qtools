@@ -85,6 +85,20 @@ log() {
     echo "$LOG" >> "$QTOOLS_PATH/$LOG_OUTPUT_FILE"
 }
 
+get_last_started_at() {
+    echo "$(echo "$(sudo systemctl status $QUIL_SERVICE_NAME@main)" | grep -oP '\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}' -m1)"
+}
+
+is_app_finished_starting() {
+    local UPTIME="$(get_last_started_at)"
+    local PEER_TEXT=$(sudo journalctl -u $QUIL_SERVICE_NAME=@main --no-hostname -S "${UPTIME}" | grep 'peers in store')
+    if [ -z "$PEER_TEXT"]; then
+        echo "false"
+    else
+        echo "true"
+    fi
+}
+
 append_to_file() {
     FILE="$1"
     CONTENT="$2"
