@@ -8,13 +8,13 @@ get_vendor() {
 }
 
 get_threads() {
-    echo "$(lscpu | grep 'CPU(s):' -m1 | awk '{print $2}')"
+    echo $(lscpu | grep 'CPU(s):' -m1 | awk '{print $2}')
 }
 
 get_is_hyperthreading_enabled() {
     THREAD_COUNT=$(get_threads)
     SOCKETS=$(lscpu | grep "Socket(s)" -m1 | awk '{print $2}')
-    if [ "$THREADS_COUNT" -gt $SOCKETS ]; then
+    if [ $THREADS_COUNT -gt $SOCKETS ]; then
         echo "\e[32mtrue\e[0m"
     else
         echo "\e[31mfalse\e[0m"
