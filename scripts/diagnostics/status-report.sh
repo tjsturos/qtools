@@ -3,6 +3,7 @@
 # Define colored icons
 GREEN_CHECK="\e[32m✔\e[0m"  # Green check mark
 RED_CROSS="\e[31m✖\e[0m"    # Red cross mark
+WARNING="⚠"
 
 check_ports_status() {
     local PORTS_ACTUAL_OUTPUT="$(qtools ports-listening)"
@@ -12,6 +13,11 @@ check_ports_status() {
             # Extract the port number from the line
             PORT=$(echo $LINE | grep -oP '(?<=Port )\d+')
             echo "${RED_CROSS} Port $PORT is not working as expected"
+            ALL_PORTS_FUNCTIONAL=false
+        elif [[ $LINE == *"still starting up"* ]]; then
+            # Extract the port number from the line
+            PORT=$(echo $LINE | grep -oP '(?<=Port )\d+')
+            echo "${WARNING} $LINE"
             ALL_PORTS_FUNCTIONAL=false
         fi
     done <<< "$PORTS_ACTUAL_OUTPUT"
@@ -44,7 +50,7 @@ check_service_status() {
         echo -e "${GREEN_CHECK} Uptime: $uptime"
     elif echo "$output" | grep -q "Active: inactive (dead)"; then
         echo -e "${RED_CROSS} Node is not running"
-    else
+    else 
         echo -e "Unable to determine the status of the node"
     fi
 }

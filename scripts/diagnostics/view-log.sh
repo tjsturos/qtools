@@ -3,8 +3,6 @@
 # HELP: Views the logs for the node application.
 
 if [ "$IS_LINKED" != "true" ]; then
-    # if is linked, then start the secondary processes
-    # otherwise just start the main process
     sudo journalctl -u $QUIL_SERVICE_NAME@main -f --no-hostname -o cat
 else
     CORE_INDEX_START=$(yq '.settings.linked_node.start_cpu_index' $QTOOLS_CONFIG_FILE)
