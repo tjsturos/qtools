@@ -8,13 +8,13 @@ get_vendor() {
 }
 
 get_threads() {
-    cat /proc/cpuinfo | grep siblings | awk '{print $3}' | uniq
+    echo "$(lscpu | grep 'CPU(s):' -m1 | awk '{print $2}')"
 }
 
 get_is_hyperthreading_enabled() {
-    CORE_COUNT=$(cat /proc/cpuinfo | grep "cpu cores" | awk '{print $4}' | uniq)
-    SIBLINGS=$(cat /proc/cpuinfo | grep siblings | awk '{print $3}' | uniq)
-    if [ "$SIBLINGS" -gt "$CORE_COUNT" ]; then
+    THREAD_COUNT=$(get_threads)
+    SOCKETS=$(lscpu | grep "Socket(s)" -m1 | awk '{print $2}')
+    if [ "$THREADS_COUNT" -gt $SOCKETS ]; then
         echo "\e[32mtrue\e[0m"
     else
         echo "\e[31mfalse\e[0m"
