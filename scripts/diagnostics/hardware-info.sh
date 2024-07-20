@@ -11,9 +11,13 @@ get_threads() {
     lscpu | grep 'CPU(s):' -m1 | awk '{print $2}'
 }
 
+get_sockets() {
+    lscpu | grep "Socket(s)" -m1 | awk '{print $2}'
+}
+
 get_is_hyperthreading_enabled() {
     THREAD_COUNT=$(get_threads)
-    SOCKETS=$(lscpu | grep "Socket(s)" -m1 | awk '{print $2}')
+    SOCKETS=$(get_sockets)
     if [ "$THREAD_COUNT" -gt $SOCKETS ]; then
         echo "\e[32mtrue\e[0m"
     else
@@ -28,5 +32,6 @@ get_model_name() {
 
 echo -e "${BLUE}${INFO_ICON}${NC} Vendor: $(get_vendor)"
 echo -e "${BLUE}${INFO_ICON}${NC} Model: $(get_model_name)"
+echo -e "${BLUE}${INFO_ICON}${NC} Cores: $(get_sockets)"
 echo -e "${BLUE}${INFO_ICON}${NC} Threads: $(get_threads)"
 echo -e "${BLUE}${INFO_ICON}${NC} Hyperthreading Enabled: $(get_is_hyperthreading_enabled)"
