@@ -27,6 +27,6 @@ get_model_name() {
 
 
 echo -e "${BLUE}${INFO_ICON}${NC} Vendor: $(get_vendor)"
+echo -e "${BLUE}${INFO_ICON}${NC} Model: $(get_model_name)"
 echo -e "${BLUE}${INFO_ICON}${NC} Threads: $(get_threads)"
 echo -e "${BLUE}${INFO_ICON}${NC} Hyperthreading Enabled: $(get_is_hyperthreading_enabled)"
-echo -e "${BLUE}${INFO_ICON}${NC} Model: $(get_model_name)"
