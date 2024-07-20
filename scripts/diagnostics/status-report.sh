@@ -60,12 +60,19 @@ check_command_installed() {
     local version_command=$2
 
     if command -v "$command_name" >/dev/null 2>&1; then
-        echo -e "${GREEN_CHECK} $command_name is installed"
+        # Initialize the message with the installed check mark and command name
+        message="${GREEN_CHECK} $command_name is installed"
+        
+        # If a version command is provided, get the version and append it to the message
         if [[ -n $version_command ]]; then
-            local version=$($version_command)
-            echo -e "${GREEN_CHECK} $command_name version: $version"
+            version=$($version_command)
+            message+=" (version: $version)"
         fi
+        
+        # Print the final message
+        echo -e "$message"
     else
+        # Print the not installed message
         echo -e "${RED_CROSS} $command_name is not installed"
     fi
 }
