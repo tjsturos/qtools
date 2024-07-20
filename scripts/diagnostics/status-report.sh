@@ -83,7 +83,7 @@ check_unclaimed_balance() {
     if [[ $BALANCE =~ ^-?[0-9]+([.][0-9]+)?$ ]]; then
         echo -e "${GREEN_CHECK} Unclaimed balance: $BALANCE"
     else
-        if [ ! -z "$(echo $BALANCE | grep \"App hasn\'t finished starting\")" ]; then
+        if [ ! -z "$(echo $BALANCE | grep 'finished starting')" ]; then
             echo -e "${WARNING} App hasn't finished starting up-- can't fetch balance right now."
         else
             echo -e "${RED_CROSS} Invalid unclaimed balance: $BALANCE"
@@ -105,7 +105,7 @@ check_frame_count() {
     local FRAME_COUNT=$(qtools frame-count)
     
     if [[ -n $FRAME_COUNT ]]; then
-        if [ ! -z "$(echo $FRAME_COUNT | grep \"App hasn\'t finished starting\")" ]; then
+        if [ ! -z "$(echo $FRAME_COUNT | grep 'finished starting')" ]; then
             echo -e "${WARNING} App hasn't finished starting up-- can't fetch frames right now."
         else
             echo -e "${GREEN_CHECK} Frame Count: $FRAME_COUNT"
