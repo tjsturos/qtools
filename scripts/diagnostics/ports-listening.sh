@@ -13,9 +13,9 @@ find_port() {
         if [ "${PORT}" == "8337" ]; then
             # determine app status-- if the app hasn't reached a certain point yet, then it won't be listening
             # on port 8337 yet, so saying it wasn't found listening is not very helpful.
-            local uptime=$(echo "$(sudo systemctl status ceremonyclient@main)" | grep -oP '\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}' -m1)
-            local streaming_text="$(sudo journalctl -u ceremonyclient@main --no-hostname -S \"$uptime\" | grep 'begin streaming')"
-            local app_text="$(sudo journalctl -u ceremonyclient@main --no-hostname -S \"$uptime\" | grep 'peers in store')"
+            local uptime="$(echo "$(sudo systemctl status ceremonyclient@main)" | grep -oP '\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}' -m1)"
+            local streaming_text="$(sudo journalctl -u ceremonyclient@main --no-hostname -S \"${uptime}\" | grep 'begin streaming')"
+            local app_text="$(sudo journalctl -u ceremonyclient@main --no-hostname -S \"${uptime}\" | grep 'peers in store')"
             if [ -z "$streaming_text" ] && [ -z "$app_text"]; then
                 echo "App is still starting up, port 8337 will not be ready yet."
             elif [ ! -z "$app_text" ] && [ -z "$streaming_text" ]; then
