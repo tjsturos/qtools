@@ -50,6 +50,8 @@ check_service_status() {
         echo -e "${GREEN_CHECK} Uptime: $uptime"
     elif echo "$output" | grep -q "Active: inactive (dead)"; then
         echo -e "${RED_CROSS} Node is not running"
+    elif echo "$output" | grep -q "Active: activating (auto-restart)"; then
+        echo -e "${WARNING} Node is trying to restart"
     else 
         echo -e "Unable to determine the status of the node"
     fi
