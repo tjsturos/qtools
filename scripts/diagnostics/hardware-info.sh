@@ -15,7 +15,7 @@ get_cores() {
 get_is_hyperthreading_enabled() {
     THREAD_COUNT=$(get_threads)
     CORES=$(get_cores)
-    if [ "$THREAD_COUNT" -gt $CORES]; then
+    if [ "$THREAD_COUNT" -gt $CORES ]; then
         echo "true"
     else
         echo "false"
