@@ -134,7 +134,7 @@ check_backup_status() {
 }
 
 check_proof_info() {
-    local proof_info=$($QTOOLS_PATH/scripts/diagnostics/proof-info.sh)
+    local proof_info=$(source $QTOOLS_PATH/scripts/diagnostics/proof-info.sh)
     local storing_increment=$(echo "$proof_info" | grep STORING_INCREMENT | cut -d= -f2)
     local completed_increment=$(echo "$proof_info" | grep COMPLETED_INCREMENT | cut -d= -f2)
     local time_taken=$(echo "$proof_info" | grep TIME_TAKEN | cut -d= -f2)
