@@ -21,10 +21,15 @@ fi
 yq -i ".user = \"$USER\"" $QTOOLS_CONFIG_FILE
 yq -i ".service.working_dir = \"$HOME/ceremonyclient/node\"" $QTOOLS_CONFIG_FILE
 
-install_package colordiff colordiff
-install_package jq jq
-install_package base58 base58
-install_package dnsutils dig
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  install_package colordiff colordiff
+  install_package jq jq
+else
+  install_package colordiff colordiff
+  install_package jq jq
+  install_package base58 base58
+  install_package dnsutils dig
+fi
 
 # Remaining scripts need existance of the QTOOLS_BIN_PATH binary
 if [ ! -L "$QTOOLS_BIN_PATH" ]; then
