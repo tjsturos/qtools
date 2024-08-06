@@ -32,7 +32,10 @@ TIMESTAMP=$(date +%s)
 # Get the unclaimed balance
 BALANCE=$(get_unclaimed_balance)
 
-if [ ! -z "$BALANCE" ]; then
+# Check if BALANCE is a valid number
+if [[ "$BALANCE" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
   # Append the timestamp and balance to the CSV file
   echo "$TIMESTAMP,$BALANCE" >> "$CSV_FILE"
+else
+  echo "Skipping record: Invalid balance value - $BALANCE"
 fi
