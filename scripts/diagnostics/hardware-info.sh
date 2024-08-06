@@ -8,14 +8,14 @@ get_threads() {
     lscpu | grep 'CPU(s):' -m1 | awk '{print $2}'
 }
 
-get_sockets() {
+get_cores() {
     echo "$(($(lscpu | awk '/^Socket\(s\)/{ print $2 }') * $(lscpu | awk '/^Core\(s\) per socket/{ print $4 }')))"
 }
 
 get_is_hyperthreading_enabled() {
     THREAD_COUNT=$(get_threads)
-    SOCKETS=$(get_sockets)
-    if [ "$THREAD_COUNT" -gt $SOCKETS ]; then
+    CORES=$(get_cores)
+    if [ "$THREAD_COUNT" -gt $CORES]; then
         echo "true"
     else
         echo "false"
@@ -29,7 +29,7 @@ get_model_name() {
 print_hardware_info() {
     echo "Vendor|$(get_vendor)"
     echo "Model|$(get_model_name)"
-    echo "Cores|$(get_sockets)"
+    echo "Cores|$(get_cores)"
     echo "Threads|$(get_threads)"
     echo "Hyperthreading Enabled|$(get_is_hyperthreading_enabled)"
 }
