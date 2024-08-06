@@ -59,7 +59,7 @@ if [[ -f "$BINARY_INSTALL_DIR/yq" ]]; then
 fi
 
 log "Installing yq..."
-sudo mv yq "$BINARY_INSTALL_DIR/yq"
+sudo mv "$BINARY" "$BINARY_INSTALL_DIR/yq"
 
 if command_exists yq; then
     log "yq installed successfully. Version: $(yq --version)"
