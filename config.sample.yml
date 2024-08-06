@@ -39,7 +39,6 @@ settings:
         yq:
             version: v4.44.2
             binary: yq_linux_amd64
-            binary_install_dir: /usr/bin/
         ssh:
             disable_password_login: true
             public_key_url: ""
