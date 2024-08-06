@@ -35,13 +35,14 @@ qyaml() {
 
     echo "Debug: Processing line: '$line' (indent level: $indent_level, current level: $current_level)"
 
-    # Check if we're at the correct level
-    if [[ $indent_level -eq $current_level ]]; then
-      echo "Debug: Checking if line starts with ${keys[$current_level]}:"
-      if [[ $line =~ ^${keys[$current_level]}: ]]; then
-        echo "Debug: Match found for ${keys[$current_level]}"
+    # Check if we're at the correct level or deeper
+    if [[ $indent_level -ge $current_level ]]; then
+      local key="${keys[$current_level]}"
+      echo "Debug: Checking if line starts with $key:"
+      if [[ $line =~ ^$key: ]]; then
+        echo "Debug: Match found for $key"
         if [[ $current_level -eq $((${#keys[@]} - 1)) ]]; then
-          found_value=$(echo "$line" | sed -E "s/^${keys[$current_level]}:[[:space:]]*//")
+          found_value=$(echo "$line" | sed -E "s/^$key:[[:space:]]*//")
           echo "Debug: Final value found: $found_value"
           break
         else
@@ -49,10 +50,17 @@ qyaml() {
           current_indent="$indent  "
           echo "Debug: Moving to next level: $current_level"
         fi
+      elif [[ $indent_level -gt $current_level ]]; then
+        echo "Debug: Deeper nesting, continuing search"
+      else
+        echo "Debug: No match, resetting search"
+        current_level=0
+        current_indent=""
       fi
     elif [[ $indent_level -lt $current_level ]]; then
-      echo "Debug: Indent level decreased, breaking"
-      break
+      echo "Debug: Indent level decreased, resetting search"
+      current_level=0
+      current_indent=""
     fi
   done < "$file_path"
 
