@@ -1,12 +1,18 @@
 #!/bin/bash
 
 # Determine the script's path, whether called through a symlink or directly
-if [[ -L "$0" ]]; then
-    # If $0 is a symlink, resolve it to the actual script path
-    SCRIPT_PATH=$(readlink -f "$0")
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS specific path resolution
+    SCRIPT_PATH=$(cd "$(dirname "$0")" && pwd -P)/$(basename "$0")
 else
-    # If $0 is not a symlink, use the direct path
-    SCRIPT_PATH=$(realpath "$0")
+    # Linux path resolution
+    if [[ -L "$0" ]]; then
+        # If $0 is a symlink, resolve it to the actual script path
+        SCRIPT_PATH=$(readlink -f "$0")
+    else
+        # If $0 is not a symlink, use the direct path
+        SCRIPT_PATH=$(realpath "$0")
+    fi
 fi
 
 # Get the directory where the script is located
