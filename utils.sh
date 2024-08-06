@@ -7,57 +7,47 @@ qyaml() {
     return 1
   fi
 
-  # Convert the period-separated key path string into an array
+  # Remove leading dot if present
   if [[ $key_path == .* ]]; then
     key_path=${key_path:1}
   fi
 
-  IFS='.' read -r -a keys <<< "$key_path"
+  # Split the key path into an array
+  IFS='.' read -ra keys <<< "$key_path"
 
-  local value=""
-  local indent=""
-  local key
-  local found=0
+  local current_level=0
+  local current_indent=""
+  local found_value=""
 
-  while IFS= read -r line; do
-    # Check for comments and empty lines
-    if [[ $line =~ ^[[:space:]]*# ]] || [[ -z $line ]]; then
-      continue
-    fi
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    # Skip comments and empty lines
+    [[ $line =~ ^[[:space:]]*# ]] || [[ -z $line ]] && continue
 
-    # Strip leading whitespace to find indentation
-    local stripped_line=$(echo "$line" | sed -E 's/^[[:space:]]*//')
+    # Get indentation level
+    local indent=$(echo "$line" | sed -E 's/^( *).*$/\1/')
+    local indent_level=$((${#indent} / 2))
 
-    # Check if the line matches the current key in the sequence
-    if [[ $stripped_line =~ ^${keys[found]}: ]]; then
-      # Update indentation level
-      indent=$(echo "$line" | sed -E 's/[^\t ]//g')
-      value=$(echo "$stripped_line" | sed -E "s/^${keys[found]}:[[:space:]]*//")
+    # Remove leading/trailing whitespace
+    line=$(echo "$line" | sed -E 's/^[[:space:]]+|[[:space:]]+$//g')
 
-      # Move to the next key in the sequence
-      found=$((found + 1))
-
-      # If the value is not empty, break early
-      if [[ -n $value ]]; then
-        break
+    # Check if we're at the correct level
+    if [[ $indent_level -eq $current_level ]]; then
+      if [[ $line =~ ^${keys[$current_level]}: ]]; then
+        if [[ $current_level -eq $((${#keys[@]} - 1)) ]]; then
+          found_value=$(echo "$line" | sed -E "s/^${keys[$current_level]}:[[:space:]]*//")
+          break
+        else
+          ((current_level++))
+          current_indent="$indent  "
+        fi
       fi
-
-      # If we've found all keys, break
-      if [[ $found -eq ${#keys[@]} ]]; then
-        break
-      fi
-    elif [[ $found -gt 0 && $line =~ ^$indent ]]; then
-      # Check for nested values if indentation matches
-      local nested_value=$(echo "$stripped_line" | sed -E 's/^[[:space:]]*//')
-      value="${value} ${nested_value}"
-    elif [[ $found -gt 0 && ! $line =~ ^$indent ]]; then
-      # Exit if indentation level is less than expected
+    elif [[ $indent_level -lt $current_level ]]; then
       break
     fi
   done < "$file_path"
 
-  if [[ $found -eq ${#keys[@]} ]]; then
-    echo "$value"
+  if [[ -n $found_value ]]; then
+    echo "$found_value"
   else
     echo "Value not found."
   fi
