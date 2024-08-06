@@ -67,10 +67,10 @@ export QTOOLS_BIN_PATH=/usr/local/bin/qtools
 export QUIL_QCLIENT_BIN=/usr/local/bin/qclient
 export SYSTEMD_SERVICE_PATH=/lib/systemd/system
 
-export BASHRC_FILE="$HOME/.bashrc"
+export BASHRC_FILE="$HOME/.zshrc"
 
 # Define Go vars
-export GO_BIN_DIR=/usr/local
+export GO_BIN_DIR=/usr/local/opt
 export GOROOT=$GO_BIN_DIR/go
 export GOPATH=$HOME/go
 export PATH=$GOPATH/bin:$GOROOT/bin:$PATH

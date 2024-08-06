@@ -165,7 +165,9 @@ install_package() {
         log "$package is not installed. Installing..."
 
         # Detect the package manager and install the package
-        if command_exists apt-get; then
+        if command_exists brew; then
+            brew install $package
+        elif command_exists apt-get; then
             sudo apt-get update -y &> $QTOOLS_PATH/$LOG_OUTPUT_FILE
             sudo apt-get install -y -q $package  &> $QTOOLS_PATH/$LOG_OUTPUT_FILE
         elif command_exists yum; then
@@ -174,8 +176,6 @@ install_package() {
             sudo dnf install -y $package
         elif command_exists pacman; then
             sudo pacman -Sy $package
-        elif command_exists brew; then
-            brew install $package
         else
             log "Error: Cannot determine the package manager to use for installing $package."
             exit 1
