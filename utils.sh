@@ -196,7 +196,13 @@ remove_lines_matching_pattern() {
     fi
 
     # Use sed to remove lines matching the specified pattern
-    sudo sed -i "/$pattern/d" "$file"
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        # macOS version
+        sudo sed -i '' "/$pattern/d" "$file"
+    else
+        # Linux version
+        sudo sed -i "/$pattern/d" "$file"
+    fi
 }
 
 set_release_version() {
