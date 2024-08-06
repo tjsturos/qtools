@@ -26,13 +26,13 @@ qyaml() {
     fi
 
     # Strip leading whitespace to find indentation
-    local stripped_line=$(echo "$line" | sed -e 's/^[[:space:]]*//')
+    local stripped_line=$(echo "$line" | sed -E 's/^[[:space:]]*//')
 
     # Check if the line matches the current key in the sequence
     if [[ $stripped_line =~ ^${keys[found]}: ]]; then
       # Update indentation level
-      indent=$(echo "$line" | sed -e 's/[^\t ]//g')
-      value=$(echo "$stripped_line" | sed -e "s/^${keys[found]}:[[:space:]]*//")
+      indent=$(echo "$line" | sed -E 's/[^\t ]//g')
+      value=$(echo "$stripped_line" | sed -E "s/^${keys[found]}:[[:space:]]*//")
 
       # Move to the next key in the sequence
       found=$((found + 1))
@@ -48,7 +48,7 @@ qyaml() {
       fi
     elif [[ $found -gt 0 && $line =~ ^$indent ]]; then
       # Check for nested values if indentation matches
-      local nested_value=$(echo "$stripped_line" | sed -e 's/^[[:space:]]*//')
+      local nested_value=$(echo "$stripped_line" | sed -E 's/^[[:space:]]*//')
       value="${value} ${nested_value}"
     elif [[ $found -gt 0 && ! $line =~ ^$indent ]]; then
       # Exit if indentation level is less than expected
