@@ -2,8 +2,6 @@ qyaml() {
   local key_path=$1
   local file_path=$2
 
-  echo "Debug: Searching for key path: $key_path in file: $file_path"
-
   if [[ ! -f $file_path ]]; then
     echo "File not found: $file_path"
     return 1
@@ -16,7 +14,6 @@ qyaml() {
 
   # Split the key path into an array
   IFS='.' read -ra keys <<< "$key_path"
-  echo "Debug: Keys to search: ${keys[*]}"
 
   local current_level=0
   local current_indent=""
@@ -33,32 +30,24 @@ qyaml() {
     # Remove leading/trailing whitespace
     line=$(echo "$line" | sed -E 's/^[[:space:]]+|[[:space:]]+$//g')
 
-    echo "Debug: Processing line: '$line' (indent level: $indent_level, current level: $current_level)"
-
     # Check if we're at the correct level or deeper
     if [[ $indent_level -ge $current_level ]]; then
       local key="${keys[$current_level]}"
-      echo "Debug: Checking if line starts with $key:"
       if [[ $line =~ ^$key: ]]; then
-        echo "Debug: Match found for $key"
         if [[ $current_level -eq $((${#keys[@]} - 1)) ]]; then
           found_value=$(echo "$line" | sed -E "s/^$key:[[:space:]]*//")
-          echo "Debug: Final value found: $found_value"
           break
         else
           ((current_level++))
           current_indent="$indent  "
-          echo "Debug: Moving to next level: $current_level"
         fi
       elif [[ $indent_level -gt $current_level ]]; then
-        echo "Debug: Deeper nesting, continuing search"
+        continue
       else
-        echo "Debug: No match, resetting search"
         current_level=0
         current_indent=""
       fi
     elif [[ $indent_level -lt $current_level ]]; then
-      echo "Debug: Indent level decreased, resetting search"
       current_level=0
       current_indent=""
     fi

@@ -1,20 +1,11 @@
 #!/bin/bash
 # HELP: Installs 'yq' for parsing config files.
-
-echo "Debug: QTOOLS_CONFIG_FILE = $QTOOLS_CONFIG_FILE"
-echo "Debug: Content of QTOOLS_CONFIG_FILE:"
-cat $QTOOLS_CONFIG_FILE
-
-echo "Debug: Attempting to get yq version..."
 VERSION=$(qyaml '.settings.install.yq.version' $QTOOLS_CONFIG_FILE)
-echo "Debug: Returned VERSION = $VERSION"
 
 if [[ -z "$VERSION" || "$VERSION" == "Value not found." ]]; then
     log "Error: yq version not found or empty in config file."
     exit 1
 fi
-
-echo "Debug: VERSION = $VERSION"
 
 OS_ARCH="$(get_os_arch)"
 
