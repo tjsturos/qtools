@@ -1,5 +1,3 @@
-
-
 qyaml() {
   local key_path=$1
   local file_path=$2
@@ -259,13 +257,18 @@ get_os_arch() {
     local os=$(uname -s | tr '[:upper:]' '[:lower:]')
     local arch=$(uname -m)
 
-    case "$arch" in
-        x86_64) arch="amd64" ;;
-        aarch64) arch="arm64" ;;
-        *) echo "Unsupported architecture: $arch" ; exit 1 ;;
+    case "$os" in
+        linux|darwin) ;;
+        *) echo "Unsupported operating system: $os" >&2; return 1 ;;
     esac
 
-    echo "$os-$arch"
+    case "$arch" in
+        x86_64|amd64) arch="amd64" ;;
+        arm64|aarch64) arch="arm64" ;;
+        *) echo "Unsupported architecture: $arch" >&2; return 1 ;;
+    esac
+
+    echo "${os}-${arch}"
 }
 
 get_versioned_node() {
