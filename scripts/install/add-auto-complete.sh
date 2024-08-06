@@ -1,11 +1,17 @@
 #!/bin/bash
 # HELP: Adds tab autocomplete for the qtools command for available commands.
 log "Adding/updating autocomplete for qtools command..."
-install_package bash-completion complete
 
-append_to_file $BASHRC_FILE "source /etc/profile.d/bash_completion.sh" false
-
-source /etc/profile.d/bash_completion.sh
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS-specific setup
+    brew install bash-completion
+    
+    append_to_file $BASHRC_FILE '[ -f /usr/local/etc/bash_completion ] && . /usr/local/etc/bash_completion' false
+else
+    # Linux setup
+    install_package bash-completion complete
+    append_to_file $BASHRC_FILE "source /etc/profile.d/bash_completion.sh" false
+fi
 
 # Define the directory to search
 search_directory="$QTOOLS_PATH/scripts"
