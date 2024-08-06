@@ -1,23 +1,24 @@
 #!/bin/bash
 
 # Define colored icons
-GREEN_CHECK="\e[32m✔\e[0m"  # Green check mark
-RED_CROSS="\e[31m✖\e[0m"    # Red cross mark
-WARNING="⚠"
+GREEN_CHECK="\e[32m✔\e[0m"
+RED_CROSS="\e[31m✖\e[0m"
+WARNING="\e[33m⚠\e[0m"
+BLUE="\e[34m"
+INFO_ICON="\u2139"
+NC="\e[0m"
 
 check_ports_status() {
     local PORTS_ACTUAL_OUTPUT="$(qtools ports-listening)"
     local ALL_PORTS_FUNCTIONAL=true
     while IFS= read -r LINE; do
         if [[ $LINE == *"was not found listening"* ]]; then
-            # Extract the port number from the line
             PORT=$(echo $LINE | grep -oP '(?<=Port )\d+')
-            echo "${RED_CROSS} Port $PORT is not working as expected"
+            echo -e "${RED_CROSS} Port $PORT is not working as expected"
             ALL_PORTS_FUNCTIONAL=false
         elif [[ $LINE == *"still starting up"* ]]; then
-            # Extract the port number from the line
             PORT=$(echo $LINE | grep -oP '(?<=Port )\d+')
-            echo "${WARNING} $LINE"
+            echo -e "${WARNING} $LINE"
             ALL_PORTS_FUNCTIONAL=false
         fi
     done <<< "$PORTS_ACTUAL_OUTPUT"
@@ -42,8 +43,6 @@ check_service_status() {
 
     if echo "$output" | grep -q "Active: active (running)"; then
         echo -e "${GREEN_CHECK} Node service is running (active)"
-
-        # Extract and display the version and uptime
         local version=$(qtools node-version)
         local uptime=$(echo "$output" | grep -oP '(?<=since ).*')
         echo -e "${GREEN_CHECK} Node Version: $version"
@@ -53,7 +52,7 @@ check_service_status() {
     elif echo "$output" | grep -q "Active: activating (auto-restart)"; then
         echo -e "${WARNING} Node is trying to restart (activating with auto-restart)"
     else 
-        echo -e "Unable to determine the status of the node"
+        echo -e "${RED_CROSS} Unable to determine the status of the node"
     fi
 }
 
@@ -62,19 +61,13 @@ check_command_installed() {
     local version_command=$2
 
     if command -v "$command_name" >/dev/null 2>&1; then
-        # Initialize the message with the installed check mark and command name
         message="${GREEN_CHECK} $command_name is installed"
-        
-        # If a version command is provided, get the version and append it to the message
         if [[ -n $version_command ]]; then
             version=$($version_command)
             message+=" (version: $version)"
         fi
-        
-        # Print the final message
         echo -e "$message"
     else
-        # Print the not installed message
         echo -e "${RED_CROSS} $command_name is not installed"
     fi
 }
@@ -119,33 +112,14 @@ check_frame_count() {
 
 check_backup_status() {
     local config_file="$QTOOLS_CONFIG_FILE"
-    local enabled
-    local node_backup_dir
-    local backup_url
-    local remote_user
-    local ssh_key_path
-    local remote_backup_dir
-
-    if command -v yq >/dev/null 2>&1; then
-        enabled=$(yq '.settings.backups.enabled' "$config_file")
-    else
-        enabled=$(qyaml .settings.backups.enabled "$config_file")
-    fi
+    local enabled=$(yq '.settings.backups.enabled' "$config_file" 2>/dev/null || qyaml .settings.backups.enabled "$config_file")
 
     if [[ "$enabled" == "true" ]]; then
-        if command -v yq >/dev/null 2>&1; then
-            node_backup_dir=$(yq '.settings.backups.node_backup_dir' "$config_file")
-            backup_url=$(yq '.settings.backups.backup_url' "$config_file")
-            remote_user=$(yq '.settings.backups.remote_user' "$config_file")
-            ssh_key_path=$(yq '.settings.backups.ssh_key_path' "$config_file")
-            remote_backup_dir=$(yq '.settings.backups.remote_backup_dir' "$config_file")
-        else
-            node_backup_dir=$(qyaml '.settings.backups.node_backup_dir' "$config_file")
-            backup_url=$(qyaml '.settings.backups.backup_url' "$config_file")
-            remote_user=$(qyaml '.settings.backups.remote_user' "$config_file")
-            ssh_key_path=$(qyaml '.settings.backups.ssh_key_path' "$config_file")
-            remote_backup_dir=$(qyaml '.settings.backups.remote_backup_dir' "$config_file")
-        fi
+        local node_backup_dir=$(yq '.settings.backups.node_backup_dir' "$config_file" 2>/dev/null || qyaml '.settings.backups.node_backup_dir' "$config_file")
+        local backup_url=$(yq '.settings.backups.backup_url' "$config_file" 2>/dev/null || qyaml '.settings.backups.backup_url' "$config_file")
+        local remote_user=$(yq '.settings.backups.remote_user' "$config_file" 2>/dev/null || qyaml '.settings.backups.remote_user' "$config_file")
+        local ssh_key_path=$(yq '.settings.backups.ssh_key_path' "$config_file" 2>/dev/null || qyaml '.settings.backups.ssh_key_path' "$config_file")
+        local remote_backup_dir=$(yq '.settings.backups.remote_backup_dir' "$config_file" 2>/dev/null || qyaml '.settings.backups.remote_backup_dir' "$config_file")
 
         echo -e "${GREEN_CHECK} Backup Status:"
         echo -e "    Enabled: $enabled"
@@ -159,14 +133,37 @@ check_backup_status() {
     fi
 }
 
-check_peer_id
-check_frame_count
-check_ports_status
-check_service_status "ceremonyclient@main.service"
-check_command_installed "grpcurl"
-check_command_installed "go" "go version"
-check_command_installed "yq" "yq --version"
-check_hourly_reward_rate
-check_unclaimed_balance
-check_backup_status
-qtools hardware-info
+check_proof_info() {
+    local proof_info=$(./scripts/diagnostics/fetch-proof-info.sh)
+    local storing_increment=$(echo "$proof_info" | grep STORING_INCREMENT | cut -d= -f2)
+    local completed_increment=$(echo "$proof_info" | grep COMPLETED_INCREMENT | cut -d= -f2)
+    local time_taken=$(echo "$proof_info" | grep TIME_TAKEN | cut -d= -f2)
+
+    echo -e "${BLUE}${INFO_ICON}${NC} Last storing proof increment: $storing_increment"
+    echo -e "${BLUE}${INFO_ICON}${NC} Last completed proof increment: $completed_increment"
+    echo -e "${BLUE}${INFO_ICON}${NC} Last proof completion time: $time_taken seconds"
+}
+
+check_hardware_info() {
+    local hardware_info=$(./scripts/diagnostics/hardware-info.sh)
+    while IFS='|' read -r key value; do
+        echo -e "${BLUE}${INFO_ICON}${NC} $key: $value"
+    done <<< "$hardware_info"
+}
+
+print_status_report() {
+    check_peer_id
+    check_frame_count
+    check_ports_status
+    check_service_status
+    check_command_installed "grpcurl"
+    check_command_installed "go" "go version"
+    check_command_installed "yq" "yq --version"
+    check_hourly_reward_rate
+    check_unclaimed_balance
+    check_backup_status
+    check_hardware_info
+    check_proof_info
+}
+
+print_status_report
