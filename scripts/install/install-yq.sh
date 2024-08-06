@@ -28,6 +28,11 @@ case "$OS_ARCH" in
         ;;
 esac
 
+if [[ ! -d $QTOOLS_PATH/binaries ]]; then
+    log "Creating binaries directory..."
+    mkdir -p $QTOOLS_PATH/binaries
+fi
+
 cd $QTOOLS_PATH/binaries
 
 COMPRESSED_FILENAME=${BINARY}_${VERSION}.tar.gz
