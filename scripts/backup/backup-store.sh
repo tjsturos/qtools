@@ -17,29 +17,17 @@ if [ "$IS_BACKUP_ENABLED" == 'true' ]; then
 
   # Check if any required variable is empty
   if [ "$REMOTE_DIR" == "/$NODE_BACKUP_DIR/" ] || [ -z "$REMOTE_URL" ] || [ -z "$REMOTE_USER" ] || [ -z "$SSH_KEY_PATH" ]; then
-    echo "One or more required backup settings are missing in the configuration."
+    echo "Error: One or more required backup settings are missing in the configuration."
     exit 1
   fi
 
-  # Check SSH connection
-  if ! ssh -i "$SSH_KEY_PATH" -q -o BatchMode=yes -o ConnectTimeout=5 "$REMOTE_USER@$REMOTE_URL" exit &>/dev/null; then
-    echo "Error: Unable to establish SSH connection."
-    echo "Please check the following:"
-    echo "1. SSH key path: $SSH_KEY_PATH"
-    echo "2. Remote user: $REMOTE_USER"
-    echo "3. Remote URL: $REMOTE_URL"
-    echo "4. Ensure the SSH key has correct permissions (chmod 600 $SSH_KEY_PATH)"
-    exit 1
-  fi
-
-  # Check if the remote directory exists, create if it doesn't
-  if ! ssh -i "$SSH_KEY_PATH" "$REMOTE_USER@$REMOTE_URL" "test -d $REMOTE_DIR"; then
-    echo "Creating remote directory: $REMOTE_DIR"
-    ssh -i "$SSH_KEY_PATH" "$REMOTE_USER@$REMOTE_URL" "mkdir -p $REMOTE_DIR"
-  fi
+  # Attempt to create the remote directory (if it doesn't exist)
+  ssh -i "$SSH_KEY_PATH" "$REMOTE_USER@$REMOTE_URL" "mkdir -p $REMOTE_DIR" || {
+    echo "Warning: Failed to create remote directory. It may already exist or there might be permission issues."
+  }
 
   # Perform the rsync backup
-  if rsync -avzrP --delete-after -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no" "$QUIL_NODE_PATH/.config" "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR"; then
+  if rsync -avzrP --delete-after -e "ssh -i $SSH_KEY_PATH" "$QUIL_NODE_PATH/.config" "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR"; then
     echo "Backup completed successfully."
   else
     echo "Error: Backup failed. Please check your rsync command and try again."
