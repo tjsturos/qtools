@@ -21,17 +21,30 @@ if [ "$IS_BACKUP_ENABLED" == 'true' ]; then
     exit 1
   fi
 
-  ssh -i $SSH_KEY_PATH -q -o BatchMode=yes -o ConnectTimeout=5 $REMOTE_USER@$REMOTE_URL exit
-
-  if [ $? -ne 0 ]; then
-    echo "SSH alias $SSH_KEY_PATH $REMOTE_USER@$REMOTE_URL does not exist or is not reachable."
+  # Check SSH connection
+  if ! ssh -i "$SSH_KEY_PATH" -q -o BatchMode=yes -o ConnectTimeout=5 "$REMOTE_USER@$REMOTE_URL" exit &>/dev/null; then
+    echo "Error: Unable to establish SSH connection."
+    echo "Please check the following:"
+    echo "1. SSH key path: $SSH_KEY_PATH"
+    echo "2. Remote user: $REMOTE_USER"
+    echo "3. Remote URL: $REMOTE_URL"
+    echo "4. Ensure the SSH key has correct permissions (chmod 600 $SSH_KEY_PATH)"
     exit 1
   fi
 
-  # Check if the remote directory does not exist before creating it
-  ssh -i $SSH_KEY_PATH $REMOTE_USER@$REMOTE_URL "test -d $REMOTE_DIR || mkdir -p $REMOTE_DIR"
+  # Check if the remote directory exists, create if it doesn't
+  if ! ssh -i "$SSH_KEY_PATH" "$REMOTE_USER@$REMOTE_URL" "test -d $REMOTE_DIR"; then
+    echo "Creating remote directory: $REMOTE_DIR"
+    ssh -i "$SSH_KEY_PATH" "$REMOTE_USER@$REMOTE_URL" "mkdir -p $REMOTE_DIR"
+  fi
 
-  rsync -avzrP --delete-after -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no" "$QUIL_NODE_PATH/.config" "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR"
+  # Perform the rsync backup
+  if rsync -avzrP --delete-after -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no" "$QUIL_NODE_PATH/.config" "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR"; then
+    echo "Backup completed successfully."
+  else
+    echo "Error: Backup failed. Please check your rsync command and try again."
+    exit 1
+  fi
 else
   log "Backup for $LOCAL_HOSTNAME is not enabled. Modify the qtools config (qtools edit-qtools-config) to enable."
 fi
