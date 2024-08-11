@@ -18,7 +18,7 @@ append_to_file $FILE_CRON '0 * * * * qtools record-unclaimed-rewards hourly' fal
 append_to_file $FILE_CRON '0 0 * * * qtools record-unclaimed-rewards daily' false
 append_to_file $FILE_CRON '0 0 * * 0 qtools record-unclaimed-rewards weekly' false
 append_to_file $FILE_CRON '0 0 1 * * qtools record-unclaimed-rewards monthly' false
-append_to_file $FILE_CRON '*/10 * * * * qtools backup-store' false
+append_to_file $FILE_CRON '* * * * * qtools backup-store' false
 
 echo "$(crontab -l)" > $FILE_ACTUAL_OUTPUT
 DIFF_BEFORE="$(colordiff -u $FILE_CRON $FILE_ACTUAL_OUTPUT)"
