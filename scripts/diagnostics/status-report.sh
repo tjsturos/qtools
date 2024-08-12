@@ -145,7 +145,7 @@ check_proof_info() {
 }
 
 check_hardware_info() {
-    local hardware_info=$(./scripts/diagnostics/hardware-info.sh)
+    local hardware_info=$($QTOOLS_PATH/scripts/diagnostics/hardware-info.sh)
     while IFS='|' read -r key value; do
         echo -e "${BLUE}${INFO_ICON}${NC} $key: $value"
     done <<< "$hardware_info"
