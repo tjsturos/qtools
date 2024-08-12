@@ -44,8 +44,12 @@ if [ "$IS_BACKUP_ENABLED" == 'true' ]; then
   # Restore .config directory
   rsync -avz --ignore-existing -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR.config" "$QUIL_NODE_PATH/"
 
-  # Restore CSV files to $QTOOLS_PATH
-  rsync -avz --ignore-existing -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR/unclaimed_*_balance.csv" "$QTOOLS_PATH/"
+  # Restore CSV files from stats directory to $QTOOLS_PATH
+  rsync -avz --ignore-existing \
+    --include="unclaimed_*_balance.csv" \
+    --exclude="*" \
+    -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
+    "$REMOTE_USER@$REMOTE_URL:${REMOTE_DIR}stats/" "$QTOOLS_PATH/"
 
   log "Restore completed successfully."
 else
