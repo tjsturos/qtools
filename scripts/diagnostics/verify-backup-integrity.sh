@@ -31,7 +31,7 @@ if [ "$IS_BACKUP_ENABLED" == 'true' ]; then
 
     # Get lists of files and their sizes
     local_files=$(find "$LOCAL_PATH" -type f -exec stat -c "%n %s" {} \;)
-    remote_files=$(ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no $REMOTE_USER@$REMOTE_URL "find $REMOTE_PATH -type f -exec stat -c \"%n %s\" {} \;")
+    remote_files=$(ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $REMOTE_USER@$REMOTE_URL "find $REMOTE_PATH -type f -exec stat -c \"%n %s\" {} \;")
 
     # Function to check if a file exists in remote files
     function file_exists_in_remote {
