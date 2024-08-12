@@ -26,13 +26,23 @@ if [ "$IS_BACKUP_ENABLED" == 'true' ]; then
     echo "Warning: Failed to create remote directory. It may already exist or there might be permission issues."
   }
 
-  # Perform the rsync backup
+  # Perform the rsync backup for .config directory
   if rsync -avzrP --delete-after -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" "$QUIL_NODE_PATH/.config" "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR"; then
-    echo "Backup completed successfully."
+    echo "Backup of .config directory completed successfully."
   else
-    echo "Error: Backup failed. Please check your rsync command and try again."
+    echo "Error: Backup of .config directory failed. Please check your rsync command and try again."
     exit 1
   fi
+
+  # Backup qtools/unclaimed_*_balance.csv files
+  if rsync -avzrP --delete-after -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" "$QUIL_NODE_PATH/qtools/unclaimed_*_balance.csv" "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR/qtools/"; then
+    echo "Backup of unclaimed balance files completed successfully."
+  else
+    echo "Error: Backup of unclaimed balance files failed. Please check your rsync command and try again."
+    exit 1
+  fi
+
+  echo "All backups completed successfully."
 else
   log "Backup for $LOCAL_HOSTNAME is not enabled. Modify the qtools config (qtools edit-qtools-config) to enable."
 fi
