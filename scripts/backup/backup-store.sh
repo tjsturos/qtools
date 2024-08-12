@@ -34,8 +34,8 @@ if [ "$IS_BACKUP_ENABLED" == 'true' ]; then
     exit 1
   fi
 
-  # Backup qtools/unclaimed_*_balance.csv files
-  if find "$QTOOLS_PATH" -name "unclaimed_*_balance.csv" -print0 | rsync -avzrP --delete-after --files-from=- --from0 -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" / "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR"; then
+  # Backup qtools/unclaimed_*_balance.csv files to stats directory
+  if rsync -avzrP --delete-after -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" "$QTOOLS_PATH/unclaimed_*_balance.csv" "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR/stats/"; then
     echo "Backup of unclaimed balance files completed successfully."
   else
     echo "Error: Backup of unclaimed balance files failed. Please check your rsync command and try again."

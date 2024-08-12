@@ -34,14 +34,20 @@ if [ "$IS_BACKUP_ENABLED" == 'true' ]; then
 
   log "Restoring $LOCAL_HOSTNAME from remote $REMOTE_URL:$REMOTE_DIR"
 
-  ssh -i $SSH_KEY_PATH -q -o BatchMode=yes -o StrictHostKeyChecking=no -o ConnectTimeout=5 $REMOTE_USER@$REMOTE_URL exit
+  ssh -i $SSH_KEY_PATH -q -o BatchMode=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=5 $REMOTE_USER@$REMOTE_URL exit
 
   if [ $? -ne 0 ]; then
     echo "SSH $REMOTE_URL does not exist or is not reachable or must be connected to initially. Try 'ssh -i $SSH_KEY_PATH $REMOTE_USER@$REMOTE_URL' and accept the fingerprint, then try again."
     exit 1
   fi
 
-  rsync -avz --ignore-existing -e "ssh -i $SSH_KEY_PATH" "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR" "$QUIL_NODE_PATH/"
+  # Restore .config directory
+  rsync -avz --ignore-existing -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR.config" "$QUIL_NODE_PATH/"
+
+  # Restore CSV files to $QTOOLS_PATH
+  rsync -avz --ignore-existing -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR/unclaimed_*_balance.csv" "$QTOOLS_PATH/"
+
+  log "Restore completed successfully."
 else
   log "Restore for $LOCAL_HOSTNAME cannot be done while backups are disabled. Modify the qtools settings.backup config (qtools edit-qtools-config) to enable."
 fi
