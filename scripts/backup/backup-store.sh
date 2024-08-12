@@ -39,7 +39,7 @@ if [ "$IS_BACKUP_ENABLED" == 'true' ]; then
     --include="unclaimed_*_balance.csv" \
     --exclude="*" \
     -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
-    "$QTOOLS_PATH/" "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR/stats/"; then
+    "$QTOOLS_PATH/" "$REMOTE_USER@$REMOTE_URL:${REMOTE_DIR}stats/"; then
     echo "Backup of unclaimed balance files completed successfully."
   else
     echo "Error: Backup of unclaimed balance files failed. Please check your rsync command and try again."
