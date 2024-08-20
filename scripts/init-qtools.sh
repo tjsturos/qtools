@@ -28,7 +28,8 @@ install_package dnsutils dig
 install_package rsync rsync
 install_package ufw ufw
 install_package bc bc
-
+install_package crontab cron
+ 
 # Remaining scripts need existance of the QTOOLS_BIN_PATH binary
 if [ ! -L "$QTOOLS_BIN_PATH" ]; then
   # Attempt to install it.
