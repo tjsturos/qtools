@@ -25,6 +25,9 @@ install_package colordiff colordiff
 install_package jq jq
 install_package base58 base58
 install_package dnsutils dig
+install_package rsync rsync
+install_package ufw ufw
+install_package bc bc
 
 # Remaining scripts need existance of the QTOOLS_BIN_PATH binary
 if [ ! -L "$QTOOLS_BIN_PATH" ]; then
