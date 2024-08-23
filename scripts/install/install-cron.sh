@@ -14,10 +14,16 @@ append_to_file $FILE_CRON "PATH=${GOPATH}/bin:${GOROOT}/bin:/usr/local/sbin:/usr
 append_to_file $FILE_CRON "QTOOLS_PATH=$QTOOLS_PATH" false
 append_to_file $FILE_CRON "@reboot qtools start" false
 append_to_file $FILE_CRON '*/10 * * * * qtools self-update && qtools update-node' false
-append_to_file $FILE_CRON '0 * * * * qtools record-unclaimed-rewards hourly' false
-append_to_file $FILE_CRON '0 0 * * * qtools record-unclaimed-rewards daily' false
-append_to_file $FILE_CRON '0 0 * * 0 qtools record-unclaimed-rewards weekly' false
-append_to_file $FILE_CRON '0 0 1 * * qtools record-unclaimed-rewards monthly' false
+append_to_file $FILE_CRON '*/10 * * * * qtools run-diagnostics' false
+
+# Check if statistics are enabled in the config.yml file
+if yq eval '.settings.statistics.enabled' config.yml | grep -q 'true'; then
+  append_to_file $FILE_CRON '0 * * * * qtools record-unclaimed-rewards hourly' false
+  append_to_file $FILE_CRON '0 0 * * * qtools record-unclaimed-rewards daily' false
+  append_to_file $FILE_CRON '0 0 * * 0 qtools record-unclaimed-rewards weekly' false
+  append_to_file $FILE_CRON '0 0 1 * * qtools record-unclaimed-rewards monthly' false
+fi
+
 append_to_file $FILE_CRON '* * * * * qtools backup-store' false
 
 echo "$(crontab -l)" > $FILE_ACTUAL_OUTPUT
