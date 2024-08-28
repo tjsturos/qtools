@@ -3,4 +3,4 @@
 # HELP: Views the logs for the node application.
 
 
-sudo journalctl -u $QUIL_SERVICE_NAME@main -f --no-hostname -o cat
+sudo journalctl -u $QUIL_SERVICE_NAME -f --no-hostname -o cat

@@ -84,12 +84,12 @@ log() {
 }
 
 get_last_started_at() {
-    echo "$(echo "$(sudo systemctl status $QUIL_SERVICE_NAME@main)" | grep -oP '\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}' -m1)"
+    echo "$(echo "$(sudo systemctl status $QUIL_SERVICE_NAME)" | grep -oP '\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}' -m1)"
 }
 
 is_app_finished_starting() {
     local UPTIME="$(get_last_started_at)"
-    local PEER_TEXT=$(sudo journalctl -u $QUIL_SERVICE_NAME@main --no-hostname -S "${UPTIME}" | grep 'peers in store')
+    local PEER_TEXT=$(sudo journalctl -u $QUIL_SERVICE_NAME --no-hostname -S "${UPTIME}" | grep 'peers in store')
     if [ -z "$PEER_TEXT" ]; then
         echo "false"
     else
@@ -217,7 +217,7 @@ set_current_version() {
 }
 
 get_current_version() {
-    local CURRENT_VERSION=$(systemctl status $QUIL_SERVICE_NAME@main --no-pager | grep -oP "\-([0-9]+\.)+([0-9]+)\-" | head -n 1 | tr -d 'node-')
+    local CURRENT_VERSION=$(systemctl status $QUIL_SERVICE_NAME --no-pager | grep -oP "\-([0-9]+\.)+([0-9]+)\-" | head -n 1 | tr -d 'node-')
     
     set_current_version $CURRENT_VERSION
     echo $CURRENT_VERSION
@@ -278,3 +278,9 @@ get_versioned_node() {
 get_versioned_qclient() {
     echo "qclient-$(fetch_release_version)-$(get_os_arch)"
 }
+
+# Source the hardware utils
+source $QTOOLS_PATH/utils/hardware-utils.sh
+
+# Source the snapshot utils (requires hardware-utils.sh)
+source $QTOOLS_PATH/utils/snapshot-utils.sh

@@ -3,7 +3,7 @@
 # Usage: qtools stop
 
 # otherwise just start the main process
-sudo systemctl stop $QUIL_SERVICE_NAME@main.service
+sudo systemctl stop $QUIL_SERVICE_NAME.service
 wait
 # and to make sure any stray node commands are exited
 pgrep -f node | grep -v $$ | xargs -r sudo kill -9

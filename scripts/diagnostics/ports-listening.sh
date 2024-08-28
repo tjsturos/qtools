@@ -15,7 +15,7 @@ find_port() {
             # on port 8337 yet, so saying it wasn't found listening is not very helpful.
             IS_APP_FINISHED_STARTING="$(is_app_finished_starting)"
             UPTIME="$(get_last_started_at)"
-            local streaming_text=$(sudo journalctl -u $QUIL_SERVICE_NAME@main --no-hostname -S "${UPTIME}" | grep 'begin streaming')
+            local streaming_text=$(sudo journalctl -u $QUIL_SERVICE_NAME --no-hostname -S "${UPTIME}" | grep 'begin streaming')
             if [ $IS_APP_FINISHED_STARTING == "false" ]; then
                 echo "App is still starting up, port 8337 will not be ready yet."
             elif [ -z "$streaming_text" ]; then

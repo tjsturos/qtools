@@ -93,10 +93,10 @@ if [ "$1" == "init" ]; then
 fi
 
 export LOG_OUTPUT_FILE="$(yq '.settings.log_file' $QTOOLS_CONFIG_FILE)"
-source $QTOOLS_PATH/utils.sh
+source $QTOOLS_PATH/utils/index.sh
 
 export QUIL_SERVICE_NAME="$(yq '.service.file_name' $QTOOLS_CONFIG_FILE)"
-export QUIL_SERVICE_FILE="$SYSTEMD_SERVICE_PATH/$QUIL_SERVICE_NAME@.service"
+export QUIL_SERVICE_FILE="$SYSTEMD_SERVICE_PATH/$QUIL_SERVICE_NAME.service"
 export OS_ARCH="$(get_os_arch)"
 
 # Function to find the script and set SERVICE_PATH
@@ -110,6 +110,12 @@ find_script() {
   return 1
 }
 
+# Function to check if snapshots are enabled
+are_snapshots_enabled() {
+  local enabled=$(yq '.settings.snapshots.enabled // true' $QTOOLS_CONFIG_FILE)
+  [[ "$enabled" == "true" ]]
+}
+
 # Set environment variables based on the option
 case "$1" in
   peer-id|unclaimed-balance)
@@ -120,6 +126,13 @@ case "$1" in
     if ! command_exists grpcurl; then
       log "Command 'grpcurl' doesn't exist, proceeding to install."
       qtools install-grpc
+    fi
+    ;;
+  start|restart)
+    if are_snapshots_enabled; then
+      update_snapshot
+    else
+      log "Snapshots are disabled. Skipping snapshot update."
     fi
     ;;
 esac

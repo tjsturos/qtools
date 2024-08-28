@@ -65,3 +65,5 @@ settings:
         remote_backup_dir: /root/backups
     debug: false
     log_file: debug.log
+    snapshots:
+        enabled: true

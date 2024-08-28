@@ -2,7 +2,7 @@
 
 fetch_proof_info() {
     local UPTIME="$(get_last_started_at)"
-    local JOURNAL_OUTPUT=$(sudo journalctl -u $QUIL_SERVICE_NAME@main --no-hostname -S "${UPTIME}")
+    local JOURNAL_OUTPUT=$(sudo journalctl -u $QUIL_SERVICE_NAME --no-hostname -S "${UPTIME}")
     
     local LAST_STORING_PROOF=$(echo "$JOURNAL_OUTPUT" | grep "storing proof" | tail -n 1)
     local LAST_COMPLETED_PROOF=$(echo "$JOURNAL_OUTPUT" | grep "completed duration proof" | tail -n 1)

@@ -23,4 +23,4 @@ if [ "$DEBUG_MODE" == "true" ]; then
 fi
 
 echo $NODE_ARGS > $PROCESS_DIR/main
-sudo systemctl start $QUIL_SERVICE_NAME@main.service
+sudo systemctl start $QUIL_SERVICE_NAME.service

@@ -1,7 +1,7 @@
 #!/bin/bash
 echo "Initializing qtools"
 
-source $QTOOLS_PATH/utils.sh
+source $QTOOLS_PATH/utils/index.sh
 
 if [ ! -f "$QTOOLS_CONFIG_FILE" ]; then
   cp $QTOOLS_PATH/config.sample.yml $QTOOLS_PATH/config.yml
