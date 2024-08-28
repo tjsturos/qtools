@@ -103,7 +103,11 @@ export OS_ARCH="$(get_os_arch)"
 # Check if the service file exists, if not, run "qtools update-service"
 if [ ! -f "$QUIL_SERVICE_FILE" ] && [ "$1" != "update-service" ]; then
   log "Service file not found. Running 'qtools update-service'..."
-  qtools update-service
+  log "Copying service file to $SYSTEMD_SERVICE_PATH..."
+  sudo cp "$QTOOLS_PATH/$QUIL_SERVICE_NAME.service" "$SYSTEMD_SERVICE_PATH/"
+  log "Service file copied successfully."
+  log "Running 'qtools update-service'..."
+  $QTOOLS_BIN_PATH update-service
 fi
 
 # Function to find the script and set SERVICE_PATH
