@@ -92,11 +92,6 @@ if [ "$1" == "init" ]; then
   exit 0
 fi
 
-# Check if the service file exists, if not, run "qtools update-service"
-if [ ! -f "$QUIL_SERVICE_FILE" ]; then
-  log "Service file not found. Running 'qtools update-service'..."
-  source $QTOOLS_PATH/scripts/service/update-service.sh
-fi
 
 export LOG_OUTPUT_FILE="$(yq '.settings.log_file' $QTOOLS_CONFIG_FILE)"
 source $QTOOLS_PATH/utils/index.sh
@@ -104,6 +99,12 @@ source $QTOOLS_PATH/utils/index.sh
 export QUIL_SERVICE_NAME="$(yq '.service.file_name' $QTOOLS_CONFIG_FILE)"
 export QUIL_SERVICE_FILE="$SYSTEMD_SERVICE_PATH/$QUIL_SERVICE_NAME.service"
 export OS_ARCH="$(get_os_arch)"
+
+# Check if the service file exists, if not, run "qtools update-service"
+if [ ! -f "$QUIL_SERVICE_FILE" ]; then
+  log "Service file not found. Running 'qtools update-service'..."
+  source $QTOOLS_PATH/scripts/service/update-service.sh
+fi
 
 # Function to find the script and set SERVICE_PATH
 find_script() {
