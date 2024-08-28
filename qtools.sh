@@ -101,7 +101,7 @@ export QUIL_SERVICE_FILE="$SYSTEMD_SERVICE_PATH/$QUIL_SERVICE_NAME.service"
 export OS_ARCH="$(get_os_arch)"
 
 # Check if the service file exists, if not, run "qtools update-service"
-if [ ! -f "$QUIL_SERVICE_FILE" ]; then
+if [ ! -f "$QUIL_SERVICE_FILE" ] && [ "$1" != "update-service" ]; then
   log "Service file not found. Running 'qtools update-service'..."
   qtools update-service
 fi
