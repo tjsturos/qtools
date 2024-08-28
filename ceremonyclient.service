@@ -7,9 +7,8 @@ Restart=always
 RestartSec=5s
 User=ubuntu
 Group=ubuntu
-EnvironmentFile=/tmp/quil-process-args/%i
 WorkingDirectory=/home/ubuntu/ceremonyclient/node
-ExecStart=node-1.4.19-linux-amd64 $NODE_ARGS
+ExecStart=node-1.4.19-linux-amd64
 
 [Install]
 WantedBy=multi-user.target

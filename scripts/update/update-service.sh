@@ -23,7 +23,7 @@ get_processor_count() {
 update_service_binary() {
     local QUIL_BIN="$(get_versioned_node)"
     # local INLINE_ARGS="$(yq '.service.args' $QTOOLS_CONFIG_FILE)"
-    local NEW_EXECSTART="$QUIL_NODE_PATH/$QUIL_BIN \$NODE_ARGS"
+    local NEW_EXECSTART="$QUIL_NODE_PATH/$QUIL_BIN"
     local WORKING_DIR="$(yq '.service.working_dir' $QTOOLS_CONFIG_FILE)"
     local RESTART_SEC="$(yq '.service.restart_time' $QTOOLS_CONFIG_FILE)"
     local CURRENT_USER=$(whoami)
@@ -87,7 +87,7 @@ updateCPUQuota() {
 }
 
 createServiceIfNone() {
-    local SERVICE_FILENAME="$1@.service"
+    local SERVICE_FILENAME="$1.service"
     if [ ! -f "$SYSTEMD_SERVICE_PATH/$SERVICE_FILENAME" ]; then
         log "No service found at $SYSTEMD_SERVICE_PATH/$SERVICE_FILENAME.  Creating service file..."
         sudo cp $QTOOLS_PATH/$SERVICE_FILENAME $SYSTEMD_SERVICE_PATH
