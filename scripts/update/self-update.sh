@@ -14,4 +14,3 @@ qtools install-cron
 
 log "Finished qtools update."
 
-# exit 0
