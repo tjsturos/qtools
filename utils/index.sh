@@ -280,7 +280,7 @@ get_versioned_qclient() {
 }
 
 # Source the hardware utils
-source $QTOOLS_PATH/utils/hardware-utils.sh
+source $QTOOLS_PATH/utils/hardware.sh
 
-# Source the snapshot utils (requires hardware-utils.sh)
-source $QTOOLS_PATH/utils/snapshot-utils.sh
+# Source the snapshot utils (requires hardware.sh)
+source $QTOOLS_PATH/utils/snapshot.sh

@@ -2,7 +2,7 @@
 
 # Redundant if called via qtools.sh as utils.sh sources this already, 
 # but this is a safeguard if this script is called directly
-# Source the hardware-utils.sh file
+# Source the hardware.sh file
 source $QTOOLS_PATH/utils/hardware.sh
 
 # Function to create and update snapshot
