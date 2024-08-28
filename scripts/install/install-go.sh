@@ -21,6 +21,6 @@ remove_file $GO_COMPRESSED_FILE false
 
 append_to_file $BASHRC_FILE "export GOROOT=$GOROOT" false
 append_to_file $BASHRC_FILE "export GOPATH=$GOPATH" false
-append_to_file $BASHRC_FILE "export PATH=\$GOPATH/bin:\$GOROOT/bin:\$PATH" false
+append_to_file $BASHRC_FILE "export PATH=${GOPATH}/bin:${GOROOT}/bin:\$PATH" false
 
 source $BASHRC_FILE
