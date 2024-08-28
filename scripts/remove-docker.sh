@@ -3,7 +3,7 @@
 
 cd $QUIL_PATH
 
-qtools make-backup
+qtools make-local-backup
 
 docker compose down
 
