@@ -15,10 +15,12 @@ export QTOOLS_PATH=$(dirname "$SCRIPT_PATH")
 
 # Function to display usage information
 usage() {
-  echo "Usage: $0 <command> <params>"
+  echo "Usage: $0 [-c|--clear] <command> <params>"
   echo "Note that autocomplete should be installed.  If it doesn't work, run 'qtools add-auto-complete && source ~/.bashrc' and try again."
   echo ""
   echo "Options:"
+  echo "  -c, --clear    Clear the screen before running the command"
+  echo ""
 
   for dir in $QTOOLS_PATH/scripts/*/; do
     echo "  $(basename "$dir"):"
@@ -51,6 +53,13 @@ usage() {
 
   exit 1
 }
+
+# Check for clear flag
+CLEAR_SCREEN=false
+if [ "$1" == "-c" ] || [ "$1" == "--clear" ]; then
+  CLEAR_SCREEN=true
+  shift
+fi
 
 if [ -z "$1" ] || [ "$1" == "--help" ] || [ "$1" == '-h' ]; then
   usage
@@ -119,6 +128,11 @@ esac
 if ! find_script "$1"; then
   echo "Invalid option: $1"
   usage
+fi
+
+# Clear screen if flag is set
+if [ "$CLEAR_SCREEN" = true ]; then
+  clear
 fi
 
 # Construct the full filename
