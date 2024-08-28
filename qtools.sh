@@ -136,7 +136,7 @@ case "$1" in
       qtools install-grpc
     fi
     ;;
-  start|restart)
+  start)
     if are_snapshots_enabled; then
       update_snapshot
     else
