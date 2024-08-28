@@ -103,7 +103,7 @@ export OS_ARCH="$(get_os_arch)"
 # Check if the service file exists, if not, run "qtools update-service"
 if [ ! -f "$QUIL_SERVICE_FILE" ]; then
   log "Service file not found. Running 'qtools update-service'..."
-  source $QTOOLS_PATH/scripts/service/update-service.sh
+  qtools update-service
 fi
 
 # Function to find the script and set SERVICE_PATH
