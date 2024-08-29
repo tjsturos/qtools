@@ -24,7 +24,7 @@ download_matching_files_if_different() {
       local file_url="${base_url}/${file}"
       local dest_file="${QUIL_NODE_PATH}/${file}"
 
-      if [ ! -f "$dest_file" ]; then
+      if [[ ! -f "$dest_file" ]]; then
           log "Downloading $file_url to $dest_file"
           curl -o "$dest_file" "$file_url"
       else
@@ -62,7 +62,7 @@ main() {
 
 main
 
-if [ "$restart_required" == "true" ]; then
+if [[ "$restart_required" == "true" ]]; then
   qtools update-service
   qtools restart
   sleep 10

@@ -10,7 +10,7 @@ log "Changes fetched."
 qtools add-auto-complete
 qtools install-cron
 
-# source ~/.bashrc
+source ~/.zshrc
 
 log "Finished qtools update."
 

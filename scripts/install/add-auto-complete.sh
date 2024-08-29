@@ -2,18 +2,11 @@
 # HELP: Adds tab autocomplete for the qtools command for available commands.
 log "Adding/updating autocomplete for qtools command..."
 
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    # macOS-specific setup
-    brew install bash-completion
-    
-    append_to_file $BASHRC_FILE '[ -f /usr/local/etc/bash_completion ] && . /usr/local/etc/bash_completion' false
-    COMPLETION_DIR="/usr/local/etc/bash_completion.d"
-else
-    # Linux setup
-    install_package bash-completion complete
-    append_to_file $BASHRC_FILE "source /etc/profile.d/bash_completion.sh" false
-    COMPLETION_DIR="/etc/bash_completion.d"
-fi
+# macOS-specific setup
+brew install bash-completion
+
+append_to_file $BASHRC_FILE '[ -f /usr/local/etc/bash_completion ] && . /usr/local/etc/bash_completion' false
+COMPLETION_DIR="/usr/local/etc/bash_completion.d"
 
 # Create the completion file
 COMPLETION_FILE="$COMPLETION_DIR/qtools"
@@ -68,11 +61,6 @@ EOF
 fi
 
 # Source the completion file
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    append_to_file $BASHRC_FILE "source $COMPLETION_FILE" false
-else
-    # On Linux, files in /etc/bash_completion.d are automatically sourced
-    log "Completion file will be automatically sourced on next login"
-fi
+append_to_file $BASHRC_FILE "source $COMPLETION_FILE" false
 
 log "Finished adding auto-complete. Please restart your shell or source your rc file to enable it."

@@ -11,16 +11,13 @@ if [ "$1" == "--debug" ]; then
     DEBUG_MODE="true"
 fi
 
-
-# make folder for args for each process
-PROCESS_DIR=/tmp/quil-process-args
-mkdir -p $PROCESS_DIR
-
-NODE_ARGS="NODE_ARGS="
-
-if [ "$DEBUG_MODE" == "true" ]; then
-    NODE_ARGS="$NODE_ARGS--debug"
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS (launchd)
+    if [ "$DEBUG_MODE" == "true" ]; then
+        launchctl setenv DEBUG_MODE true
+    fi
+    launchctl load -w "$QUIL_SERVICE_FILE"
+else
+    # Linux (systemd)
+    # ... (existing Linux-specific code)
 fi
-
-echo $NODE_ARGS > $PROCESS_DIR/main
-sudo systemctl start $QUIL_SERVICE_NAME@main.service
