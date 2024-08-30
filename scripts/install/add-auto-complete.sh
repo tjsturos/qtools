@@ -30,7 +30,7 @@ _qtools() {
       for dir in $QTOOLS_PATH/scripts/*/; do
         for script in $dir*.sh; do
           local cmd=$(basename $script .sh)
-          local help=$(grep "# HELP:" $script | cut -d: -f2- | xargs)
+          local help=$(grep "# HELP:" $script | cut -d: -f2- | sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//')
           if [[ -n $help ]]; then
             commands+=("$cmd:$help")
           else
