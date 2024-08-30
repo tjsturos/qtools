@@ -22,11 +22,11 @@ get_model_name() {
 }
 
 print_hardware_info() {
-    echo "Vendor|$(get_vendor)"
-    echo "Model|$(get_model_name)"
-    echo "Cores|$(get_cores)"
-    echo "Threads|$(get_threads)"
-    echo "Memory|$(get_memory)"
+    echo "Vendor: $(get_vendor)"
+    echo "Model: $(get_model_name)"
+    echo "Cores: $(get_cores)"
+    echo "Threads: $(get_threads)"
+    echo "Memory: $(get_memory)"
 }
 
 print_hardware_info
