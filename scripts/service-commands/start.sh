@@ -7,17 +7,32 @@
 # get settings
 DEBUG_MODE="$(yq '.settings.debug' $QTOOLS_CONFIG_FILE)"
 
-if [ "$1" == "--debug" ]; then
+if [[ "$1" == "--debug" ]]; then
     DEBUG_MODE="true"
 fi
 
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    # macOS (launchd)
-    if [ "$DEBUG_MODE" == "true" ]; then
-        launchctl setenv DEBUG_MODE true
-    fi
-    launchctl load -w "$QUIL_SERVICE_FILE"
+# macOS (launchd)
+if [[ "$DEBUG_MODE" == "true" ]]; then
+    launchctl setenv DEBUG_MODE true
 else
-    # Linux (systemd)
-    # ... (existing Linux-specific code)
+    launchctl setenv DEBUG_MODE false
 fi
+
+# Check if the service is already loaded
+if launchctl list | grep -q "$QUIL_SERVICE_NAME"; then
+    log "Node service is already running. Restarting..."
+    launchctl unload "$QUIL_SERVICE_FILE"
+fi
+
+launchctl load -w "$QUIL_SERVICE_FILE"
+
+# Wait for a moment to ensure the service has started
+sleep 2
+
+# Check if the service is running
+if launchctl list | grep -q "$QUIL_SERVICE_NAME"; then
+    log "Node service started successfully."
+else
+    log "Failed to start node service. Please check the logs for more information."
+fi
+
