@@ -5,8 +5,13 @@ log "Adding/updating autocomplete for qtools command..."
 # macOS-specific setup
 brew install bash-completion
 
-append_to_file $BASHRC_FILE '[ -f /usr/local/etc/bash_completion ] && . /usr/local/etc/bash_completion' false
 COMPLETION_DIR="/usr/local/etc/bash_completion.d"
+if [[ ! -d "$COMPLETION_DIR" ]]; then
+    mkdir -p "$COMPLETION_DIR"
+fi
+
+append_to_file $BASHRC_FILE '[ -f /usr/local/etc/bash_completion ] && . /usr/local/etc/bash_completion' false
+
 
 # Create the completion file
 COMPLETION_FILE="$COMPLETION_DIR/qtools"
