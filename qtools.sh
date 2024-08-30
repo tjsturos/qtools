@@ -19,9 +19,9 @@ usage() {
       script_name=$(basename "$script" .sh)
       ignore_script=$(grep '# IGNORE' "$script")
       if [[ -z "$ignore_script" ]]; then
-        help_description=$(grep "# HELP:" "$script" | cut -d: -f2- | xargs)
-        params=$(grep "# PARAM" "$script" | cut -d: -f2- | xargs -I{} echo "          {}")
-        usage_lines=$(grep "# Usage:" "$script" | cut -d: -f2- | xargs -I{} echo "          {}")
+        help_description=$(grep "# HELP:" "$script" | cut -d: -f2- | sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//')
+        params=$(grep "# PARAM" "$script" | cut -d: -f2- | sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//')
+        usage_lines=$(grep "# Usage:" "$script" | cut -d: -f2- | sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//')
         
         if [[ -z "$help_description" ]]; then
           echo "    - $script_name"
@@ -31,12 +31,12 @@ usage() {
         
         if [[ -n "$params" ]]; then
           echo "        Params:"
-          echo "$params"
+          echo "$params" | sed 's/^/          /'
         fi
         
         if [[ -n "$usage_lines" ]]; then
           echo "        Usage:"
-          echo "$usage_lines"
+          echo "$usage_lines" | sed 's/^/          /'
         fi
       fi
     done
