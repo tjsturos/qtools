@@ -1,7 +1,7 @@
 #!/bin/bash
 
 get_vendor() {
-    sysctl -n machdep.cpu.vendor
+    echo "Apple"
 }
 
 get_threads() {
@@ -12,18 +12,13 @@ get_cores() {
     sysctl -n hw.physicalcpu
 }
 
-get_is_hyperthreading_enabled() {
-    THREAD_COUNT=$(get_threads)
-    CORES=$(get_cores)
-    if [ "$THREAD_COUNT" -gt "$CORES" ]; then
-        echo "true"
-    else
-        echo "false"
-    fi
+get_memory() {
+    sysctl -n hw.memsize
 }
 
 get_model_name() {
-    sysctl -n machdep.cpu.brand_string
+    MODEL=$(sysctl -n machdep.cpu.brand_string)
+    echo "${MODEL#Apple }"
 }
 
 print_hardware_info() {
@@ -31,7 +26,7 @@ print_hardware_info() {
     echo "Model|$(get_model_name)"
     echo "Cores|$(get_cores)"
     echo "Threads|$(get_threads)"
-    echo "Hyperthreading Enabled|$(get_is_hyperthreading_enabled)"
+    echo "Memory|$(get_memory)"
 }
 
 print_hardware_info
