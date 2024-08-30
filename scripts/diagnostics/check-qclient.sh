@@ -30,8 +30,8 @@ fi
 
 # Check qclient version
 if check_qclient; then
-    qclient_version=$($QUIL_QCLIENT_BIN --version 2>&1)
-    echo "qclient version: $qclient_version"
+    balance=$($QUIL_QCLIENT_BIN token balance 2>&1)
+    echo "qclient-- balance: $balance"
 else
     echo "ERROR: Unable to check qclient version." >&2
 fi
