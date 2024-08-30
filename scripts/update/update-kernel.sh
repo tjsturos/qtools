@@ -1,17 +1,26 @@
 #!/bin/bash
-# HELP: Installs new Linux kernals and removes old packages.
+# HELP: Updates macOS system software and kernel
 
-log "Updating package list and upgrading all packages..."
-sudo apt update -y &> /dev/null
-sudo apt upgrade -y &> /dev/null
+log "Checking for macOS software updates..."
+softwareupdate -l
 
-# Ensure all kernel-related packages are installed and up-to-date
-log "Upgrading kernel packages..."
-sudo apt install -y linux-generic &> /dev/null
+log "Installing all available updates..."
+sudo softwareupdate -i -a
 
-# remove old packages
-sudo apt-get autoremove -y &> /dev/null
+log "Cleaning up old system files..."
+sudo tmutil deletelocalsnapshots / &> /dev/null
 
-# Reboot the system
-log "Rebooting the system to apply the new kernel..."
-sudo reboot
+log "Clearing system and user caches..."
+sudo purge
+
+log "Update complete. A restart may be required to apply all changes."
+read -p "Do you want to restart now? (y/n) " choice
+case "$choice" in 
+  y|Y ) 
+    log "Restarting the system..."
+    sudo shutdown -r now
+    ;;
+  * ) 
+    log "Please remember to restart your system soon to apply all updates."
+    ;;
+esac

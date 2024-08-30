@@ -80,6 +80,9 @@ export QUIL_SERVICE_NAME="$(yq '.service.file_name' "$QTOOLS_CONFIG_FILE")"
 export QUIL_SERVICE_FILE="$LAUNCHD_PLIST_DIR/com.$USER.$QUIL_SERVICE_NAME.plist"
 export OS_ARCH="$(get_os_arch)"
 
+# Define the log file path
+export QUIL_LOG_FILE="$HOME/Library/Logs/$QUIL_SERVICE_NAME.log"
+
 # Function to find the script and set SERVICE_PATH
 find_script() {
   for dir in "$QTOOLS_PATH"/scripts/*/; do

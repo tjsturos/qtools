@@ -81,12 +81,24 @@ log() {
 }
 
 get_last_started_at() {
-    echo "$(launchctl list | grep $QUIL_SERVICE_NAME | awk '{print $3}')"
+    local log_file="$QUIL_LOG_FILE"
+    local worker_line=$(tac "$log_file" | grep -m 1 "Spawning [0-9]* data workers...")
+    if [ -n "$worker_line" ]; then
+        local ts_line=$(tac "$log_file" | sed -n "/$worker_line/,/\"ts\":/p" | grep '"ts":' | head -n 1)
+        if [ -n "$ts_line" ]; then
+            local ts=$(echo "$ts_line" | grep -o '"ts":[0-9.]*' | cut -d':' -f2)
+            echo "$ts"
+        else
+            echo "No timestamp found after worker line"
+        fi
+    else
+        echo "Worker line not found"
+    fi
 }
 
 is_app_finished_starting() {
     local UPTIME="$(get_last_started_at)"
-    local PEER_TEXT=$(sudo log show --predicate "process == '$QUIL_SERVICE_NAME'" --start "$UPTIME" | grep 'peers in store')
+    local PEER_TEXT=$(sed -n "/$UPTIME/,\$p" "$QUIL_LOG_FILE" | grep -m 1 'peers in store')
     if [ -z "$PEER_TEXT" ]; then
         echo "false"
     else
