@@ -81,12 +81,12 @@ log() {
 }
 
 get_last_started_at() {
-    echo "$(echo "$(sudo systemctl status $QUIL_SERVICE_NAME@main)" | grep -oP '\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}' -m1)"
+    echo "$(launchctl list | grep $QUIL_SERVICE_NAME | awk '{print $3}')"
 }
 
 is_app_finished_starting() {
     local UPTIME="$(get_last_started_at)"
-    local PEER_TEXT=$(sudo journalctl -u $QUIL_SERVICE_NAME@main --no-hostname -S "${UPTIME}" | grep 'peers in store')
+    local PEER_TEXT=$(sudo log show --predicate "process == '$QUIL_SERVICE_NAME'" --start "$UPTIME" | grep 'peers in store')
     if [ -z "$PEER_TEXT" ]; then
         echo "false"
     else
@@ -103,7 +103,7 @@ append_to_file() {
         
         log "Adding $CONTENT to $FILE" $LOG_OUTPUT
         
-        sudo -- sh -c "echo \"$CONTENT\" >> $FILE"
+        echo "$CONTENT" | sudo tee -a $FILE > /dev/null
     else
         log "$CONTENT already found in $FILE. Skipping." $LOG_OUTPUT
     fi
@@ -161,26 +161,20 @@ install_package() {
     if ! command_exists $command; then
         log "$package is not installed. Installing..."
 
-        # Detect the package manager and install the package
-        if command_exists brew; then
-            brew install $package
-        elif command_exists apt-get; then
-            sudo apt-get update -y &> $QTOOLS_PATH/$LOG_OUTPUT_FILE
-            sudo apt-get install -y -q $package  &> $QTOOLS_PATH/$LOG_OUTPUT_FILE
-        elif command_exists yum; then
-            sudo yum install -y $package
-        elif command_exists dnf; then
-            sudo dnf install -y $package
-        elif command_exists pacman; then
-            sudo pacman -Sy $package
-        else
-            log "Error: Cannot determine the package manager to use for installing $package."
+        # For macOS, we'll use Homebrew
+        if ! command_exists brew; then
+            log "Homebrew is not installed. Please install Homebrew first: https://brew.sh/"
             exit 1
         fi
 
+        brew install $package
+
         # Verify if the installation was successful
         if command_exists $command; then
-            log "$package was successfuly installed and $command is now available for use." 
+            log "$package was successfully installed and $command is now available for use." 
+        else
+            log "Failed to install $package. Please try installing it manually."
+            exit 1
         fi
     fi
 }
@@ -195,14 +189,8 @@ remove_lines_matching_pattern() {
         return 1
     fi
 
-    # Use sed to remove lines matching the specified pattern
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-        # macOS version
-        sudo sed -i '' "/$pattern/d" "$file"
-    else
-        # Linux version
-        sudo sed -i "/$pattern/d" "$file"
-    fi
+    # Use sed to remove lines matching the specified pattern (macOS version)
+    sudo sed -i '' "/$pattern/d" "$file"
 }
 
 set_release_version() {
@@ -220,7 +208,7 @@ set_current_version() {
 }
 
 get_current_version() {
-    local CURRENT_VERSION=$(systemctl status $QUIL_SERVICE_NAME@main --no-pager | grep -oP "\-([0-9]+\.)+([0-9]+)\-" | head -n 1 | tr -d 'node-')
+    local CURRENT_VERSION=$(launchctl list | grep $QUIL_SERVICE_NAME | awk '{print $3}' | grep -oP "\-([0-9]+\.)+([0-9]+)\-" | head -n 1 | tr -d 'node-')
     
     set_current_version $CURRENT_VERSION
     echo $CURRENT_VERSION
@@ -261,7 +249,7 @@ get_os_arch() {
     local arch=$(uname -m)
 
     case "$os" in
-        linux|darwin) ;;
+        darwin) ;;
         *) echo "Unsupported operating system: $os" >&2; return 1 ;;
     esac
 

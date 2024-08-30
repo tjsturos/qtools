@@ -23,6 +23,8 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     <string>$HOME/Library/Logs/$QUIL_SERVICE_NAME.err.log</string>
     <key>WorkingDirectory</key>
     <string>$QUIL_NODE_PATH</string>
+    <key>Version</key>
+    <string>$(echo $(get_versioned_node) | sed -E 's/node-([0-9]+(\.[0-9]+){1,3})-darwin-.*/\1/')</string>
 </dict>
 </plist>
 EOF
