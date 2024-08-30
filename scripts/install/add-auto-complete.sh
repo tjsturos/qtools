@@ -47,7 +47,7 @@ else
   joined_script_names=$(printf "%s " "${script_names[@]}")
   
   # Create the completion script
-  cat > "$COMPLETION_FILE" << EOF
+  sudo cat > "$COMPLETION_FILE" << EOF
 _qtools()
 {
     local cur prev opts
