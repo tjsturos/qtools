@@ -7,7 +7,7 @@ brew install bash-completion
 
 COMPLETION_DIR="/usr/local/etc/bash_completion.d"
 if [[ ! -d "$COMPLETION_DIR" ]]; then
-    mkdir -p "$COMPLETION_DIR"
+  sudo mkdir -p "$COMPLETION_DIR"
 fi
 
 append_to_file $BASHRC_FILE '[ -f /usr/local/etc/bash_completion ] && . /usr/local/etc/bash_completion' false
