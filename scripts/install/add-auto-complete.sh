@@ -65,14 +65,12 @@ EOF
 
 # Add sourcing to zshrc
 ZSHRC="$HOME/.zshrc"
-COMPLETION_SETUP=$(cat << EOF
-
+COMPLETION_SETUP="
 # QTools completion
 fpath=($COMPLETION_DIR \$fpath)
 autoload -Uz compinit
 compinit -i
-EOF
-)
+"
 
 if ! grep -q "# QTools completion" "$ZSHRC"; then
   echo "$COMPLETION_SETUP" >> "$ZSHRC"
