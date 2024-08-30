@@ -9,6 +9,16 @@ echo "Processing... ⏳"
 echo ""
 sleep 7  # Add a 7-second delay
 
+# Function to check if a command exists
+command_exists() {
+    command -v "$1" >/dev/null 2>&1
+}
+
+# Install Homebrew if not installed
+if ! command_exists brew; then
+    echo "📦 Installing Homebrew..."
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+fi
 
 # Install gRPCurl if not installed
 echo "📦 Installing gRPCurl..."
@@ -17,31 +27,25 @@ sleep 1  # Add a 1-second delay
 if command_exists grpcurl; then
     echo "✅ gRPCurl is already installed."
 else
-    # Try installing gRPCurl using go install
-    if go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest; then
-        echo "✅ gRPCurl installed successfully via go install."
+    # Install gRPCurl using Homebrew
+    if brew install grpcurl; then
+        echo "✅ gRPCurl installed successfully via Homebrew."
     else
-        echo "⚠️ Failed to install gRPCurl via go install. Trying apt-get..."
-        # Try installing gRPCurl using apt-get
-        if sudo apt-get install grpcurl -y; then
-            echo "✅ gRPCurl installed successfully via apt-get."
-        else
-            echo "❌ Failed to install gRPCurl via apt-get! Please install it manually."
-            exit 1
-        fi
+        echo "❌ Failed to install gRPCurl! Please install it manually."
+        exit 1
     fi
 fi
 
 # Install jq if not installed
 if ! command_exists jq; then
     echo "📦 Installing jq..."
-    sudo apt-get install -y jq
+    brew install jq
 fi
 
 # Install base58 if not installed
 if ! command_exists base58; then
     echo "📦 Installing base58..."
-    sudo apt-get install -y base58
+    brew install base58
 fi
 
 # Command to retrieve peer information

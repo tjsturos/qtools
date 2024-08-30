@@ -3,7 +3,7 @@
 
 install_package net-tools netstat
 
-PORTS_LISTENING="$(sudo netstat -lntup)"
+PORTS_LISTENING="$(sudo lsof -i -P -n | grep LISTEN)"
 
 find_port() {
     local PORT="$1"

@@ -1,23 +1,23 @@
 #!/bin/bash
 
 # Define colored icons
-GREEN_CHECK="\e[32m✔\e[0m"
-RED_CROSS="\e[31m✖\e[0m"
-WARNING="\e[33m⚠\e[0m"
-BLUE="\e[34m"
-INFO_ICON="\u2139"
-NC="\e[0m"
+GREEN_CHECK="\033[0;32m✔\033[0m"
+RED_CROSS="\033[0;31m✖\033[0m"
+WARNING="\033[0;33m⚠\033[0m"
+BLUE="\033[0;34m"
+INFO_ICON="ℹ"
+NC="\033[0m"
 
 check_ports_status() {
     local PORTS_ACTUAL_OUTPUT="$(qtools ports-listening)"
     local ALL_PORTS_FUNCTIONAL=true
     while IFS= read -r LINE; do
-        if [[ $LINE == *"was not found listening"* ]]; then
-            PORT=$(echo $LINE | grep -oP '(?<=Port )\d+')
+        if [[ $LINE == *"not found listening"* ]]; then
+            PORT=$(echo $LINE | grep -oE 'Port [0-9]+' | awk '{print $2}')
             echo -e "${RED_CROSS} Port $PORT is not working as expected"
             ALL_PORTS_FUNCTIONAL=false
         elif [[ $LINE == *"still starting up"* ]]; then
-            PORT=$(echo $LINE | grep -oP '(?<=Port )\d+')
+            PORT=$(echo $LINE | grep -oE 'Port [0-9]+' | awk '{print $2}')
             echo -e "${WARNING} $LINE"
             ALL_PORTS_FUNCTIONAL=false
         fi
@@ -39,20 +39,17 @@ check_hourly_reward_rate() {
 }
 
 check_service_status() {
-    local output=$(qtools status)
+    local output=$(launchctl list | grep com.$USER.$QUIL_SERVICE_NAME)
 
-    if echo "$output" | grep -q "Active: active (running)"; then
+    if [[ -n "$output" ]]; then
         echo -e "${GREEN_CHECK} Node service is running (active)"
         local version=$(qtools node-version)
-        local uptime=$(echo "$output" | grep -oP '(?<=since ).*')
+        local pid=$(echo "$output" | awk '{print $1}')
+        local uptime=$(ps -p $pid -o etime= 2>/dev/null)
         echo -e "${GREEN_CHECK} Node Version: $version"
         echo -e "${GREEN_CHECK} Node Uptime: $uptime"
-    elif echo "$output" | grep -q "Active: inactive (dead)"; then
-        echo -e "${RED_CROSS} Node service is not running (dead)"
-    elif echo "$output" | grep -q "Active: activating (auto-restart)"; then
-        echo -e "${WARNING} Node is trying to restart (activating with auto-restart)"
-    else 
-        echo -e "${RED_CROSS} Unable to determine the status of the node"
+    else
+        echo -e "${RED_CROSS} Node service is not running"
     fi
 }
 
@@ -145,10 +142,11 @@ check_proof_info() {
 }
 
 check_hardware_info() {
-    local hardware_info=$(./scripts/diagnostics/hardware-info.sh)
-    while IFS='|' read -r key value; do
-        echo -e "${BLUE}${INFO_ICON}${NC} $key: $value"
-    done <<< "$hardware_info"
+    echo -e "${BLUE}${INFO_ICON}${NC} Vendor: $(sysctl -n machdep.cpu.vendor)"
+    echo -e "${BLUE}${INFO_ICON}${NC} Model: $(sysctl -n machdep.cpu.brand_string)"
+    echo -e "${BLUE}${INFO_ICON}${NC} Cores: $(sysctl -n hw.physicalcpu)"
+    echo -e "${BLUE}${INFO_ICON}${NC} Threads: $(sysctl -n hw.logicalcpu)"
+    echo -e "${BLUE}${INFO_ICON}${NC} Hyperthreading Enabled: $([ $(sysctl -n hw.physicalcpu) -lt $(sysctl -n hw.logicalcpu) ] && echo "true" || echo "false")"
 }
 
 print_status_report() {

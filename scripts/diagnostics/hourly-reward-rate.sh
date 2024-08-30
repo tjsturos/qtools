@@ -1,5 +1,5 @@
 #!/bin/bash
-# HELP: Will return the average hourly rate, by default will use the last 24 hours.  Can set optional param to limit or expand range.
+# HELP: Will return the average hourly rate, by default will use the last 24 hours. Can set optional param to limit or expand range.
 # PARAM 1: <integer>: The number of hours to use to average
 # Usage: qtools hourly-reward-rate 1 
 # Usage: qtools hourly-reward-rate
@@ -103,7 +103,7 @@ fi
 average_increase=$(echo "scale=10; $total_increase / $valid_intervals" | bc)
 
 # Format the result to always have a leading zero before the decimal point
-formatted_increase=$(echo "$average_increase" | awk '{printf "%.10f", $0}')
+formatted_increase=$(printf "%.10f" "$average_increase")
 
 # Output the result
 echo "$formatted_increase"

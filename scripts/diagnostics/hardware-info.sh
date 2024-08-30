@@ -1,21 +1,21 @@
 #!/bin/bash
 
 get_vendor() {
-    cat /proc/cpuinfo | grep vendor_id | awk '{print $3}' | uniq
+    sysctl -n machdep.cpu.vendor
 }
 
 get_threads() {
-    lscpu | grep 'CPU(s):' -m1 | awk '{print $2}'
+    sysctl -n hw.logicalcpu
 }
 
 get_cores() {
-    echo "$(($(lscpu | awk '/^Socket\(s\)/{ print $2 }') * $(lscpu | awk '/^Core\(s\) per socket/{ print $4 }')))"
+    sysctl -n hw.physicalcpu
 }
 
 get_is_hyperthreading_enabled() {
     THREAD_COUNT=$(get_threads)
     CORES=$(get_cores)
-    if [ "$THREAD_COUNT" -gt $CORES ]; then
+    if [ "$THREAD_COUNT" -gt "$CORES" ]; then
         echo "true"
     else
         echo "false"
@@ -23,7 +23,7 @@ get_is_hyperthreading_enabled() {
 }
 
 get_model_name() {
-    cat /proc/cpuinfo | grep "model name" | awk -F: '{print $2}' | sed 's/^ *//g' | uniq
+    sysctl -n machdep.cpu.brand_string
 }
 
 print_hardware_info() {
