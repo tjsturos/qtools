@@ -210,7 +210,7 @@ set_release_version() {
 }
 
 fetch_release_version() {
-    local RELEASE_VERSION="$(curl -s https://releases.quilibrium.com/release | grep -oP "\-([0-9]+\.?)+\-" | head -n 1 | tr -d 'node-')"
+    local RELEASE_VERSION=$(curl -s https://releases.quilibrium.com/release | grep -Eo "node-[0-9]+(\.[0-9]+)*-" | head -n 1 | sed 's/node-//;s/-$//')
     set_release_version $RELEASE_VERSION
     echo $RELEASE_VERSION
 }
@@ -275,7 +275,13 @@ get_os_arch() {
 }
 
 get_versioned_node() {
-    echo "node-$(fetch_release_version)-$(get_os_arch)"
+    local version=$(fetch_release_version)
+    local os_arch=$(get_os_arch)
+    if [ -z "$version" ] || [ -z "$os_arch" ]; then
+        log "Error: Could not determine version or OS architecture"
+        return 1
+    fi
+    echo "node-${version}-${os_arch}"
 }
 
 get_versioned_qclient() {
