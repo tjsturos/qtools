@@ -34,4 +34,5 @@ if check_qclient; then
     echo "qclient version: $qclient_version"
 else
     echo "ERROR: Unable to check qclient version." >&2
+fi
  
