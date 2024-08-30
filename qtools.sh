@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# macOS specific path resolution
-SCRIPT_PATH=$(cd "$(dirname "$0")" && pwd -P)/$(basename "$0")
+# Resolve symlinks and get the real path of the script
+SCRIPT_PATH=$(realpath "$0")
 
-# Get the directory where the script is located
+# Get the directory where the script is actually located
 export QTOOLS_PATH=$(dirname "$SCRIPT_PATH")
 
 # Function to display usage information
