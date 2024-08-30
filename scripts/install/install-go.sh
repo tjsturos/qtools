@@ -4,6 +4,15 @@ log "Installing Go"
 
 GO_VERSION=$(yq '.settings.install.go.version' $QTOOLS_CONFIG_FILE)
 
+# Check if Go is already installed
+if command_exists go; then
+    log "Go is already installed. Uninstalling before reinstalling."
+    brew uninstall go
+fi
+
+# Ensure we have the latest Homebrew formulas
+brew update
+
 brew install go@${GO_VERSION}
 
 if command_exists go; then
