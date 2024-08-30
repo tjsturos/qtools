@@ -3,7 +3,7 @@
 log "Adding/updating autocomplete for qtools command..."
 
 # macOS-specific setup
-brew install bash-completion@2
+brew install bash-completion
 
 # Use a user-specific directory for completion scripts
 COMPLETION_DIR="$HOME/.zsh_completion"
