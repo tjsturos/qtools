@@ -5,13 +5,12 @@ log "Adding/updating autocomplete for qtools command..."
 # macOS-specific setup
 brew install bash-completion
 
-COMPLETION_DIR="/usr/local/etc/bash_completion.d"
-if [[ ! -d "$COMPLETION_DIR" ]]; then
-  sudo mkdir -p "$COMPLETION_DIR"
-fi
+# Use a user-specific directory for completion scripts
+COMPLETION_DIR="$HOME/.bash_completion.d"
+mkdir -p "$COMPLETION_DIR"
 
-append_to_file $BASHRC_FILE '[ -f /usr/local/etc/bash_completion ] && . /usr/local/etc/bash_completion' false
-
+append_to_file $BASHRC_FILE "[ -f $(brew --prefix)/etc/bash_completion ] && . $(brew --prefix)/etc/bash_completion" false
+append_to_file $BASHRC_FILE "for file in $COMPLETION_DIR/*; do [ -f \"\$file\" ] && . \"\$file\"; done" false
 
 # Create the completion file
 COMPLETION_FILE="$COMPLETION_DIR/qtools"
@@ -47,7 +46,7 @@ else
   joined_script_names=$(printf "%s " "${script_names[@]}")
   
   # Create the completion script
-  sudo cat > "$COMPLETION_FILE" << EOF
+  cat > "$COMPLETION_FILE" << EOF
 _qtools()
 {
     local cur prev opts
@@ -68,4 +67,4 @@ fi
 # Source the completion file
 append_to_file $BASHRC_FILE "source $COMPLETION_FILE" false
 
-log "Finished adding auto-complete. Please restart your shell or source your rc file to enable it."
+log "Finished adding auto-complete. Please restart your shell or run 'source $BASHRC_FILE' to enable it."
