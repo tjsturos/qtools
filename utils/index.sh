@@ -212,6 +212,11 @@ fetch_release_version() {
     echo $RELEASE_VERSION
 }
 
+fetch_qclient_release_version() {
+    local RELEASE_VERSION="$(curl -s https://releases.quilibrium.com/qclient-release | grep -oP "\-([0-9]+\.?)+\-" | head -n 1 | tr -d 'qclient-')"
+    echo $RELEASE_VERSION
+}
+
 set_current_version() {
     current_version="$1" yq -i e '.current_version = strenv(current_version)' $QTOOLS_CONFIG_FILE
 }
@@ -276,7 +281,7 @@ get_versioned_node() {
 }
 
 get_versioned_qclient() {
-    echo "qclient-$(fetch_release_version)-$(get_os_arch)"
+    echo "qclient-$(fetch_qclient_release_version)-$(get_os_arch)"
 }
 
 # Source the hardware utils
