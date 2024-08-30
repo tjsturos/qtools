@@ -59,7 +59,7 @@ export QTOOLS_BIN_PATH=/usr/local/bin/qtools
 export QUIL_QCLIENT_BIN=/usr/local/bin/qclient
 
 export BASHRC_FILE="$HOME/.zshrc"
-export GO_BIN_DIR=/usr/local/opt
+export GO_BIN_DIR=/opt/homebrew/bin
 export LAUNCHD_PLIST_DIR="$HOME/Library/LaunchAgents"
 
 export GOROOT=$GO_BIN_DIR/go
