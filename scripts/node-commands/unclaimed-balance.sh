@@ -2,7 +2,7 @@
 # HELP: Prints out this node\'s unclaimed balance, in QUILs.
 IS_APP_FINISHED_STARTING="$(is_app_finished_starting)"
 
-if [ $IS_APP_FINISHED_STARTING == "true" ]; then
+if [[ $IS_APP_FINISHED_STARTING == "true" ]]; then
     INPUT="$($QUIL_NODE_PATH/$QUIL_BIN -balance)"
 
     UNCLAIMED_BALANCE=$(echo "$INPUT" | grep "Unclaimed balance" | awk -F ": " '{print $2}' | awk '{print $1}')

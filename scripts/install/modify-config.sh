@@ -1,44 +1,42 @@
 #!/bin/bash
-# HELP: Will properly format the node\'s config file.
+# HELP: Will properly format the node's config file.
 
 CONFIG_DIR="$QUIL_NODE_PATH/.config"
-
-# Filename to watch for
 FILENAME="config.yml"
-
-CONFIG_FILE=$CONFIG_DIR/$FILENAME
+CONFIG_FILE="$CONFIG_DIR/$FILENAME"
 
 # Modifications to make to the config file
 modify_config_file() {
     log "Modifying Ceremony client's config.yml file."
 
-    # Check and modify listenGrpcMultiaddr
-    if ! grep -q '^listenGrpcMultiaddr: \/ip4\/127.0.0.1\/tcp\/8337' "$CONFIG_FILE"; then
-        sed -i 's/^listenGrpcMultiaddr:.*$/listenGrpcMultiaddr: \/ip4\/127.0.0.1\/tcp\/8337/' "$CONFIG_FILE"
+    # Ensure the config directory exists
+    mkdir -p "$CONFIG_DIR"
+
+    # If the config file doesn't exist, create an empty YAML file
+    if [[ ! -f "$CONFIG_FILE" ]]; then
+        echo "---" > "$CONFIG_FILE"
+        log "Created new config file at $CONFIG_FILE"
     fi
 
-    # Check and modify listenRESTMultiaddr
-    if ! grep -q '^listenRESTMultiaddr: \/ip4\/127.0.0.1\/tcp\/8338' "$CONFIG_FILE"; then
-        sed -i 's/^listenRESTMultiaddr:.*$/listenRESTMultiaddr: \/ip4\/127.0.0.1\/tcp\/8338/' "$CONFIG_FILE"
-    fi
+    # Update listenGrpcMultiaddr
+    yq -i '.listenGrpcMultiaddr = "/ip4/127.0.0.1/tcp/8337"' "$CONFIG_FILE"
 
-    # Check if statsMultiaddr is within the engine section and update or add it
-    awk -i inplace '
-    /^ *engine: *$/ {in_engine=1; print; next}
-    /^ *[^ ]/ {in_engine=0}
-    in_engine && /statsMultiaddr:/ {found=1; $0="  statsMultiaddr: \"/dns/stats.quilibrium.com/tcp/443\""}
-    {print}
-    END {
-        if (in_engine && !found) {
-            print "  statsMultiaddr: \"/dns/stats.quilibrium.com/tcp/443\""
-        }
-    }
-    ' "$CONFIG_FILE"
+    # Update listenRESTMultiaddr
+    yq -i '.listenRESTMultiaddr = "/ip4/127.0.0.1/tcp/8338"' "$CONFIG_FILE"
+
+    # Update p2p.listenMultiaddr
+    yq -i '.p2p.listenMultiaddr = "/ip4/127.0.0.1/tcp/8336"' "$CONFIG_FILE"
+
+    # Update or add statsMultiaddr in the engine section
+    yq -i '.engine.statsMultiaddr = "/dns/stats.quilibrium.com/tcp/443"' "$CONFIG_FILE"
+
+    log "Config file updated successfully."
 }
 
-if [ -f $CONFIG_FILE ]; then
+if [[ -f "$CONFIG_FILE" ]]; then
     modify_config_file
 else 
-    log "No config file found."
+    log "No config file found at $CONFIG_FILE. Creating a new one."
+    modify_config_file
 fi
 

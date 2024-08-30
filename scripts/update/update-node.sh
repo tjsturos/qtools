@@ -43,20 +43,20 @@ main() {
   local available_qclient_files=$(fetch_available_files "https://releases.quilibrium.com/qclient-release")
 
   # Extract the version from the available files
-  local available_version=$(echo "$available_files" | grep -oP 'node-([0-9\.]+)+' | head -n 1 | tr -d 'node-')
-  local available_qclient_version=$(echo "$available_qclient_files" | grep -oP 'qclient-([0-9\.]+)+' | head -n 1 | tr -d 'node-')
+  local available_version=$(echo "$available_files" | grep -oE 'node-([0-9\.]+)+' | head -n 1 | sed 's/node-//')
+  local available_qclient_version=$(echo "$available_qclient_files" | grep -oE 'qclient-([0-9\.]+)+' | head -n 1 | sed 's/qclient-//')
 
   if [[ "$current_version" != "$available_version" ]] || [[ $force_update == "true" ]]; then
     restart_required="true"
-    rm $QUIL_CLIENT_PATH/qclient-*
-    rm $QUIL_NODE_PATH/node-*
+    rm -f $QUIL_CLIENT_PATH/qclient-*
+    rm -f $QUIL_NODE_PATH/node-*
     # Download all matching files if necessary
     download_matching_files_if_different "$release_version" "$available_files" "https://releases.quilibrium.com"
-    sudo chmod +x $QUIL_NODE_PATH/$(get_versioned_node)
+    chmod +x $QUIL_NODE_PATH/$(get_versioned_node)
     download_matching_files_if_different "$release_version" "$available_qclient_files" "https://releases.quilibrium.com"
-    sudo chmod +x $QUIL_CLIENT_PATH/$(get_versioned_qclient)
+    chmod +x $QUIL_CLIENT_PATH/$(get_versioned_qclient)
   else 
-    log "The current version ($current_version) matches ($available_version).  "
+    log "The current version ($current_version) matches ($available_version)."
   fi
 }
 

@@ -3,7 +3,7 @@
 # PARAM: <string>: name of the machine to use
 # Usage: qtools update-hostname quil-miner-101
 
-if [ -z "$1" ]; then
+if [[ -z "$1" ]]; then
   echo "Usage: $0 NEW_HOSTNAME"
   exit 1
 fi
