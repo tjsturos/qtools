@@ -6,65 +6,49 @@ log "Adding/updating autocomplete for qtools command..."
 brew install bash-completion
 
 # Use a user-specific directory for completion scripts
-COMPLETION_DIR="$HOME/.bash_completion.d"
+COMPLETION_DIR="$HOME/.zsh_completion.d"
 mkdir -p "$COMPLETION_DIR"
 
-append_to_file $BASHRC_FILE "[ -f $(brew --prefix)/etc/bash_completion ] && . $(brew --prefix)/etc/bash_completion" false
-append_to_file $BASHRC_FILE "for file in $COMPLETION_DIR/*; do [ -f \"\$file\" ] && . \"\$file\"; done" false
-
 # Create the completion file
-COMPLETION_FILE="$COMPLETION_DIR/qtools"
+COMPLETION_FILE="$COMPLETION_DIR/_qtools"
 
-# Define the directory to search
-search_directory="$QTOOLS_PATH/scripts"
+# Create the completion script
+cat > "$COMPLETION_FILE" << 'EOF'
+#compdef qtools
 
-# Check if the directory exists
-if [[ ! -d "$search_directory" ]]; then
-  log "Directory '$search_directory' does not exist."
-  exit 1
-fi
+_qtools() {
+  local state
 
-# Find all .sh files in the directory and its subdirectories
-sh_files=$(find "$search_directory" -type f -name "*.sh")
+  _arguments \
+    '1: :->command'\
+    '*: :->args'
 
-# Check if any .sh files were found
-if [[ -z "$sh_files" ]]; then
-  log "No .sh files found in '$search_directory'."
-else
-  # Initialize an array to hold the script names without the .sh extension
-  script_names=()
-
-  # Loop through each found .sh file
-  while IFS= read -r file; do
-    # Get the filename without the directory path
-    filename=$(basename "$file")
-    # Remove the .sh extension and add to the array
-    script_names+=("${filename%.sh}")
-  done <<< "$sh_files"
-  
-  # Join the script names with a space
-  joined_script_names=$(printf "%s " "${script_names[@]}")
-  
-  # Create the completion script
-  cat > "$COMPLETION_FILE" << EOF
-_qtools()
-{
-    local cur prev opts
-    COMPREPLY=()
-    cur="\${COMP_WORDS[COMP_CWORD]}"
-    prev="\${COMP_WORDS[COMP_CWORD-1]}"
-    opts="$joined_script_names"
-
-    COMPREPLY=( \$(compgen -W "\${opts}" -- \${cur}) )
-    return 0
+  case $state in
+    (command)
+      local -a subcommands
+      subcommands=($(qtools --help | grep -oE '^ +- [a-zA-Z0-9_-]+' | awk '{print $2}'))
+      _describe -t commands 'qtools commands' subcommands
+      ;;
+    (args)
+      case $words[2] in
+        update-hostname)
+          _message 'hostname'
+          ;;
+        # Add more cases for other commands that need specific argument completion
+        *)
+          _files
+          ;;
+      esac
+      ;;
+  esac
 }
-complete -F _qtools qtools
+
+compdef _qtools qtools
 EOF
 
-  log "Created auto-completion file: $COMPLETION_FILE"
-fi
+# Add sourcing to zshrc
+append_to_file $BASHRC_FILE "fpath=($COMPLETION_DIR \$fpath)" false
+append_to_file $BASHRC_FILE "autoload -U compinit && compinit" false
 
-# Source the completion file
-append_to_file $BASHRC_FILE "source $COMPLETION_FILE" false
-
+log "Created auto-completion file: $COMPLETION_FILE"
 log "Finished adding auto-complete. Please restart your shell or run 'source $BASHRC_FILE' to enable it."
