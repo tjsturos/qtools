@@ -3,10 +3,10 @@
 log "Adding/updating autocomplete for qtools command..."
 
 # macOS-specific setup
-brew install bash-completion
+brew install bash-completion@2
 
 # Use a user-specific directory for completion scripts
-COMPLETION_DIR="$HOME/.zsh_completion.d"
+COMPLETION_DIR="$HOME/.zsh_completion"
 mkdir -p "$COMPLETION_DIR"
 
 # Create the completion file
@@ -47,8 +47,20 @@ compdef _qtools qtools
 EOF
 
 # Add sourcing to zshrc
-append_to_file $BASHRC_FILE "fpath=($COMPLETION_DIR \$fpath)" false
-append_to_file $BASHRC_FILE "autoload -U compinit && compinit" false
+ZSHRC="$HOME/.zshrc"
+COMPLETION_SETUP=$(cat << EOF
+
+# QTools completion
+fpath=($COMPLETION_DIR \$fpath)
+autoload -Uz compinit
+compinit -i
+EOF
+)
+
+if ! grep -q "# QTools completion" "$ZSHRC"; then
+  echo "$COMPLETION_SETUP" >> "$ZSHRC"
+fi
 
 log "Created auto-completion file: $COMPLETION_FILE"
-log "Finished adding auto-complete. Please restart your shell or run 'source $BASHRC_FILE' to enable it."
+log "Updated $ZSHRC with completion setup"
+log "Finished adding auto-complete. Please restart your shell or run 'source $ZSHRC' to enable it."
