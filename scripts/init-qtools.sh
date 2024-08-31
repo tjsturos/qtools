@@ -1,6 +1,16 @@
 #!/bin/bash
 echo "Initializing qtools for macOS"
 
+# Install Homebrew if not already installed
+if ! command -v brew >/dev/null 2>&1; then
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  # Add Homebrew to PATH for the current session
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+fi
+
+# Install yq immediately
+brew install yq
+
 source "$QTOOLS_PATH/utils.sh"
 
 if [[ ! -f "$QTOOLS_CONFIG_FILE" ]]; then
@@ -9,15 +19,8 @@ if [[ ! -f "$QTOOLS_CONFIG_FILE" ]]; then
   echo "To edit, use 'qtools edit-qtools-config' command"
 fi
 
-# Install Homebrew if not already installed
-if ! command -v brew >/dev/null 2>&1; then
-  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-  # Add Homebrew to PATH for the current session
-  eval "$(/opt/homebrew/bin/brew shellenv)"
-fi
-
 # Install required packages using Homebrew
-brew install yq colordiff jq
+brew install colordiff jq
 
 # Update config file using yq
 yq -i ".user = \"$USER\"" "$QTOOLS_CONFIG_FILE"

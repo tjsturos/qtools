@@ -1,5 +1,11 @@
 #!/bin/bash
 # HELP: Creates a launchd plist file for the node service on macOS
+# PARAM: --debug: Add the --debug flag to the node process arguments
+
+DEBUG_FLAG=""
+if [[ "$1" == "--debug" ]]; then
+    DEBUG_FLAG="--debug"
+fi
 
 cat << EOF > "$QUIL_SERVICE_FILE"
 <?xml version="1.0" encoding="UTF-8"?>
@@ -11,6 +17,7 @@ cat << EOF > "$QUIL_SERVICE_FILE"
     <key>ProgramArguments</key>
     <array>
         <string>$QUIL_NODE_PATH/$(get_versioned_node)</string>
+        ${DEBUG_FLAG:+<string>$DEBUG_FLAG</string>}
     </array>
     <key>RunAtLoad</key>
     <true/>

@@ -1,74 +1,12 @@
-qyaml() {
-  local key_path=$1
-  local file_path=$2
-
-  if [[ ! -f $file_path ]]; then
-    echo "File not found: $file_path"
-    return 1
-  fi
-
-  # Remove leading dot if present
-  if [[ $key_path == .* ]]; then
-    key_path=${key_path:1}
-  fi
-
-  # Split the key path into an array
-  IFS='.' read -ra keys <<< "$key_path"
-
-  local current_level=0
-  local current_indent=""
-  local found_value=""
-
-  while IFS= read -r line || [[ -n "$line" ]]; do
-    # Skip comments and empty lines
-    [[ $line =~ ^[[:space:]]*# ]] || [[ -z $line ]] && continue
-
-    # Get indentation level
-    local indent=$(echo "$line" | sed -E 's/^( *).*$/\1/')
-    local indent_level=$((${#indent} / 2))
-
-    # Remove leading/trailing whitespace
-    line=$(echo "$line" | sed -E 's/^[[:space:]]+|[[:space:]]+$//g')
-
-    # Check if we're at the correct level or deeper
-    if [[ $indent_level -ge $current_level ]]; then
-      local key="${keys[$current_level]}"
-      if [[ $line =~ ^$key: ]]; then
-        if [[ $current_level -eq $((${#keys[@]} - 1)) ]]; then
-          found_value=$(echo "$line" | sed -E "s/^$key:[[:space:]]*//")
-          break
-        else
-          ((current_level++))
-          current_indent="$indent  "
-        fi
-      elif [[ $indent_level -gt $current_level ]]; then
-        continue
-      else
-        current_level=0
-        current_indent=""
-      fi
-    elif [[ $indent_level -lt $current_level ]]; then
-      current_level=0
-      current_indent=""
-    fi
-  done < "$file_path"
-
-  if [[ -n $found_value ]]; then
-    echo "$found_value"
-  else
-    echo "Value not found."
-  fi
-}
-
 log() {
     MESSAGE="$1"
     SHOULD_OUTPUT="${2:-true}"
 
     if [ -z "$LOG_OUTPUT_PATH" ]; then
-        LOG_OUTPUT_FILE=$(qyaml '.settings.log_file' $QTOOLS_CONFIG_FILE)
-    fi
+        LOG_OUTPUT_FILE=$(yq '.settings.log_file' $QTOOLS_CONFIG_FILE)
+    }
 
-    if [[ ! -f "$QTOOLS_PATH/$FILE_LOG" ]]; then
+    if [[ ! -f "$QTOOLS_PATH/$LOG_OUTPUT_FILE" ]]; then
         touch $QTOOLS_PATH/$LOG_OUTPUT_FILE
     fi
 

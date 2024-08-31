@@ -109,14 +109,14 @@ check_frame_count() {
 
 check_backup_status() {
     local config_file="$QTOOLS_CONFIG_FILE"
-    local enabled=$(yq '.settings.backups.enabled' "$config_file" 2>/dev/null || qyaml .settings.backups.enabled "$config_file")
+    local enabled=$(yq '.settings.backups.enabled' "$config_file")
 
     if [[ "$enabled" == "true" ]]; then
-        local node_backup_dir=$(yq '.settings.backups.node_backup_dir' "$config_file" 2>/dev/null || qyaml '.settings.backups.node_backup_dir' "$config_file")
-        local backup_url=$(yq '.settings.backups.backup_url' "$config_file" 2>/dev/null || qyaml '.settings.backups.backup_url' "$config_file")
-        local remote_user=$(yq '.settings.backups.remote_user' "$config_file" 2>/dev/null || qyaml '.settings.backups.remote_user' "$config_file")
-        local ssh_key_path=$(yq '.settings.backups.ssh_key_path' "$config_file" 2>/dev/null || qyaml '.settings.backups.ssh_key_path' "$config_file")
-        local remote_backup_dir=$(yq '.settings.backups.remote_backup_dir' "$config_file" 2>/dev/null || qyaml '.settings.backups.remote_backup_dir' "$config_file")
+        local node_backup_dir=$(yq '.settings.backups.node_backup_dir' "$config_file")
+        local backup_url=$(yq '.settings.backups.backup_url' "$config_file")
+        local remote_user=$(yq '.settings.backups.remote_user' "$config_file")
+        local ssh_key_path=$(yq '.settings.backups.ssh_key_path' "$config_file")
+        local remote_backup_dir=$(yq '.settings.backups.remote_backup_dir' "$config_file")
 
         echo -e "${GREEN_CHECK} Backup Status:"
         echo -e "    Enabled: $enabled"
