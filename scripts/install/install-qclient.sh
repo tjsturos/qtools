@@ -20,7 +20,7 @@ if [ ! -f "$QUIL_CLIENT_PATH/$CURRENT_QCLIENT_BINARY" ]; then
         sudo chmod +x "$QUIL_CLIENT_PATH/$CURRENT_QCLIENT_BINARY"
 
         if [ -L "$QUIL_QCLIENT_BIN" ]; then
-            rm "$QUIL_QCLIENT_BIN"
+            sudo rm "$QUIL_QCLIENT_BIN"
         fi
 
         sudo ln -s "$QUIL_CLIENT_PATH/$CURRENT_QCLIENT_BINARY" "$QUIL_QCLIENT_BIN"
