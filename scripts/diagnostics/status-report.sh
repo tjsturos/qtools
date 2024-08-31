@@ -142,11 +142,10 @@ check_proof_info() {
 }
 
 check_hardware_info() {
-    echo -e "${BLUE}${INFO_ICON}${NC} Vendor: $(sysctl -n machdep.cpu.vendor)"
-    echo -e "${BLUE}${INFO_ICON}${NC} Model: $(sysctl -n machdep.cpu.brand_string)"
+    echo -e "${BLUE}${INFO_ICON}${NC} Vendor: Apple"
+    echo -e "${BLUE}${INFO_ICON}${NC} Model: $(sysctl -n machdep.cpu.brand_string | sed 's/^Apple //')"
     echo -e "${BLUE}${INFO_ICON}${NC} Cores: $(sysctl -n hw.physicalcpu)"
     echo -e "${BLUE}${INFO_ICON}${NC} Threads: $(sysctl -n hw.logicalcpu)"
-    echo -e "${BLUE}${INFO_ICON}${NC} Hyperthreading Enabled: $([ $(sysctl -n hw.physicalcpu) -lt $(sysctl -n hw.logicalcpu) ] && echo "true" || echo "false")"
 }
 
 print_status_report() {
