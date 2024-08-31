@@ -39,7 +39,7 @@ check_hourly_reward_rate() {
 }
 
 check_service_status() {
-    local output=$(launchctl list | grep com.$USER.$QUIL_SERVICE_NAME)
+    local output=$(launchctl list | grep com.quilibrium.$QUIL_SERVICE_NAME)
 
     if [[ -n "$output" ]]; then
         echo -e "${GREEN_CHECK} Node service is running (active)"

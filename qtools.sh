@@ -59,12 +59,11 @@ export QTOOLS_BIN_PATH=/usr/local/bin/qtools
 export QUIL_QCLIENT_BIN=/usr/local/bin/qclient
 
 export BASHRC_FILE="$HOME/.zshrc"
-export GO_BIN_DIR=/opt/homebrew/bin
+export GO_BIN_DIR=/opt/homebrew/bin/
 export LAUNCHD_PLIST_DIR="$HOME/Library/LaunchAgents"
 
-export GOROOT=$GO_BIN_DIR/go
 export GOPATH=$HOME/go
-export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+export PATH=$GOPATH/bin:/opt/homebrew/bin/:$PATH
 export QTOOLS_CONFIG_FILE=$QTOOLS_PATH/config.yml
 
 # many util scripts require the log
