@@ -6,7 +6,7 @@
 # Function to create and load a launchd plist
 create_and_load_plist() {
     local interval=$1
-    local plist_name="com.$USER.record_unclaimed_rewards_$interval.plist"
+    local plist_name="com.qtools.record_unclaimed_rewards_$interval.plist"
     local plist_path="$LAUNCHD_PLIST_DIR/$plist_name"
 
     # Create the plist file
