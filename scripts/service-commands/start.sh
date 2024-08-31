@@ -18,6 +18,19 @@ else
     launchctl setenv DEBUG_MODE false
 fi
 
+# Move the current log file to old and keep only one old log file
+if [[ -f "$QUIL_LOG_FILE" ]]; then
+    if [[ -f "${QUIL_LOG_FILE}.old" ]]; then
+        rm "${QUIL_LOG_FILE}.old"
+    fi
+    mv "$QUIL_LOG_FILE" "${QUIL_LOG_FILE}.old"
+fi
+
+# Create a new empty log file
+touch "$QUIL_LOG_FILE"
+
+log "Moved current log file to ${QUIL_LOG_FILE}.old and created a new log file."
+
 # Check if the service is already loaded
 if launchctl list | grep -q "$QUIL_SERVICE_NAME"; then
     log "Node service is already running. Restarting..."

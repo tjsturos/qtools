@@ -82,27 +82,20 @@ log() {
 
 get_last_started_at() {
     local log_file="$QUIL_LOG_FILE"
-    local worker_line=$(tac "$log_file" | grep -m 1 "Spawning [0-9]* data workers...")
-    if [ -n "$worker_line" ]; then
-        local ts_line=$(tac "$log_file" | sed -n "/$worker_line/,/\"ts\":/p" | grep '"ts":' | head -n 1)
-        if [ -n "$ts_line" ]; then
-            local ts=$(echo "$ts_line" | grep -o '"ts":[0-9.]*' | cut -d':' -f2)
-            echo "$ts"
-        else
-            echo "No timestamp found after worker line"
-        fi
+    local ts_line=$(grep -m 1 '"ts":' "$log_file")
+    if [ -n "$ts_line" ]; then
+        local ts=$(echo "$ts_line" | grep -o '"ts":[0-9.]*' | cut -d':' -f2)
+        echo "$ts"
     else
-        echo "Worker line not found"
+        echo "No timestamp found in log file"
     fi
 }
 
 is_app_finished_starting() {
-    local UPTIME="$(get_last_started_at)"
-    local PEER_TEXT=$(sed -n "/$UPTIME/,\$p" "$QUIL_LOG_FILE" | grep -m 1 'peers in store')
-    if [ -z "$PEER_TEXT" ]; then
-        echo "false"
-    else
+    if grep -q 'peers in store' "$QUIL_LOG_FILE"; then
         echo "true"
+    else
+        echo "false"
     fi
 }
 
@@ -215,6 +208,13 @@ fetch_release_version() {
     echo $RELEASE_VERSION
 }
 
+fetch_qclient_release_version() {
+    local RELEASE_VERSION=$(curl -s https://releases.quilibrium.com/qclient-release | grep -Eo "qclient-[0-9]+(\.[0-9]+)*-" | head -n 1 | sed 's/qclient-//;s/-$//')
+    set_release_version $RELEASE_VERSION
+    echo $RELEASE_VERSION
+}
+
+
 set_current_version() {
     current_version="$1" yq -i e '.current_version = strenv(current_version)' $QTOOLS_CONFIG_FILE
 }
@@ -285,5 +285,5 @@ get_versioned_node() {
 }
 
 get_versioned_qclient() {
-    echo "qclient-$(fetch_release_version)-$(get_os_arch)"
+    echo "qclient-$(fetch_qclient_release_version)-$(get_os_arch)"
 }
