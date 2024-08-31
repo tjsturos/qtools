@@ -225,3 +225,24 @@ get_versioned_node() {
 get_versioned_qclient() {
     echo "qclient-$(fetch_qclient_release_version)-$(get_os_arch)"
 }
+
+# Add this function to utils.sh
+qclient_fn() {
+    if [[ "$(yq '.settings.qclient.enabled' "$QTOOLS_CONFIG_FILE")" == "true" ]]; then
+        if [[ -f "$QUIL_QCLIENT_BIN" && -x "$QUIL_QCLIENT_BIN" ]]; then
+            "$QUIL_QCLIENT_BIN" "$@"
+        else
+            if [[ ! -f "$QUIL_QCLIENT_BIN" ]]; then
+                log "qclient is enabled but the binary is not found at $QUIL_QCLIENT_BIN"
+            elif [[ ! -x "$QUIL_QCLIENT_BIN" ]]; then
+                log "qclient binary found at $QUIL_QCLIENT_BIN but it is not executable"
+            else
+                log "Unexpected error with qclient binary at $QUIL_QCLIENT_BIN"
+            fi
+            return 1
+        fi
+    else
+        log "qclient is not enabled in the configuration"
+        return 1
+    fi
+}

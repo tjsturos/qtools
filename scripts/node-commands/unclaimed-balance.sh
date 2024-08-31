@@ -3,8 +3,8 @@
 IS_APP_FINISHED_STARTING="$(is_app_finished_starting)"
 
 if [[ $IS_APP_FINISHED_STARTING == "true" ]]; then
-    if [[ -f "$QUIL_QCLIENT_BIN" ]]; then
-        OUTPUT="$($QUIL_QCLIENT_BIN token balance)"
+    if qclient_fn token balance &>/dev/null; then
+        OUTPUT="$(qclient_fn token balance)"
         UNCLAIMED_BALANCE=$(echo "$OUTPUT" | awk '{print $1}')
         echo "$UNCLAIMED_BALANCE"
     else
