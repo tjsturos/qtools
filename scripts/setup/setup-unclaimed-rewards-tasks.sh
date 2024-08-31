@@ -9,6 +9,15 @@ create_and_load_plist() {
     local plist_name="com.qtools.record_unclaimed_rewards_$interval.plist"
     local plist_path="$LAUNCHD_PLIST_DIR/$plist_name"
 
+    # Check if the plist already exists
+    if [ -f "$plist_path" ]; then
+        log "Existing $interval task found. Removing and recreating..."
+        # Unload the existing plist
+        launchctl unload "$plist_path" 2>/dev/null
+        # Remove the existing plist file (requires sudo)
+        sudo rm "$plist_path"
+    fi
+
     # Create the plist file
     cat > "$plist_path" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
