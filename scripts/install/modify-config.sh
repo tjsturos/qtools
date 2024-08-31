@@ -14,8 +14,11 @@ modify_config_file() {
 
     # If the config file doesn't exist, create an empty YAML file
     if [[ ! -f "$CONFIG_FILE" ]]; then
-        echo "---" > "$CONFIG_FILE"
-        log "Created new config file at $CONFIG_FILE"
+        # Generate a new peer ID
+        PEER_ID=$("$QUIL_NODE_BIN" -peer-id)
+        
+        
+        log "Created new config file at $CONFIG_FILE with peer ID: $PEER_ID"
     fi
 
     # Update listenGrpcMultiaddr
