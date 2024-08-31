@@ -10,15 +10,14 @@ modify_config_file() {
 
     # Get the listenAddr mode from the qtools config file
     LISTEN_ADDR_MODE=$(yq '.settings.listenAddr.mode' $QTOOLS_CONFIG_FILE)
+    GRPC_MULTIADDR="/ip4/127.0.0.1/tcp/8337"
 
     # Determine the appropriate multiaddr format based on the mode
     if [ "$LISTEN_ADDR_MODE" = "udp" ]; then
         P2P_MULTIADDR="/ip4/127.0.0.1/udp/8336/quic-v1"
-        GRPC_MULTIADDR="/ip4/127.0.0.1/udp/8337/quic-v1"
         REST_MULTIADDR="/ip4/127.0.0.1/udp/8338/quic-v1"
     else
         P2P_MULTIADDR="/ip4/127.0.0.1/tcp/8336"
-        GRPC_MULTIADDR="/ip4/127.0.0.1/tcp/8337"
         REST_MULTIADDR="/ip4/127.0.0.1/tcp/8338"
     fi
 
