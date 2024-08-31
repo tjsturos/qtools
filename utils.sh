@@ -4,7 +4,7 @@ log() {
 
     if [ -z "$LOG_OUTPUT_PATH" ]; then
         LOG_OUTPUT_FILE=$(yq '.settings.log_file' $QTOOLS_CONFIG_FILE)
-    }
+    fi
 
     if [[ ! -f "$QTOOLS_PATH/$LOG_OUTPUT_FILE" ]]; then
         touch $QTOOLS_PATH/$LOG_OUTPUT_FILE
