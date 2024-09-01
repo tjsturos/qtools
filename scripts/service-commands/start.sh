@@ -30,9 +30,9 @@ fi
 # Update the plist file if needed
 if [[ "$PLIST_NEEDS_UPDATE" == "true" ]]; then
     if [[ "$DEBUG_MODE" == "true" ]]; then
-        qtools create-launchd-plist --debug
+        qtools setup-node-task --debug
     else
-        qtools create-launchd-plist
+        qtools setup-node-task
     fi
     log "Updated launchd plist file."
 fi
