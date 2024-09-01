@@ -148,7 +148,6 @@ fetch_release_version() {
 
 fetch_qclient_release_version() {
     local RELEASE_VERSION=$(curl -s https://releases.quilibrium.com/qclient-release | grep -Eo "qclient-[0-9]+(\.[0-9]+)*-" | head -n 1 | sed 's/qclient-//;s/-$//')
-    set_release_version $RELEASE_VERSION
     echo $RELEASE_VERSION
 }
 
