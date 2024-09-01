@@ -32,7 +32,7 @@ if [ "$IS_BACKUP_ENABLED" = 'true' ]; then
     ssh -i "$SSH_KEY_PATH" "$REMOTE_USER@$REMOTE_URL" "test -d $REMOTE_DIR || mkdir -p $REMOTE_DIR"
 
     # Add verbose output and error handling
-    rsync -avzE --delete-after -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no" "$QUIL_NODE_PATH/.config" "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR"
+    rsync -avz --delete-after -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no" "$QUIL_NODE_PATH/.config" "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR"
     RSYNC_EXIT_CODE=$?
 
     if [ $RSYNC_EXIT_CODE -ne 0 ]; then
