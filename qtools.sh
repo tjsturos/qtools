@@ -113,6 +113,9 @@ if ! find_script "$1"; then
   usage
 fi
 
+# Add this line before sourcing the script
+export IS_APP_FINISHED_STARTING="$(is_app_finished_starting)"
+
 # Construct the full filename
 SCRIPT="$SERVICE_PATH/$1.sh"
 

@@ -3,6 +3,10 @@
 
 install_package net-tools netstat
 
+if [ "$IS_APP_FINISHED_STARTING" != "true" ]; then
+    echo "App is still starting. Some ports may not be ready yet."
+fi
+
 PORTS_LISTENING="$(sudo lsof -i -P -n | grep LISTEN)"
 
 find_port() {
@@ -10,17 +14,8 @@ find_port() {
     local DETECT_PORT_LISTENING="$(echo $PORTS_LISTENING | grep $PORT)"
 
     if [ -z "$DETECT_PORT_LISTENING" ]; then
-        if [ "${PORT}" == "8337" ]; then
-            # Read the entire log file
-            LOG_CONTENT=$(cat "$QUIL_LOG_FILE")
-            
-            if echo "$LOG_CONTENT" | grep -q "begin streaming"; then
-                echo "Port $PORT was found listening."
-            elif echo "$LOG_CONTENT" | grep -q "Starting RPC server"; then
-                echo "App is still starting up, port 8337 will not be ready yet."
-            else
-                echo "Port $PORT not found listening. There might be a misconfiguration in your Quil Node Config file."
-            fi
+        if [ "${PORT}" == "8337" ] && [ "$IS_APP_FINISHED_STARTING" != "true" ]; then
+            echo "App is still starting up, port 8337 will not be ready yet."
         else
             echo "Port $PORT not found listening."
         fi

@@ -1,4 +1,10 @@
 #!/bin/bash
+# HELP: Fetches proof information from the log file
+
+if [ "$IS_APP_FINISHED_STARTING" != "true" ]; then
+    echo "App is still starting. Proof information may not be available yet."
+    exit 0
+fi
 
 fetch_proof_info() {
     local UPTIME="$(get_last_started_at)"
