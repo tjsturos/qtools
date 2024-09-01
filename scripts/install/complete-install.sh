@@ -16,7 +16,7 @@ qtools update-service
 qtools install-go
 qtools install-grpc
 qtools setup-firewall
-qtools install-cron
+qtools setup-tasks
 
 RESTORE_ON_INSTALL="$(yq '.settings.backups.restore_on_install' $QTOOLS_CONFIG_FILE)"
 if [[ "$RESTORE_ON_INSTALL" == "true" ]]; then
