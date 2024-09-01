@@ -57,9 +57,9 @@ EOF
     cat >> "$plist_path" <<EOF
     </dict>
     <key>StandardOutPath</key>
-    <string>$HOME/Library/Logs/record_unclaimed_rewards_$interval.log</string>
+    <string>$QTOOLS_PATH/record_unclaimed_${interval}_rewards.log</string>
     <key>StandardErrorPath</key>
-    <string>$HOME/Library/Logs/record_unclaimed_rewards_$interval.log</string>
+    <string>$QTOOLS_PATH/record_unclaimed_${interval}_rewards.log</string>
 </dict>
 </plist>
 EOF
