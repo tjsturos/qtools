@@ -32,6 +32,11 @@ create_and_load_plist() {
         <string>-c</string>
         <string>$QTOOLS_BIN_PATH record-unclaimed-rewards $interval</string>
     </array>
+    <key>KeepAlive</key>
+    <dict>
+        <key>NetworkState</key>
+        <true/>
+    </dict>
     <key>EnvironmentVariables</key>
     <dict>
         <key>PATH</key>
