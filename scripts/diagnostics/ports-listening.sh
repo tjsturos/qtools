@@ -11,17 +11,15 @@ find_port() {
 
     if [ -z "$DETECT_PORT_LISTENING" ]; then
         if [ "${PORT}" == "8337" ]; then
-            # determine app status-- if the app hasn't reached a certain point yet, then it won't be listening
-            # on port 8337 yet, so saying it wasn't found listening is not very helpful.
-            IS_APP_FINISHED_STARTING="$(is_app_finished_starting)"
-            UPTIME="$(get_last_started_at)"
-            local streaming_text=$(sudo journalctl -u $QUIL_SERVICE_NAME@main --no-hostname -S "${UPTIME}" | grep 'begin streaming')
-            if [ $IS_APP_FINISHED_STARTING == "false" ]; then
-                echo "App is still starting up, port 8337 will not be ready yet."
-            elif [ -z "$streaming_text" ]; then
-                echo "Port $PORT not found listening. App has started. There is a misconfiguration in your Quil Node Config file."
-            else
+            # Read the entire log file
+            LOG_CONTENT=$(cat "$QUIL_LOG_FILE")
+            
+            if echo "$LOG_CONTENT" | grep -q "begin streaming"; then
                 echo "Port $PORT was found listening."
+            elif echo "$LOG_CONTENT" | grep -q "Starting RPC server"; then
+                echo "App is still starting up, port 8337 will not be ready yet."
+            else
+                echo "Port $PORT not found listening. There might be a misconfiguration in your Quil Node Config file."
             fi
         else
             echo "Port $PORT not found listening."
