@@ -28,10 +28,29 @@ create_and_load_plist() {
     <string>com.qtools.record_unclaimed_rewards_$interval</string>
     <key>ProgramArguments</key>
     <array>
-        <string>$QTOOLS_BIN_PATH</string>
-        <string>record-unclaimed-rewards</string>
-        <string>$interval</string>
+        <string>/bin/bash</string>
+        <string>-c</string>
+        <string>$QTOOLS_BIN_PATH record-unclaimed-rewards $interval</string>
     </array>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$HOME/go/bin:/opt/homebrew/bin</string>
+        <key>QTOOLS_PATH</key>
+        <string>$QTOOLS_PATH</string>
+        <key>QTOOLS_CONFIG_FILE</key>
+        <string>$QTOOLS_CONFIG_FILE</string>
+        <key>QUIL_PATH</key>
+        <string>$QUIL_PATH</string>
+        <key>QUIL_NODE_PATH</key>
+        <string>$QUIL_NODE_PATH</string>
+        <key>QUIL_CLIENT_PATH</key>
+        <string>$QUIL_CLIENT_PATH</string>
+        <key>QUIL_GO_NODE_BIN</key>
+        <string>$QUIL_GO_NODE_BIN</string>
+        <key>QUIL_QCLIENT_BIN</key>
+        <string>$QUIL_QCLIENT_BIN</string>
+    </dict>
     <key>StartCalendarInterval</key>
     <dict>
 EOF
