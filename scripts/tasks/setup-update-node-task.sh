@@ -5,7 +5,7 @@
 
 # Function to create and load a launchd plist for the update task
 create_and_load_update_task_plist() {
-    local plist_name="com.qtools.update_task.plist"
+    local plist_name="com.qtools.update_node.plist"
     local plist_path="$LAUNCHD_PLIST_DIR/$plist_name"
 
     # Check if the plist already exists

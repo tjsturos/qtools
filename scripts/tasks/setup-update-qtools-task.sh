@@ -5,7 +5,7 @@
 
 # Function to create and load a launchd plist for the update task
 create_and_load_update_task_plist() {
-    local plist_name="com.qtools.update-node.plist"
+    local plist_name="com.qtools.update_qtools.plist"
     local plist_path="$LAUNCHD_PLIST_DIR/$plist_name"
 
     # Check if the plist already exists
@@ -75,4 +75,4 @@ EOF
 # Create and load the update task
 create_and_load_update_task_plist
 
-log "Update task has been set up to run 'qtools update-node' every 10 minutes"
+log "Update task has been set up to run 'qtools self-update' every 10 minutes"
