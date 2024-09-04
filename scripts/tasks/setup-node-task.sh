@@ -38,3 +38,7 @@ cat << EOF > "$QUIL_SERVICE_FILE"
 EOF
 
 log "Created launchd plist file at $QUIL_SERVICE_FILE"
+# Load the launchd plist file
+launchctl load -w "$QUIL_SERVICE_FILE"
+
+log "Loaded launchd plist file for node service"

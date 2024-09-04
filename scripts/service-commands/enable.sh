@@ -3,4 +3,4 @@
 
 # Usage: qtools enable
 
-sudo systemctl enable $QUIL_SERVICE_NAME@main.service
+#sudo systemctl enable $QUIL_SERVICE_NAME@main.service
