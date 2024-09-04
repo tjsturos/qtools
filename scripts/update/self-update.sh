@@ -8,7 +8,7 @@ cd $QTOOLS_PATH
 git pull &> /dev/null
 log "Changes fetched."
 qtools add-auto-complete
-qtools install-cron
+qtools setup-tasks
 
 source ~/.zshrc
 

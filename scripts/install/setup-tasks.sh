@@ -17,7 +17,7 @@ if [ -n "$PLIST_FILES" ]; then
         task_name=$(basename "$plist" .plist)
         
         # Check if the task is related to qtools or quilibrium
-        if [[ $task_name == com.qtools.* ]] || [[ $task_name == com.$USER.$QUIL_SERVICE_NAME ]]; then
+        if [[ $task_name == com.qtools.* ]] || [[ $task_name == com.$USER.* ]] || [[ $task_name == com.quilibrium.* ]]; then
             log "Unloading $task_name..."
             launchctl unload "$plist" 2>/dev/null
             log "Deleting $task_name..."
