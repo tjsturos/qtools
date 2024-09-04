@@ -30,7 +30,7 @@ create_and_load_plist() {
     <array>
         <string>/bin/bash</string>
         <string>-c</string>
-        <string>qtools record-unclaimed-rewards $interval 2>&1 | tee -a $QTOOLS_PATH/unclaimed_${interval}_rewards.log</string>
+        <string>qtools record-unclaimed-rewards $interval</string>
     </array>
     <key>KeepAlive</key>
     <dict>
