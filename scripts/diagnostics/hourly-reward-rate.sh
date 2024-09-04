@@ -46,16 +46,13 @@ fi
 
 # Initialize variables
 total_increase=0
+total_hours=0
 prev_balance=0
 prev_timestamp=0
 first_line=true
-valid_intervals=0
 
-# Find the start index for the specified number of hours
-start_index=$((num_lines - hours))
-
-# Process the specified number of hours of data
-for ((i=start_index; i<num_lines; i++)); do
+# Start from the last line and work backwards
+for ((i=num_lines-1; i>=0; i--)); do
   # Read the line
   line=${lines[$i]}
   
@@ -74,36 +71,37 @@ for ((i=start_index; i<num_lines; i++)); do
     continue
   fi
 
-  # Calculate the difference between the current and previous timestamp
-  timestamp_diff=$((timestamp - prev_timestamp))
+  # Calculate the difference between the current and previous timestamp in hours
+  timestamp_diff=$(echo "scale=10; ($prev_timestamp - $timestamp) / 3600" | bc)
   
-  # Skip records with non-hourly gaps
-  if [[ $timestamp_diff -gt 3600 ]]; then
-    prev_balance=$balance
-    prev_timestamp=$timestamp
-    continue
-  fi
-
   # Calculate the difference between the current and previous balance
-  increase=$(echo "$balance - $prev_balance" | bc)
+  increase=$(echo "$prev_balance - $balance" | bc)
+  
+  # Add to total increase and total hours
   total_increase=$(echo "$total_increase + $increase" | bc)
+  total_hours=$(echo "$total_hours + $timestamp_diff" | bc)
   
   # Update the previous balance and timestamp
   prev_balance=$balance
   prev_timestamp=$timestamp
-  valid_intervals=$((valid_intervals + 1))
+
+  # Break if we've reached or exceeded the desired number of hours
+  if (( $(echo "$total_hours >= $hours" | bc -l) )); then
+    break
+  fi
 done
 
 # Ensure there are valid intervals to calculate the average
-if [[ $valid_intervals -lt 1 ]]; then
+if (( $(echo "$total_hours < 0.1" | bc -l) )); then
+  echo "Not enough valid data to calculate the hourly reward rate."
   exit 1
 fi
 
-# Calculate the average increase
-average_increase=$(echo "scale=10; $total_increase / $valid_intervals" | bc)
+# Calculate the hourly reward rate
+hourly_rate=$(echo "scale=10; $total_increase / $total_hours" | bc)
 
 # Format the result to always have a leading zero before the decimal point
-formatted_increase=$(printf "%.10f" "$average_increase")
+formatted_rate=$(printf "%.10f" "$hourly_rate")
 
 # Output the result
-echo "$formatted_increase"
+echo "$formatted_rate"
