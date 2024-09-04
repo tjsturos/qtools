@@ -46,18 +46,6 @@ create_and_load_update_task_plist() {
         <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$HOME/go/bin:/opt/homebrew/bin</string>
         <key>QTOOLS_PATH</key>
         <string>$QTOOLS_PATH</string>
-        <key>QTOOLS_CONFIG_FILE</key>
-        <string>$QTOOLS_CONFIG_FILE</string>
-        <key>QUIL_PATH</key>
-        <string>$QUIL_PATH</string>
-        <key>QUIL_NODE_PATH</key>
-        <string>$QUIL_NODE_PATH</string>
-        <key>QUIL_CLIENT_PATH</key>
-        <string>$QUIL_CLIENT_PATH</string>
-        <key>QUIL_GO_NODE_BIN</key>
-        <string>$QUIL_GO_NODE_BIN</string>
-        <key>QUIL_QCLIENT_BIN</key>
-        <string>$QUIL_QCLIENT_BIN</string>
     </dict>
     <key>StandardOutPath</key>
     <string>$QTOOLS_PATH/update_task.log</string>

@@ -8,7 +8,7 @@ if [[ $IS_APP_FINISHED_STARTING == "true" ]]; then
         UNCLAIMED_BALANCE=$(echo "$OUTPUT" | awk '{print $1}')
         echo "$UNCLAIMED_BALANCE"
     else
-        INPUT="$($QUIL_NODE_PATH/$QUIL_BIN -balance)"
+        INPUT="$($QUIL_NODE_PATH/$(get_versioned_node) -balance)"
         UNCLAIMED_BALANCE=$(echo "$INPUT" | grep "Unclaimed balance" | awk -F ": " '{print $2}' | awk '{print $1}')
         echo "$UNCLAIMED_BALANCE"
     fi

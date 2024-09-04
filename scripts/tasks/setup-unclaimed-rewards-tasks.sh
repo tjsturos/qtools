@@ -30,7 +30,7 @@ create_and_load_plist() {
     <array>
         <string>/bin/bash</string>
         <string>-c</string>
-        <string>$QTOOLS_BIN_PATH record-unclaimed-rewards $interval</string>
+        <string>qtools record-unclaimed-rewards $interval 2>&1 | tee -a $QTOOLS_PATH/unclaimed_${interval}_rewards.log</string>
     </array>
     <key>KeepAlive</key>
     <dict>
@@ -41,20 +41,6 @@ create_and_load_plist() {
     <dict>
         <key>PATH</key>
         <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$HOME/go/bin:/opt/homebrew/bin</string>
-        <key>QTOOLS_PATH</key>
-        <string>$QTOOLS_PATH</string>
-        <key>QTOOLS_CONFIG_FILE</key>
-        <string>$QTOOLS_CONFIG_FILE</string>
-        <key>QUIL_PATH</key>
-        <string>$QUIL_PATH</string>
-        <key>QUIL_NODE_PATH</key>
-        <string>$QUIL_NODE_PATH</string>
-        <key>QUIL_CLIENT_PATH</key>
-        <string>$QUIL_CLIENT_PATH</string>
-        <key>QUIL_GO_NODE_BIN</key>
-        <string>$QUIL_GO_NODE_BIN</string>
-        <key>QUIL_QCLIENT_BIN</key>
-        <string>$QUIL_QCLIENT_BIN</string>
     </dict>
     <key>StartCalendarInterval</key>
     <dict>
