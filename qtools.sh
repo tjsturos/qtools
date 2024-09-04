@@ -76,7 +76,7 @@ export LOG_OUTPUT_FILE="$(yq '.settings.log_file' "$QTOOLS_CONFIG_FILE")"
 source "$QTOOLS_PATH/utils.sh"
 
 export QUIL_SERVICE_NAME="$(yq '.service.file_name' "$QTOOLS_CONFIG_FILE")"
-export QUIL_SERVICE_FILE="$LAUNCHD_PLIST_DIR/com.$USER.$QUIL_SERVICE_NAME.plist"
+export QUIL_SERVICE_FILE="$LAUNCHD_PLIST_DIR/com.quilibrium.$QUIL_SERVICE_NAME.plist"
 export OS_ARCH="$(get_os_arch)"
 
 # Define the log file path
