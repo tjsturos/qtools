@@ -153,6 +153,7 @@ check_hardware_info() {
 
 print_status_report() {
     check_peer_id
+    check_proof_info
     check_frame_count
     check_ports_status
     check_service_status
@@ -163,7 +164,6 @@ print_status_report() {
     check_unclaimed_balance
     check_backup_status
     check_hardware_info
-    check_proof_info
 }
 
 print_status_report
