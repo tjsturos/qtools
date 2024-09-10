@@ -18,6 +18,9 @@ if ! command -v "yq" >/dev/null 2>&1; then
   fi
 fi
 
+# Set the user and working directory in the config file
+cd $QTOOLS_PATH
+
 yq -i ".user = \"$USER\"" $QTOOLS_CONFIG_FILE
 yq -i ".service.working_dir = \"$HOME/ceremonyclient/node\"" $QTOOLS_CONFIG_FILE
 
