@@ -9,6 +9,7 @@
 IS_BACKUP_ENABLED="$(yq '.settings.backups.enabled' $QTOOLS_CONFIG_FILE)"
 PEER_ID=""
 FORCE_RESTORE=false
+CONFIRM=false
 
 # Parse command-line arguments
 while [[ $# -gt 0 ]]; do
@@ -20,6 +21,10 @@ while [[ $# -gt 0 ]]; do
     --peer-id)
       shift
       PEER_ID="$1"
+      shift
+      ;;
+    --confirm)
+      CONFIRM=true
       shift
       ;;
     *)
@@ -43,6 +48,16 @@ if [ "$IS_BACKUP_ENABLED" == 'true' ] || [ "$FORCE_RESTORE" == true ]; then
   fi
 
   echo "Restoring from $NODE_BACKUP_DIR"
+
+  # Add confirmation prompt if --confirm flag is set
+  if [ "$CONFIRM" = true ]; then
+    read -p "Do you want to continue with the backup to $NODE_BACKUP_DIR? (y/n) " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+      echo "Backup cancelled."
+      exit 0
+    fi
+  fi
   
   REMOTE_DIR="$(yq '.settings.backups.remote_backup_dir' $QTOOLS_CONFIG_FILE)/$NODE_BACKUP_DIR/"
   REMOTE_URL="$(yq '.settings.backups.backup_url' $QTOOLS_CONFIG_FILE)"
