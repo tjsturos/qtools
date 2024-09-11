@@ -8,15 +8,13 @@ sudo systemctl stop $QUIL_SERVICE_NAME.service
 qtools backup-store
 
 # Disable backups after stopping the service
-yq -i '.settings.backups.enabled = false' $QTOOLS_CONFIG_FILE
+qtools toggle-backups --off
 
 # Disable diagnostics
-yq -i '.settings.diagnostics.enabled = false' $QTOOLS_CONFIG_FILE
+qtools toggle-diagnostics --off
 
 # Disable statistics
-yq -i '.settings.statistics.enabled = false' $QTOOLS_CONFIG_FILE
-
-log "Backups have been disabled in the qtools configuration."
+qtools toggle-statistics --off
 
 wait
 # and to make sure any stray node commands are exited
