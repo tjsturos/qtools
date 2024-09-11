@@ -139,8 +139,21 @@ check_proof_info() {
     local completed_increment=$(echo "$proof_info" | grep COMPLETED_INCREMENT | cut -d= -f2)
     local time_taken=$(echo "$proof_info" | grep TIME_TAKEN | cut -d= -f2)
 
-    echo -e "${BLUE}${INFO_ICON}${NC} Last storing proof increment: $storing_increment"
-    echo -e "${BLUE}${INFO_ICON}${NC} Last completed proof increment: $completed_increment"
+    local proof_icon
+    if (( completed_increment <= 100000 )); then
+        proof_icon="🌧️"  # Just starting
+    elif (( completed_increment <= 350000 )); then
+        proof_icon="⛅"  # Intermediate, but not new
+    elif (( completed_increment <= 500000 )); then
+        proof_icon="🌤️"  # Intermediate
+    elif (( completed_increment <= 700003 )); then
+        proof_icon="☀️"  # Intermediate, experienced
+    else
+        proof_icon="🌈"  # Da bomb (best)
+    fi
+
+    echo -e "${proof_icon} Last storing proof increment: $storing_increment"
+    echo -e "${proof_icon} Last completed proof increment: $completed_increment"
     echo -e "${BLUE}${INFO_ICON}${NC} Last proof completion time: $time_taken seconds"
 }
 
