@@ -41,6 +41,8 @@ if [ "$IS_BACKUP_ENABLED" == 'true' ] || [ "$FORCE_RESTORE" == true ]; then
   else
     NODE_BACKUP_DIR="$PEER_ID"
   fi
+
+  echo "Restoring from $NODE_BACKUP_DIR"
   
   REMOTE_DIR="$(yq '.settings.backups.remote_backup_dir' $QTOOLS_CONFIG_FILE)/$NODE_BACKUP_DIR/"
   REMOTE_URL="$(yq '.settings.backups.backup_url' $QTOOLS_CONFIG_FILE)"
