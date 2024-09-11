@@ -25,6 +25,8 @@ service:
 settings:
     statistics:
         enabled: true
+    diagnostics:
+        enabled: false
     listenAddr:
         mode: "udp"
     cpulimit:

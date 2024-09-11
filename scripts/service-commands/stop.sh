@@ -10,6 +10,12 @@ qtools backup-store
 # Disable backups after stopping the service
 yq -i '.settings.backups.enabled = false' $QTOOLS_CONFIG_FILE
 
+# Disable diagnostics
+yq -i '.settings.diagnostics.enabled = false' $QTOOLS_CONFIG_FILE
+
+# Disable statistics
+yq -i '.settings.statistics.enabled = false' $QTOOLS_CONFIG_FILE
+
 log "Backups have been disabled in the qtools configuration."
 
 wait

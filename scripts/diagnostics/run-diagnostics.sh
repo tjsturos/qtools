@@ -51,6 +51,14 @@ run_specified_tests() {
     echo "Specified diagnostics completed." | tee -a "$temp_log_file"
 }
 
+# Check if diagnostics are enabled
+IS_DIAGNOSTICS_ENABLED="$(yq '.settings.diagnostics.enabled' $QTOOLS_CONFIG_FILE)"
+
+if [ "$IS_DIAGNOSTICS_ENABLED" != "true" ]; then
+    echo "Diagnostics are not enabled. Exiting."
+    exit 0
+fi
+
 # Initialize an array to store specified tests
 tests=()
 

@@ -14,3 +14,13 @@ fi
 # TODO: add args to service file
 
 sudo systemctl start $QUIL_SERVICE_NAME.service
+
+# Enable diagnostics
+yq -i '.settings.diagnostics.enabled = true' $QTOOLS_CONFIG_FILE
+
+echo "Diagnostics have been enabled."
+
+# Enable statistics
+yq -i '.settings.statistics.enabled = true' $QTOOLS_CONFIG_FILE
+
+echo "Statistics have been enabled."
