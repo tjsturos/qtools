@@ -3,24 +3,46 @@
 # PARAM: --confirm: prompts for confirmation before proceeding with the backup
 # Usage: qtools backup-store [--confirm]
 
-# Parse command line arguments
-CONFIRM=false
-while [[ "$#" -gt 0 ]]; do
-    case $1 in
-        --confirm) CONFIRM=true ;;
-        *) echo "Unknown parameter: $1"; exit 1 ;;
-    esac
-    shift
-done
 
 IS_BACKUP_ENABLED="$(yq '.settings.backups.enabled' $QTOOLS_CONFIG_FILE)"
-LOCAL_HOSTNAME=$(qtools peer-id)
+CONFIRM=false
+PEER_ID=""
+FORCE_RESTORE=false
 
-if [ "$IS_BACKUP_ENABLED" == 'true' ]; then
-  NODE_BACKUP_DIR="$(yq '.settings.backups.node_backup_dir' $QTOOLS_CONFIG_FILE)"
-  # see if there the default save dir is overriden
-  if [ -z "$NODE_BACKUP_DIR" ]; then
-    NODE_BACKUP_DIR="$LOCAL_HOSTNAME"
+# Parse command-line arguments
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --confirm) 
+      CONFIRM=true 
+      shift
+      ;;
+    --force)
+      FORCE_RESTORE=true
+      shift
+      ;;
+    --peer-id)
+      shift
+      PEER_ID="$1"
+      shift
+      ;;
+    *)
+      shift
+      ;;
+  esac
+done
+
+if [ "$IS_BACKUP_ENABLED" == 'true' ] || [ "$FORCE_RESTORE" == true ]; then
+
+  if [ -z "$PEER_ID" ]; then
+    NODE_BACKUP_DIR="$(yq '.settings.backups.node_backup_dir' $QTOOLS_CONFIG_FILE)"
+  
+    # see if there the default save dir is overridden
+    if [ -z "$NODE_BACKUP_DIR" ]; then
+      PEER_ID="$(qtools peer-id)"
+      NODE_BACKUP_DIR="$PEER_ID"
+    fi
+  else
+    NODE_BACKUP_DIR="$PEER_ID"
   fi
 
   echo "Backing up to $NODE_BACKUP_DIR"
