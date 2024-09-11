@@ -1,5 +1,17 @@
 #!/bin/bash
 # HELP: Backs up store (if enabled in qtools config) to remote location.
+# PARAM: --confirm: prompts for confirmation before proceeding with the backup
+# Usage: qtools backup-store [--confirm]
+
+# Parse command line arguments
+CONFIRM=false
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        --confirm) CONFIRM=true ;;
+        *) echo "Unknown parameter: $1"; exit 1 ;;
+    esac
+    shift
+done
 
 IS_BACKUP_ENABLED="$(yq '.settings.backups.enabled' $QTOOLS_CONFIG_FILE)"
 LOCAL_HOSTNAME=$(qtools peer-id)
@@ -12,6 +24,17 @@ if [ "$IS_BACKUP_ENABLED" == 'true' ]; then
   fi
 
   echo "Backing up to $NODE_BACKUP_DIR"
+
+  # Add confirmation prompt if --confirm flag is set
+  if [ "$CONFIRM" = true ]; then
+    read -p "Do you want to continue with the backup to $NODE_BACKUP_DIR? (y/n) " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+      echo "Backup cancelled."
+      exit 0
+    fi
+  fi
+
   REMOTE_DIR="$(yq '.settings.backups.remote_backup_dir' $QTOOLS_CONFIG_FILE)/$NODE_BACKUP_DIR/"
   REMOTE_URL="$(yq '.settings.backups.backup_url' $QTOOLS_CONFIG_FILE)"
   REMOTE_USER="$(yq '.settings.backups.remote_user' $QTOOLS_CONFIG_FILE)"
