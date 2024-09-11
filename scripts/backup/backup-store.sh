@@ -10,6 +10,8 @@ if [ "$IS_BACKUP_ENABLED" == 'true' ]; then
   if [ -z "$NODE_BACKUP_DIR" ]; then
     NODE_BACKUP_DIR="$LOCAL_HOSTNAME"
   fi
+
+  echo "Backing up to $NODE_BACKUP_DIR"
   REMOTE_DIR="$(yq '.settings.backups.remote_backup_dir' $QTOOLS_CONFIG_FILE)/$NODE_BACKUP_DIR/"
   REMOTE_URL="$(yq '.settings.backups.backup_url' $QTOOLS_CONFIG_FILE)"
   REMOTE_USER="$(yq '.settings.backups.remote_user' $QTOOLS_CONFIG_FILE)"
