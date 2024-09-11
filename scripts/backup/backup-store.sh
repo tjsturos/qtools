@@ -2,7 +2,7 @@
 # HELP: Backs up store (if enabled in qtools config) to remote location.
 
 IS_BACKUP_ENABLED="$(yq '.settings.backups.enabled' $QTOOLS_CONFIG_FILE)"
-LOCAL_HOSTNAME=$(hostname)
+LOCAL_HOSTNAME=$(qtools peer-id)
 
 if [ "$IS_BACKUP_ENABLED" == 'true' ]; then
   NODE_BACKUP_DIR="$(yq '.settings.backups.node_backup_dir' $QTOOLS_CONFIG_FILE)"
