@@ -59,6 +59,9 @@ if [ "$IS_BACKUP_ENABLED" == 'true' ]; then
     exit 1
   fi
 
+  # Create the stats directory if it doesn't exist
+  ssh -i "$SSH_KEY_PATH" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "$REMOTE_USER@$REMOTE_URL" "mkdir -p ${REMOTE_DIR}stats"
+  
   # Backup qtools/unclaimed_*_balance.csv files to stats directory
   if rsync -avzrP --delete-after \
     --include="unclaimed_*_balance.csv" \
