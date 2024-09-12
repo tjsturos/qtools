@@ -69,8 +69,8 @@ if [ "$IS_BACKUP_ENABLED" == 'true' ] || [ "$FORCE_RESTORE" == true ]; then
   fi
 
   # Attempt to create the remote directory (if it doesn't exist)
-  ssh -i "$SSH_KEY_PATH" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "$REMOTE_USER@$REMOTE_URL" "mkdir -p $REMOTE_DIR" || {
-    echo "Warning: Failed to create remote directory. It may already exist or there might be permission issues."
+  ssh -i "$SSH_KEY_PATH" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "$REMOTE_USER@$REMOTE_URL" "mkdir -p $REMOTE_DIR" > /dev/null 2>&1 || {
+    echo "Warning: Failed to create remote directory. It may already exist or there might be permission issues." >&2
   }
 
   # Perform the rsync backup for .config directory
