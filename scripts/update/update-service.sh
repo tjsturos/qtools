@@ -3,6 +3,14 @@
 
 log "Updating the service..."
 
+get_processor_count() {
+  # Get the CPU count using the nproc command
+  cpu_count=$(nproc)
+
+  # Print the CPU count
+  echo $cpu_count
+}
+
 # Define the initial service file content as a variable
 SERVICE_CONTENT="[Unit]
 Description=Quilibrium Ceremony Client Service
@@ -29,13 +37,6 @@ update_or_add_line() {
     fi
 }
 
-get_processor_count() {
-  # Get the CPU count using the nproc command
-  cpu_count=$(nproc)
-
-  # Print the CPU count
-  echo $cpu_count
-}
 
 update_service_binary() {
     local QUIL_BIN="$(get_versioned_node)"
