@@ -22,6 +22,7 @@ service:
     working_dir: /home/ubuntu/ceremonyclient/node
     restart_time: 5s
     args: "" # args to be passed into the main process: e.g. node-1.4.19.1-linux-amd64 --debug
+    max_workers: false
 settings:
     statistics:
         enabled: true
