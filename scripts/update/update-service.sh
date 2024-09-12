@@ -56,6 +56,8 @@ update_service_binary() {
     if [ "$GOMAXPROCS" != "false" ] && [ "$GOMAXPROCS" != "0" ] && [ "$GOMAXPROCS" -eq "$GOMAXPROCS" ] 2>/dev/null; then
         update_or_add_line "Environment" "GOMAXPROCS=$GOMAXPROCS"
         log "Service: Environment=GOMAXPROCS=$GOMAXPROCS"
+    else
+        log "Not updating GOMAXPROCS: $GOMAXPROCS"
     fi
 
     sudo chmod +x $QUIL_NODE_PATH/$QUIL_BIN
