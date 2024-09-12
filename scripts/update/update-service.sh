@@ -18,12 +18,12 @@ Description=Quilibrium Ceremony Client Service
 [Service]
 Type=simple
 Restart=always
-RestartSec=5s
-User=ubuntu
-Group=ubuntu
-WorkingDirectory=/home/ubuntu/ceremonyclient/node
+RestartSec=$(yq '.service.restart_time' $QTOOLS_CONFIG_FILE)
+User=$(whoami)
+Group=$(id -gn)
+WorkingDirectory=$(yq '.service.working_dir' $QTOOLS_CONFIG_FILE)
 Environment="GOMAXPROCS=$(get_processor_count)"
-ExecStart=node-$(get_current_version)-linux-amd64
+ExecStart=$QUIL_NODE_PATH/$(get_versioned_node)
 
 [Install]
 WantedBy=multi-user.target"
@@ -39,19 +39,9 @@ update_or_add_line() {
 
 
 update_service_binary() {
-    local QUIL_BIN="$(get_versioned_node)"
-    local NEW_EXECSTART="$QUIL_NODE_PATH/$QUIL_BIN"
-    local WORKING_DIR="$(yq '.service.working_dir' $QTOOLS_CONFIG_FILE)"
-    local RESTART_SEC="$(yq '.service.restart_time' $QTOOLS_CONFIG_FILE)"
-    local CURRENT_USER=$(whoami)
-    local CURRENT_GROUP=$(id -gn)
+    
     local GOMAXPROCS=$(yq '.service.max_workers // false' $QTOOLS_CONFIG_FILE)
 
-    update_or_add_line "ExecStart" "$NEW_EXECSTART"
-    update_or_add_line "WorkingDirectory" "$WORKING_DIR"
-    update_or_add_line "RestartSec" "$RESTART_SEC"
-    update_or_add_line "User" "$CURRENT_USER"
-    update_or_add_line "Group" "$CURRENT_GROUP"
 
     if [ "$GOMAXPROCS" != "false" ] && [ "$GOMAXPROCS" != "0" ] && [ "$GOMAXPROCS" -eq "$GOMAXPROCS" ] 2>/dev/null; then
         update_or_add_line "Environment" "GOMAXPROCS=$GOMAXPROCS"
@@ -62,11 +52,7 @@ update_service_binary() {
 
     sudo chmod +x $QUIL_NODE_PATH/$QUIL_BIN
 
-    log "Service: ExecStart=$NEW_EXECSTART"
-    log "Service: WorkingDirectory=$WORKING_DIR"
-    log "Service: RestartSec=$RESTART_SEC"
-    log "Service: User=$CURRENT_USER"
-    log "Service: Group=$CURRENT_GROUP"
+    echo $SERVICE_CONTENT > $QUIL_SERVICE_FILE
 }
 
 updateCPUQuota() {
