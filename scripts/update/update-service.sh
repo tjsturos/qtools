@@ -39,9 +39,7 @@ update_or_add_line() {
 
 
 update_service_binary() {
-    
     local GOMAXPROCS=$(yq '.service.max_workers // false' $QTOOLS_CONFIG_FILE)
-
 
     if [ "$GOMAXPROCS" != "false" ] && [ "$GOMAXPROCS" != "0" ] && [ "$GOMAXPROCS" -eq "$GOMAXPROCS" ] 2>/dev/null; then
         update_or_add_line "Environment" "GOMAXPROCS=$GOMAXPROCS"
@@ -52,7 +50,7 @@ update_service_binary() {
 
     sudo chmod +x $QUIL_NODE_PATH/$QUIL_BIN
 
-    echo $SERVICE_CONTENT > $QUIL_SERVICE_FILE
+    echo "$SERVICE_CONTENT" | sudo tee "$QUIL_SERVICE_FILE" > /dev/null
 }
 
 updateCPUQuota() {
