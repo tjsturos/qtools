@@ -25,7 +25,11 @@ validate_input() {
 }
 
 # Prompt for input
-read -p "Enter the number of workers (4-$total_threads), 'auto', or '0': " input
+if [ $# -eq 0 ]; then
+    read -p "Enter the number of workers (4-$total_threads), 'auto', or '0': " input
+else
+    input="$1"
+fi
 
 # Validate and process the input
 result=$(validate_input "$input")
