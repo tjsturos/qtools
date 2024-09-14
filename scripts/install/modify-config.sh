@@ -1,5 +1,5 @@
 #!/bin/bash
-# HELP: Will properly format the node's config file.
+# HELP: Will properly format the node\'s config file.
 
 CONFIG_DIR="$QUIL_NODE_PATH/.config"
 FILENAME="config.yml"

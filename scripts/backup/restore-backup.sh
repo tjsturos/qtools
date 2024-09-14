@@ -1,8 +1,8 @@
 #!/bin/bash
-# HELP: Will restore a backup (if enabled) based on the qtools config settings, otherwise will look for a backup directory with this node's hostname.
+# HELP: Will restore a backup (if enabled) based on the qtools config settings, otherwise will default to using the peer-id as the backup directory.
 # PARAM: --peer-id <string>: the hostname to use when restoring the config directory.
 # PARAM: --force: bypass the backup enabled check and force the restore operation.
-# Usage: qtools restore-backup # Will default to this machine's hostname if not defined in the qtools/config.yml
+# Usage: qtools restore-backup # Will default to this machine\'s peer-id as the backup directory.
 # Usage: qtools restore-backup --peer-id Qmabcdefg... # Will look for a ~/backups/Qmabcdefg directory on the backup server.
 # Usage: qtools restore-backup --force # Will force the restore operation even if backups are disabled.
 

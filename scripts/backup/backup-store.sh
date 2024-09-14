@@ -1,6 +1,8 @@
 #!/bin/bash
 # HELP: Backs up store (if enabled in qtools config) to remote location.
 # PARAM: --confirm: prompts for confirmation before proceeding with the backup
+# PARAM: --peer-id <string>: the peer-id to use when backing up the config directory.
+# PARAM: --force: bypass the backup enabled check and force the backup operation.
 # Usage: qtools backup-store [--confirm]
 
 

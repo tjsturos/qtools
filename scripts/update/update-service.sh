@@ -1,5 +1,5 @@
 #!/bin/bash
-# HELP: Updates the node's service for any changes in the qtools config file.
+# HELP: Updates the node\'s service for any changes in the qtools config file.
 
 log "Updating the service..."
 
