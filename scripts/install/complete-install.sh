@@ -16,12 +16,7 @@ qtools install-grpc
 qtools setup-firewall
 qtools install-cron
 
-
-RESTORE_ON_INSTALL="$(yq '.settings.backups.restore_on_install' $QTOOLS_CONFIG_FILE)"
-if [ "$RESTORE_ON_INSTALL" == "true" ]; then
-    log "Attempting to restore from remote backup. Note: backups must be enabled and configured properly (and connected to at least once) for this to work."
-    qtools restore-backup
-else
+generate_default_config() {
     # This first command generates a default config file
     BINARY_NAME="$(get_versioned_node)"
     BINARY_FILE=$QUIL_NODE_PATH/$BINARY_NAME
@@ -30,6 +25,26 @@ else
     if [ -f $BINARY_FILE ]; then 
         qtools modify-config
     fi
+}
+
+
+RESTORE_ON_INSTALL="$(yq '.settings.backups.restore_on_install' $QTOOLS_CONFIG_FILE)"
+if [ "$RESTORE_ON_INSTALL" == "true" ]; then
+    log "Attempting to restore from remote backup. Note: backups must be enabled and configured properly (and connected to at least once) for this to work."
+    PEER_ID="$(yq '.settings.backups.node_backup_dir // false' $QTOOLS_CONFIG_FILE)"
+
+    if [ "$PEER_ID" != "false" ] && [ "$PEER_ID" != "" ]; then
+        qtools restore-backup --peer-id $PEER_ID
+        wait
+        if [ -f $BINARY_FILE ]; then 
+            qtools modify-config
+        fi
+    else
+        log "No peer ID found, skipping restore."
+        generate_default_config
+    fi
+else
+    generate_default_config
 fi
 
 
