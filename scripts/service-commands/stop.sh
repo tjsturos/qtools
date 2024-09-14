@@ -3,7 +3,11 @@
 # Usage: qtools stop
 # Usage: qtools stop --quick
 
-sudo systemctl stop $QUIL_SERVICE_NAME.service
+if systemctl is-active --quiet $QUIL_SERVICE_NAME.service; then
+    sudo systemctl stop $QUIL_SERVICE_NAME.service
+else
+    echo "The $QUIL_SERVICE_NAME service is not running."
+fi
 wait
 
 if [ "$1" == "--quick" ]; then
