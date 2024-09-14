@@ -173,7 +173,7 @@ shift 1
 
 # Source the provided script
 # List of scripts that should run as root
-ROOT_SCRIPTS=("install-boost-scripts")
+ROOT_SCRIPTS=("install-boost-scripts" "set_cpu_performance")
 
 if [[ " ${ROOT_SCRIPTS[@]} " =~ " $(basename "$SCRIPT" .sh) " ]]; then
   log "Running script $SCRIPT as root"
