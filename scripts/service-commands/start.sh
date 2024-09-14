@@ -8,24 +8,65 @@
 # get settings
 DEBUG_MODE="$(yq '.settings.debug' $QTOOLS_CONFIG_FILE)"
 
-if [ "$1" == "--debug" ]; then
-    DEBUG_MODE="true"
-fi
 
-# TODO: add args to service file
+IS_QUICK_MODE=false
+# Parse command line arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --debug)
+            DEBUG_MODE="true"
+            shift
+            ;;
+        --quick)
+            IS_QUICK_MODE=true
+            shift
+            ;;
+        *)
+            echo "Unknown option: $1"
+            exit 1
+            ;;
+    esac
+done
 
-sudo systemctl start $QUIL_SERVICE_NAME.service
+enable_peripheral_services() {
+    if [ "$IS_QUICK_MODE" == "true" ]; then
+        echo "Quick start mode, skipping diagnostics and statistics."
+    else
+        # Enable diagnostics
+        qtools toggle-diagnostics --on
 
-if [ "$1" == "--quick" ]; then
-    echo "Quick start mode, skipping diagnostics and statistics."
+        echo "Diagnostics have been enabled."
+
+        # Enable statistics
+        qtools toggle-statistics --on
+
+        echo "Statistics have been enabled."
+    fi
+}
+
+if [ "$(yq '.service.clustering.enabled // false' $QTOOLS_CONFIG_FILE)" == "false" ]; then
+    echo "Starting single node service."
+    sudo systemctl start $QUIL_SERVICE_NAME.service
 else
-    # Enable diagnostics
-    qtools toggle-diagnostics --on
+    # Starting cluster mode for this config
+    # Check if the current hostname matches the orchestrator hostname
+    if [ "$(hostname)" == "$(yq '.service.clustering.orchestrator_hostname' $QTOOLS_CONFIG_FILE)" ]; then
+        echo "This is the orchestrator node. Starting the main service."
+        sudo systemctl start $QUIL_SERVICE_NAME.service
+        enable_peripheral_services
+    else
+        echo "This is not the orchestrator node. Skipping main service start."
+    fi
 
-    echo "Diagnostics have been enabled."
+    HAS_DATA_WORKERS="$(yq '.service.clustering.has_data_workers' $QTOOLS_CONFIG_FILE)"
+    DATA_WORKER_COUNT="$(yq '.service.clustering.data_worker_count' $QTOOLS_CONFIG_FILE)"
 
-    # Enable statistics
-    qtools toggle-statistics --on
-
-    echo "Statistics have been enabled."
+    if [ "$HAS_DATA_WORKERS" == "true" ] && [ "$DATA_WORKER_COUNT" != "false" ] && [ "$DATA_WORKER_COUNT" -gt 0 ]; then
+        for ((i = 0; i < DATA_WORKER_COUNT; i++)); do
+            qtools update-service --core $i --enable
+            sudo systemctl start $QUIL_SERVICE_NAME-$i.service
+        done
+    fi
 fi
+
+

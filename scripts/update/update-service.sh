@@ -11,6 +11,50 @@ getProcessorCount() {
   echo $cpu_count
 }
 
+IS_CORE_SERVICE=false
+IS_CLUSTER_MODE=$(yq '.service.clustering.enabled // false' $QTOOLS_CONFIG_FILE)
+CORE_NUMBER=""
+SERVICE_FILE=$QUIL_SERVICE_FILE
+SERVICE_NAME=$QUIL_SERVICE_NAME
+ENABLE_SERVICE=false
+RESTART_SERVICE=false
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --core)
+            if [ "$IS_CLUSTER_MODE" == "true" ]; then
+                if [[ "$2" =~ ^[0-9]+$ ]]; then
+                    IS_CORE_SERVICE=true
+                    CORE_NUMBER="$2"
+                    SERVICE_FILE="${QUIL_SERVICE_FILE%.*}-$CORE_NUMBER.service"
+                    SERVICE_NAME="${QUIL_SERVICE_NAME%.*}-$CORE_NUMBER.service"
+                else
+                    echo "Error: --core requires a numeric argument"
+                    exit 1
+                fi
+            else
+                echo "Error: --core is only available in cluster mode"
+                exit 1
+            fi
+            shift 2
+            ;;
+        --enable)
+            ENABLE_SERVICE=true
+            shift
+            ;;
+        --restart)
+            RESTART_SERVICE=true
+            shift
+            ;;
+        *)
+            echo "Unknown option: $1"
+            exit 1
+            ;;
+    esac
+done
+
+
+
 # Define the initial service file content as a variable
 SERVICE_CONTENT="[Unit]
 Description=Quilibrium Ceremony Client Service
@@ -28,6 +72,12 @@ ExecStart=$QUIL_NODE_PATH/$(get_versioned_node)
 [Install]
 WantedBy=multi-user.target"
 
+# Update service file name and content if it's a core service
+if [ "$IS_CORE_SERVICE" == "true" ] && [ "$IS_CLUSTER_MODE" == "true" ]; then
+    SERVICE_CONTENT=$(echo "$SERVICE_CONTENT" | sed -e "s/Description=Quilibrium Ceremony Client Service/Description=Quilibrium Ceremony Client Service - Core $CORE_NUMBER/")
+    SERVICE_CONTENT=$(echo "$SERVICE_CONTENT" | sed -e "s/ExecStart=$QUIL_NODE_PATH\/$(get_versioned_node)/ExecStart=$QUIL_NODE_PATH\/$(get_versioned_node) --core $CORE_NUMBER/")
+fi
+
 updateOrAddLine() {
     local KEY=$1
     local VALUE=$2
@@ -38,25 +88,28 @@ updateOrAddLine() {
 }
 
 updateServiceBinary() {
-    local goMaxProcs=$(yq '.service.max_workers // false' $QTOOLS_CONFIG_FILE)
+    # Check if --core parameter is passed
+    if [ "$IS_CORE_SERVICE" != true ]; then
+        local goMaxProcs=$(yq '.service.max_threads // false' $QTOOLS_CONFIG_FILE)
 
-    if [ "$goMaxProcs" != "false" ] && [ "$goMaxProcs" != "0" ] && [ "$goMaxProcs" -eq "$goMaxProcs" ] 2>/dev/null; then
-        updateOrAddLine "Environment" "GOMAXPROCS=$goMaxProcs"
-        log "Service: Environment=GOMAXPROCS=$goMaxProcs"
-    else
-        log "Not updating GOMAXPROCS: $goMaxProcs"
+        if [ "$goMaxProcs" != "false" ] && [ "$goMaxProcs" != "0" ] && [ "$goMaxProcs" -eq "$goMaxProcs" ] 2>/dev/null; then
+            updateOrAddLine "Environment" "GOMAXPROCS=$goMaxProcs"
+            log "Service: Environment=GOMAXPROCS=$goMaxProcs"
+        else
+            log "Not updating GOMAXPROCS: $goMaxProcs"
+        fi
     fi
 
     sudo chmod +x $QUIL_NODE_PATH/$QUIL_BIN
 
-    echo "$SERVICE_CONTENT" | sudo tee "$QUIL_SERVICE_FILE" > /dev/null
+    echo "$SERVICE_CONTENT" | sudo tee "$SERVICE_FILE" > /dev/null
     sudo systemctl daemon-reload
 }
 
 updateCPUQuota() {
     local CPULIMIT=$(yq '.settings.cpulimit.enabled' "$QTOOLS_CONFIG_FILE")
 
-    if [ "$CPULIMIT" = "true" ]; then
+    if [ "$CPULIMIT" == "true" ]; then
         # we only want to set CPU limits on bare-metal
         if ! lscpu | grep -q "Hypervisor vendor:     KVM"; then
             # Calculate the CPUQuota value
@@ -73,11 +126,11 @@ updateCPUQuota() {
 }
 
 createServiceIfNone() {
-    if [ ! -f "$QUIL_SERVICE_FILE" ]; then
-        log "No service found at $QUIL_SERVICE_FILE. Creating service file..."
-        echo "$SERVICE_CONTENT" | sudo tee "$QUIL_SERVICE_FILE" > /dev/null
+    if [ ! -f "$SERVICE_FILE" ]; then
+        log "No service found at $SERVICE_FILE. Creating service file..."
+        echo "$SERVICE_CONTENT" | sudo tee "$SERVICE_FILE" > /dev/null
     else
-        echo "$SERVICE_CONTENT" | sudo tee "$QUIL_SERVICE_FILE" > /dev/null
+        echo "$SERVICE_CONTENT" | sudo tee "$SERVICE_FILE" > /dev/null
     fi
 }
 
@@ -86,4 +139,17 @@ createServiceIfNone
 updateCPUQuota 
 updateServiceBinary
 
+if [ "$IS_CORE_SERVICE" == "true" ]; then
+    log "Core service created."
+fi
+
+if [ "$ENABLE_SERVICE" == "true" ]; then
+    log "Enabling service..."
+    sudo systemctl enable "$SERVICE_NAME"
+fi
+
+if [ "$RESTART_SERVICE" == "true" ]; then
+    log "Restarting service..."
+    sudo systemctl restart "$SERVICE_NAME"
+fi
 

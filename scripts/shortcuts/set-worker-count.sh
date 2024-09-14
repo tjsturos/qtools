@@ -12,8 +12,8 @@
 # Get the total number of CPU threads
 total_threads=$(nproc)
 
-# Get the current max_workers setting from the config file
-current_setting=$(yq '.service.max_workers' "$QTOOLS_CONFIG_FILE")
+# Get the current max_threads setting from the config file
+current_setting=$(yq '.service.max_threads' "$QTOOLS_CONFIG_FILE")
 
 # Function to compare current setting with input
 compare_setting() {
@@ -42,7 +42,6 @@ if [[ $comparison == "same" ]]; then
     exit 0
 fi
 
-
 # Function to validate input
 validate_input() {
     local input=$1
@@ -69,10 +68,10 @@ if [[ $result == "invalid" ]]; then
     echo "Invalid input. Please enter a number between 4 and $total_threads, 'auto', or '0'."
     exit 1
 elif [[ $result == "false" ]] || [[ $result == "0" ]]; then
-    yq -i '.service.max_workers = false' "$QTOOLS_CONFIG_FILE"
+    yq -i '.service.max_threads = false' "$QTOOLS_CONFIG_FILE"
     echo "Max workers set to auto."
 else
-    yq -i ".service.max_workers = $result" "$QTOOLS_CONFIG_FILE"
+    yq -i ".service.max_threads = $result" "$QTOOLS_CONFIG_FILE"
     echo "Max workers set to $result."
 fi
 

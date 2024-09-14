@@ -21,8 +21,14 @@ service:
     file_name: ceremonyclient
     working_dir: /home/ubuntu/ceremonyclient/node
     restart_time: 5s
+    clustering:
+        enabled: false
+        has_data_workers: false
+        data_worker_count: false
+        data_worker_index_start: 1
+        orchestrator_hostname: ""
     args: "" # args to be passed into the main process: e.g. node-1.4.19.1-linux-amd64 --debug
-    max_workers: false
+    max_threads: false
 settings:
     statistics:
         enabled: true
