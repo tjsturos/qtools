@@ -3,7 +3,11 @@
 # Usage: qtools status
 
 IS_CLUSTERING_ENABLED=$(yq '.service.clustering.enabled // false' $QTOOLS_CONFIG_FILE)
-IS_ORCHESTRATOR=$(hostname) == $(yq '.service.clustering.orchestrator_hostname // ""' $QTOOLS_CONFIG_FILE)
+IS_ORCHESTRATOR=false
+
+if [ "$(hostname)" == "$(yq '.service.clustering.orchestrator_hostname // ""' $QTOOLS_CONFIG_FILE)" ]; then
+    IS_ORCHESTRATOR=true
+fi
 
 if [ "$IS_CLUSTERING_ENABLED" == "true" ]; then
     if [ "$IS_ORCHESTRATOR" == "true" ]; then
