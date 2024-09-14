@@ -51,7 +51,7 @@ clean_up_process() {
 
 # Stop all services that start with $QUIL_SERVICE_NAME
 # Get all active services that start with $QUIL_SERVICE_NAME
-active_services=$(systemctl list-units --type=service --state=active | grep "^$QUIL_SERVICE_NAME" | awk '{print $1}')
+active_services=$(systemctl list-units --type=service --state=active | grep "$QUIL_SERVICE_NAME" | awk '{print $1}')
 
 # Check if there are any active services
 if [ -z "$active_services" ]; then
@@ -96,7 +96,7 @@ if [ "$IS_QUICK_MODE" == "false" ]; then
         # Only stop the node processes on the orchestrator node (they aren't running on non-orchestrator nodes)
         echo "Orchestrator node detected. Disabling peripheral services."
         clean_up_process
-    else if [ "$IS_CLUSTERING_ENABLED" == "false" ]; then
+    elif [ "$IS_CLUSTERING_ENABLED" == "false" ]; then
         # Always stop the node processes when there is no clustering
         clean_up_process
     fi
