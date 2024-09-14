@@ -79,6 +79,14 @@ if [ "$IS_BACKUP_ENABLED" == 'true' ] || [ "$FORCE_RESTORE" == true ]; then
     exit 1
   fi
 
+  # Backup existing .config directory
+  if [ -d "$QUIL_NODE_PATH/.config" ]; then
+    if [ -d "$QUIL_NODE_PATH/.config.bak" ]; then
+      rm -rf $QUIL_NODE_PATH/.config.bak
+    fi
+    mv $QUIL_NODE_PATH/.config $QUIL_NODE_PATH/.config.bak
+  fi
+
   # Restore .config directory
   rsync -avz --ignore-existing -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR.config" "$QUIL_NODE_PATH/"
 
