@@ -47,7 +47,11 @@ clean_up_process() {
 }
 
 IS_CLUSTERING_ENABLED=$(yq '.service.clustering.enabled // false' $QTOOLS_CONFIG_FILE)
-IS_ORCHESTRATOR=$([ "$(hostname)" == "$(yq '.service.clustering.orchestrator_hostname // ""' $QTOOLS_CONFIG_FILE)" ] && echo "true" || echo "false")
+IS_ORCHESTRATOR=false
+
+if [ "$(hostname)" == "$(yq '.service.clustering.orchestrator_hostname' $QTOOLS_CONFIG_FILE)" ]; then
+    IS_ORCHESTRATOR=true
+fi
 
 # Quick mode is essentially no clean up, with intention to immediately restart the node process
 if [ "$IS_QUICK_MODE" == "false" ]; then
