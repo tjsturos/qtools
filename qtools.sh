@@ -177,6 +177,7 @@ shift 1
 ROOT_SCRIPTS=("install-boost-scripts")
 
 if [[ " ${ROOT_SCRIPTS[@]} " =~ " $(basename "$SCRIPT" .sh) " ]]; then
+  log "Running script $SCRIPT as root"
   sudo su -c "$SCRIPT $*" - root
 else
   source "$SCRIPT" "$@"
