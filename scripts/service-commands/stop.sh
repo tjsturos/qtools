@@ -50,32 +50,28 @@ clean_up_process() {
 }
 
 # Stop all services that start with $QUIL_SERVICE_NAME
-for service in $(systemctl list-units --type=service --state=active | grep "^$QUIL_SERVICE_NAME" | awk '{print $1}'); do
-    echo "Stopping service: $service"
-    sudo systemctl stop "$service"
-done
+# Get all active services that start with $QUIL_SERVICE_NAME
+active_services=$(systemctl list-units --type=service --state=active | grep "^$QUIL_SERVICE_NAME" | awk '{print $1}')
+
+# Check if there are any active services
+if [ -z "$active_services" ]; then
+    echo "No active services found starting with $QUIL_SERVICE_NAME"
+else
+    # Stop each active service
+    for service in $active_services; do
+        echo "Stopping service: $service"
+        sudo systemctl stop "$service"
+        
+        # Check if the service was successfully stopped
+        if ! systemctl is-active --quiet "$service"; then
+            echo "Service $service stopped successfully"
+        else
+            echo "Failed to stop service: $service"
+        fi
+    done
+fi
 
 wait
-
-IS_QUICK_MODE=false
-
-# Parse command line arguments
-while [[ $# -gt 0 ]]; do
-    case $1 in
-        --quick)
-            IS_QUICK_MODE=true
-            shift
-            ;;
-        *)
-            echo "Unknown option: $1"
-            exit 1
-            ;;
-    esac
-done
-
-if [ "$IS_QUICK_MODE" == "true" ]; then
-    echo "Quick stop mode, skipping peripheral service disabling."
-fi
 
 clean_up_process() {
     # and to make sure any stray node commands are exited
@@ -92,12 +88,6 @@ clean_up_process() {
     qtools toggle-statistics --off
 }
 
-IS_CLUSTERING_ENABLED=$(yq '.service.clustering.enabled // false' $QTOOLS_CONFIG_FILE)
-IS_ORCHESTRATOR=false
-
-if [ "$(hostname)" == "$(yq '.service.clustering.orchestrator_hostname' $QTOOLS_CONFIG_FILE)" ]; then
-    IS_ORCHESTRATOR=true
-fi
 
 # Quick mode is essentially no clean up, with intention to immediately restart the node process
 if [ "$IS_QUICK_MODE" == "false" ]; then
