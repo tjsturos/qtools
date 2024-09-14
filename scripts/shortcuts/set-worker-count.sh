@@ -12,6 +12,37 @@
 # Get the total number of CPU threads
 total_threads=$(nproc)
 
+# Get the current max_workers setting from the config file
+current_setting=$(yq '.service.max_workers' "$QTOOLS_CONFIG_FILE")
+
+# Function to compare current setting with input
+compare_setting() {
+    local input=$1
+    if [[ $input == "auto" || $input == "0" ]]; then
+        [[ $current_setting == "false" ]] && echo "same" || echo "different"
+    elif [[ $input =~ ^[0-9]+$ ]]; then
+        [[ $current_setting == "$input" ]] && echo "same" || echo "different"
+    else
+        echo "different"
+    fi
+}
+
+# Check if input is provided as an argument
+if [ $# -eq 0 ]; then
+    read -p "Enter the number of workers (4-$total_threads), 'auto', or '0': " input
+else
+    input="$1"
+fi
+
+# Compare the input with the current setting
+comparison=$(compare_setting "$input")
+
+if [[ $comparison == "same" ]]; then
+    echo "The requested setting is already in place. No changes needed."
+    exit 0
+fi
+
+
 # Function to validate input
 validate_input() {
     local input=$1
