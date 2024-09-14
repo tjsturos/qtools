@@ -173,6 +173,13 @@ fi
 shift 1
 
 # Source the provided script
-source "$SCRIPT" "$@"
+# List of scripts that should run as root
+ROOT_SCRIPTS=("install-boost-scripts")
+
+if [[ " ${ROOT_SCRIPTS[@]} " =~ " $(basename "$SCRIPT" .sh) " ]]; then
+  sudo su -c "$SCRIPT $*" - root
+else
+  source "$SCRIPT" "$@"
+fi
 
 exit 0

@@ -14,7 +14,6 @@ SCRIPT_NAME="set_cpu_performance.sh"
 SCRIPT_PATH="$QTOOLS_PATH/scripts/install/amd/$SCRIPT_NAME"
 
 echo -e "${YELLOW}Starting setup for CPU Performance Script...${NC}"
-sudo su
 # Check if cron jobs already exist
 CRON_REBOOT=$(crontab -l 2>/dev/null | grep "@reboot $SCRIPT_PATH")
 CRON_PERIODIC=$(crontab -l 2>/dev/null | grep "0 */6 \* \* \* $SCRIPT_PATH")
