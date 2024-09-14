@@ -1,5 +1,8 @@
 #!/bin/bash
 
+source "$QTOOLS_PATH/scripts/utils/index.sh"
+source "$QTOOLS_PATH/scripts/utils/hardware.sh"
+
 if [ "$(get_vendor)" != "AuthenticAMD" ]; then
     echo "This script is for AMD CPUs only."
     exit 1

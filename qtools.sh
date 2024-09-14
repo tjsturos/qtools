@@ -31,18 +31,18 @@ usage() {
         help_description=$(grep "# HELP:" "$script" | cut -d: -f2- | xargs)
         params=$(grep "# PARAM" "$script" | cut -d: -f2- | xargs -I{} echo "          {}")
         usage_lines=$(grep "# Usage:" "$script" | cut -d: -f2- | xargs -I{} echo "          {}")
-        
+
         if [ -z "$help_description" ]; then
           echo "    - $script_name"
         else
           echo "    - $script_name: $help_description"
         fi
-        
+
         if [ ! -z "$params" ]; then
           echo "        Params:"
           echo "$params"
         fi
-        
+
         if [ ! -z "$usage_lines" ]; then
           echo "        Usage:"
           echo "$usage_lines"
@@ -91,7 +91,6 @@ if [ "$1" == "init" ]; then
   source $QTOOLS_PATH/scripts/init.sh
   exit 0
 fi
-
 
 export LOG_OUTPUT_FILE="$(yq '.settings.log_file' $QTOOLS_CONFIG_FILE)"
 source $QTOOLS_PATH/utils/index.sh
@@ -178,7 +177,7 @@ ROOT_SCRIPTS=("install-boost-scripts")
 
 if [[ " ${ROOT_SCRIPTS[@]} " =~ " $(basename "$SCRIPT" .sh) " ]]; then
   log "Running script $SCRIPT as root"
-  sudo su -c "$SCRIPT $*" - root
+  sudo su -c "QTOOLS_PATH=$QTOOLS_PATH $SCRIPT $*" - root
 else
   source "$SCRIPT" "$@"
 fi
