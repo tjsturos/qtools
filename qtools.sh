@@ -109,11 +109,15 @@ fi
 
 # Function to find the script and set SERVICE_PATH
 find_script() {
-  for dir in $QTOOLS_PATH/scripts/*/; do
-    if [ -f "$dir/$1.sh" ]; then
-      export SERVICE_PATH="${dir%/}"
-      return 0
-    fi
+  for dir in $(find "$QTOOLS_PATH/scripts" -type d); do
+    for subdir in $(find "$dir" -type d); do
+      for subsubdir in $(find "$subdir" -type d); do
+        if [ -f "$subsubdir/$1.sh" ]; then
+          export SERVICE_PATH="${subsubdir%/}"
+          return 0
+        fi
+      done
+    done
   done
   return 1
 }
