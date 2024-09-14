@@ -28,5 +28,5 @@ done
 # Trim leading whitespace from PARAMS
 PARAMS="${PARAMS## }"
 
-qtools stop
+qtools stop $PARAMS
 qtools start $PARAMS
