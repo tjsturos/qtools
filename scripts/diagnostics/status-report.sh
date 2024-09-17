@@ -350,11 +350,24 @@ escape_json_string() {
     echo "$string"
 }
 
+to_snake_case() {
+    local input="$1"
+    # Convert to lowercase
+    input="${input,,}"
+    # Replace spaces and hyphens with underscores
+    input="${input// /_}"
+    input="${input//-/_}"
+    # Remove any characters that are not alphanumeric or underscore
+    input=$(echo "$input" | sed 's/[^a-z0-9_]//g')
+    echo "$input"
+}
+
 status_report_json() {
      local json_input=""
     for item in "${REPORT_DATA[@]}"; do
         IFS=':' read -r key value <<< "$item"
-        json_input+="$key=$value\n"
+        local snake_case_key=$(to_snake_case "$key")
+        json_input+="$snake_case_key=$value\n"
     done
 
     echo -e "$json_input" | jq -R -s '
