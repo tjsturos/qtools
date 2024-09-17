@@ -45,6 +45,8 @@ settings:
         mirrors:
             - https://source.quilibrium.com/quilibrium/ceremonyclient.git
     install:
+        tailscale:
+            ephemeral_key: ""
         yq:
             version: v4.44.2
             binary: yq_linux_amd64
