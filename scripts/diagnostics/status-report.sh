@@ -370,7 +370,7 @@ status_report_json() {
         json_input+="$snake_case_key=$value\n"
     done
 
-    echo -e "$json_input" | jq -R -s -c '
+    echo -e "$json_input" | jq -R -s -c -M '
         split("\n")
         | map(select(length > 0))
         | map(split("="))
