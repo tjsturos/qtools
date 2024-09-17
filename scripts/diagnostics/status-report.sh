@@ -131,7 +131,7 @@ check_command_installed() {
     local version_command=$2
 
     if command -v "$command_name" >/dev/null 2>&1; then
-        message="${GREEN_CHECK} $command_name is installed"
+        message="$command_name is installed"
         if [[ -n $version_command ]]; then
             version=$($version_command)
             message+=" (version: $version)"
@@ -139,11 +139,11 @@ check_command_installed() {
         if $JSON_OUTPUT; then
             REPORT_DATA+=("${command_name}_installed:$message")
         else
-            echo -e "$message"
+            echo -e "${GREEN_CHECK} $message"
         fi
     else
         if $JSON_OUTPUT; then
-            REPORT_DATA+=("${command_name}_installed:${RED_CROSS} $command_name is not installed")
+            REPORT_DATA+=("${command_name}_installed: $command_name is not installed")
         else
             echo -e "${RED_CROSS} $command_name is not installed"
         fi
