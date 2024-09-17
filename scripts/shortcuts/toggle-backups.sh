@@ -18,10 +18,18 @@ current_status=$(yq '.settings.backups.enabled' $QTOOLS_CONFIG_FILE)
 if [[ $# -eq 1 ]]; then
     case $1 in
         --on)
+            if [ "$current_status" == "true" ]; then
+                echo "Backups are already enabled."
+                exit 0
+            fi
             set_backup_status true
             exit 0
             ;;
         --off)
+            if [ "$current_status" == "false" ]; then
+                echo "Backups are already disabled."
+                exit 0
+            fi
             set_backup_status false
             exit 0
             ;;
