@@ -351,16 +351,19 @@ escape_json_string() {
 }
 
 status_report_json() {
-    local json="{"
+     local json_input=""
     for item in "${REPORT_DATA[@]}"; do
         IFS=':' read -r key value <<< "$item"
-        escaped_key=$(escape_json_string "$key")
-        escaped_value=$(escape_json_string "$value")
-        json+="\"$escaped_key\":\"$escaped_value\","
+        json_input+="$key=$value\n"
     done
-    json="${json%,}"  # Remove the trailing comma
-    json+="}"
-    echo "$json"
+
+    echo -e "$json_input" | jq -R -s '
+        split("\n")
+        | map(select(length > 0))
+        | map(split("="))
+        | map({key: .[0], value: .[1:]|join("=")})
+        | reduce .[] as $item ({}; .[$item.key] = $item.value)
+    '
 }
 
 print_status_report() {
