@@ -49,7 +49,7 @@ total_increase=0
 prev_balance=0
 prev_timestamp=0
 first_line=true
-valid_intervals=0
+total_time=0
 
 # Find the start index for the specified number of hours
 start_index=$((num_lines - hours))
@@ -77,33 +77,29 @@ for ((i=start_index; i<num_lines; i++)); do
   # Calculate the difference between the current and previous timestamp
   timestamp_diff=$((timestamp - prev_timestamp))
   
-  # Skip records with non-hourly gaps
-  if [[ $timestamp_diff -gt 3600 ]]; then
-    prev_balance=$balance
-    prev_timestamp=$timestamp
-    continue
-  fi
-
   # Calculate the difference between the current and previous balance
   increase=$(echo "$balance - $prev_balance" | bc)
+  
+  # Add to total increase and total time
   total_increase=$(echo "$total_increase + $increase" | bc)
+  total_time=$((total_time + timestamp_diff))
   
   # Update the previous balance and timestamp
   prev_balance=$balance
   prev_timestamp=$timestamp
-  valid_intervals=$((valid_intervals + 1))
 done
 
-# Ensure there are valid intervals to calculate the average
-if [[ $valid_intervals -lt 1 ]]; then
+# Ensure there is valid data to calculate the rate
+if [[ $total_time -lt 1 ]]; then
+  echo "Not enough valid data to calculate the hourly rate."
   exit 1
 fi
 
-# Calculate the average increase
-average_increase=$(echo "scale=10; $total_increase / $valid_intervals" | bc)
+# Calculate the hourly rate
+hourly_rate=$(echo "scale=10; ($total_increase / $total_time) * 3600" | bc)
 
 # Format the result to always have a leading zero before the decimal point
-formatted_increase=$(echo "$average_increase" | awk '{printf "%.10f", $0}')
+formatted_rate=$(echo "$hourly_rate" | awk '{printf "%.10f", $0}')
 
 # Output the result
-echo "$formatted_increase"
+echo "$formatted_rate"
