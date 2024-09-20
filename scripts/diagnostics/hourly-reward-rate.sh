@@ -38,12 +38,6 @@ if [[ $num_lines -lt 2 ]]; then
   exit 1
 fi
 
-# Adjust hours if there are fewer records than the specified number of hours
-if [[ $num_lines -lt $hours ]]; then
-  hours=$num_lines
-  echo "Not enough records for the specified number of hours. Defaulting to the maximum available records: $hours hours."
-fi
-
 # Initialize variables
 total_increase=0
 prev_balance=0
@@ -52,10 +46,21 @@ first_line=true
 total_time=0
 
 # Find the start index for the specified number of hours
-start_index=$((num_lines - hours))
+# Find the start index for the specified number of hours
+start_index=$((num_lines - 1))
+
+# Ensure we don't go out of bounds
+if [[ $start_index -lt 0 ]]; then
+    start_index=0
+fi
 
 # Process the specified number of hours of data
 for ((i=start_index; i<num_lines; i++)); do
+  # Check if we've processed enough hours
+  if [[ $total_time -ge $((hours * 3600)) ]]; then
+    break
+  fi
+
   # Read the line
   line=${lines[$i]}
   
