@@ -66,14 +66,14 @@ for ((i=num_lines-1; i>=0; i--)); do
   fi
 
   # Calculate the difference between the current and previous timestamp
-  timestamp_diff=$((prev_timestamp - timestamp))
+  timestamp_diff=$(echo "$prev_timestamp - $timestamp" | bc)
   
   # Calculate the increase in balance (current balance minus previous balance)
-  increase=$(echo "$balance - $prev_balance" | bc)
+  increase=$(echo "$prev_balance - $balance" | bc)
   
   # Add to total increase and total time
   total_increase=$(echo "$total_increase + $increase" | bc)
-  total_time=$((total_time + timestamp_diff))
+  total_time=$(echo "$total_time + $timestamp_diff" | bc)
   
   # Update the previous balance and timestamp
   prev_balance=$balance
@@ -84,12 +84,6 @@ for ((i=num_lines-1; i>=0; i--)); do
     break
   fi
 done
-
-# Ensure there is valid data to calculate the rate
-if [[ $total_time -lt 3600 ]]; then
-  echo "Not enough valid data to calculate the hourly rate. Total time processed: $total_time seconds"
-  exit 1
-fi
 
 # Calculate the hourly rate
 hourly_rate=$(echo "scale=10; ($total_increase / $total_time) * 3600" | bc)
