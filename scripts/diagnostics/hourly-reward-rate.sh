@@ -68,8 +68,8 @@ for ((i=num_lines-1; i>=0; i--)); do
   # Calculate the difference between the current and previous timestamp
   timestamp_diff=$((prev_timestamp - timestamp))
   
-  # Calculate the difference between the current and previous balance
-  increase=$(echo "$prev_balance - $balance" | bc)
+  # Calculate the increase in balance (current balance minus previous balance)
+  increase=$(echo "$balance - $prev_balance" | bc)
   
   # Add to total increase and total time
   total_increase=$(echo "$total_increase + $increase" | bc)
