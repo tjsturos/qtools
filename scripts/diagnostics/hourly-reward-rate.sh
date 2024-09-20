@@ -27,14 +27,14 @@ header=$(head -n 1 "$file_path")
 data=$(tail -n +2 "$file_path")
 
 # Convert the data to an array
-IFS=$'\n' read -d '' -r -a lines <<< "$data"
+IFS=$'\n' read -d ' ' -r -a lines <<< "$data"
 
 # Get the number of lines
-num_lines=${#lines[@]}
+num_lines=$((${#lines[@]}))
 
 # Ensure there are enough records to calculate the average for the given hours
 if [[ $num_lines -lt 2 ]]; then
-  echo "Not enough records to calculate any reward increase. Minimum of 2 hours of run-time."
+  echo "Not enough records to calculate any reward increase. Minimum of 2 records required."
   exit 1
 fi
 
@@ -45,22 +45,8 @@ prev_timestamp=0
 first_line=true
 total_time=0
 
-# Find the start index for the specified number of hours
-# Find the start index for the specified number of hours
-start_index=$((num_lines - 1))
-
-# Ensure we don't go out of bounds
-if [[ $start_index -lt 0 ]]; then
-    start_index=0
-fi
-
 # Process the specified number of hours of data
-for ((i=start_index; i<num_lines; i++)); do
-  # Check if we've processed enough hours
-  if [[ $total_time -ge $((hours * 3600)) ]]; then
-    break
-  fi
-
+for ((i=num_lines-1; i>=0; i--)); do
   # Read the line
   line=${lines[$i]}
   
@@ -80,10 +66,10 @@ for ((i=start_index; i<num_lines; i++)); do
   fi
 
   # Calculate the difference between the current and previous timestamp
-  timestamp_diff=$((timestamp - prev_timestamp))
+  timestamp_diff=$((prev_timestamp - timestamp))
   
   # Calculate the difference between the current and previous balance
-  increase=$(echo "$balance - $prev_balance" | bc)
+  increase=$(echo "$prev_balance - $balance" | bc)
   
   # Add to total increase and total time
   total_increase=$(echo "$total_increase + $increase" | bc)
@@ -92,11 +78,16 @@ for ((i=start_index; i<num_lines; i++)); do
   # Update the previous balance and timestamp
   prev_balance=$balance
   prev_timestamp=$timestamp
+
+  # Check if we've processed enough hours
+  if [[ $total_time -ge $((hours * 3600)) ]]; then
+    break
+  fi
 done
 
 # Ensure there is valid data to calculate the rate
-if [[ $total_time -lt 1 ]]; then
-  echo "Not enough valid data to calculate the hourly rate."
+if [[ $total_time -lt 3600 ]]; then
+  echo "Not enough valid data to calculate the hourly rate. Total time processed: $total_time seconds"
   exit 1
 fi
 
