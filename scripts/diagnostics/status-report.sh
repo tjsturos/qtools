@@ -58,7 +58,7 @@ check_ports_status() {
 }
 
 check_hourly_reward_rate() {
-    local HOURLY_REWARD_RATE=$(qtools hourly-reward-rate 5)
+    local HOURLY_REWARD_RATE=$(qtools hourly-reward-rate 3)
 
     if [[ $HOURLY_REWARD_RATE =~ ^-?[0-9]+([.][0-9]+)?$ ]]; then
         if $JSON_OUTPUT; then
