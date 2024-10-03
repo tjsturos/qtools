@@ -1,6 +1,8 @@
 #!/bin/bash
 echo "Initializing qtools"
 
+LOG_OUTPUT_FILE=$QTOOLS_PATH/logs/qtools.log
+
 source $QTOOLS_PATH/utils/index.sh
 
 if [ ! -f "$QTOOLS_CONFIG_FILE" ]; then
