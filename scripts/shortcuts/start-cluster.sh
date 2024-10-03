@@ -179,6 +179,8 @@ if [ "$MASTER" == "true" ]; then
         # Get the IP address and dataworker count
         ip=$(echo "$server" | yq eval '.ip' -)
         dataworker_count=$(echo "$server" | yq eval '.dataworker_count // "false"' -)
+
+        echo "Server: $ip, Dataworker count: $dataworker_count"
         
         if echo "$(hostname -I)" | grep -q "$ip" && [ "$dataworker_count" == "false" ]; then
             # This is the master server, so subtract 1 from the total core count
