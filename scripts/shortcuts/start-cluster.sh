@@ -150,6 +150,19 @@ if [ "$MASTER" = true ]; then
         ip=$(echo "$server" | yq eval '.ip' -)
         dataworker_count=$(echo "$server" | yq eval '.dataworker_count // "false"' -)
         
+        if echo "$(hostname -I)" | grep -q "$ip" && [ "$dataworker_count" == "false" ]; then
+            # This is the master server, so subtract 1 from the total core count
+            dataworker_count=$(($(nproc) - 1))
+        else
+            # Get the number of available cores
+            available_cores=$(($(nproc) - 1))
+            
+            # Convert dataworker_count to integer and ensure it's not greater than available cores - 1
+            dataworker_count=$(echo "$dataworker_count" | tr -cd '0-9')
+            dataworker_count=$((dataworker_count > 0 ? dataworker_count : available_cores - 1))
+            dataworker_count=$((dataworker_count < available_cores ? dataworker_count : available_cores - 1))
+        fi
+
         # If dataworker_count is not a number, get it from the server
         if ! [[ "$dataworker_count" =~ ^[0-9]+$ ]]; then
             dataworker_count=$(ssh "$ip" nproc)
@@ -160,10 +173,6 @@ if [ "$MASTER" = true ]; then
         echo "engine:" > "$tmp_file"
         echo "  dataworkerMultiaddrs:" >> "$tmp_file"
         for ((i=0; i<dataworker_count; i++)); do
-            # Skip the first index if this is the master server
-            if echo "$(hostname -I)" | grep -q "$ip" && [ $i -eq 0 ]; then
-                continue
-            fi
             port=$((40000 + i))
             echo "    - /ip4/$ip/tcp/$port" >> "$tmp_file"
         done
@@ -174,13 +183,13 @@ if [ "$MASTER" = true ]; then
         
         if ! echo "$(hostname -I)" | grep -q "$ip"; then
             # SCP the temporary file to the remote server
-            scp "$tmp_file" "$ip:$HOME/ceremonyclient/node/.config/config.yml"
+            scp -i ~/.ssh/cluster-key "$tmp_file" "$ip:$HOME/ceremonyclient/node/.config/config.yml"
         
             # Remove the temporary file
             rm "$tmp_file"
             
             # SCP the QTools config to the remote server
-            scp "$QTOOLS_CONFIG_FILE" "$ip:$HOME/qtools/config.yml"
+            scp -i ~/.ssh/cluster-key "$QTOOLS_CONFIG_FILE" "$ip:$HOME/qtools/config.yml"
         fi
     done
 fi
