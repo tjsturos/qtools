@@ -183,7 +183,7 @@ if [ "$MASTER" == "true" ]; then
         if [ -z "$ip" ]; then
             echo "Skipping invalid server entry: $server"
             continue
-        }
+        fi
 
         echo "Processing server: $ip"
         echo "Server: $ip, Dataworker count: $dataworker_count"
@@ -195,7 +195,7 @@ if [ "$MASTER" == "true" ]; then
             # Get the number of available cores
             available_cores=$(($(nproc) - 1))
             
-            # Convert dataworker_count to integer and ensure it's not greater than available cores - 1
+            # Convert dataworker_count to integer and ensure it's not greater than available cores
             dataworker_count=$(echo "$dataworker_count" | tr -cd '0-9')
             dataworker_count=$((dataworker_count > 0 ? dataworker_count : available_cores))
             dataworker_count=$((dataworker_count < available_cores ? dataworker_count : available_cores))
