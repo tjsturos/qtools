@@ -82,6 +82,7 @@ VERSION_2() {
         echo "Updated qtools_version to 2"
     fi
 }
+# Version 1 was the unversioned config.
 
 # run the version migration
 VERSION_2
