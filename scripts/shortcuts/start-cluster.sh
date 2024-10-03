@@ -157,14 +157,9 @@ for ((i=0; i<DATA_WORKER_COUNT; i++)); do
     fi
 done
 
-# Calculate the next start index
-NEXT_START_INDEX=$((INDEX_START + DATA_WORKER_COUNT))
-
-# Print hint for the next command
-echo -e "\n${BLUE}${INFO_ICON} Hint for next command:${NC}"
 
 # If master, configure data worker servers
-if [ "$MASTER" = true ]; then
+if [ "$MASTER" == "true" ]; then
     # Read the config file
     config=$(yq eval . $QTOOLS_CONFIG_FILE)
     
