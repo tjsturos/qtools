@@ -1,8 +1,6 @@
 #!/bin/bash
 
 check_and_add_keys() {
-    local parent_key=$1
-    local keys=$(yq eval "${parent_key} | keys | .[]" "$QTOOLS_PATH/config.sample.yml")
     yq eval-all '
         select(fileIndex == 0) * select(fileIndex == 1)
     ' "$QTOOLS_PATH/config.yml" "$QTOOLS_PATH/config.sample.yml" > "$QTOOLS_PATH/config_merged.yml"
