@@ -16,6 +16,7 @@ quilibrium_repo_install_dir: .
 release_version: 1.4.19.1
 current_version: 1.4.19.1
 os_arch: linux-amd64
+qtools_version: 1
 service:
     # must run qtools update-service to load updated values
     file_name: ceremonyclient
@@ -26,10 +27,59 @@ service:
         has_data_workers: false
         data_worker_count: false
         data_worker_index_start: 1
-        orchestrator_hostname: ""
+        servers: []
     args: "" # args to be passed into the main process: e.g. node-1.4.19.1-linux-amd64 --debug
     max_threads: false
+scheduled_tasks:
+    backup:
+        enabled: true
+        cron_expression: ""
+        # TODO: refer scripts to use this and remove .settings.backups values
+        node_backup_name: ""
+        backup_url: backups.example.com
+        remote_user: root
+        ssh_key_path: ~/.ssh/backup-server
+        remote_backup_dir: /root/backups
+    updates:
+        qtools:
+            enabled: true
+            cron_expression: ""
+        node:
+            enabled: true
+            cron_expression: ""
+        system:
+            enabled: false
+            cron_expression: ""
+    logs:
+        enabled: false
+        cron_expression: ""
+    statistics:
+        enabled: true
+        service_name: quil_statistics
+        prometheus:
+            endpoint: https://stats.qcommander.sh:9090/api/v1/write
+            tls_config:
+                cert_file: "/files/grafana.cert"
+                key_file: "/files/grafana.key"
+                server_name: stats.qcommander.sh
+        loki:
+            endpoint: https://stats.qcommander.sh:3100/loki/api/v1/push
+            tls_config:
+                cert_file: "/files/grafana.cert"
+                key_file: "/files/grafana.key"
+                server_name: stats.qcommander.sh
+        grafana:
+            alloy:
+                enabled: true
+                template_file: "/files/alloy.config"
+                config_file: /etc/alloy/alloy.conf
+    diagnostics:
+        enabled: true
+        cron_expression: ""
 settings:
+    auto_updates:
+        node: true
+        qtools: true
     statistics:
         enabled: true
     diagnostics:

@@ -13,18 +13,35 @@ append_to_file $FILE_CRON "GOPATH=$GOPATH" false
 append_to_file $FILE_CRON "PATH=${GOPATH}/bin:${GOROOT}/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin" false
 append_to_file $FILE_CRON "QTOOLS_PATH=$QTOOLS_PATH" false
 append_to_file $FILE_CRON "@reboot qtools start" false
-append_to_file $FILE_CRON '*/10 * * * * qtools self-update && qtools update-node' false
-append_to_file $FILE_CRON '*/10 * * * * qtools run-diagnostics' false
 
-# Check if statistics are enabled in the config.yml file
-if yq eval '.settings.statistics.enabled' config.yml | grep -q 'true'; then
-  append_to_file $FILE_CRON '0 * * * * qtools record-unclaimed-rewards hourly' false
-  append_to_file $FILE_CRON '0 0 * * * qtools record-unclaimed-rewards daily' false
-  append_to_file $FILE_CRON '0 0 * * 0 qtools record-unclaimed-rewards weekly' false
-  append_to_file $FILE_CRON '0 0 1 * * qtools record-unclaimed-rewards monthly' false
+AUTO_UPDATE_NODE=$(yq eval '.scheduled_tasks.updates.node.enabled // true' $QTOOLS_CONFIG_FILE)
+
+if [ "$AUTO_UPDATE_NODE" = true ]; then
+  NODE_UPDATE_CRON_EXPRESSION=$(yq eval '.scheduled_tasks.updates.node.cron_expression // "*/10 * * * *"' $QTOOLS_CONFIG_FILE)
+  append_to_file $FILE_CRON "$NODE_UPDATE_CRON_EXPRESSION qtools update-node --auto" false
 fi
 
-append_to_file $FILE_CRON '* * * * * qtools backup-store' false
+AUTO_UPDATE_QTOOLS=$(yq eval '.scheduled_tasks.updates.qtools.enabled // true' $QTOOLS_CONFIG_FILE)
+
+if [ "$AUTO_UPDATE_QTOOLS" = true ]; then
+  QTOOLS_UPDATE_CRON_EXPRESSION=$(yq eval '.scheduled_tasks.updates.qtools.cron_expression // "*/10 * * * *"' $QTOOLS_CONFIG_FILE)
+  append_to_file $FILE_CRON "$QTOOLS_UPDATE_CRON_EXPRESSION qtools self-update --auto" false
+fi
+
+AUTO_RUN_DIAGNOSTICS=$(yq eval '.scheduled_tasks.diagnostics.enabled // true' $QTOOLS_CONFIG_FILE)
+
+if [ "$AUTO_RUN_DIAGNOSTICS" = true ]; then
+  DIAGNOSTICS_CRON_EXPRESSION=$(yq eval '.scheduled_tasks.diagnostics.cron_expression // "*/10 * * * *"' $QTOOLS_CONFIG_FILE)
+  append_to_file $FILE_CRON "$DIAGNOSTICS_CRON_EXPRESSION qtools run-diagnostics --auto" false
+fi
+
+AUTO_BACKUP_STORE=$(yq eval '.scheduled_tasks.backup.enabled // true' $QTOOLS_CONFIG_FILE)
+
+if [ "$AUTO_BACKUP_STORE" = true ]; then
+  BACKUP_STORE_CRON_EXPRESSION=$(yq eval '.scheduled_tasks.backup.cron_expression // "*/10 * * * *"' $QTOOLS_CONFIG_FILE)
+  append_to_file $FILE_CRON "$BACKUP_STORE_CRON_EXPRESSION qtools backup-store" false
+fi
+
 
 echo "$(crontab -l)" > $FILE_ACTUAL_OUTPUT
 DIFF_BEFORE="$(colordiff -u $FILE_CRON $FILE_ACTUAL_OUTPUT)"

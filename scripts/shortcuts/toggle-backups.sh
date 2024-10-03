@@ -12,7 +12,7 @@ set_backup_status() {
 }
 
 # Check current backup status
-current_status=$(yq '.settings.backups.enabled' $QTOOLS_CONFIG_FILE)
+current_status=$(yq '.settings.backups.enabled // true' $QTOOLS_CONFIG_FILE)
 
 # Parse command line arguments
 if [[ $# -eq 1 ]]; then

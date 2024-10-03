@@ -86,4 +86,6 @@ if [ "$IS_BACKUP_ENABLED" == 'true' ]; then
     done <<< "$remote_files"
 
     echo "All files are correctly backed up and no old files exist in the remote backup."
+    return 0
 fi
+

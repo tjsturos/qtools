@@ -12,7 +12,7 @@ set_diagnostics_status() {
 }
 
 # Check current diagnostics status
-current_status=$(yq '.settings.diagnostics.enabled' $QTOOLS_CONFIG_FILE)
+current_status=$(yq '.settings.diagnostics.enabled // true' $QTOOLS_CONFIG_FILE)
 
 # Parse command line arguments
 if [[ $# -eq 1 ]]; then

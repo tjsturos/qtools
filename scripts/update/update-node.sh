@@ -7,10 +7,23 @@
 current_version="$(get_current_version)"
 restart_required="false"
 force_update="false"
+auto_update="false"
+is_auto_update_enabled=$(yq '.settings.auto_updates.node // true' $QTOOLS_CONFIG_FILE)
 
-if [[ "$1" == "--force" ]]; then
-  force_update="true"
-fi
+for param in "$@"; do
+    case $param in
+        --auto)
+            auto_update="true"
+            ;;
+        --force)
+            force_update="true"
+            ;;
+        *)
+            echo "Unknown parameter: $param"
+            exit 1
+            ;;
+    esac
+done
 
 # Function to download all matching files if version is different
 download_matching_files_if_different() {
@@ -59,6 +72,11 @@ main() {
     log "The current version ($current_version) matches ($available_version).  "
   fi
 }
+
+if [ "$auto_update" == "true" ] && [ "$is_auto_update_enabled" == "false" ]; then
+  log "Node auto-update is disabled. Exiting."
+  exit 0
+fi
 
 main
 

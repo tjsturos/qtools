@@ -52,12 +52,11 @@ run_specified_tests() {
 }
 
 # Check if diagnostics are enabled
-IS_DIAGNOSTICS_ENABLED="$(yq '.settings.diagnostics.enabled' $QTOOLS_CONFIG_FILE)"
+IS_DIAGNOSTICS_ENABLED="$(yq '.settings.diagnostics.enabled // false' $QTOOLS_CONFIG_FILE)"
+IS_SCHEDULED_TASK="false"
 
-if [ "$IS_DIAGNOSTICS_ENABLED" != "true" ]; then
-    echo "Diagnostics are not enabled. Exiting."
-    exit 0
-fi
+
+
 
 # Initialize an array to store specified tests
 tests=()
@@ -65,6 +64,9 @@ tests=()
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
+        --auto)
+            IS_SCHEDULED_TASK="true"
+            ;;
         --test)
             tests+=("$2")
             shift 2
@@ -75,6 +77,12 @@ while [[ $# -gt 0 ]]; do
             ;;
     esac
 done
+
+# if this is a scheduled task, and diagnostics are not enabled, exit
+if [ "$IS_DIAGNOSTICS_ENABLED" == "false" ] && [ "$IS_SCHEDULED_TASK" == "true" ]; then
+    echo "Scheduled task detected, but diagnostics are not enabled. Exiting."
+    exit 0
+fi
 
 # Run specified tests if any, otherwise run all diagnostics
 if [ ${#tests[@]} -gt 0 ]; then

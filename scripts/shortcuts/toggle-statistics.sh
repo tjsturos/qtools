@@ -12,17 +12,19 @@ set_statistics_status() {
 }
 
 # Check current statistics status
-current_status=$(yq '.settings.statistics.enabled' $QTOOLS_CONFIG_FILE)
+current_status=$(yq '.settings.statistics.enabled // true' $QTOOLS_CONFIG_FILE)
 
 # Parse command line arguments
 if [[ $# -eq 1 ]]; then
     case $1 in
         --on)
             set_statistics_status true
+            sudo systemctl start $STATISTICS_SERVICE_NAME
             exit 0
             ;;
         --off)
             set_statistics_status false
+            sudo systemctl stop $STATISTICS_SERVICE_NAME
             exit 0
             ;;
         *)
@@ -35,6 +37,8 @@ fi
 # If no arguments provided, toggle the current status
 if [[ $current_status == "true" ]]; then
     set_statistics_status false
+    sudo systemctl stop $STATISTICS_SERVICE_NAME
 else
     set_statistics_status true
+    sudo systemctl start $STATISTICS_SERVICE_NAME
 fi
