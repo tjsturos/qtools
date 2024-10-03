@@ -1,9 +1,41 @@
 #/bin/bash
 # HELP: Runs a complete install of the node.
+# USAGE: qtools complete-install [--peer-id <peer_id>]
+#
+# Options:
+#   --peer-id <peer_id>    Specify a custom peer ID for the node. If not provided,
+#                          a new peer ID will be generated automatically.
+#
+# This script performs a complete installation of the Quilibrium node.
+# If a peer ID is provided, it will be used for the node configuration and backups.
+# Otherwise, a new peer ID will be generated during the installation process.
+
 
 sudo apt-get -q update
 
-DISABLE_SSH_PASSWORDS="$(yq '.settings.install.ssh.disable_password_login') $QTOOLS_CONFIG_FILE"
+# Parse command line arguments
+PEER_ID=""
+RESTORE=false
+while [[ $# -gt 0 ]]; do
+    key="$1"
+    case $key in
+        --peer-id)
+        PEER_ID="$2"
+        shift # past argument
+        shift # past value
+        ;;
+        --restore)
+        RESTORE=true
+        shift # past argument
+        ;;
+        *)    # unknown option
+        shift # past argument
+        ;;
+    esac
+done
+
+
+DISABLE_SSH_PASSWORDS="$(yq '.settings.install.ssh.disable_password_login // true') $QTOOLS_CONFIG_FILE"
 
 cd $QUIL_HOME
 
@@ -27,11 +59,8 @@ generate_default_config() {
     fi
 }
 
-
-RESTORE_ON_INSTALL="$(yq '.settings.backups.restore_on_install' $QTOOLS_CONFIG_FILE)"
-if [ "$RESTORE_ON_INSTALL" == "true" ]; then
+if [ "$PEER_ID" != "" ]; then
     log "Attempting to restore from remote backup. Note: backups must be enabled and configured properly (and connected to at least once) for this to work."
-    PEER_ID="$(yq '.settings.backups.node_backup_dir // false' $QTOOLS_CONFIG_FILE)"
 
     if [ "$PEER_ID" != "false" ] && [ "$PEER_ID" != "" ]; then
         qtools restore-backup --peer-id $PEER_ID
@@ -65,9 +94,14 @@ if [ "$DISABLE_SSH_PASSWORDS" == 'true' ]; then
         qtools add-public-ssh-key "$PUBLIC_KEY"
     fi
 
+    # Check if authorized_keys file exists and is not empty
+    if [ ! -s "$HOME/.ssh/authorized_keys" ]; then
+        log "No authorized keys found. Skipping SSH password disable for safety."
+        exit 0
+    fi
+
     qtools disable-ssh-passwords
 fi
 
 source $QTOOLS_PATH/scripts/install/customization.sh
 
-sudo systemctl reboot
