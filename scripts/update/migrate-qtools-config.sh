@@ -31,11 +31,7 @@ map_values_to_new_field() {
     local new_field="$2"
     local default_value="$3"
 
-    yq eval -i "
-        with($new_field;
-            . = $old_field // \"$default_value\"
-        )
-    " "$QTOOLS_PATH/config.yml"
+    yq eval -i "$new_field = $old_field // \"$default_value\"" $QTOOLS_PATH/config.yml
 }
 
 update_backup_settings() {
