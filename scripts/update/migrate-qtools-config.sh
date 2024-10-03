@@ -26,8 +26,8 @@ else
     exit 1
 fi
 
-VERSION_1() {
-    local VERSION=1
+VERSION_2() {
+    local VERSION=2
     # Check if .qtools_version is undefined or less than local VERSION
     current_version=$(yq eval '.qtools_version // "0"' "$QTOOLS_PATH/config.yml")
     echo "Current version: $current_version vs $VERSION"
@@ -77,10 +77,13 @@ VERSION_1() {
         echo "Added default scheduled tasks for logs, statistics, and diagnostics"
         echo "Added default scheduled tasks for updates"
         echo "Copied .settings.backups to .scheduled_tasks.backup fields"
+        # Update qtools_version to 2
+        yq eval -i '.qtools_version = 2' "$QTOOLS_PATH/config.yml"
+        echo "Updated qtools_version to 2"
     fi
 }
 
 # run the version migration
-VERSION_1
+VERSION_2
 
 
