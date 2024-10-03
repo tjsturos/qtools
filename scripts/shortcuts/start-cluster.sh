@@ -4,6 +4,8 @@ INFO_ICON="\u2139"
 RESET="\e[0m"
 DRY_RUN=false  # Set this to true for dry run mode
 
+
+
 # Get the number of CPU cores
 TOTAL_CORES=$(nproc)
 
@@ -83,6 +85,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --master)
             MASTER=true
+            shift
+            ;;
+        --dry-run)
+            DRY_RUN=true
             shift
             ;;
         *)
