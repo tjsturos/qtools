@@ -13,7 +13,7 @@ fi
 
 tar -xzf $COMPRESSED_FILENAME &> /dev/null
 
-BINARY_INSTALL_DIR=/usr/bin/
+BINARY_INSTALL_DIR=/usr/bin
 
 if [ -f $BINARY_INSTALL_DIR/yq ]; then
     sudo rm $BINARY_INSTALL_DIR/yq
