@@ -191,8 +191,10 @@ if [ "$MASTER" == "true" ]; then
 
         # If dataworker_count is not a number, get it from the server
         if ! [[ "$dataworker_count" =~ ^[0-9]+$ ]]; then
-            dataworker_count=$(ssh "$ip" nproc)
+            dataworker_count=$(ssh -i ~/.ssh/cluster-key "$ip" nproc)
         fi
+
+        
         
         # Increment the global count
         TOTAL_EXPECTED_DATAWORKERS=$((TOTAL_EXPECTED_DATAWORKERS + dataworker_count))
