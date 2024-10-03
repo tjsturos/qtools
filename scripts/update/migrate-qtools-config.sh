@@ -3,25 +3,13 @@
 check_and_add_keys() {
     local parent_key=$1
     local keys=$(yq eval "${parent_key} | keys | .[]" "$QTOOLS_PATH/config.sample.yml")
-    
-    for key in $keys; do
-        local full_key="${parent_key}.${key}"
-        # Remove leading dot if parent_key is empty
-        full_key="${full_key#.}"
-        
-        if ! yq eval "${full_key}" "$QTOOLS_PATH/config.yml" > /dev/null 2>&1; then
-            # If the key doesn't exist, add it with its value from config.sample.yml
-            value=$(yq eval "${full_key}" "$QTOOLS_PATH/config.sample.yml")
-            yq eval -i "${full_key} = ${value}" "$QTOOLS_PATH/config.yml"
-            echo "Added missing key: ${full_key}"
-        else
-            # Check if the value is a nested object
-            if [[ $(yq eval "${full_key}" "$QTOOLS_PATH/config.sample.yml") == "{}"* ]]; then
-                # Recursively check nested keys
-                check_and_add_keys "${full_key}"
-            fi
-        fi
-    done
+    yq eval-all '
+        select(fileIndex == 0) * select(fileIndex == 1)
+    ' "$QTOOLS_PATH/config.yml" "$QTOOLS_PATH/config.sample.yml" > "$QTOOLS_PATH/config_merged.yml"
+
+    mv "$QTOOLS_PATH/config_merged.yml" "$QTOOLS_PATH/config.yml"
+
+    echo "Config migration completed. All missing keys have been added."
 }   
 
 # Function to check and add missing keys from config.sample.yml to config.yml
