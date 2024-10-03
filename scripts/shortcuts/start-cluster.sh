@@ -221,6 +221,8 @@ if [ "$MASTER" == "true" ]; then
         if ! echo "$(hostname -I)" | grep -q "$ip"; then
             # SCP the temporary file to the remote server
             echo "Copying dataworker config to $ip"
+            # Ensure the destination directory exists on the remote server
+            ssh -i ~/.ssh/cluster-key "$ip" "mkdir -p $HOME/ceremonyclient/node/.config"
             scp -i ~/.ssh/cluster-key "$tmp_file" "$ip:$HOME/ceremonyclient/node/.config/config.yml"
         
             # Remove the temporary file
