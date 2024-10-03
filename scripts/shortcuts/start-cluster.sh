@@ -260,11 +260,14 @@ if [ "$MASTER" == "true" ]; then
 
     if [ "$TOTAL_EXPECTED_DATAWORKERS" -ne "$actual_dataworkers" ]; then
         echo -e "\e[33mWarning: The number of dataworker multiaddrs in the config doesn't match the expected count.\e[0m"
+    else
+        echo -e "${BLUE}${INFO_ICON} Number of actual dataworkers found in config: $actual_dataworkers matches expected count.${RESET}"
     fi
 fi
 
 
 # Add a final message for dry run
-if [ "$DRY_RUN" = true ]; then
+if [ "$DRY_RUN" == "true" ]; then
     echo -e "\n${BLUE}${INFO_ICON} Dry run completed. No actual changes were made.${RESET}"
+
 fi
