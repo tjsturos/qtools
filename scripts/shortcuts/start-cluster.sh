@@ -269,5 +269,4 @@ fi
 # Add a final message for dry run
 if [ "$DRY_RUN" == "true" ]; then
     echo -e "\n${BLUE}${INFO_ICON} Dry run completed. No actual changes were made.${RESET}"
-
 fi
