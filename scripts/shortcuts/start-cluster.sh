@@ -164,21 +164,21 @@ if [ "$MASTER" == "true" ]; then
     config=$(yq eval . $QTOOLS_CONFIG_FILE)
     
     # Get the array of data worker only servers
-    servers=$(echo "$config" | yq eval '.service.clustering.servers[]' -)
+    servers=$(echo "$config" | yq eval '.service.clustering.servers.[]' -)
 
     # Log servers information
     echo "Servers configuration:"
     echo "$servers" | yq eval -P
-    
+
     # Clear the existing dataworkerMultiaddrs array
     yq eval -i '.engine.dataworkerMultiaddrs = []' "$QUIL_NODE_PATH/.config/config.yml"
 
     # Loop through each server
-    for server in $servers; do
-        echo "Processing server: $server"
+    echo "$servers" | yq -o=json -I=0 -r '.[]' | while read -r server; do
         # Get the IP address and dataworker count
-        ip=$(echo "$server" | yq eval '.ip' -)
-        dataworker_count=$(echo "$server" | yq eval '.dataworker_count // "false"' -)
+        ip=$(echo "$server" | jq -r '.ip')
+        dataworker_count=$(echo "$server" | jq -r '.dataworker_count // "false"')
+        echo "Processing server: $ip"
 
         echo "Server: $ip, Dataworker count: $dataworker_count"
         
