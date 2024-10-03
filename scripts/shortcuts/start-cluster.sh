@@ -11,6 +11,9 @@ MASTER=false
 
 BINARY=$(get_versioned_node)
 
+# Add this near the top of the script, after other variable declarations
+TOTAL_EXPECTED_DATAWORKERS=0
+
 # Function to create the systemd service file if it doesn't exist
 create_service_file() {
     local service_file="/etc/systemd/system/quilibrium-dataworker@.service"
@@ -119,6 +122,7 @@ fi
 MASTER_PID=false
 # Start the master if specified
 if [ "$MASTER" = true ]; then
+    echo -e "\e[34m${INFO_ICON} Starting ceremonyclient.service\e[0m"
     sudo systemctl enable ceremonyclient.service
     sudo systemctl start ceremonyclient.service
 fi
@@ -134,6 +138,8 @@ for ((i=0; i<DATA_WORKER_COUNT; i++)); do
             echo "Aborting..."
             exit 1
         fi
+    else
+        echo -e "\e[32mStarted quilibrium-dataworker@$CORE.service\e[0m"
     fi
 done
 
@@ -179,6 +185,9 @@ if [ "$MASTER" = true ]; then
             dataworker_count=$(ssh "$ip" nproc)
         fi
         
+        # Increment the global count
+        TOTAL_EXPECTED_DATAWORKERS=$((TOTAL_EXPECTED_DATAWORKERS + dataworker_count))
+
         # Create temporary YAML file with dataworkerMultiaddrs
         tmp_file=$(mktemp)
         echo "engine:" > "$tmp_file"
@@ -203,5 +212,15 @@ if [ "$MASTER" = true ]; then
             scp -i ~/.ssh/cluster-key "$QTOOLS_CONFIG_FILE" "$ip:$HOME/qtools/config.yml"
         fi
     done
+    
+    # Print out the number of dataworker multiaddrs
+    actual_dataworkers=$(yq eval '.engine.dataworkerMultiaddrs | length' "$QUIL_NODE_PATH/.config/config.yml")
+
+    echo -e "${BLUE}${INFO_ICON} Expected dataworker multiaddrs: $TOTAL_EXPECTED_DATAWORKERS${RESET}"
+    echo -e "${BLUE}${INFO_ICON} Actual dataworker multiaddrs in config: $actual_dataworkers${RESET}"
+
+    if [ "$TOTAL_EXPECTED_DATAWORKERS" -ne "$actual_dataworkers" ]; then
+        echo -e "\e[33mWarning: The number of dataworker multiaddrs in the config doesn't match the expected count.\e[0m"
+    fi
 fi
 
