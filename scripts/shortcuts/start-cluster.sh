@@ -231,7 +231,7 @@ if [ "$MASTER" == "true" ]; then
         done
 
         # Add dataworkerMultiaddrs to local config file
-        yq eval-all -i '(select(fileIndex == 0) *?+ select(fileIndex == 1)) as $merged | select(fileIndex == 0) *?+ $merged' "$QUIL_NODE_PATH/.config/config.yml" "$tmp_file"
+        yq eval-all -i '(select(fileIndex == 0) *?+ select(fileIndex == 1)) as $merged | select(fileIndex == 0) *? $merged' "$QUIL_NODE_PATH/.config/config.yml" "$tmp_file"
         
         if ! echo "$(hostname -I)" | grep -q "$ip"; then
             # SCP the temporary file to the remote server
@@ -246,14 +246,17 @@ if [ "$MASTER" == "true" ]; then
             echo "Copying QTools config to $ip"
             # SCP the QTools config to the remote server
             scp -i ~/.ssh/cluster-key "$QTOOLS_CONFIG_FILE" "$ip:$HOME/qtools/config.yml"
+            if [ "$DRY_RUN" == "false" ]; then
+                echo -e "${BLUE}${INFO_ICON} Starting cluster's dataworkers on $ip${RESET}"
+                ssh -i ~/.ssh/cluster-key "$ip" "qtools start-cluster"
+            fi
         fi
     done
 
     # Print out the number of dataworker multiaddrs
     actual_dataworkers=$(yq eval '.engine.dataworkerMultiaddrs | length' "$QUIL_NODE_PATH/.config/config.yml")
 
-    echo -e "${BLUE}${INFO_ICON} Expected dataworker multiaddrs: $TOTAL_EXPECTED_DATAWORKERS${RESET}"
-    echo -e "${BLUE}${INFO_ICON} Actual dataworker multiaddrs in config: $actual_dataworkers${RESET}"
+    echo -e "${BLUE}${INFO_ICON} Dataworkers to be started: $TOTAL_EXPECTED_DATAWORKERS${RESET}"
 
     if [ "$TOTAL_EXPECTED_DATAWORKERS" -ne "$actual_dataworkers" ]; then
         echo -e "\e[33mWarning: The number of dataworker multiaddrs in the config doesn't match the expected count.\e[0m"
