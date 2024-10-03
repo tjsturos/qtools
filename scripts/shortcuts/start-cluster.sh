@@ -165,6 +165,10 @@ if [ "$MASTER" == "true" ]; then
     
     # Get the array of data worker only servers
     servers=$(echo "$config" | yq eval '.service.clustering.servers[]' -)
+
+    # Log servers information
+    echo "Servers configuration:"
+    echo "$servers" | yq eval -P
     
     # Clear the existing dataworkerMultiaddrs array
     yq eval -i '.engine.dataworkerMultiaddrs = []' "$QUIL_NODE_PATH/.config/config.yml"
