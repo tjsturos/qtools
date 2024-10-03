@@ -127,7 +127,14 @@ fi
 for ((i=0; i<DATA_WORKER_COUNT; i++)); do
     CORE=$((INDEX_START + i))
     sudo systemctl enable quilibrium-dataworker@$CORE.service
-    sudo systemctl start quilibrium-dataworker@$CORE.service
+    if ! sudo systemctl start quilibrium-dataworker@$CORE.service; then
+        echo "Failed to start quilibrium-dataworker@$CORE.service. Do you want to continue? (y/n)"
+        read -r response
+        if [[ "$response" =~ ^[Nn]$ ]]; then
+            echo "Aborting..."
+            exit 1
+        fi
+    fi
 done
 
 # Calculate the next start index
