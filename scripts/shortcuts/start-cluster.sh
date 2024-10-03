@@ -256,12 +256,12 @@ if [ "$MASTER" == "true" ]; then
     # Print out the number of dataworker multiaddrs
     actual_dataworkers=$(yq eval '.engine.dataworkerMultiaddrs | length' "$QUIL_NODE_PATH/.config/config.yml")
 
-    echo -e "${BLUE}${INFO_ICON} Dataworkers to be started: $TOTAL_EXPECTED_DATAWORKERS${RESET}"
-
     if [ "$TOTAL_EXPECTED_DATAWORKERS" -ne "$actual_dataworkers" ]; then
         echo -e "\e[33mWarning: The number of dataworker multiaddrs in the config doesn't match the expected count.\e[0m"
+        echo -e "${BLUE}${INFO_ICON} Dataworkers to be started: $TOTAL_EXPECTED_DATAWORKERS${RESET}"
+        echo -e "${BLUE}${INFO_ICON} Actual dataworker multiaddrs in config: $actual_dataworkers${RESET}"
     else
-        echo -e "${BLUE}${INFO_ICON} Number of actual dataworkers found in config: $actual_dataworkers matches expected count.${RESET}"
+        echo -e "${BLUE}${INFO_ICON} Number of actual dataworkers found ($actual_dataworkers) matches the expected amount.${RESET}"
     fi
 fi
 
