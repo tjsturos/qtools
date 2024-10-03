@@ -138,7 +138,7 @@ if [ "$MASTER" = true ]; then
     config=$(yq eval . $QTOOLS_CONFIG_FILE)
     
     # Get the array of data worker only servers
-    servers=$(echo "$config" | yq eval '.clustering.servers[]' -)
+    servers=$(echo "$config" | yq eval '.service.clustering.servers[]' -)
     
     # Clear the existing dataworkerMultiaddrs array
     yq eval -i '.engine.dataworkerMultiaddrs = []' "$QUIL_NODE_PATH/.config/config.yml"
