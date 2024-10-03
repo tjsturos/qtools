@@ -63,7 +63,7 @@ if [ "$PEER_ID" != "" ]; then
     log "Attempting to restore from remote backup. Note: backups must be enabled and configured properly (and connected to at least once) for this to work."
 
     if [ "$PEER_ID" != "false" ] && [ "$PEER_ID" != "" ]; then
-        qtools restore-backup --peer-id $PEER_ID
+        qtools restore-backup --peer-id $PEER_ID --force
         wait
         if [ -f $BINARY_FILE ]; then 
             qtools modify-config
