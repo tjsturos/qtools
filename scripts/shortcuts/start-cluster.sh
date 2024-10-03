@@ -173,6 +173,9 @@ if [ "$MASTER" == "true" ]; then
     # Clear the existing dataworkerMultiaddrs array
     yq eval -i '.engine.dataworkerMultiaddrs = []' "$QUIL_NODE_PATH/.config/config.yml"
 
+    # Initialize TOTAL_EXPECTED_DATAWORKERS
+    TOTAL_EXPECTED_DATAWORKERS=0
+
     # Loop through each server
     echo "$servers" | yq -o=json -I=0 | jq -c '.[]' | while read -r server; do
         # Get the IP address and dataworker count
@@ -195,10 +198,10 @@ if [ "$MASTER" == "true" ]; then
             else
                 available_cores=$(($(nproc) - 1))
             
-            # Convert dataworker_count to integer and ensure it's not greater than available cores
-            dataworker_count=$(echo "$dataworker_count" | tr -cd '0-9')
-            dataworker_count=$((dataworker_count > 0 ? dataworker_count : available_cores))
-            dataworker_count=$((dataworker_count < available_cores ? dataworker_count : available_cores))
+                # Convert dataworker_count to integer and ensure it's not greater than available cores
+                dataworker_count=$(echo "$dataworker_count" | tr -cd '0-9')
+                dataworker_count=$((dataworker_count > 0 ? dataworker_count : available_cores))
+                dataworker_count=$((dataworker_count < available_cores ? dataworker_count : available_cores))
             fi
         else
             # Get the number of available cores
