@@ -9,7 +9,7 @@ DATA_WORKER_COUNT=$TOTAL_CORES
 INDEX_START=1
 MASTER=false
 
-BINARY=$QUIL_NODE_PATH/$(get_versioned_binary)
+BINARY=$QUIL_NODE_PATH/$(get_versioned_node)
 
 # Function to create the systemd service file if it doesn't exist
 create_service_file() {
