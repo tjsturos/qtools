@@ -174,12 +174,18 @@ if [ "$MASTER" == "true" ]; then
     yq eval -i '.engine.dataworkerMultiaddrs = []' "$QUIL_NODE_PATH/.config/config.yml"
 
     # Loop through each server
-    echo "$servers" | yq -o=json -I=0 -r '.[]' | while read -r server; do
+    echo "$servers" | yq -o=json -I=0 | jq -c '.[]' | while read -r server; do
         # Get the IP address and dataworker count
-        ip=$(echo "$server" | jq -r '.ip')
+        ip=$(echo "$server" | jq -r '.ip // empty')
         dataworker_count=$(echo "$server" | jq -r '.dataworker_count // "false"')
-        echo "Processing server: $ip"
+        
+        # Skip invalid entries
+        if [ -z "$ip" ]; then
+            echo "Skipping invalid server entry: $server"
+            continue
+        }
 
+        echo "Processing server: $ip"
         echo "Server: $ip, Dataworker count: $dataworker_count"
         
         if echo "$(hostname -I)" | grep -q "$ip" && [ "$dataworker_count" == "false" ]; then
@@ -191,13 +197,8 @@ if [ "$MASTER" == "true" ]; then
             
             # Convert dataworker_count to integer and ensure it's not greater than available cores - 1
             dataworker_count=$(echo "$dataworker_count" | tr -cd '0-9')
-            dataworker_count=$((dataworker_count > 0 ? dataworker_count : available_cores - 1))
-            dataworker_count=$((dataworker_count < available_cores ? dataworker_count : available_cores - 1))
-        fi
-
-        # If dataworker_count is not a number, get it from the server
-        if ! [[ "$dataworker_count" =~ ^[0-9]+$ ]]; then
-            dataworker_count=$(ssh -i ~/.ssh/cluster-key "$ip" nproc)
+            dataworker_count=$((dataworker_count > 0 ? dataworker_count : available_cores))
+            dataworker_count=$((dataworker_count < available_cores ? dataworker_count : available_cores))
         fi
 
         echo "Dataworker count for $ip: $dataworker_count"
@@ -213,7 +214,6 @@ if [ "$MASTER" == "true" ]; then
             port=$((40000 + i))
             echo "    - /ip4/$ip/tcp/$port" >> "$tmp_file"
         done
-
 
         # Add dataworkerMultiaddrs to local config file
         yq eval-all -i 'select(fileIndex == 0) * select(fileIndex == 1)' "$QUIL_NODE_PATH/.config/config.yml" "$tmp_file"
@@ -231,7 +231,7 @@ if [ "$MASTER" == "true" ]; then
             scp -i ~/.ssh/cluster-key "$QTOOLS_CONFIG_FILE" "$ip:$HOME/qtools/config.yml"
         fi
     done
-    
+
     # Print out the number of dataworker multiaddrs
     actual_dataworkers=$(yq eval '.engine.dataworkerMultiaddrs | length' "$QUIL_NODE_PATH/.config/config.yml")
 
@@ -248,4 +248,3 @@ fi
 if [ "$DRY_RUN" = true ]; then
     echo -e "\n${BLUE}${INFO_ICON} Dry run completed. No actual changes were made.${RESET}"
 fi
-
