@@ -176,14 +176,17 @@ if [ "$MASTER" == "true" ]; then
     # Initialize TOTAL_EXPECTED_DATAWORKERS
     TOTAL_EXPECTED_DATAWORKERS=0
 
+    # Get the number of servers
+    server_count=$(echo "$servers" | yq eval '. | length' -)
+
     # Loop through each server
-    echo "$servers" | yq -o=json -I=0 | jq -c '.[]' | while read -r server; do
-        # Get the IP address and dataworker count
-        ip=$(echo "$server" | jq -r '.ip // empty')
-        dataworker_count=$(echo "$server" | jq -r '.dataworker_count // "false"')
+    for ((i=0; i<server_count; i++)); do
+        server=$(echo "$servers" | yq eval ".[$i]" -)
+        ip=$(echo "$server" | yq eval '.ip' -)
+        dataworker_count=$(echo "$server" | yq eval '.dataworker_count // "false"' -)
         
         # Skip invalid entries
-        if [ -z "$ip" ]; then
+        if [ -z "$ip" ] || [ "$ip" == "null" ]; then
             echo "Skipping invalid server entry: $server"
             continue
         fi
@@ -222,8 +225,8 @@ if [ "$MASTER" == "true" ]; then
         tmp_file=$(mktemp)
         echo "engine:" > "$tmp_file"
         echo "  dataworkerMultiaddrs:" >> "$tmp_file"
-        for ((i=0; i<dataworker_count; i++)); do
-            port=$((40000 + i))
+        for ((j=0; j<dataworker_count; j++)); do
+            port=$((40000 + j))
             echo "    - /ip4/$ip/tcp/$port" >> "$tmp_file"
         done
 
