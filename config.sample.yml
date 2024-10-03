@@ -20,6 +20,7 @@ qtools_version: 1
 service:
     # must run qtools update-service to load updated values
     file_name: ceremonyclient
+    debug: false
     working_dir: /home/ubuntu/ceremonyclient/node
     restart_time: 5s
     clustering:
@@ -77,18 +78,8 @@ scheduled_tasks:
         enabled: true
         cron_expression: ""
 settings:
-    auto_updates:
-        node: true
-        qtools: true
-    statistics:
-        enabled: true
-    diagnostics:
-        enabled: false
     listenAddr:
         mode: "udp"
-    cpulimit:
-        enabled: false
-        limit_percentage: 70
     source_repository:
         default: https://github.com/QuilibriumNetwork/ceremonyclient.git
         # more for notes at this point
@@ -97,34 +88,10 @@ settings:
     install:
         tailscale:
             ephemeral_key: ""
-        yq:
-            version: v4.44.2
-            binary: yq_linux_amd64
-            binary_install_dir: /usr/bin/
         ssh:
             disable_password_login: true
             public_key_url: ""
             public_key_string: ""
-        go:
-        # not implemented
-            install: false
-            version: 1.20.14
-        rust:
-        # not implemented
-            install: false
-            version: 0.0.0
-    docker:
-        # Not used currently
-        enabled: false
-    backups:
-        enabled: false
-        restore_on_install: false
-        node_backup_dir: ""
-        backup_url: backups.example.com
-        remote_user: root
-        ssh_key_path: ~/.ssh/backup-server
-        remote_backup_dir: /root/backups
-    debug: false
     log_file: debug.log
     snapshots:
         enabled: true
