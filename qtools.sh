@@ -92,7 +92,7 @@ if [ "$1" == "init" ]; then
   exit 0
 fi
 
-export LOG_OUTPUT_FILE="$(yq '.settings.log_file // $QTOOLS_PATH/logs/qtools.log' $QTOOLS_CONFIG_FILE)"
+export LOG_OUTPUT_FILE="$(yq '.settings.log_file' $QTOOLS_CONFIG_FILE)"
 source $QTOOLS_PATH/utils/index.sh
 
 export QUIL_SERVICE_NAME="$(yq '.service.file_name' $QTOOLS_CONFIG_FILE)"
