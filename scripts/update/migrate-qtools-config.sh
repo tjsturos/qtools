@@ -35,7 +35,7 @@ map_values_to_new_field() {
 }
 
 update_backup_settings() {
-    map_values_to_new_field ".settings.backups.enabled" ".scheduled_tasks.backup.enabled" "false"
+    map_values_to_new_field ".settings.backups.enabled" ".scheduled_tasks.backup.enabled" false
     map_values_to_new_field ".settings.backups.node_backup_dir" ".scheduled_tasks.backup.node_backup_name" ""
     map_values_to_new_field ".settings.backups.backup_url" ".scheduled_tasks.backup.backup_url" ""
     map_values_to_new_field ".settings.backups.remote_user" ".scheduled_tasks.backup.remote_user" ""
