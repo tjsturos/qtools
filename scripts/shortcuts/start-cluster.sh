@@ -188,12 +188,21 @@ if [ "$MASTER" == "true" ]; then
         echo "Processing server: $ip"
         echo "Server: $ip, Dataworker count: $dataworker_count"
         
-        if echo "$(hostname -I)" | grep -q "$ip" && [ "$dataworker_count" == "false" ]; then
+        if echo "$(hostname -I)" | grep -q "$ip"; then
             # This is the master server, so subtract 1 from the total core count
-            dataworker_count=$(($(nproc) - 1))
+            if [ "$dataworker_count" == "false" ]; then
+                dataworker_count=$(($(nproc) - 1))
+            else
+                available_cores=$(($(nproc) - 1))
+            
+            # Convert dataworker_count to integer and ensure it's not greater than available cores
+            dataworker_count=$(echo "$dataworker_count" | tr -cd '0-9')
+            dataworker_count=$((dataworker_count > 0 ? dataworker_count : available_cores))
+            dataworker_count=$((dataworker_count < available_cores ? dataworker_count : available_cores))
+            fi
         else
             # Get the number of available cores
-            available_cores=$(($(nproc) - 1))
+            available_cores=$(ssh -i ~/.ssh/cluster-key "$ip" nproc)
             
             # Convert dataworker_count to integer and ensure it's not greater than available cores
             dataworker_count=$(echo "$dataworker_count" | tr -cd '0-9')
