@@ -15,6 +15,12 @@ BINARY=$(get_versioned_node)
 create_service_file() {
     local service_file="/etc/systemd/system/quilibrium-dataworker@.service"
     if [ ! -f "$service_file" ]; then
+        USER=$(whoami)
+        GROUP=$(id -gn)
+        if [ -z "$USER" ] || [ -z "$GROUP" ]; then
+            echo "Error: Failed to get user or group information"
+            exit 1
+        fi
         echo -e "${BLUE}${INFO_ICON} Creating quilibrium-dataworker@.service file...${RESET}"
         sudo tee "$service_file" > /dev/null <<EOF
 [Unit]
@@ -24,8 +30,8 @@ Description=Quilibrium Dataworker Service
 Type=simple
 Restart=always
 RestartSec=$(yq '.service.restart_time' $QTOOLS_CONFIG_FILE)
-User=$(whoami)
-Group=$(id -gn)
+User=$USER
+Group=$GROUP
 WorkingDirectory=$(yq '.service.working_dir // "'$QUIL_NODE_PATH'"' $QTOOLS_CONFIG_FILE)
 ExecStart=./$BINARY --core %i
 
