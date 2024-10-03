@@ -175,7 +175,7 @@ if [ "$MASTER" == "true" ]; then
 
     # Loop through each server
     for server in $servers; do
-
+        echo "Processing server: $server"
         # Get the IP address and dataworker count
         ip=$(echo "$server" | yq eval '.ip' -)
         dataworker_count=$(echo "$server" | yq eval '.dataworker_count // "false"' -)
