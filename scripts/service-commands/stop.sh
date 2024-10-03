@@ -5,12 +5,7 @@
 # Initialize variables
 IS_QUICK_MODE=false
 IS_CLUSTERING_ENABLED=$(yq '.service.clustering.enabled // false' $QTOOLS_CONFIG_FILE)
-IS_ORCHESTRATOR=false
 
-# Check if this is the orchestrator node
-if [ "$(hostname)" == "$(yq '.service.clustering.orchestrator_hostname // ""' $QTOOLS_CONFIG_FILE)" ]; then
-    IS_ORCHESTRATOR=true
-fi
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -92,7 +87,7 @@ clean_up_process() {
 # Quick mode is essentially no clean up, with intention to immediately restart the node process
 if [ "$IS_QUICK_MODE" == "false" ]; then
     # Check if clustering is enabled and if this is the orchestrator node
-    if [ "$IS_CLUSTERING_ENABLED" == "true" ] && [ "$IS_ORCHESTRATOR" == "true" ]; then
+    if [ "$IS_CLUSTERING_ENABLED" == "true" ]; then
         # Only stop the node processes on the orchestrator node (they aren't running on non-orchestrator nodes)
         echo "Orchestrator node detected. Disabling peripheral services."
         clean_up_process

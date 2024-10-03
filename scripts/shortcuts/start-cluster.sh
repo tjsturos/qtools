@@ -16,7 +16,7 @@ TOTAL_EXPECTED_DATAWORKERS=0
 
 # Function to create the systemd service file if it doesn't exist
 create_service_file() {
-    local service_file="/etc/systemd/system/quilibrium-dataworker@.service"
+    local service_file="/etc/systemd/system/$QUIL_SERVICE_NAME-dataworker@.service"
     if [ ! -f "$service_file" ]; then
         USER=$(whoami)
         GROUP=$(id -gn)
@@ -24,7 +24,7 @@ create_service_file() {
             echo "Error: Failed to get user or group information"
             exit 1
         fi
-        echo -e "${BLUE}${INFO_ICON} Creating quilibrium-dataworker@.service file...${RESET}"
+        echo -e "${BLUE}${INFO_ICON} Creating $QUIL_SERVICE_NAME-dataworker@.service file...${RESET}"
         sudo tee "$service_file" > /dev/null <<EOF
 [Unit]
 Description=Quilibrium Dataworker Service
@@ -101,14 +101,7 @@ declare -a WORKER_PIDS
 
 # Cleanup function to kill all worker processes
 cleanup() {
-    echo "Stopping all workers..."
-    for core in "${WORKER_PIDS[@]}"; do
-        sudo systemctl stop ceremonyclient.service
-        sudo systemctl stop quilibrium-dataworker@$core.service
-    done
-    wait
-    echo "All workers stopped"
-    exit 0
+    qtools stop
 }
 
 # Set up trap for common termination signals
@@ -122,24 +115,24 @@ fi
 MASTER_PID=false
 # Start the master if specified
 if [ "$MASTER" = true ]; then
-    echo -e "\e[34m${INFO_ICON} Starting ceremonyclient.service\e[0m"
-    sudo systemctl enable ceremonyclient.service
-    sudo systemctl start ceremonyclient.service
+    echo -e "\e[34m${INFO_ICON} Starting $QUIL_SERVICE_NAME.service\e[0m"
+    sudo systemctl enable $QUIL_SERVICE_NAME.service
+    sudo systemctl start $QUIL_SERVICE_NAME.service
 fi
 
 # Start the workers
 for ((i=0; i<DATA_WORKER_COUNT; i++)); do
     CORE=$((INDEX_START + i))
-    sudo systemctl enable quilibrium-dataworker@$CORE.service
-    if ! sudo systemctl start quilibrium-dataworker@$CORE.service; then
-        echo "Failed to start quilibrium-dataworker@$CORE.service. Do you want to continue? (y/n)"
+    sudo systemctl enable $QUIL_SERVICE_NAME-dataworker@$CORE.service
+    if ! sudo systemctl start $QUIL_SERVICE_NAME-dataworker@$CORE.service; then
+        echo "Failed to start $QUIL_SERVICE_NAME-dataworker@$CORE.service. Do you want to continue? (y/n)"
         read -r response
         if [[ "$response" =~ ^[Nn]$ ]]; then
             echo "Aborting..."
             exit 1
         fi
     else
-        echo -e "\e[32mStarted quilibrium-dataworker@$CORE.service\e[0m"
+        echo -e "\e[32mStarted $QUIL_SERVICE_NAME-dataworker@$CORE.service\e[0m"
     fi
 done
 
