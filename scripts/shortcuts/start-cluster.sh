@@ -203,11 +203,13 @@ if [ "$MASTER" = true ]; then
         
         if ! echo "$(hostname -I)" | grep -q "$ip"; then
             # SCP the temporary file to the remote server
+            echo "Copying dataworker config to $ip"
             scp -i ~/.ssh/cluster-key "$tmp_file" "$ip:$HOME/ceremonyclient/node/.config/config.yml"
         
             # Remove the temporary file
             rm "$tmp_file"
             
+            echo "Copying QTools config to $ip"
             # SCP the QTools config to the remote server
             scp -i ~/.ssh/cluster-key "$QTOOLS_CONFIG_FILE" "$ip:$HOME/qtools/config.yml"
         fi
