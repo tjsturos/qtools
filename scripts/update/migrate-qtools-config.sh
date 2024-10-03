@@ -30,7 +30,7 @@ VERSION_1() {
     local VERSION=1
     # Check if .qtools_version is undefined or less than local VERSION
     current_version=$(yq eval '.qtools_version // "0"' "$QTOOLS_PATH/config.yml")
-    if [ "$(printf '%s\n' "$current_version" "$VERSION" | sort -V | head -n1)" != "$VERSION" ]; then
+    if [ "$current_version" -lt "$VERSION" ]; then
         echo "Migrating config.yml to version 1"
         # Copy .settings.backups to .scheduled_tasks.backup fields
         yq eval -i '
