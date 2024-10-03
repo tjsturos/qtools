@@ -9,7 +9,7 @@ DATA_WORKER_COUNT=$TOTAL_CORES
 INDEX_START=1
 MASTER=false
 
-BINARY=$QUIL_NODE_PATH/$(get_versioned_node)
+BINARY=$(get_versioned_node)
 
 # Function to create the systemd service file if it doesn't exist
 create_service_file() {
@@ -18,15 +18,15 @@ create_service_file() {
         echo -e "${BLUE}${INFO_ICON} Creating quilibrium-dataworker@.service file...${RESET}"
         sudo tee "$service_file" > /dev/null <<EOF
 [Unit]
-Description=Quilibrium Ceremony Client Service
+Description=Quilibrium Dataworker Service
 
 [Service]
 Type=simple
 Restart=always
-RestartSec=5s
-User=$USER
-Group=$GROUP
-WorkingDirectory=$QUIL_NODE_PATH
+RestartSec=$(yq '.service.restart_time' $QTOOLS_CONFIG_FILE)
+User=$(whoami)
+Group=$(id -gn)
+WorkingDirectory=$(yq '.service.working_dir // "'$QUIL_NODE_PATH'"' $QTOOLS_CONFIG_FILE)
 ExecStart=./$BINARY --core %i
 
 
@@ -94,6 +94,7 @@ declare -a WORKER_PIDS
 cleanup() {
     echo "Stopping all workers..."
     for core in "${WORKER_PIDS[@]}"; do
+        sudo systemctl stop ceremonyclient.service
         sudo systemctl stop quilibrium-dataworker@$core.service
     done
     wait
@@ -112,9 +113,8 @@ fi
 MASTER_PID=false
 # Start the master if specified
 if [ "$MASTER" = true ]; then
-    ./${BINARY} &> /dev/null &
-    MASTER_PID=$!
-    WORKER_PIDS+=($MASTER_PID)
+    sudo systemctl enable ceremonyclient.service
+    sudo systemctl start ceremonyclient.service
 fi
 
 # Start the workers
@@ -122,8 +122,6 @@ for ((i=0; i<DATA_WORKER_COUNT; i++)); do
     CORE=$((INDEX_START + i))
     sudo systemctl enable quilibrium-dataworker@$CORE.service
     sudo systemctl start quilibrium-dataworker@$CORE.service
-    
-    WORKER_PIDS+=($CORE)
 done
 
 # Calculate the next start index
