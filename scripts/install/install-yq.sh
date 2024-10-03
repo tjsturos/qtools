@@ -1,7 +1,7 @@
 #!/bin/bash
 # HELP: Installs \'yq\' version 4.20.1 for parsing config files.
-VERSION=$(qyaml '.settings.install.yq.version' $QTOOLS_CONFIG_FILE)
-BINARY=$(qyaml '.settings.install.yq.binary' $QTOOLS_CONFIG_FILE)
+VERSION=v4.44.2
+BINARY=yq_linux_amd64
 cd $QTOOLS_PATH/binaries
 
 COMPRESSED_FILENAME=${BINARY}_${VERSION}.tar.gz
