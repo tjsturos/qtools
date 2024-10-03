@@ -33,7 +33,7 @@ RestartSec=$(yq '.service.restart_time' $QTOOLS_CONFIG_FILE)
 User=$USER
 Group=$GROUP
 WorkingDirectory=$(yq '.service.working_dir // "'$QUIL_NODE_PATH'"' $QTOOLS_CONFIG_FILE)
-ExecStart=./$BINARY --core %i
+ExecStart=$QUIL_NODE_PATH/$BINARY --core %i
 
 
 [Install]
