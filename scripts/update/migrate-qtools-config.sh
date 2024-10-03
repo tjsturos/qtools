@@ -48,50 +48,47 @@ VERSION_1() {
         echo "Migrating config.yml to version 1"
         # Copy .settings.backups to .scheduled_tasks.backup fields
         yq eval -i '
-            .scheduled_tasks.backup.enabled = .settings.backups.enabled // false |
-            .scheduled_tasks.backup.node_backup_name = .settings.backups.node_backup_dir // "" |
-            .scheduled_tasks.backup.backup_url = .settings.backups.backup_url // "" |
-            .scheduled_tasks.backup.remote_user = .settings.backups.remote_user // "" |
-            .scheduled_tasks.backup.ssh_key_path = .settings.backups.ssh_key_path // "" |
+            .scheduled_tasks.backup.enabled = .settings.backups.enabled // false
+            .scheduled_tasks.backup.node_backup_name = .settings.backups.node_backup_dir // ""
+            .scheduled_tasks.backup.backup_url = .settings.backups.backup_url // ""
+            .scheduled_tasks.backup.remote_user = .settings.backups.remote_user // ""
+            .scheduled_tasks.backup.ssh_key_path = .settings.backups.ssh_key_path // ""
             .scheduled_tasks.backup.remote_backup_dir = .settings.backups.remote_backup_dir // ""
         ' "$QTOOLS_PATH/config.yml"
 
         # Add default scheduled tasks for updates
         yq eval -i '
-            .scheduled_tasks.updates.qtools.enabled = .scheduled_tasks.updates.qtools.enabled // true |
-            .scheduled_tasks.updates.qtools.cron_expression = .scheduled_tasks.updates.qtools.cron_expression // "" |
-            .scheduled_tasks.updates.node.enabled = .scheduled_tasks.updates.node.enabled // true |
-            .scheduled_tasks.updates.node.cron_expression = .scheduled_tasks.updates.node.cron_expression // "" |
-            .scheduled_tasks.updates.system.enabled = .scheduled_tasks.updates.system.enabled // false |
+            .scheduled_tasks.updates.qtools.enabled = .scheduled_tasks.updates.qtools.enabled // true
+            .scheduled_tasks.updates.qtools.cron_expression = .scheduled_tasks.updates.qtools.cron_expression // ""
+            .scheduled_tasks.updates.node.enabled = .scheduled_tasks.updates.node.enabled // true
+            .scheduled_tasks.updates.node.cron_expression = .scheduled_tasks.updates.node.cron_expression // ""
+            .scheduled_tasks.updates.system.enabled = .scheduled_tasks.updates.system.enabled // false
             .scheduled_tasks.updates.system.cron_expression = .scheduled_tasks.updates.system.cron_expression // ""
         ' "$QTOOLS_PATH/config.yml"
 
-        # Add default scheduled tasks for statistics
         # Add default scheduled tasks for logs, statistics, and diagnostics
         yq eval -i '
-            .scheduled_tasks.logs.enabled = .scheduled_tasks.logs.enabled // false |
-            .scheduled_tasks.logs.cron_expression = .scheduled_tasks.logs.cron_expression // "" |
-            .scheduled_tasks.statistics.enabled = .scheduled_tasks.statistics.enabled // true |
-            .scheduled_tasks.statistics.service_name = .scheduled_tasks.statistics.service_name // "quil_statistics" |
-            .scheduled_tasks.statistics.prometheus.endpoint = .scheduled_tasks.statistics.prometheus.endpoint // "https://stats.qcommander.sh:9090/api/v1/write" |
-            .scheduled_tasks.statistics.prometheus.tls_config.cert_file = .scheduled_tasks.statistics.prometheus.tls_config.cert_file // "/files/grafana.cert" |
-            .scheduled_tasks.statistics.prometheus.tls_config.key_file = .scheduled_tasks.statistics.prometheus.tls_config.key_file // "/files/grafana.key" |
-            .scheduled_tasks.statistics.prometheus.tls_config.server_name = .scheduled_tasks.statistics.prometheus.tls_config.server_name // "stats.qcommander.sh" |
-            .scheduled_tasks.statistics.loki.endpoint = .scheduled_tasks.statistics.loki.endpoint // "https://stats.qcommander.sh:3100/loki/api/v1/push" |
-            .scheduled_tasks.statistics.loki.tls_config.cert_file = .scheduled_tasks.statistics.loki.tls_config.cert_file // "/files/grafana.cert" |
-            .scheduled_tasks.statistics.loki.tls_config.key_file = .scheduled_tasks.statistics.loki.tls_config.key_file // "/files/grafana.key" |
-            .scheduled_tasks.statistics.loki.tls_config.server_name = .scheduled_tasks.statistics.loki.tls_config.server_name // "stats.qcommander.sh" |
-            .scheduled_tasks.statistics.grafana.alloy.enabled = .scheduled_tasks.statistics.grafana.alloy.enabled // true |
-            .scheduled_tasks.statistics.grafana.alloy.template_file = .scheduled_tasks.statistics.grafana.alloy.template_file // "/files/alloy.config" |
-            .scheduled_tasks.statistics.grafana.alloy.config_file = .scheduled_tasks.statistics.grafana.alloy.config_file // "/etc/alloy/alloy.conf" |
-            .scheduled_tasks.diagnostics.enabled = .scheduled_tasks.diagnostics.enabled // true |
+            .scheduled_tasks.logs.enabled = .scheduled_tasks.logs.enabled // false
+            .scheduled_tasks.logs.cron_expression = .scheduled_tasks.logs.cron_expression // ""
+            .scheduled_tasks.statistics.enabled = .scheduled_tasks.statistics.enabled // true
+            .scheduled_tasks.statistics.service_name = .scheduled_tasks.statistics.service_name // "quil_statistics"
+            .scheduled_tasks.statistics.prometheus.endpoint = .scheduled_tasks.statistics.prometheus.endpoint // "https://stats.qcommander.sh:9090/api/v1/write"
+            .scheduled_tasks.statistics.prometheus.tls_config.cert_file = .scheduled_tasks.statistics.prometheus.tls_config.cert_file // "/files/grafana.cert"
+            .scheduled_tasks.statistics.prometheus.tls_config.key_file = .scheduled_tasks.statistics.prometheus.tls_config.key_file // "/files/grafana.key"
+            .scheduled_tasks.statistics.prometheus.tls_config.server_name = .scheduled_tasks.statistics.prometheus.tls_config.server_name // "stats.qcommander.sh"
+            .scheduled_tasks.statistics.loki.endpoint = .scheduled_tasks.statistics.loki.endpoint // "https://stats.qcommander.sh:3100/loki/api/v1/push"
+            .scheduled_tasks.statistics.loki.tls_config.cert_file = .scheduled_tasks.statistics.loki.tls_config.cert_file // "/files/grafana.cert"
+            .scheduled_tasks.statistics.loki.tls_config.key_file = .scheduled_tasks.statistics.loki.tls_config.key_file // "/files/grafana.key"
+            .scheduled_tasks.statistics.loki.tls_config.server_name = .scheduled_tasks.statistics.loki.tls_config.server_name // "stats.qcommander.sh"
+            .scheduled_tasks.statistics.grafana.alloy.enabled = .scheduled_tasks.statistics.grafana.alloy.enabled // true
+            .scheduled_tasks.statistics.grafana.alloy.template_file = .scheduled_tasks.statistics.grafana.alloy.template_file // "/files/alloy.config"
+            .scheduled_tasks.statistics.grafana.alloy.config_file = .scheduled_tasks.statistics.grafana.alloy.config_file // "/etc/alloy/alloy.conf"
+            .scheduled_tasks.diagnostics.enabled = .scheduled_tasks.diagnostics.enabled // true
             .scheduled_tasks.diagnostics.cron_expression = .scheduled_tasks.diagnostics.cron_expression // ""
         ' "$QTOOLS_PATH/config.yml"
 
         echo "Added default scheduled tasks for logs, statistics, and diagnostics"
-
         echo "Added default scheduled tasks for updates"
-
         echo "Copied .settings.backups to .scheduled_tasks.backup fields"
     fi
 }
