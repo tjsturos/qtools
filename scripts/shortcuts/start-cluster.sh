@@ -163,8 +163,8 @@ if [ "$MASTER" == "true" ]; then
     # Read the config file
     config=$(yq eval . $QTOOLS_CONFIG_FILE)
     
-    # Get the array of data worker only servers
-    servers=$(echo "$config" | yq eval '.service.clustering.servers.[]' -)
+    # Get the array of servers
+    servers=$(echo "$config" | yq eval '.service.clustering.servers' -)
 
     # Log servers information
     echo "Servers configuration:"
