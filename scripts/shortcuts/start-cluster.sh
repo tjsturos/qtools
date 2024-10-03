@@ -231,7 +231,7 @@ if [ "$MASTER" == "true" ]; then
         done
 
         # Add dataworkerMultiaddrs to local config file
-        yq eval-all -i 'select(fileIndex == 0) * select(fileIndex == 1)' "$QUIL_NODE_PATH/.config/config.yml" "$tmp_file"
+        yq eval-all -i '(select(fileIndex == 0) * select(fileIndex == 1)) as $merged | select(fileIndex == 0) * $merged' "$QUIL_NODE_PATH/.config/config.yml" "$tmp_file"
         
         if ! echo "$(hostname -I)" | grep -q "$ip"; then
             # SCP the temporary file to the remote server
