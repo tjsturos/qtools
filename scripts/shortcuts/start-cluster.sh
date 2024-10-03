@@ -194,7 +194,7 @@ if [ "$MASTER" == "true" ]; then
             dataworker_count=$(ssh -i ~/.ssh/cluster-key "$ip" nproc)
         fi
 
-        
+        echo "Dataworker count for $ip: $dataworker_count"
         
         # Increment the global count
         TOTAL_EXPECTED_DATAWORKERS=$((TOTAL_EXPECTED_DATAWORKERS + dataworker_count))
