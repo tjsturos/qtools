@@ -211,18 +211,16 @@ if [ "$MASTER" == "true" ]; then
         TOTAL_EXPECTED_DATAWORKERS=$((TOTAL_EXPECTED_DATAWORKERS + dataworker_count))
 
         # Create temporary YAML file with dataworkerMultiaddrs
-        tmp_file=$(mktemp)
-        echo "engine:" > "$tmp_file"
-        echo "  dataWorkerMultiaddrs:" >> "$tmp_file"
+       
         for ((j=0; j<dataworker_count; j++)); do
             port=$((40000 + j + SERVER_CORE_INDEX_START))
-            echo "    - /ip4/$ip/tcp/$port" >> "$tmp_file"
-            log "Dataworker multiaddr: /ip4/$ip/tcp/$port"
+            if [ "$DRY_RUN" == "false" ]; then
+                yq eval -i ".engine.dataWorkerMultiaddrs += \"/ip4/$ip/tcp/$port\"" "$QUIL_CONFIG_FILE"
+            else
+                echo "Dry run, skipping adding dataworker multiaddr: /ip4/$ip/tcp/$port"
+            fi
             SERVER_CORE_INDEX_END=$((SERVER_CORE_INDEX_END + 1))
         done
-
-        # Add dataworkerMultiaddrs to local config file
-        yq eval-all -i '(select(fileIndex == 0) *?+ select(fileIndex == 1)) as $merged | select(fileIndex == 0) *? $merged' "$QUIL_CONFIG_FILE" "$tmp_file"
         
         if ! echo "$(hostname -I)" | grep -q "$ip"; then
             # SCP the temporary file to the remote server
@@ -246,7 +244,6 @@ if [ "$MASTER" == "true" ]; then
             fi
         fi
 
-        rm "$tmp_file"
         SERVER_CORE_INDEX_START=$((SERVER_CORE_INDEX_END + 1))
     done
 
