@@ -136,8 +136,9 @@ start_core() {
 
 start_remote_cores() {
     local IP=$1
+    local CORE_INDEX_START=$2   
     echo -e "${BLUE}${INFO_ICON} Starting cluster's dataworkers on $IP${RESET}"
-    ssh -i ~/.ssh/cluster-key "$IP" "qtools start"
+    ssh -i ~/.ssh/cluster-key "$IP" "qtools start-cluster --index-start $CORE_INDEX_START"
 }
 
 # Start the workers
@@ -157,7 +158,7 @@ if [ "$MASTER" == "true" ]; then
     servers=$(echo "$config" | yq eval '.service.clustering.servers' -)
 
     # Clear the existing dataworkerMultiaddrs array
-    yq eval -i '.engine.dataWorkerMultiaddrs = []' "$QUIL_NODE_PATH/.config/config.yml"
+    yq eval -i '.engine.dataWorkerMultiaddrs = []' "$QUIL_CONFIG_FILE"
 
     # Initialize TOTAL_EXPECTED_DATAWORKERS
     TOTAL_EXPECTED_DATAWORKERS=0
@@ -165,6 +166,8 @@ if [ "$MASTER" == "true" ]; then
     # Get the number of servers
     server_count=$(echo "$servers" | yq eval '. | length' -)
 
+    SERVER_CORE_INDEX_START=1
+    SERVER_CORE_INDEX_END=1
     # Loop through each server
     for ((i=0; i<server_count; i++)); do
         server=$(echo "$servers" | yq eval ".[$i]" -)
@@ -215,32 +218,33 @@ if [ "$MASTER" == "true" ]; then
         for ((j=0; j<dataworker_count; j++)); do
             port=$((40000 + j))
             echo "    - /ip4/$ip/tcp/$port" >> "$tmp_file"
+            SERVER_CORE_INDEX_END=$((SERVER_CORE_INDEX_END + 1))
         done
 
         # Add dataworkerMultiaddrs to local config file
-        yq eval-all -i '(select(fileIndex == 0) *?+ select(fileIndex == 1)) as $merged | select(fileIndex == 0) *? $merged' "$QUIL_NODE_PATH/.config/config.yml" "$tmp_file"
+        yq eval-all -i '(select(fileIndex == 0) *?+ select(fileIndex == 1)) as $merged | select(fileIndex == 0) *? $merged' "$QUIL_CONFIG_FILE" "$tmp_file"
         
         if ! echo "$(hostname -I)" | grep -q "$ip"; then
             # SCP the temporary file to the remote server
             echo "Copying dataworker config to $ip"
             # Ensure the destination directory exists on the remote server
             ssh -i ~/.ssh/cluster-key "$ip" "mkdir -p $HOME/ceremonyclient/node/.config"
-            scp -i ~/.ssh/cluster-key "$tmp_file" "$ip:$HOME/ceremonyclient/node/.config/config.yml"
-        
-            # Remove the temporary file
-            rm "$tmp_file"
+            scp -i ~/.ssh/cluster-key "$QUIL_CONFIG_FILE" "$ip:$HOME/ceremonyclient/node/.config/config.yml"
             
             echo "Copying QTools config to $ip"
             # SCP the QTools config to the remote server
             scp -i ~/.ssh/cluster-key "$QTOOLS_CONFIG_FILE" "$ip:$HOME/qtools/config.yml"
             if [ "$DRY_RUN" == "false" ]; then
-                start_remote_cores "$ip" &
+                start_remote_cores "$ip" "$SERVER_CORE_INDEX_START" &
             fi
         fi
+
+        rm "$tmp_file"
+        SERVER_CORE_INDEX_START=$((SERVER_CORE_INDEX_END + 1))
     done
 
     # Print out the number of dataworker multiaddrs
-    actual_dataworkers=$(yq eval '.engine.dataWorkerMultiaddrs | length' "$QUIL_NODE_PATH/.config/config.yml")
+    actual_dataworkers=$(yq eval '.engine.dataWorkerMultiaddrs | length' "$QUIL_CONFIG_FILE")
 
     if [ "$TOTAL_EXPECTED_DATAWORKERS" -ne "$actual_dataworkers" ]; then
         echo -e "\e[33mWarning: The number of dataworker multiaddrs in the config doesn't match the expected count.\e[0m"
