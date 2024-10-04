@@ -66,6 +66,8 @@ if [ "$MASTER" == "true" ] && [ "$TOTAL_CORES" -eq "$DATA_WORKER_COUNT" ]; then
     echo -e "${BLUE}${INFO_ICON} Adjusting master's dataworker count to $DATA_WORKER_COUNT${RESET}"
 fi
 
+create_cluster_service_file $DATA_WORKER_COUNT $INDEX_START
+
 # Start the master and update the config
 if [ "$MASTER" == "true" ]; then
     update_quil_config $DRY_RUN
@@ -93,6 +95,6 @@ if [ "$MASTER" == "true" ]; then
 
 fi
 
-create_cluster_service_file $DATA_WORKER_COUNT $INDEX_START
+
 
 wait
