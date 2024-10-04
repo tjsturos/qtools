@@ -111,7 +111,7 @@ check_clustering_status() {
                 server_ip=$(echo "$server" | yq eval '.ip' -)
                 dataworker_count=$(echo "$server" | yq eval '.dataworker_count // 0' -)
 
-                if [[ "$dataworker_count" == "0" || "$dataworker_count" == "null" ]]; then
+                if [[ "$dataworker_count" == "0" || "$dataworker_count" == "false" ]]; then
                     if [[ "$server_ip" == "$main_ip" ]]; then
                         dataworker_count=$(($(nproc) - 1))
                     else
@@ -121,6 +121,8 @@ check_clustering_status() {
                 
                 total_dataworkers=$((total_dataworkers + dataworker_count))
             done <<< "$servers"
+
+            wait
             
             if $JSON_OUTPUT; then
                 REPORT_DATA+=("total_dataworkers:$total_dataworkers")
