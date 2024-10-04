@@ -52,15 +52,15 @@ else
     # Starting cluster mode for this config
     echo "Starting cluster mode for this config"
     # Check if the current hostname matches the orchestrator hostname
-    if [ "$(hostname)" == "$(yq '.service.clustering.orchestrator_hostname' $QTOOLS_CONFIG_FILE)" ]; then
-        if [ "$(yq '.service.clustering.main_ip' $QTOOLS_CONFIG_FILE)" == "$(hostname -I)" ]; then
-            echo "Starting node process on the master node"
-            qtools start-cluster --master
-            enable_peripheral_services
-        else
-            qtools start-cluster
-        fi
+    MAIN_IP="$(yq '.service.clustering.main_ip' $QTOOLS_CONFIG_FILE)"
+    if echo "$(hostname -I)" | grep -q "$MAIN_IP"; then
+        echo "Starting node process on the master node"
+        qtools start-cluster --master
+        enable_peripheral_services
+    else
+        qtools start-cluster
     fi
+    
 fi
 
 
