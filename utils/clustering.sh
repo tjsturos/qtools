@@ -153,6 +153,19 @@ update_quil_config() {
             fi
             SERVER_CORE_INDEX_END=$((SERVER_CORE_INDEX_END + 1))
         done
+        # Count unique IPs for this server
+        unique_ips=$(yq eval '.engine.dataWorkerMultiaddrs[] | select(contains("'$ip'"))' "$QUIL_CONFIG_FILE" | grep -oP '/ip4/\K[^/]+' | sort | uniq | wc -l)
+        
+        # Count total lines with this IP
+        total_lines=$(yq eval '.engine.dataWorkerMultiaddrs[] | select(contains("'$ip'"))' "$QUIL_CONFIG_FILE" | wc -l)
+        
+        echo "Server $ip: Unique IPs: $unique_ips, Total lines: $total_lines, Expected dataworkers: $dataworker_count"
+        
+        if [ "$unique_ips" -ne 1 ] || [ "$total_lines" -ne "$dataworker_count" ]; then
+            echo -e "\e[33mWarning: Mismatch detected for server $ip\e[0m"
+            echo -e "\e[33m  - Expected 1 unique IP, found $unique_ips\e[0m"
+            echo -e "\e[33m  - Expected $dataworker_count dataworkers, found $total_lines\e[0m"
+        fi
         
         SERVER_CORE_INDEX_START=$((SERVER_CORE_INDEX_END))
     done
@@ -182,5 +195,24 @@ copy_qtools_config_to_server() {
     local ip=$1
     scp -i ~/.ssh/cluster-key "$QTOOLS_CONFIG_FILE" "client@$ip:$HOME/qtools/config.yml"
 }
+
+get_cluster_ips() {
+    local config=$(yq eval . $QTOOLS_CONFIG_FILE)
+    local servers=$(echo "$config" | yq eval '.service.clustering.servers' -)
+    local server_count=$(echo "$servers" | yq eval '. | length' -)
+    local ips=()
+
+    for ((i=0; i<server_count; i++)); do
+        local server=$(echo "$servers" | yq eval ".[$i]" -)
+        local ip=$(echo "$server" | yq eval '.ip' -)
+        
+        if [ -n "$ip" ] && [ "$ip" != "null" ]; then
+            ips+=("$ip")
+        fi
+    done
+
+    echo "${ips[@]}"
+}
+
 
 
