@@ -114,7 +114,11 @@ update_quil_config() {
     servers=$(echo "$config" | yq eval '.service.clustering.servers' -)
 
     # Clear the existing dataworkerMultiaddrs array
-    yq eval -i '.engine.dataWorkerMultiaddrs = []' "$QUIL_CONFIG_FILE"
+    if [ "$DRY_RUN" == "false" ]; then
+        yq eval -i '.engine.dataWorkerMultiaddrs = []' "$QUIL_CONFIG_FILE"
+    else
+        echo "Dry run, skipping clearing dataworkerMultiaddrs"
+    fi
 
     # Initialize TOTAL_EXPECTED_DATAWORKERS
     TOTAL_EXPECTED_DATAWORKERS=0
