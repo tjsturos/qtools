@@ -85,7 +85,6 @@ if [ "$IS_CLUSTERING_ENABLED" == "true" ]; then
 
     for ((i=0; i<=$local_core_count; i++)); do
         stop_core $(($i + $core_index)) &
-        core_index=$(($core_index + 1))
     done
 fi
 
