@@ -77,6 +77,7 @@ if [ "$IS_CLUSTERING_ENABLED" == "true" ] && [ "$IS_MASTER" == "true" ] || [ "$I
   STATS_ENABLED=$(yq eval '.scheduled_tasks.statistics.enabled // false' $QTOOLS_CONFIG_FILE)
 
   if [ "$STATS_ENABLED" == "true" ]; then
+    log "Stats enabled, adding scheduled rewards recording (hourly, daily, weekly, monthly)"
     append_to_file $FILE_CRON '0 * * * * qtools record-unclaimed-rewards hourly' false
     append_to_file $FILE_CRON '0 0 * * * qtools record-unclaimed-rewards daily' false
     append_to_file $FILE_CRON '0 0 * * 0 qtools record-unclaimed-rewards weekly' false
