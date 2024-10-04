@@ -5,12 +5,16 @@
 # Initialize variables
 IS_QUICK_MODE=false
 IS_CLUSTERING_ENABLED=$(yq '.service.clustering.enabled // false' $QTOOLS_CONFIG_FILE)
-
+IS_KILL_MODE=false
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
         --quick)
             IS_QUICK_MODE=true
+            shift
+            ;;
+        --kill)
+            IS_KILL_MODE=true
             shift
             ;;
         *)
@@ -155,5 +159,8 @@ if [ "$IS_QUICK_MODE" == "false" ]; then
     fi
 fi
 
-# and to make sure any stray node commands are exited
-pgrep -f node | grep -v $$ | xargs -r sudo kill -9
+# Kill mode is essentially quick mode + kill the node process
+if [ "$IS_KILL_MODE" == "true" ]; then
+    echo "Kill mode, killing node process"
+    pgrep -f node | grep -v $$ | xargs -r sudo kill -9
+fi
