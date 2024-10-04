@@ -227,16 +227,21 @@ if [ "$MASTER" == "true" ]; then
         if ! echo "$(hostname -I)" | grep -q "$ip"; then
             # SCP the temporary file to the remote server
             echo "Copying dataworker config to $ip"
-            # Ensure the destination directory exists on the remote server
-            ssh -i ~/.ssh/cluster-key "$ip" "mkdir -p $HOME/ceremonyclient/node/.config"
-            scp -i ~/.ssh/cluster-key "$QUIL_CONFIG_FILE" "$ip:$HOME/ceremonyclient/node/.config/config.yml"
+            if [ "$DRY_RUN" == "false" ]; then
+                # Ensure the destination directory exists on the remote server
+                ssh -i ~/.ssh/cluster-key "$ip" "mkdir -p $HOME/ceremonyclient/node/.config"
+                scp -i ~/.ssh/cluster-key "$QUIL_CONFIG_FILE" "$ip:$HOME/ceremonyclient/node/.config/config.yml"
+            else
+                echo "Dry run, skipping copying dataworker config to $ip"
+            fi
             
             echo "Copying QTools config to $ip"
             # SCP the QTools config to the remote server
-            scp -i ~/.ssh/cluster-key "$QTOOLS_CONFIG_FILE" "$ip:$HOME/qtools/config.yml"
             if [ "$DRY_RUN" == "false" ]; then
+                scp -i ~/.ssh/cluster-key "$QTOOLS_CONFIG_FILE" "$ip:$HOME/qtools/config.yml"
                 start_remote_cores "$ip" "$SERVER_CORE_INDEX_START" &
             else
+                log "Dry run, skipping starting qtools config on $ip"
                 log "Going to start $dataworker_count dataworkers on $ip with core index start $SERVER_CORE_INDEX_START"
             fi
         fi
