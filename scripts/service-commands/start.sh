@@ -51,13 +51,25 @@ if [ "$(yq '.service.clustering.enabled // false' $QTOOLS_CONFIG_FILE)" == "fals
 else
     # Starting cluster mode for this config
     echo "Starting cluster mode for this config"
+
+    # Get the cluster server info
+    cluster_server_info=$(get_cluster_server_info)
+    cluster_server_ip=$(echo "$cluster_server_info" | cut -d' ' -f1)
+    cluster_server_dataworker_count=$(echo "$cluster_server_info" | cut -d' ' -f2)
+    cluster_server_index_start=$(echo "$cluster_server_info" | cut -d' ' -f3)
+
+
     # Check if the current hostname matches the orchestrator hostname
     if [ "$(is_master)" == "true" ]; then
         echo "Starting node process on the master node"
-        qtools start-cluster --master
+        qtools start-cluster --master \
+            --data-worker-count $cluster_server_info_dataworker_count \
+            --index-start $cluster_server_info_index_start
         enable_peripheral_services
     else
-        qtools start-cluster
+        qtools start-cluster \
+            --data-worker-count $cluster_server_dataworker_count \
+            --index-start $cluster_server_index_start \
     fi
     
 fi

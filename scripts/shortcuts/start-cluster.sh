@@ -217,6 +217,7 @@ if [ "$MASTER" == "true" ]; then
         for ((j=0; j<dataworker_count; j++)); do
             port=$((40000 + j + SERVER_CORE_INDEX_START))
             echo "    - /ip4/$ip/tcp/$port" >> "$tmp_file"
+            log "Dataworker multiaddr: /ip4/$ip/tcp/$port"
             SERVER_CORE_INDEX_END=$((SERVER_CORE_INDEX_END + 1))
         done
 
