@@ -24,7 +24,7 @@ if [ "$AUTO_UPDATE_NODE" == "true" ]; then
   
   # Check if Expression is valid
   if [ -z "$NODE_UPDATE_CRON_EXPRESSION" ]; then
-    log "Error: Node update cron expression is empty. Using default value."
+    log "Node update cron expression is empty. Using default value: */10 * * * *"
     NODE_UPDATE_CRON_EXPRESSION="*/10 * * * *"
   fi
   
@@ -38,7 +38,7 @@ if [ "$AUTO_UPDATE_QTOOLS" == "true" ]; then
   
   # Check if Expression is valid
   if [ -z "$QTOOLS_UPDATE_CRON_EXPRESSION" ]; then
-    log "Error: Qtools update cron expression is empty. Using default value."
+    log "Qtools update cron expression is empty. Using default value: */10 * * * *"
     QTOOLS_UPDATE_CRON_EXPRESSION="*/10 * * * *"
   fi
   
@@ -53,7 +53,7 @@ if [ "$IS_CLUSTERING_ENABLED" == "true" ] && [ "$IS_MASTER" == "true" ]; then
     
     # Check if Expression is valid
     if [ -z "$DIAGNOSTICS_CRON_EXPRESSION" ]; then
-      log "Error: Diagnostics cron expression is empty. Using default value."
+      log "Diagnostics cron expression is empty. Using default value: */10 * * * *"
       DIAGNOSTICS_CRON_EXPRESSION="*/10 * * * *"
     fi
     
@@ -67,7 +67,7 @@ if [ "$IS_CLUSTERING_ENABLED" == "true" ] && [ "$IS_MASTER" == "true" ]; then
     
     # Check if Expression is valid
     if [ -z "$BACKUP_STORE_CRON_EXPRESSION" ]; then
-      log "Error: Backup store cron expression is empty. Using default value."
+      log "Backup store cron expression is empty. Using default value: */10 * * * *"
       BACKUP_STORE_CRON_EXPRESSION="*/10 * * * *"
     fi
     
@@ -84,7 +84,6 @@ if [ "$IS_CLUSTERING_ENABLED" == "true" ] && [ "$IS_MASTER" == "true" ]; then
   fi
 
 fi
-
 
 echo "$(crontab -l)" > $FILE_ACTUAL_OUTPUT
 DIFF_BEFORE="$(colordiff -u $FILE_CRON $FILE_ACTUAL_OUTPUT)"
