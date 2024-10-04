@@ -169,10 +169,11 @@ update_quil_config() {
 
         for ((j=0; j<dataworker_count; j++)); do
             port=$((40000 + j + SERVER_CORE_INDEX_START))
+            addr="/ip4/$ip/tcp/$port"
             if [ "$DRY_RUN" == "false" ]; then
-                yq eval -i ".engine.dataWorkerMultiaddrs += \"/ip4/$ip/tcp/$port\"" "$QUIL_CONFIG_FILE"
+                yq eval -i ".engine.dataWorkerMultiaddrs += \"$addr\"" "$QUIL_CONFIG_FILE"
             else
-                echo "Dry run, skipping adding dataworker multiaddr: /ip4/$ip/tcp/$port"
+                echo "Dry run, skipping adding dataworker multiaddr: $addr"
             fi
             SERVER_CORE_INDEX_END=$((SERVER_CORE_INDEX_END + 1))
         done
