@@ -157,15 +157,19 @@ update_quil_config() {
         SERVER_CORE_INDEX_START=$((SERVER_CORE_INDEX_END))
     done
 
-    # Print out the number of dataworker multiaddrs
-    actual_dataworkers=$(yq eval '.engine.dataWorkerMultiaddrs | length' "$QUIL_CONFIG_FILE")
+    if [ "$DRY_RUN" == "false" ]; then
+        # Print out the number of dataworker multiaddrs
+        actual_dataworkers=$(yq eval '.engine.dataWorkerMultiaddrs | length' "$QUIL_CONFIG_FILE")
 
-    if [ "$TOTAL_EXPECTED_DATAWORKERS" -ne "$actual_dataworkers" ]; then
-        echo -e "\e[33mWarning: The number of dataworker multiaddrs in the config doesn't match the expected count.\e[0m"
-        echo -e "${BLUE}${INFO_ICON} Dataworkers to be started: $TOTAL_EXPECTED_DATAWORKERS${RESET}"
-        echo -e "${BLUE}${INFO_ICON} Actual dataworker multiaddrs in config: $actual_dataworkers${RESET}"
-    else
-        echo -e "${BLUE}${INFO_ICON} Number of actual dataworkers found ($actual_dataworkers) matches the expected amount.${RESET}"
+        if [ "$TOTAL_EXPECTED_DATAWORKERS" -ne "$actual_dataworkers" ]; then
+            echo -e "\e[33mWarning: The number of dataworker multiaddrs in the config doesn't match the expected count.\e[0m"
+            echo -e "${BLUE}${INFO_ICON} Dataworkers to be started: $TOTAL_EXPECTED_DATAWORKERS${RESET}"
+            echo -e "${BLUE}${INFO_ICON} Actual dataworker multiaddrs in config: $actual_dataworkers${RESET}"
+        else
+            echo -e "${BLUE}${INFO_ICON} Number of actual dataworkers found ($actual_dataworkers) matches the expected amount.${RESET}"
+        fi
+    else 
+        echo -e "${BLUE}${INFO_ICON} [DRY RUN] Would update dataworker multiaddrs to have $TOTAL_EXPECTED_DATAWORKERS dataworkers${RESET}"
     fi
 }
 
