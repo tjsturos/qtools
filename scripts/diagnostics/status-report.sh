@@ -75,6 +75,73 @@ check_hourly_reward_rate() {
     fi
 }
 
+check_clustering_status() {
+    local config_file="$QTOOLS_CONFIG_FILE"
+    local enabled=$(yq '.service.clustering.enabled' "$config_file" 2>/dev/null || qyaml .service.clustering.enabled "$config_file")
+
+    if [[ "$enabled" == "true" ]]; then
+        if $JSON_OUTPUT; then
+            REPORT_DATA+=("clustering_status:enabled")
+        else
+            echo -e "${GREEN_CHECK} Clustering is enabled"
+        fi
+        local main_ip=$(yq '.service.clustering.main_ip' "$config_file" 2>/dev/null || qyaml .service.clustering.main_ip "$config_file")
+        local current_ip=$(hostname -I | awk '{print $1}')
+        
+        if [[ "$current_ip" == "$main_ip" ]]; then
+            if $JSON_OUTPUT; then
+                REPORT_DATA+=("node_role:main")
+                REPORT_DATA+=("main_ip:$main_ip")
+            else
+                echo -e "${GREEN_CHECK} This is the main clustering node (IP: $main_ip)"
+            fi
+            
+            # Count total data workers across all servers
+            local servers=$(yq '.service.clustering.servers[]' "$config_file" 2>/dev/null || qyaml .service.clustering.servers[] "$config_file")
+            local total_dataworkers=0
+            
+            while IFS= read -r server; do
+                local server_ip=$(echo "$server" | yq '.ip' 2>/dev/null || echo "$server" | qyaml .ip)
+                local dataworker_count=$(echo "$server" | yq '.dataworker_count // 0' 2>/dev/null || echo "$server" | qyaml '.dataworker_count // 0')
+                
+                if [[ "$dataworker_count" == "0" || "$dataworker_count" == "null" ]]; then
+                    if [[ "$server_ip" == "$current_ip" ]]; then
+                        dataworker_count=$(($(nproc) - 1))
+                    else
+                        dataworker_count=$(ssh -i ~/.ssh/cluster-key "$server_ip" nproc)
+                    fi
+                fi
+                
+                total_dataworkers=$((total_dataworkers + dataworker_count))
+            done <<< "$servers"
+            
+            if $JSON_OUTPUT; then
+                REPORT_DATA+=("total_dataworkers:$total_dataworkers")
+            else
+                echo -e "${INFO_ICON} Total data workers across all servers: $total_dataworkers"
+            fi
+        else
+            if $JSON_OUTPUT; then
+                REPORT_DATA+=("node_role:worker")
+            else
+                echo -e "${INFO_ICON} This is a worker node in the cluster"
+            fi
+            local dataworker_count=$(systemctl list-units --type=service --state=active | grep -c "$QUIL_SERVICE_NAME-dataworker@")
+            if $JSON_OUTPUT; then
+                REPORT_DATA+=("active_dataworkers:$dataworker_count")
+            else
+                echo -e "${INFO_ICON} Active data workers on this node: $dataworker_count"
+            fi
+        fi
+    else
+        if $JSON_OUTPUT; then
+            REPORT_DATA+=("clustering_status:disabled")
+        else
+            echo -e "${INFO_ICON} Clustering is not enabled"
+        fi
+    fi
+}
+
 check_service_status() {
     local output=$(qtools status)
 
@@ -222,17 +289,17 @@ check_frame_count() {
 
 check_backup_status() {
     local config_file="$QTOOLS_CONFIG_FILE"
-    local enabled=$(yq '.settings.backups.enabled' "$config_file" 2>/dev/null || qyaml .settings.backups.enabled "$config_file")
+    local enabled=$(yq '.scheduled_tasks.backup.enabled' "$config_file" 2>/dev/null || qyaml .scheduled_tasks.backup.enabled "$config_file")
 
     if [[ "$enabled" == "true" ]]; then
-        local node_backup_dir=$(yq '.settings.backups.node_backup_dir' "$config_file" 2>/dev/null || qyaml '.settings.backups.node_backup_dir' "$config_file")
-        if [ -z "$node_backup_dir" ]; then
-            node_backup_dir=$(qtools peer-id)
+        local node_backup_name=$(yq '.scheduled_tasks.backup.node_backup_name' "$config_file" 2>/dev/null || qyaml '.scheduled_tasks.backup.node_backup_name' "$config_file")
+        if [ -z "$node_backup_name" ]; then
+            node_backup_name=$(qtools peer-id)
         fi
-        local backup_url=$(yq '.settings.backups.backup_url' "$config_file" 2>/dev/null || qyaml '.settings.backups.backup_url' "$config_file")
-        local remote_user=$(yq '.settings.backups.remote_user' "$config_file" 2>/dev/null || qyaml '.settings.backups.remote_user' "$config_file")
-        local ssh_key_path=$(yq '.settings.backups.ssh_key_path' "$config_file" 2>/dev/null || qyaml '.settings.backups.ssh_key_path' "$config_file")
-        local remote_backup_dir=$(yq '.settings.backups.remote_backup_dir' "$config_file" 2>/dev/null || qyaml '.settings.backups.remote_backup_dir' "$config_file")
+        local backup_url=$(yq '.scheduled_tasks.backup.backup_url' "$config_file" 2>/dev/null || qyaml '.scheduled_tasks.backup.backup_url' "$config_file")
+        local remote_user=$(yq '.scheduled_tasks.backup.remote_user' "$config_file" 2>/dev/null || qyaml '.scheduled_tasks.backup.remote_user' "$config_file")
+        local ssh_key_path=$(yq '.scheduled_tasks.backup.ssh_key_path' "$config_file" 2>/dev/null || qyaml '.scheduled_tasks.backup.ssh_key_path' "$config_file")
+        local remote_backup_dir=$(yq '.scheduled_tasks.backup.remote_backup_dir' "$config_file" 2>/dev/null || qyaml '.scheduled_tasks.backup.remote_backup_dir' "$config_file")
 
         if $JSON_OUTPUT; then
             REPORT_DATA+=("backup_status:Enabled")
@@ -291,7 +358,7 @@ check_proof_info() {
 
 check_statistics_enabled() {
     local config_file="$QTOOLS_CONFIG_FILE"
-    local enabled=$(yq '.settings.statistics.enabled' "$config_file" 2>/dev/null || qyaml .settings.statistics.enabled "$config_file")
+    local enabled=$(yq '.scheduled_tasks.stats.enabled' "$config_file" 2>/dev/null || qyaml .scheduled_tasks.stats.enabled "$config_file")
 
     if [[ "$enabled" == "true" ]]; then
         if $JSON_OUTPUT; then
@@ -310,7 +377,7 @@ check_statistics_enabled() {
 
 check_diagnostics_enabled() {
     local config_file="$QTOOLS_CONFIG_FILE"
-    local enabled=$(yq '.settings.diagnostics.enabled' "$config_file" 2>/dev/null || qyaml .settings.diagnostics.enabled "$config_file")
+    local enabled=$(yq '.scheduled_tasks.diagnostics.enabled' "$config_file" 2>/dev/null || qyaml .scheduled_tasks.diagnostics.enabled "$config_file")
 
     if [[ "$enabled" == "true" ]]; then
         if $JSON_OUTPUT; then
