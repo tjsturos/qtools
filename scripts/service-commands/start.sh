@@ -44,7 +44,8 @@ enable_peripheral_services() {
     fi
 }
 
-if [ "$(yq '.service.clustering.enabled // false' $QTOOLS_CONFIG_FILE)" == "false" ]; then
+IS_CLUSTER_MODE=$(yq '.service.clustering.enabled // false' $QTOOLS_CONFIG_FILE)
+if [ "$IS_CLUSTER_MODE" == "false" ]; then
     echo "Starting single node service."
     sudo systemctl start $QUIL_SERVICE_NAME.service
     enable_peripheral_services
@@ -69,9 +70,7 @@ else
     else
         qtools start-cluster \
             --data-worker-count $cluster_server_dataworker_count \
-            --index-start $cluster_server_index_start \
+            --index-start $cluster_server_index_start 
     fi
-    
 fi
-
 

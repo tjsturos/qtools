@@ -7,12 +7,12 @@
 # Function to set backup status
 set_backup_status() {
     local status=$1
-    yq -i ".settings.backups.enabled = $status" $QTOOLS_CONFIG_FILE
+    yq -i ".scheduled_tasks.backup.enabled = $status" $QTOOLS_CONFIG_FILE
     echo "Backups have been turned $([[ $status == true ]] && echo "on" || echo "off")."
 }
 
 # Check current backup status
-current_status=$(yq '.settings.backups.enabled // true' $QTOOLS_CONFIG_FILE)
+current_status=$(yq '.scheduled_tasks.backup.enabled // false' $QTOOLS_CONFIG_FILE)
 
 # Parse command line arguments
 if [[ $# -eq 1 ]]; then

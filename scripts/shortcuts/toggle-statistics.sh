@@ -7,12 +7,12 @@
 # Function to set statistics status
 set_statistics_status() {
     local status=$1
-    yq -i ".settings.statistics.enabled = $status" $QTOOLS_CONFIG_FILE
+    yq -i ".scheduled_tasks.statistics.enabled = $status" $QTOOLS_CONFIG_FILE
     echo "Statistics have been turned $([[ $status == true ]] && echo "on" || echo "off")."
 }
 
 # Check current statistics status
-current_status=$(yq '.settings.statistics.enabled // true' $QTOOLS_CONFIG_FILE)
+current_status=$(yq '.scheduled_tasks.statistics.enabled // false' $QTOOLS_CONFIG_FILE)
 
 # Parse command line arguments
 if [[ $# -eq 1 ]]; then

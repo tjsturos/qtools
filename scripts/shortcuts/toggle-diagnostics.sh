@@ -7,12 +7,12 @@
 # Function to set diagnostics status
 set_diagnostics_status() {
     local status=$1
-    yq -i ".settings.diagnostics.enabled = $status" $QTOOLS_CONFIG_FILE
+    yq -i ".scheduled_tasks.diagnostics.enabled = $status" $QTOOLS_CONFIG_FILE
     echo "Diagnostics have been turned $([[ $status == true ]] && echo "on" || echo "off")."
 }
 
 # Check current diagnostics status
-current_status=$(yq '.settings.diagnostics.enabled // true' $QTOOLS_CONFIG_FILE)
+current_status=$(yq '.scheduled_tasks.diagnostics.enabled // false' $QTOOLS_CONFIG_FILE)
 
 # Parse command line arguments
 if [[ $# -eq 1 ]]; then

@@ -7,7 +7,7 @@
 # Function to set auto-update status
 set_auto_update_status() {
     local status=$1
-    yq -i ".settings.auto_updates.node = $status" $QTOOLS_CONFIG_FILE
+    yq -i ".scheduled_tasks.updates.node.enabled = $status" $QTOOLS_CONFIG_FILE
     echo "Auto-updates have been turned $([[ $status == true ]] && echo "on" || echo "off")."
 }
 
