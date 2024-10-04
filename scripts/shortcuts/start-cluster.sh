@@ -144,7 +144,6 @@ start_remote_cores() {
 # Start the workers
 for ((i=0; i<DATA_WORKER_COUNT; i++)); do
     CORE=$((INDEX_START + i))
-    echo -e "\e[32mGoing to Start ${QUIL_SERVICE_NAME}-dataworker@$CORE.service\e[0m"
     start_core $CORE &
 done
 
