@@ -42,7 +42,7 @@ if [ "$AUTO_UPDATE_QTOOLS" == "true" ]; then
   append_to_file $FILE_CRON "$QTOOLS_UPDATE_CRON_EXPRESSION qtools self-update --auto" false
 fi
 
-AUTO_RUN_DIAGNOSTICS=$(yq eval '.scheduled_tasks.diagnostics.enabled // true' $QTOOLS_CONFIG_FILE)
+AUTO_RUN_DIAGNOSTICS=$(yq eval '.scheduled_tasks.diagnostics.enabled // false' $QTOOLS_CONFIG_FILE)
 
 if [ "$AUTO_RUN_DIAGNOSTICS" == "true" ]; then
   DIAGNOSTICS_CRON_EXPRESSION=$(yq eval '.scheduled_tasks.diagnostics.cron_expression // "*/10 * * * *"' $QTOOLS_CONFIG_FILE)
@@ -56,7 +56,7 @@ if [ "$AUTO_RUN_DIAGNOSTICS" == "true" ]; then
   append_to_file $FILE_CRON "$DIAGNOSTICS_CRON_EXPRESSION qtools run-diagnostics --auto" false
 fi
 
-AUTO_BACKUP_STORE=$(yq eval '.scheduled_tasks.backup.enabled // true' $QTOOLS_CONFIG_FILE)
+AUTO_BACKUP_STORE=$(yq eval '.scheduled_tasks.backup.enabled // false' $QTOOLS_CONFIG_FILE)
 
 if [ "$AUTO_BACKUP_STORE" == "true" ]; then
   BACKUP_STORE_CRON_EXPRESSION=$(yq eval '.scheduled_tasks.backup.cron_expression // "*/10 * * * *"' $QTOOLS_CONFIG_FILE)
@@ -70,7 +70,7 @@ if [ "$AUTO_BACKUP_STORE" == "true" ]; then
   append_to_file $FILE_CRON "$BACKUP_STORE_CRON_EXPRESSION qtools backup-store" false
 fi
 
-STATS_ENABLED=$(yq eval '.scheduled_tasks.stats.enabled // true' $QTOOLS_CONFIG_FILE)
+STATS_ENABLED=$(yq eval '.scheduled_tasks.statistics.enabled // false' $QTOOLS_CONFIG_FILE)
 
 if [ "$STATS_ENABLED" == "true" ]; then
   append_to_file $FILE_CRON '0 * * * * qtools record-unclaimed-rewards hourly' false
