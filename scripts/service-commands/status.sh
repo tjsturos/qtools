@@ -59,20 +59,10 @@ if [ "$IS_CLUSTERING_ENABLED" == "true" ]; then
         
         # Use ssh to run the command on the remote machine
         ssh -i ~/.ssh/cluster-key "$ip" "
-            # Get all running services for $QUIL_SERVICE_NAME with --core option
-            services=\$(systemctl list-units --type=service --state=running | grep '$QUIL_SERVICE_NAME-dataworker@' | awk '{print \$1}')
+            # Get the count of active (non-dead) dataworker services
+            active_count=\$(systemctl list-units --type=service --state=active,running | grep '$QUIL_SERVICE_NAME-dataworker@' | wc -l)
             
-            # Count the number of unique services
-            count=\$(echo \"\$services\" | wc -l)
-            
-            echo \"Number of running $QUIL_SERVICE_NAME dataworker services: \$count\"
-            
-            # Print the status of each service
-            for service in \$services; do
-                echo \"Status for \$service:\"
-                systemctl status \$service --no-pager
-                echo \"\"
-            done
+            echo \"Number of active $QUIL_SERVICE_NAME dataworker services: \$active_count\"
         "
         echo "----------------------------------------"
     done
