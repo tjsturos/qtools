@@ -20,7 +20,7 @@ create_cluster_service_file() {
             echo "Error: Failed to get user or group information"
             exit 1
         fi
-        echo -e "${BLUE}${INFO_ICON} Creating $QUIL_SERVICE_NAME-dataworker@.service file...${RESET}"
+        echo -e "${BLUE}${INFO_ICON} Updating $QUIL_SERVICE_NAME.service file...${RESET}"
         sudo tee "$service_file" > /dev/null <<EOF
 [Unit]
 Description=Quilibrium Node Service (Cluster Mode)
@@ -54,7 +54,7 @@ setup_remote_cores() {
     local IP=$1
     local CORE_INDEX_START=$2  
     local CORE_COUNT=$3
-    echo -e "${BLUE}${INFO_ICON} Starting cluster's dataworkers on $IP${RESET}"
+    echo -e "${BLUE}${INFO_ICON} Configuring cluster's dataworkers on $IP${RESET}"
     ssh -i ~/.ssh/cluster-key "client@$IP" "qtools setup-cluster \
         --core-index-start $CORE_INDEX_START \
         --data-worker-count $CORE_COUNT"

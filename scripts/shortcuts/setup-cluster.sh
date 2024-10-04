@@ -92,5 +92,7 @@ if [ "$MASTER" == "true" ]; then
     done
 
 fi
-    create_cluster_service_file $DATA_WORKER_COUNT $INDEX_START
 
+create_cluster_service_file $DATA_WORKER_COUNT $INDEX_START
+
+wait
