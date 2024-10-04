@@ -165,7 +165,7 @@ if [ "$MASTER" == "true" ]; then
     # Get the number of servers
     server_count=$(echo "$servers" | yq eval '. | length' -)
 
-    SERVER_CORE_INDEX_START=1
+    SERVER_CORE_INDEX_START=0
     SERVER_CORE_INDEX_END=0
     # Loop through each server
     for ((i=0; i<server_count; i++)); do
