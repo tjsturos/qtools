@@ -91,8 +91,7 @@ if [ "$MASTER" == "true" ]; then
             if [ "$DRY_RUN" == "false" ]; then
                 start_remote_cores "$ip" "$index_start" "$dataworker_count" &
             else
-                echo -e "${BLUE}${INFO_ICON} [DRY RUN] Start cores on $ip with index start \
-                    of $index_start and dataworker count of $dataworker_count${RESET}"
+                echo -e "${BLUE}${INFO_ICON} [DRY RUN] Start cores on $ip with index start of $index_start and dataworker count of $dataworker_count${RESET}"
             fi
         fi
     done
