@@ -19,6 +19,16 @@ SERVICE_NAME=$QUIL_SERVICE_NAME
 ENABLE_SERVICE=false
 RESTART_SERVICE=false
 
+if [ "$IS_CLUSTER_MODE" == "true" ] && [ "$(is_master)" == "false" ]; then
+    if [ "$(is_master)" == "true" ]; then
+        qtools stop
+        qtools setup-cluster --master
+        qtools start
+    fi
+    # do not update normally on clustered nodes
+    exit 0
+fi
+
 while [[ $# -gt 0 ]]; do
     case $1 in
         --core)
