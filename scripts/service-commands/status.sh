@@ -46,6 +46,7 @@ if [ "$IS_CLUSTERING_ENABLED" == "true" ]; then
         # Check if the IP is the local machine
         if echo "$(hostname -I)" | grep -q "$ip"; then
             echo "This is the local machine, continuing..."
+            sudo systemctl status $QUIL_SERVICE_NAME.service --no-pager
             continue
         fi
         
