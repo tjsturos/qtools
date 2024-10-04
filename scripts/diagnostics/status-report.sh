@@ -122,7 +122,7 @@ check_clustering_status() {
                     if [[ "$server_ip" == "$main_ip" ]]; then
                         dataworker_count=$(($(nproc) - 1))
                     else
-                        dataworker_count=$(ssh -i ~/.ssh/cluster-key "$server_ip" nproc)
+                        dataworker_count=$(ssh -i ~/.ssh/cluster-key "client@$server_ip" nproc)
                     fi
                 fi
                 

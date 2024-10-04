@@ -79,7 +79,7 @@ start_remote_cores() {
     local CORE_INDEX_START=$2  
     local CORE_COUNT=$3
     echo -e "${BLUE}${INFO_ICON} Starting cluster's dataworkers on $IP${RESET}"
-    ssh -i ~/.ssh/cluster-key "$IP" "qtools start-cluster \
+    ssh -i ~/.ssh/cluster-key "client@$IP" "qtools start-cluster \
         --index-start $CORE_INDEX_START \
         --data-worker-count $CORE_COUNT"
 }
@@ -151,7 +151,7 @@ update_quil_config() {
             available_cores=$(($(nproc) - 1))
         else
             # Get the number of available cores
-            available_cores=$(ssh -i ~/.ssh/cluster-key "$ip" nproc)
+            available_cores=$(ssh -i ~/.ssh/cluster-key "client@$ip" nproc)
             
         fi
         if [ "$dataworker_count" == "false" ]; then
@@ -196,12 +196,12 @@ update_quil_config() {
 copy_quil_config_to_server() {
     local ip=$1
 
-    scp -i ~/.ssh/cluster-key "$QUIL_CONFIG_FILE" "$ip:$HOME/ceremonyclient/node/.config/config.yml"
+    scp -i ~/.ssh/cluster-key "$QUIL_CONFIG_FILE" "client@$ip:$HOME/ceremonyclient/node/.config/config.yml"
 }
 
 copy_qtools_config_to_server() {
     local ip=$1
 
-    scp -i ~/.ssh/cluster-key "$QTOOLS_CONFIG_FILE" "$ip:$HOME/qtools/config.yml"
+    scp -i ~/.ssh/cluster-key "$QTOOLS_CONFIG_FILE" "client@$ip:$HOME/qtools/config.yml"
 }
 

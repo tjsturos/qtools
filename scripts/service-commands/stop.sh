@@ -123,7 +123,7 @@ if [ "$IS_CLUSTERING_ENABLED" == "true" ]; then
             
             # Run the qtools stop command on the remote server
             # Note: This assumes SSH key-based authentication is set up
-            ssh -i ~/.ssh/cluster-key $ip "qtools stop --core-index $core_index"
+            ssh -i ~/.ssh/cluster-key client@$ip "qtools stop --core-index $core_index"
             
             if [ $? -eq 0 ]; then
                 echo "Successfully stopped services on $ip"

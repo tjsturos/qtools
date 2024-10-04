@@ -59,7 +59,7 @@ if [ "$IS_CLUSTERING_ENABLED" == "true" ]; then
         echo "Checking status of dataworkers on $ip:"
         
         # Use ssh to run the command on the remote machine
-        ssh -i ~/.ssh/cluster-key "$ip" "
+        ssh -i ~/.ssh/cluster-key "client@$ip" "
             # Get the count of active (non-dead) dataworker services
             active_count=\$(systemctl list-units --type=service --state=active,running | grep '$QUIL_SERVICE_NAME-dataworker@' | wc -l)
             
