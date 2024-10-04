@@ -141,7 +141,7 @@ start_remote_cores() {
 }
 
 # Start the workers
-for ((i=0; i=<$DATA_WORKER_COUNT; i++)); do
+for ((i=0; i<$DATA_WORKER_COUNT; i++)); do
     CORE=$((INDEX_START + i))
     "\e[32mGoing to Start $QUIL_SERVICE_NAME-dataworker@$CORE.service\e[0m"
     start_core $CORE &
@@ -166,7 +166,7 @@ if [ "$MASTER" == "true" ]; then
     server_count=$(echo "$servers" | yq eval '. | length' -)
 
     # Loop through each server
-    for ((i=0; i<server_count; i++)); do
+    for ((i=0; i<$server_count; i++)); do
         server=$(echo "$servers" | yq eval ".[$i]" -)
         ip=$(echo "$server" | yq eval '.ip' -)
         dataworker_count=$(echo "$server" | yq eval '.dataworker_count // "false"' -)
@@ -212,7 +212,7 @@ if [ "$MASTER" == "true" ]; then
         tmp_file=$(mktemp)
         echo "engine:" > "$tmp_file"
         echo "  dataworkerMultiaddrs:" >> "$tmp_file"
-        for ((j=0; j<dataworker_count; j++)); do
+        for ((j=0; j<$dataworker_count; j++)); do
             port=$((40000 + j))
             echo "    - /ip4/$ip/tcp/$port" >> "$tmp_file"
         done

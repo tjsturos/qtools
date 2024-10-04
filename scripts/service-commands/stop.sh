@@ -83,7 +83,7 @@ if [ "$IS_CLUSTERING_ENABLED" == "true" ]; then
         local_core_count=$(($local_core_count - 1))
     fi
 
-    for ((i=0; i<=$local_core_count; i++)); do
+    for ((i=0; i<$local_core_count; i++)); do
         stop_core $(($i + $core_index)) &
     done
 fi
@@ -101,7 +101,7 @@ if [ "$IS_CLUSTERING_ENABLED" == "true" ]; then
 
         MAIN_IP=$(yq '.service.clustering.main_ip' $QTOOLS_CONFIG_FILE)
         # Loop through each server
-        for ((i=0; i<server_count; i++)); do
+        for ((i=0; i<$server_count; i++)); do
             server=$(yq eval ".service.clustering.servers[$i]" $QTOOLS_CONFIG_FILE)
         
             ip=$(echo "$server" | yq eval '.ip' -)
