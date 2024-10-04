@@ -75,14 +75,13 @@ if [ "$IS_CLUSTERING_ENABLED" == "true" ] && echo "$(hostname -I)" | grep -q "$M
     servers=$(yq eval '.service.clustering.servers' $QTOOLS_CONFIG_FILE)
     server_count=$(echo "$servers" | yq eval '. | length' -)
 
-    echo "Server count: $server_count"
     # Loop through each server
     for ((i=0; i<server_count; i++)); do
         server=$(yq eval ".service.clustering.servers[$i]" $QTOOLS_CONFIG_FILE)
-        echo "Server: $server"
+       
         ip=$(echo "$server" | yq eval '.ip' -)
 
-        if echo "$(hostname -I)" | grep -q "$MAIN_IP"; then
+        if [ "$ip" == "$MAIN_IP" ]; then
            continue
         fi
         echo "Stopping services on $ip"
