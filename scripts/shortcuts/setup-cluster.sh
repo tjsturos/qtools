@@ -63,6 +63,7 @@ fi
 # Adjust COUNT if master is specified, but only if not all cores are used for workers
 if [ "$MASTER" == "true" ] && [ "$TOTAL_CORES" -eq "$DATA_WORKER_COUNT" ]; then
     DATA_WORKER_COUNT=$((TOTAL_CORES - 1))
+    echo -e "${BLUE}${INFO_ICON} [DRY RUN] Adjusting dataworker count to $DATA_WORKER_COUNT${RESET}"
 fi
 
 # Start the master and update the config
@@ -84,7 +85,8 @@ if [ "$MASTER" == "true" ]; then
                 copy_qtools_config_to_server $ip
                 setup_remote_cores "$ip" "$index_start" "$dataworker_count" &
             else
-                echo -e "${BLUE}${INFO_ICON} [DRY RUN] Start cores on $ip with index start of $index_start and dataworker count of $dataworker_count${RESET}"
+                echo -e "${BLUE}${INFO_ICON} [DRY RUN] Copy configs to $ip${RESET}"
+                echo -e "${BLUE}${INFO_ICON} [DRY RUN] Setup cores on $ip with index start of $index_start and dataworker count of $dataworker_count${RESET}"
             fi
         fi
     done
