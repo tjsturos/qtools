@@ -71,22 +71,30 @@ stop_core() {
     sudo systemctl stop $QUIL_SERVICE_NAME-dataworker@$CORE_ID.service
 }
 
-MAIN_IP=$(yq '.service.clustering.main_ip' $QTOOLS_CONFIG_FILE)
+if [ "$IS_CLUSTERING_ENABLED" == "true" ]; then
+    echo "Stopping core processes on local machine"
+    core_index=1
+    local_core_count=$(($(nproc)))
+    if is_master; then
+        local_core_count=$(($local_core_count - 1))
+    fi
+
+    for ((i=0; i<$local_core_count; i++)); do
+        stop_core $(($i + $core_index)) &
+        core_index=$(($core_index + 1))
+    done
+fi
+
 # Check if clustering is enabled
-if [ "$IS_CLUSTERING_ENABLED" == "true" ] && echo "$(hostname -I)" | grep -q "$MAIN_IP"; then
+if [ "$IS_CLUSTERING_ENABLED" == "true" ] && is_master; then
     echo "Clustering is enabled and this is the main IP. Stopping services on all servers..."
     
     # Get the list of servers
     servers=$(yq eval '.service.clustering.servers' $QTOOLS_CONFIG_FILE)
     server_count=$(echo "$servers" | yq eval '. | length' -)
 
-    core_index=1
-    local_core_count=$(($(nproc) - 1))
-    for ((i=0; i<$local_core_count; i++)); do
-        stop_core $(($i + $core_index)) &
-        core_index=$(($core_index + 1))
-    done
 
+    MAIN_IP=$(yq '.service.clustering.main_ip' $QTOOLS_CONFIG_FILE)
     # Loop through each server
     for ((i=0; i<server_count; i++)); do
         server=$(yq eval ".service.clustering.servers[$i]" $QTOOLS_CONFIG_FILE)
@@ -132,7 +140,7 @@ clean_up_process() {
 # Quick mode is essentially no clean up, with intention to immediately restart the node process
 if [ "$IS_QUICK_MODE" == "false" ]; then
     # Check if clustering is enabled and if this is the orchestrator node
-    if [ "$IS_CLUSTERING_ENABLED" == "true" ] && echo "$(hostname -I)" | grep -q "$MAIN_IP"; then
+    if [ "$IS_CLUSTERING_ENABLED" == "true" ] && is_master; then
         # Only stop the node processes on the orchestrator node (they aren't running on non-orchestrator nodes)
        
         clean_up_process

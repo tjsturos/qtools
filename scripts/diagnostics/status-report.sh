@@ -85,9 +85,9 @@ check_clustering_status() {
         else
             echo -e "${GREEN_CHECK} Clustering is enabled"
         fi
-        local main_ip=$(yq '.service.clustering.main_ip' "$config_file")
         local total_dataworkers=0
-        if echo "$(hostname -I)" | grep -q "$main_ip"; then
+        local main_ip=$(yq '.service.clustering.main_ip' "$config_file")
+        if is_master; then
             if $JSON_OUTPUT; then
                 REPORT_DATA+=("node_role:main")
                 REPORT_DATA+=("main_ip:$main_ip")

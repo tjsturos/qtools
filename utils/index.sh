@@ -289,3 +289,6 @@ source $QTOOLS_PATH/utils/hardware.sh
 
 # Source the snapshot utils (requires hardware.sh)
 source $QTOOLS_PATH/utils/snapshot.sh
+
+# Source the clustering utils
+source $QTOOLS_PATH/utils/clustering.sh
