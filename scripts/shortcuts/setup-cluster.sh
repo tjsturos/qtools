@@ -63,7 +63,7 @@ fi
 # Adjust COUNT if master is specified, but only if not all cores are used for workers
 if [ "$MASTER" == "true" ] && [ "$TOTAL_CORES" -eq "$DATA_WORKER_COUNT" ]; then
     DATA_WORKER_COUNT=$((TOTAL_CORES - 1))
-    echo -e "${BLUE}${INFO_ICON} [DRY RUN] Adjusting dataworker count to $DATA_WORKER_COUNT${RESET}"
+    echo -e "${BLUE}${INFO_ICON} Adjusting master's dataworker count to $DATA_WORKER_COUNT${RESET}"
 fi
 
 # Start the master and update the config

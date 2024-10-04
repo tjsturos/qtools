@@ -188,12 +188,16 @@ update_quil_config() {
 
 copy_quil_config_to_server() {
     local ip=$1
-    scp -i ~/.ssh/cluster-key "$QUIL_CONFIG_FILE" "client@$ip:$HOME/ceremonyclient/node/.config/config.yml"
+    echo -e "${BLUE}${INFO_ICON} Copying $QUIL_CONFIG_FILE to $ip${RESET}"
+    ssh -i ~/.ssh/cluster-key "client@$ip" "mkdir -p $HOME/ceremonyclient/node/.config" &>/dev/null
+    scp -i ~/.ssh/cluster-key "$QUIL_CONFIG_FILE" "client@$ip:$HOME/ceremonyclient/node/.config/config.yml" &>/dev/null
 }
 
 copy_qtools_config_to_server() {
     local ip=$1
-    scp -i ~/.ssh/cluster-key "$QTOOLS_CONFIG_FILE" "client@$ip:$HOME/qtools/config.yml"
+    echo -e "${BLUE}${INFO_ICON} Copying $QTOOLS_CONFIG_FILE to $ip${RESET}"
+    ssh -i ~/.ssh/cluster-key "client@$ip" "mkdir -p $HOME/qtools" &>/dev/null
+    scp -i ~/.ssh/cluster-key "$QTOOLS_CONFIG_FILE" "client@$ip:$HOME/qtools/config.yml" &>/dev/null
 }
 
 get_cluster_ips() {
