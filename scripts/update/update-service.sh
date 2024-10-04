@@ -126,6 +126,7 @@ updateCPUQuota() {
 }
 
 createServiceIfNone() {
+    log "Checking if service file exists at $SERVICE_FILE"
     if [ ! -f "$SERVICE_FILE" ]; then
         log "No service found at $SERVICE_FILE. Creating service file..."
         echo "$SERVICE_CONTENT" | sudo tee "$SERVICE_FILE" > /dev/null
