@@ -42,6 +42,12 @@ if [ "$IS_CLUSTERING_ENABLED" == "true" ]; then
     for ((i=0; i<server_count; i++)); do
         server=$(echo "$servers" | yq eval ".[$i]" -)
         ip=$(echo "$server" | yq eval '.ip' -)
+
+        # Check if the IP is the local machine
+        if echo "$(hostname -I)" | grep -q "$ip"; then
+            echo "This is the local machine, continuing..."
+            continue
+        fi
         
         # Skip invalid entries
         if [ -z "$ip" ] || [ "$ip" == "null" ]; then
