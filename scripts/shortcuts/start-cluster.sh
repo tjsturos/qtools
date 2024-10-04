@@ -37,6 +37,7 @@ Description=Quilibrium Dataworker Service
 [Service]
 Type=simple
 Restart=always
+RestartSec=50ms
 User=$USER
 Group=$GROUP
 WorkingDirectory=$(yq '.service.working_dir // "'$QUIL_NODE_PATH'"' $QTOOLS_CONFIG_FILE)
