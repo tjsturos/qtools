@@ -75,7 +75,7 @@ if [ "$IS_CLUSTERING_ENABLED" == "true" ]; then
     echo "Stopping core processes on local machine"
     core_index=1
     local_core_count=$(($(nproc)))
-    if is_master; then
+    if [ "$(is_master)" == "true" ]; then
         local_core_count=$(($local_core_count - 1))
     fi
 
@@ -86,7 +86,7 @@ if [ "$IS_CLUSTERING_ENABLED" == "true" ]; then
 fi
 
 # Check if clustering is enabled
-if [ "$IS_CLUSTERING_ENABLED" == "true" ] && is_master; then
+if [ "$IS_CLUSTERING_ENABLED" == "true" ] && [ "$(is_master)" == "true" ]; then
     echo "Clustering is enabled and this is the main IP. Stopping services on all servers..."
     
     # Get the list of servers
@@ -140,8 +140,8 @@ clean_up_process() {
 # Quick mode is essentially no clean up, with intention to immediately restart the node process
 if [ "$IS_QUICK_MODE" == "false" ]; then
     # Check if clustering is enabled and if this is the orchestrator node
-    if [ "$IS_CLUSTERING_ENABLED" == "true" ] && is_master; then
-        # Only stop the node processes on the orchestrator node (they aren't running on non-orchestrator nodes)
+    if [ "$IS_CLUSTERING_ENABLED" == "true" ] && [ "$(is_master)" == "true" ]; then
+        # Only stop the node processes on the master node (they aren't running on non-orchestrator nodes)
        
         clean_up_process
     elif [ "$IS_CLUSTERING_ENABLED" == "false" ]; then

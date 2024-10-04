@@ -52,7 +52,7 @@ else
     # Starting cluster mode for this config
     echo "Starting cluster mode for this config"
     # Check if the current hostname matches the orchestrator hostname
-    if is_master; then
+    if [ "$(is_master)" == "true" ]; then
         echo "Starting node process on the master node"
         qtools start-cluster --master
         enable_peripheral_services
