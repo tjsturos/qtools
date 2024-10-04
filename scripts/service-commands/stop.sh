@@ -6,7 +6,6 @@
 IS_QUICK_MODE=false
 IS_CLUSTERING_ENABLED=$(yq '.service.clustering.enabled // false' $QTOOLS_CONFIG_FILE)
 
-
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -66,6 +65,12 @@ else
     done
 fi
 
+stop_core() {
+    local CORE_ID=$1
+    echo "Stopping core $CORE_ID"
+    sudo systemctl stop $QUIL_SERVICE_NAME-dataworker@$CORE_ID.service
+}
+
 MAIN_IP=$(yq '.service.clustering.main_ip' $QTOOLS_CONFIG_FILE)
 # Check if clustering is enabled
 if [ "$IS_CLUSTERING_ENABLED" == "true" ] && echo "$(hostname -I)" | grep -q "$MAIN_IP"; then
@@ -74,6 +79,11 @@ if [ "$IS_CLUSTERING_ENABLED" == "true" ] && echo "$(hostname -I)" | grep -q "$M
     # Get the list of servers
     servers=$(yq eval '.service.clustering.servers' $QTOOLS_CONFIG_FILE)
     server_count=$(echo "$servers" | yq eval '. | length' -)
+
+    core_index=1
+    for ((i=0; i<$(nproc); i++)); do
+        stop_core $i &
+    done
 
     # Loop through each server
     for ((i=0; i<server_count; i++)); do
