@@ -133,6 +133,7 @@ update_quil_config() {
         server=$(echo "$servers" | yq eval ".[$i]" -)
         ip=$(echo "$server" | yq eval '.ip' -)
         dataworker_count=$(echo "$server" | yq eval '.dataworker_count // "false"' -)
+        available_cores=$(nproc)
         
         # Skip invalid entries
         if [ -z "$ip" ] || [ "$ip" == "null" ]; then
@@ -148,23 +149,18 @@ update_quil_config() {
             echo "Set main IP to $ip in clustering configuration"
             # This is the master server, so subtract 1 from the total core count
             available_cores=$(($(nproc) - 1))
-            if [ "$dataworker_count" == "false" ]; then
-                dataworker_count=$(($(nproc) - 1))
-            fi
-
-            # Convert dataworker_count to integer and ensure it's not greater than available cores
-            dataworker_count=$(echo "$dataworker_count" | tr -cd '0-9')
-            dataworker_count=$((dataworker_count > 0 ? dataworker_count : available_cores))
-            dataworker_count=$((dataworker_count < available_cores ? dataworker_count : available_cores))
         else
             # Get the number of available cores
             available_cores=$(ssh -i ~/.ssh/cluster-key "$ip" nproc)
             
-            # Convert dataworker_count to integer and ensure it's not greater than available cores
-            dataworker_count=$(echo "$dataworker_count" | tr -cd '0-9')
-            dataworker_count=$((dataworker_count > 0 ? dataworker_count : available_cores))
-            dataworker_count=$((dataworker_count < available_cores ? dataworker_count : available_cores))
         fi
+        if [ "$dataworker_count" == "false" ]; then
+            dataworker_count=$available_cores
+        fi
+        # Convert dataworker_count to integer and ensure it's not greater than available cores
+        dataworker_count=$(echo "$dataworker_count" | tr -cd '0-9')
+        dataworker_count=$((dataworker_count > 0 ? dataworker_count : available_cores))
+        dataworker_count=$((dataworker_count < available_cores ? dataworker_count : available_cores))
 
         echo "Dataworker count for $ip: $dataworker_count"
         
@@ -181,7 +177,6 @@ update_quil_config() {
             SERVER_CORE_INDEX_END=$((SERVER_CORE_INDEX_END + 1))
         done
         
-
         SERVER_CORE_INDEX_START=$((SERVER_CORE_INDEX_END))
     done
 
