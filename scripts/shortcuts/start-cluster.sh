@@ -157,7 +157,7 @@ if [ "$MASTER" == "true" ]; then
     servers=$(echo "$config" | yq eval '.service.clustering.servers' -)
 
     # Clear the existing dataworkerMultiaddrs array
-    yq eval -i '.engine.dataworkerMultiaddrs = []' "$QUIL_NODE_PATH/.config/config.yml"
+    yq eval -i '.engine.dataWorkerMultiaddrs = []' "$QUIL_NODE_PATH/.config/config.yml"
 
     # Initialize TOTAL_EXPECTED_DATAWORKERS
     TOTAL_EXPECTED_DATAWORKERS=0
@@ -211,7 +211,7 @@ if [ "$MASTER" == "true" ]; then
         # Create temporary YAML file with dataworkerMultiaddrs
         tmp_file=$(mktemp)
         echo "engine:" > "$tmp_file"
-        echo "  dataworkerMultiaddrs:" >> "$tmp_file"
+        echo "  dataWorkerMultiaddrs:" >> "$tmp_file"
         for ((j=0; j<dataworker_count; j++)); do
             port=$((40000 + j))
             echo "    - /ip4/$ip/tcp/$port" >> "$tmp_file"
@@ -240,7 +240,7 @@ if [ "$MASTER" == "true" ]; then
     done
 
     # Print out the number of dataworker multiaddrs
-    actual_dataworkers=$(yq eval '.engine.dataworkerMultiaddrs | length' "$QUIL_NODE_PATH/.config/config.yml")
+    actual_dataworkers=$(yq eval '.engine.dataWorkerMultiaddrs | length' "$QUIL_NODE_PATH/.config/config.yml")
 
     if [ "$TOTAL_EXPECTED_DATAWORKERS" -ne "$actual_dataworkers" ]; then
         echo -e "\e[33mWarning: The number of dataworker multiaddrs in the config doesn't match the expected count.\e[0m"
