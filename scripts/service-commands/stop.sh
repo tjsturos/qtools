@@ -120,6 +120,10 @@ if [ "$IS_CLUSTERING_ENABLED" == "true" ]; then
             continue
             fi
             echo "Stopping services on $ip"
+
+            if [ "$(is_master)" == "true" ]; then
+                continue
+            fi
             
             # Run the qtools stop command on the remote server
             # Note: This assumes SSH key-based authentication is set up
