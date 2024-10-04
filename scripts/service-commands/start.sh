@@ -22,8 +22,6 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-
-
 IS_CLUSTERING_ENABLED=$(yq '.service.clustering.enabled // false' $QTOOLS_CONFIG_FILE)
 
 if [ "$IS_CLUSTERING_ENABLED" == "true" ]; then
@@ -31,7 +29,7 @@ if [ "$IS_CLUSTERING_ENABLED" == "true" ]; then
     echo "Cluster IPs: $CLUSTER_IPS"
     for ip in $CLUSTER_IPS; do
         if echo "$(hostname -I)" | grep -q "$ip"; then
-            echo "Starting Quil on local server $($ip)"
+            echo "Starting Quil on local server ($ip)"
             sudo systemctl start $QUIL_SERVICE_NAME.service
         else
             echo "Starting Quil on remote server $ip"
