@@ -103,27 +103,11 @@ if ! [[ "$DATA_WORKER_COUNT" =~ ^[1-9][0-9]*$ ]]; then
     exit 1
 fi
 
-# Array to store background process PIDs
-declare -a WORKER_PIDS
-
-# Cleanup function to kill all worker processes
-cleanup() {
-    if [ "$DRY_RUN" == "true" ]; then
-        echo -e "${BLUE}${INFO_ICON} [DRY RUN] Would stop all services${RESET}"
-    else
-        qtools stop
-    fi
-}
-
-# Set up trap for common termination signals
-trap cleanup SIGINT SIGTERM SIGHUP
-
 # Adjust COUNT if master is specified, but only if not all cores are used for workers
 if [ "$MASTER" == "true" ] && [ "$TOTAL_CORES" -eq "$DATA_WORKER_COUNT" ]; then
     DATA_WORKER_COUNT=$((TOTAL_CORES - 1))
 fi
 
-MASTER_PID=false
 # Start the master if specified
 if [ "$MASTER" == "true" ]; then
     if [ "$DRY_RUN" == "true" ]; then
@@ -141,16 +125,11 @@ start_core() {
     if [ "$DRY_RUN" == "true" ]; then
         echo -e "${BLUE}${INFO_ICON} [DRY RUN] Would enable and start $QUIL_SERVICE_NAME-dataworker@$CORE.service${RESET}"
     else
-        sudo systemctl enable $QUIL_SERVICE_NAME-dataworker@$CORE.service
         if ! sudo systemctl start $QUIL_SERVICE_NAME-dataworker@$CORE.service; then
-            echo "Failed to start $QUIL_SERVICE_NAME-dataworker@$CORE.service. Do you want to continue? (y/n)"
-            read -r response
-            if [[ "$response" =~ ^[Nn]$ ]]; then
-                echo "Aborting..."
-                exit 1
-            fi
+            echo -e "\e[31mFailed to start $QUIL_SERVICE_NAME-dataworker@$CORE.service.\e[0m"
         else
             echo -e "\e[32mStarted $QUIL_SERVICE_NAME-dataworker@$CORE.service\e[0m"
+            sudo systemctl enable $QUIL_SERVICE_NAME-dataworker@$CORE.service
         fi
     fi
 }
@@ -164,11 +143,9 @@ start_remote_cores() {
 # Start the workers
 for ((i=0; i<DATA_WORKER_COUNT; i++)); do
     CORE=$((INDEX_START + i))
+    "\e[32mGoing to Start $QUIL_SERVICE_NAME-dataworker@$CORE.service\e[0m"
     start_core $CORE &
 done
-
-# Wait for all background processes to finish
-wait
 
 # If master, configure data worker servers
 if [ "$MASTER" == "true" ]; then
@@ -178,10 +155,6 @@ if [ "$MASTER" == "true" ]; then
     
     # Get the array of servers
     servers=$(echo "$config" | yq eval '.service.clustering.servers' -)
-
-    # Log servers information
-    echo "Servers configuration:"
-    echo "$servers" | yq eval -P
 
     # Clear the existing dataworkerMultiaddrs array
     yq eval -i '.engine.dataworkerMultiaddrs = []' "$QUIL_NODE_PATH/.config/config.yml"
@@ -211,16 +184,15 @@ if [ "$MASTER" == "true" ]; then
             yq eval -i ".service.clustering.main_ip = \"$ip\"" $QTOOLS_CONFIG_FILE
             echo "Set main IP to $ip in clustering configuration"
             # This is the master server, so subtract 1 from the total core count
+            available_cores=$(($(nproc) - 1))
             if [ "$dataworker_count" == "false" ]; then
                 dataworker_count=$(($(nproc) - 1))
-            else
-                available_cores=$(($(nproc) - 1))
-            
-                # Convert dataworker_count to integer and ensure it's not greater than available cores
-                dataworker_count=$(echo "$dataworker_count" | tr -cd '0-9')
-                dataworker_count=$((dataworker_count > 0 ? dataworker_count : available_cores))
-                dataworker_count=$((dataworker_count < available_cores ? dataworker_count : available_cores))
             fi
+
+            # Convert dataworker_count to integer and ensure it's not greater than available cores
+            dataworker_count=$(echo "$dataworker_count" | tr -cd '0-9')
+            dataworker_count=$((dataworker_count > 0 ? dataworker_count : available_cores))
+            dataworker_count=$((dataworker_count < available_cores ? dataworker_count : available_cores))
         else
             # Get the number of available cores
             available_cores=$(ssh -i ~/.ssh/cluster-key "$ip" nproc)
