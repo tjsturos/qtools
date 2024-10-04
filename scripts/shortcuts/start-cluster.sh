@@ -236,6 +236,8 @@ if [ "$MASTER" == "true" ]; then
             scp -i ~/.ssh/cluster-key "$QTOOLS_CONFIG_FILE" "$ip:$HOME/qtools/config.yml"
             if [ "$DRY_RUN" == "false" ]; then
                 start_remote_cores "$ip" "$SERVER_CORE_INDEX_START" &
+            else
+                log "Going to start $dataworker_count dataworkers on $ip with core index start $SERVER_CORE_INDEX_START"
             fi
         fi
 
