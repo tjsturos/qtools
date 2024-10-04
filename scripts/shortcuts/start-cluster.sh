@@ -244,7 +244,7 @@ if [ "$MASTER" == "true" ]; then
             fi
         fi
 
-        SERVER_CORE_INDEX_START=$((SERVER_CORE_INDEX_END + 1))
+        SERVER_CORE_INDEX_START=$((SERVER_CORE_INDEX_END))
     done
 
     # Print out the number of dataworker multiaddrs
