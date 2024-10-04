@@ -138,6 +138,8 @@ are_snapshots_enabled() {
   [[ "$enabled" == "true" ]]
 }
 
+NODE_BINARY=$(get_versioned_node)
+
 # Set environment variables based on the option
 case "$1" in
   peer-id|unclaimed-balance)

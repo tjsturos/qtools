@@ -53,48 +53,7 @@ clean_up_process() {
     fi
 }
 
-# Stop all services that start with $QUIL_SERVICE_NAME
-# Get all active services that start with $QUIL_SERVICE_NAME
-active_services=$(systemctl list-units --type=service --state=active | grep "$QUIL_SERVICE_NAME" | awk '{print $1}')
-
-# Check if there are any active services
-if [ -z "$active_services" ]; then
-    echo "No active services found starting with $QUIL_SERVICE_NAME"
-else
-    # Stop each active service
-    for service in $active_services; do
-        echo "Stopping service: $service"
-        sudo systemctl stop "$service"
-        
-        # Check if the service was successfully stopped
-        if ! systemctl is-active --quiet "$service"; then
-            echo "Service $service stopped successfully"
-        else
-            echo "Failed to stop service: $service"
-        fi
-    done
-fi
-
-stop_core() {
-    local CORE_ID=$1
-    echo "Stopping core $CORE_ID"
-    sudo systemctl stop $QUIL_SERVICE_NAME-dataworker@$CORE_ID.service
-}
-
-if [ "$IS_CLUSTERING_ENABLED" == "true" ]; then
-    echo "Stopping core processes on local machine"
-    if [ "$CORE_INDEX" == "false" ]; then
-        CORE_INDEX=1
-    fi
-    local_core_count=$(($(nproc)))
-    if [ "$(is_master)" == "true" ]; then
-        local_core_count=$(($local_core_count - 1))
-    fi
-
-    for ((i=0; i<local_core_count; i++)); do
-        stop_core $(($i + $CORE_INDEX)) &
-    done
-fi
+sudo systemctl stop $QUIL_SERVICE_NAME.service
 
 # Check if clustering is enabled
 if [ "$IS_CLUSTERING_ENABLED" == "true" ]; then
@@ -107,56 +66,31 @@ if [ "$IS_CLUSTERING_ENABLED" == "true" ]; then
         server_count=$(echo "$servers" | yq eval '. | length' -)
         
         MAIN_IP=$(yq '.service.clustering.main_ip' $QTOOLS_CONFIG_FILE)
-        START_CORE_INDEX=1
+       
         # Loop through each server
         for ((i=0; i<$server_count; i++)); do
             server=$(yq eval ".service.clustering.servers[$i]" $QTOOLS_CONFIG_FILE)
         
             ip=$(echo "$server" | yq eval '.ip' -)
-            core_index=$(echo "$server" | yq eval '.index_start' -)
 
             if [ "$ip" == "$MAIN_IP" ]; then
-            continue
+                continue
             fi
             echo "Stopping services on $ip"
 
             if [ "$(is_master)" != "true" ]; then
                  # Run the qtools stop command on the remote server
                 # Note: This assumes SSH key-based authentication is set up
-                ssh -i ~/.ssh/cluster-key client@$ip "qtools stop --core-index $core_index"
+                ssh -i ~/.ssh/cluster-key client@$ip "qtools stop"
                 if [ $? -eq 0 ]; then
                     echo "Successfully stopped services on $ip"
                 else
                     echo "Failed to stop services on $ip"
                 fi
             fi
-            
-           
-            START_CORE_INDEX=$(($START_CORE_INDEX + $CORE_INDEX))
         done
-    else
-        echo "Not the master node, nothing to do further."
     fi
-else
-    echo "Clustering is not enabled. Skipping remote server operations."
 fi
-
-
-clean_up_process() {
-    # and to make sure any stray node commands are exited
-    # Backup store
-    qtools backup-store
-
-    # Disable backups so any changes to store from this point are not saved to remote storage
-    qtools toggle-backups --off
-    
-    # Disable diagnostics as there will not be any fixes to be made while not running
-    qtools toggle-diagnostics --off
-
-    # Disable statistics as no updated statistics can be collected while not running
-    qtools toggle-statistics --off
-}
-
 
 # Quick mode is essentially no clean up, with intention to immediately restart the node process
 if [ "$IS_QUICK_MODE" == "false" ]; then

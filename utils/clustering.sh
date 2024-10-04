@@ -7,9 +7,10 @@ is_master() {
     fi
 }
 
-create_dataworker_service_file() {
-    local BINARY=$(get_versioned_node)
-    local service_file="/etc/systemd/system/$QUIL_SERVICE_NAME-dataworker@.service"
+create_cluster_service_file() {
+    local DATA_WORKER_COUNT=$1
+    local CORE_INDEX_START=$2
+    local service_file="/etc/systemd/system/$QUIL_SERVICE_NAME.service"
     if [ "$DRY_RUN" == "true" ]; then
         echo -e "${BLUE}${INFO_ICON} [DRY RUN] Would create $service_file if it doesn't exist${RESET}"
     else
@@ -22,7 +23,7 @@ create_dataworker_service_file() {
         echo -e "${BLUE}${INFO_ICON} Creating $QUIL_SERVICE_NAME-dataworker@.service file...${RESET}"
         sudo tee "$service_file" > /dev/null <<EOF
 [Unit]
-Description=Quilibrium Dataworker Service
+Description=Quilibrium Node Service (Cluster Mode)
 
 [Service]
 Type=simple
@@ -30,14 +31,14 @@ Restart=always
 RestartSec=50ms
 User=$USER
 Group=$GROUP
-WorkingDirectory=$(yq '.service.working_dir // "'$QUIL_NODE_PATH'"' $QTOOLS_CONFIG_FILE)
-ExecStart=$QUIL_NODE_PATH/$BINARY --core %i
-
+PATH=/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
+ExecStart=qtools start-cluster --core-index-start $CORE_INDEX_START --data-worker-count $DATA_WORKER_COUNT
 
 [Install]
 WantedBy=multi-user.target
 EOF
         sudo systemctl daemon-reload
+        sudo systemctl enable $QUIL_SERVICE_NAME.service
         echo -e "${BLUE}${INFO_ICON} Service file created and systemd reloaded.${RESET}"
     fi
 }
@@ -46,41 +47,16 @@ start_control_process() {
     echo -e "${BLUE}${INFO_ICON} Starting $QUIL_SERVICE_NAME.service${RESET}"
     sudo systemctl enable $QUIL_SERVICE_NAME.service
     sudo systemctl start $QUIL_SERVICE_NAME.service
+    echo $!
 }
 
-# Function to start a single core
-start_core() {
-    local CORE=$1
-    if [ "$DRY_RUN" == "true" ]; then
-        echo -e "${BLUE}${INFO_ICON} [DRY RUN] Would enable and start $QUIL_SERVICE_NAME-dataworker@$CORE.service${RESET}"
-    else
-        if ! sudo systemctl start $QUIL_SERVICE_NAME-dataworker@$CORE.service; then
-            echo -e "\e[31mFailed to start $QUIL_SERVICE_NAME-dataworker@$CORE.service.\e[0m"
-        else
-            echo -e "\e[32mStarted $QUIL_SERVICE_NAME-dataworker@$CORE.service\e[0m"
-            sudo systemctl enable $QUIL_SERVICE_NAME-dataworker@$CORE.service
-        fi
-    fi
-}
-
-
-start_local_cores() {
-    local CORE_INDEX_START=$1
-    local CORE_COUNT=$2
-    echo -e "${BLUE}${INFO_ICON} Starting cluster's dataworkers on local machine${RESET}"
-    for ((i=0; i<CORE_COUNT; i++)); do
-        CORE=$((INDEX_START + i))
-        start_core $CORE &
-    done
-}
-
-start_remote_cores() {
+setup_remote_cores() {
     local IP=$1
     local CORE_INDEX_START=$2  
     local CORE_COUNT=$3
     echo -e "${BLUE}${INFO_ICON} Starting cluster's dataworkers on $IP${RESET}"
-    ssh -i ~/.ssh/cluster-key "client@$IP" "qtools start-cluster \
-        --index-start $CORE_INDEX_START \
+    ssh -i ~/.ssh/cluster-key "client@$IP" "qtools setup-cluster \
+        --core-index-start $CORE_INDEX_START \
         --data-worker-count $CORE_COUNT"
 }
 
@@ -195,13 +171,12 @@ update_quil_config() {
 
 copy_quil_config_to_server() {
     local ip=$1
-
     scp -i ~/.ssh/cluster-key "$QUIL_CONFIG_FILE" "client@$ip:$HOME/ceremonyclient/node/.config/config.yml"
 }
 
 copy_qtools_config_to_server() {
     local ip=$1
-
     scp -i ~/.ssh/cluster-key "$QTOOLS_CONFIG_FILE" "client@$ip:$HOME/qtools/config.yml"
 }
+
 

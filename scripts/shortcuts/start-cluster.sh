@@ -1,106 +1,89 @@
-#!/bin/bash
-BLUE="\e[34m"
-INFO_ICON="\u2139"
-RESET="\e[0m"
-DRY_RUN=false  # Set this to true for dry run mode
-
-# Get the number of CPU cores
-TOTAL_CORES=$(nproc)
-
-# Set default values
-DATA_WORKER_COUNT=$TOTAL_CORES
-INDEX_START=1
-MASTER=false
-
-# Function to display usage information
-usage() {
-    echo "Usage: $0 [--data-worker-count <number>] [--index-start <number>] [--master]"
-    echo "  --data-worker-count  Number of workers to start (default: number of CPU cores)"
-    echo "  --index-start        Starting index for worker cores (default: 1)"
-    echo "  --master             Run a master node as one of this CPU's cores"
-    exit 1
-}
-
-# Check if help is requested
-if [[ "$1" == "--help" || "$1" == "-h" ]]; then
-    usage
-fi
+START_CORE_INDEX=1
+DATA_WORKER_COUNT=$(nproc)
+PARENT_PID=$$
+CRASHED=0
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
+        --core-index-start)
+            START_CORE_INDEX="$2"
+            shift 2
+            ;;
         --data-worker-count)
             DATA_WORKER_COUNT="$2"
             shift 2
             ;;
-        --index-start)
-            INDEX_START="$2"
-            shift 2
-            ;;
-        --master)
-            MASTER=true
-            shift
-            ;;
-        --dry-run)
-            DRY_RUN=true
-            shift
-            ;;
         *)
             echo "Unknown option: $1"
-            usage
             exit 1
             ;;
     esac
 done
 
-# Validate COUNT
-if ! [[ "$DATA_WORKER_COUNT" =~ ^[1-9][0-9]*$ ]]; then
-    echo "Error: --data-worker-count must be a non-zero unsigned integer"
+
+# Validate START_CORE_INDEX
+if ! [[ "$START_CORE_INDEX" =~ ^[0-9]+$ ]]; then
+    echo "Error: --core-index-start must be a non-negative integer"
     exit 1
 fi
 
-# Call the function to create the service file
-create_dataworker_service_file
-
-# Adjust COUNT if master is specified, but only if not all cores are used for workers
-if [ "$MASTER" == "true" ] && [ "$TOTAL_CORES" -eq "$DATA_WORKER_COUNT" ]; then
-    DATA_WORKER_COUNT=$((TOTAL_CORES - 1))
+# Validate DATA_WORKER_COUNT
+if ! [[ "$DATA_WORKER_COUNT" =~ ^[1-9][0-9]*$ ]]; then
+    echo "Error: --data-worker-count must be a positive integer"
+    exit 1
 fi
 
-# Start the master and update the config
-if [ "$MASTER" == "true" ]; then
+# Get the maximum number of CPU cores
+MAX_CORES=$(nproc)
 
-    update_quil_config $DRY_RUN
+# Adjust DATA_WORKER_COUNT if START_CORE_INDEX is 1
+if [ "$START_CORE_INDEX" -eq 1 ]; then
+    # Adjust MAX_CORES if START_CORE_INDEX is 1
+    echo "Adjusting max cores available to $((MAX_CORES - 1)) (from $MAX_CORES) due to starting the master node on core 0"
+    MAX_CORES=$((MAX_CORES - 1))
+fi
 
-    if [ "$DRY_RUN" == "true" ]; then
-        echo -e "${BLUE}${INFO_ICON} [DRY RUN] Starting $QUIL_SERVICE_NAME.service${RESET}"
-    else
-        start_control_process
+# If DATA_WORKER_COUNT is greater than MAX_CORES, set it to MAX_CORES
+if [ "$DATA_WORKER_COUNT" -gt "$MAX_CORES" ]; then
+    DATA_WORKER_COUNT=$MAX_CORES
+    echo "DATA_WORKER_COUNT adjusted down to maximum: $DATA_WORKER_COUNT"
+fi
+
+
+# Loop through the data worker count and start each core
+start_cluster() {
+    # Kill all node-* processes
+    pkill node-*
+
+    if [ $START_CORE_INDEX -eq 1 ]; then
+        $QUIL_NODE_PATH/$NODE_BINARY &
+        PARENT_PID=$!
     fi
 
-    servers=$(yq eval '.service.clustering.servers' $QTOOLS_CONFIG_FILE)
-    server_count=$(echo "$servers" | yq eval '. | length' -)
-
-    for ((i=0; i<$server_count; i++)); do
-        server=$(yq eval ".service.clustering.servers[$i]" $QTOOLS_CONFIG_FILE)
-        ip=$(echo "$server" | yq eval '.ip' -)
-        dataworker_count=$(echo "$server" | yq eval '.dataworker_count' -)
-        index_start=$(echo "$server" | yq eval '.index_start' -)
-
-        if ! echo "$(hostname -I)" | grep -q "$ip"; then
-            if [ "$DRY_RUN" == "false" ]; then
-                copy_quil_config_to_server $ip
-                copy_qtools_config_to_server $ip
-                start_remote_cores "$ip" "$index_start" "$dataworker_count" &
-            else
-                echo -e "${BLUE}${INFO_ICON} [DRY RUN] Start cores on $ip with index start of $index_start and dataworker count of $dataworker_count${RESET}"
-            fi
-        fi
+    # start the master node
+    for ((i=0; i<DATA_WORKER_COUNT; i++)); do
+        CORE=$((START_CORE_INDEX + i))
+        echo "Starting core $CORE"
+        $QUIL_NODE_PATH/$NODE_BINARY --core $CORE --parent-process $PARENT_PID &
     done
-fi
+}
 
-# Add a final message for dry run
-echo -e "\n${BLUE}${INFO_ICON} Starting cores on local machine${RESET}"
-if [ "$DRY_RUN" == "false" ]; then
-    start_local_cores $INDEX_START $DATA_WORKER_COUNT
-fi
+is_parent_process_running() {
+    ps -p $PARENT_PID > /dev/null 2>&1
+    return $?
+}
+
+start_cores
+
+while true
+do
+  if ! is_parent_process_running; then
+    echo "Process crashed or stopped. restarting..."
+	CRASHED=$(expr $CRASHED + 1)
+    start_cores
+  fi
+  sleep 440
+done
+
+
