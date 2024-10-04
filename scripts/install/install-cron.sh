@@ -18,6 +18,13 @@ AUTO_UPDATE_NODE=$(yq eval '.scheduled_tasks.updates.node.enabled // true' $QTOO
 
 if [ "$AUTO_UPDATE_NODE" = true ]; then
   NODE_UPDATE_CRON_EXPRESSION=$(yq eval '.scheduled_tasks.updates.node.cron_expression // "*/10 * * * *"' $QTOOLS_CONFIG_FILE)
+  
+  # Check if Expression is valid
+  if [ -z "$NODE_UPDATE_CRON_EXPRESSION" ]; then
+    log "Error: Node update cron expression is empty. Using default value."
+    NODE_UPDATE_CRON_EXPRESSION="*/10 * * * *"
+  fi
+  
   append_to_file $FILE_CRON "$NODE_UPDATE_CRON_EXPRESSION qtools update-node --auto" false
 fi
 
@@ -25,6 +32,13 @@ AUTO_UPDATE_QTOOLS=$(yq eval '.scheduled_tasks.updates.qtools.enabled // true' $
 
 if [ "$AUTO_UPDATE_QTOOLS" = true ]; then
   QTOOLS_UPDATE_CRON_EXPRESSION=$(yq eval '.scheduled_tasks.updates.qtools.cron_expression // "*/10 * * * *"' $QTOOLS_CONFIG_FILE)
+  
+  # Check if Expression is valid
+  if [ -z "$QTOOLS_UPDATE_CRON_EXPRESSION" ]; then
+    log "Error: Qtools update cron expression is empty. Using default value."
+    QTOOLS_UPDATE_CRON_EXPRESSION="*/10 * * * *"
+  fi
+  
   append_to_file $FILE_CRON "$QTOOLS_UPDATE_CRON_EXPRESSION qtools self-update --auto" false
 fi
 
@@ -32,6 +46,13 @@ AUTO_RUN_DIAGNOSTICS=$(yq eval '.scheduled_tasks.diagnostics.enabled // true' $Q
 
 if [ "$AUTO_RUN_DIAGNOSTICS" = true ]; then
   DIAGNOSTICS_CRON_EXPRESSION=$(yq eval '.scheduled_tasks.diagnostics.cron_expression // "*/10 * * * *"' $QTOOLS_CONFIG_FILE)
+  
+  # Check if Expression is valid
+  if [ -z "$DIAGNOSTICS_CRON_EXPRESSION" ]; then
+    log "Error: Diagnostics cron expression is empty. Using default value."
+    DIAGNOSTICS_CRON_EXPRESSION="*/10 * * * *"
+  fi
+  
   append_to_file $FILE_CRON "$DIAGNOSTICS_CRON_EXPRESSION qtools run-diagnostics --auto" false
 fi
 
@@ -39,13 +60,19 @@ AUTO_BACKUP_STORE=$(yq eval '.scheduled_tasks.backup.enabled // true' $QTOOLS_CO
 
 if [ "$AUTO_BACKUP_STORE" = true ]; then
   BACKUP_STORE_CRON_EXPRESSION=$(yq eval '.scheduled_tasks.backup.cron_expression // "*/10 * * * *"' $QTOOLS_CONFIG_FILE)
+  
+  # Check if Expression is valid
+  if [ -z "$BACKUP_STORE_CRON_EXPRESSION" ]; then
+    log "Error: Backup store cron expression is empty. Using default value."
+    BACKUP_STORE_CRON_EXPRESSION="*/10 * * * *"
+  fi
+  
   append_to_file $FILE_CRON "$BACKUP_STORE_CRON_EXPRESSION qtools backup-store" false
 fi
 
 STATS_ENABLED=$(yq eval '.scheduled_tasks.stats.enabled // true' $QTOOLS_CONFIG_FILE)
 
 if [ "$STATS_ENABLED" = true ]; then
-  STATS_CRON_EXPRESSION=$(yq eval '.scheduled_tasks.stats.cron_expression // "*/10 * * * *"' $QTOOLS_CONFIG_FILE)
   append_to_file $FILE_CRON '0 * * * * qtools record-unclaimed-rewards hourly' false
   append_to_file $FILE_CRON '0 0 * * * qtools record-unclaimed-rewards daily' false
   append_to_file $FILE_CRON '0 0 * * 0 qtools record-unclaimed-rewards weekly' false
