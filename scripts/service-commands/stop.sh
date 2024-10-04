@@ -6,6 +6,7 @@
 IS_QUICK_MODE=false
 IS_CLUSTERING_ENABLED=$(yq '.service.clustering.enabled // false' $QTOOLS_CONFIG_FILE)
 IS_KILL_MODE=false
+CORE_INDEX=false
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -15,6 +16,11 @@ while [[ $# -gt 0 ]]; do
             ;;
         --kill)
             IS_KILL_MODE=true
+            shift
+            ;;
+        --core-index)
+            CORE_INDEX=$2
+            shift
             shift
             ;;
         *)
@@ -77,14 +83,16 @@ stop_core() {
 
 if [ "$IS_CLUSTERING_ENABLED" == "true" ]; then
     echo "Stopping core processes on local machine"
-    core_index=1
+    if [ "$CORE_INDEX" == "false" ]; then
+        CORE_INDEX=1
+    fi
     local_core_count=$(($(nproc)))
     if [ "$(is_master)" == "true" ]; then
         local_core_count=$(($local_core_count - 1))
     fi
 
     for ((i=0; i<local_core_count; i++)); do
-        stop_core $(($i + $core_index)) &
+        stop_core $(($i + $CORE_INDEX)) &
     done
 fi
 
@@ -100,11 +108,13 @@ if [ "$IS_CLUSTERING_ENABLED" == "true" ]; then
 
 
         MAIN_IP=$(yq '.service.clustering.main_ip' $QTOOLS_CONFIG_FILE)
+        START_CORE_INDEX=1
         # Loop through each server
         for ((i=0; i<$server_count; i++)); do
             server=$(yq eval ".service.clustering.servers[$i]" $QTOOLS_CONFIG_FILE)
         
             ip=$(echo "$server" | yq eval '.ip' -)
+            core_index=$(echo "$server" | yq eval '.index_start' -)
 
             if [ "$ip" == "$MAIN_IP" ]; then
             continue
@@ -113,13 +123,14 @@ if [ "$IS_CLUSTERING_ENABLED" == "true" ]; then
             
             # Run the qtools stop command on the remote server
             # Note: This assumes SSH key-based authentication is set up
-            ssh -i ~/.ssh/cluster-key $ip "qtools stop"
+            ssh -i ~/.ssh/cluster-key $ip "qtools stop --core-index $core_index"
             
             if [ $? -eq 0 ]; then
                 echo "Successfully stopped services on $ip"
             else
                 echo "Failed to stop services on $ip"
             fi
+            START_CORE_INDEX=$(($START_CORE_INDEX + $CORE_INDEX))
         done
     else
         echo "Not the master node, nothing to do further."
