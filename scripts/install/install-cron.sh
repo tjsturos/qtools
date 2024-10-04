@@ -45,7 +45,7 @@ if [ "$AUTO_UPDATE_QTOOLS" == "true" ]; then
   append_to_file $FILE_CRON "$QTOOLS_UPDATE_CRON_EXPRESSION qtools self-update --auto" false
 fi
 
-if [ "$IS_CLUSTERING_ENABLED" == "true" ] && [ "$IS_MASTER" == "true" ]; then
+if [ "$IS_CLUSTERING_ENABLED" == "true" ] && [ "$IS_MASTER" == "true" ] || [ "$IS_CLUSTERING_ENABLED" == "false" ]; then
   AUTO_RUN_DIAGNOSTICS=$(yq eval '.scheduled_tasks.diagnostics.enabled // false' $QTOOLS_CONFIG_FILE)
 
   if [ "$AUTO_RUN_DIAGNOSTICS" == "true" ] ; then
