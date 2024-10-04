@@ -81,8 +81,9 @@ if [ "$IS_CLUSTERING_ENABLED" == "true" ] && echo "$(hostname -I)" | grep -q "$M
     server_count=$(echo "$servers" | yq eval '. | length' -)
 
     core_index=1
-    for ((i=0; i<$(nproc); i++)); do
-        stop_core $i &
+    for ((i=0; i<$(nproc - 1); i++)); do
+        stop_core $(($i + $core_index)) &
+        core_index=$(($core_index + 1))
     done
 
     # Loop through each server
