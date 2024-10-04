@@ -63,6 +63,9 @@ if [ "$IS_CLUSTERING_ENABLED" == "true" ]; then
         
         servers=$(get_cluster_ips)
         for ip in $servers; do
+            if echo "$(hostname -I)" | grep -q "$ip"; then
+                continue
+            fi
             echo "Stopping services on $ip"
             ssh -i ~/.ssh/cluster-key "client@$ip" "sudo systemctl stop $QUIL_SERVICE_NAME.service"
         done
