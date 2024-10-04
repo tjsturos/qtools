@@ -105,8 +105,7 @@ if [ "$IS_CLUSTERING_ENABLED" == "true" ]; then
         # Get the list of servers
         servers=$(yq eval '.service.clustering.servers' $QTOOLS_CONFIG_FILE)
         server_count=$(echo "$servers" | yq eval '. | length' -)
-
-
+        
         MAIN_IP=$(yq '.service.clustering.main_ip' $QTOOLS_CONFIG_FILE)
         START_CORE_INDEX=1
         # Loop through each server

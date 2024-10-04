@@ -6,7 +6,7 @@
 # Usage: qtools restore-backup --peer-id Qmabcdefg... # Will look for a ~/backups/Qmabcdefg directory on the backup server.
 # Usage: qtools restore-backup --force # Will force the restore operation even if backups are disabled.
 
-IS_BACKUP_ENABLED="$(yq '.settings.backups.enabled' $QTOOLS_CONFIG_FILE)"
+IS_BACKUP_ENABLED="$(yq '.scheduled_tasks.backup.enabled' $QTOOLS_CONFIG_FILE)"
 PEER_ID=""
 FORCE_RESTORE=false
 CONFIRM=false
@@ -36,22 +36,22 @@ done
 if [ "$IS_BACKUP_ENABLED" == "true" ] || [ "$FORCE_RESTORE" == "true" ]; then
 
  if [ -z "$PEER_ID" ]; then
-    NODE_BACKUP_DIR="$(yq '.settings.backups.node_backup_dir' $QTOOLS_CONFIG_FILE)"
+    NODE_BACKUP_NAME="$(yq '.scheduled_tasks.backup.node_backup_name' $QTOOLS_CONFIG_FILE)"
   
     # see if there the default save dir is overridden
-    if [ -z "$NODE_BACKUP_DIR" ]; then
+    if [ -z "$NODE_BACKUP_NAME" ]; then
       PEER_ID="$(qtools peer-id)"
-      NODE_BACKUP_DIR="$PEER_ID"
+      NODE_BACKUP_NAME="$PEER_ID"
     fi
   else
-    NODE_BACKUP_DIR="$PEER_ID"
+    NODE_BACKUP_NAME="$PEER_ID"
   fi
 
-  echo "Restoring from $NODE_BACKUP_DIR"
+  echo "Restoring from $NODE_BACKUP_NAME"
 
   # Add confirmation prompt if --confirm flag is set
   if [ "$CONFIRM" == "true" ]; then
-    read -p "Do you want to continue with the backup to $NODE_BACKUP_DIR? (y/n) " -n 1 -r
+    read -p "Do you want to continue with the backup to $NODE_BACKUP_NAME? (y/n) " -n 1 -r
     echo
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
       echo "Backup cancelled."
@@ -59,13 +59,13 @@ if [ "$IS_BACKUP_ENABLED" == "true" ] || [ "$FORCE_RESTORE" == "true" ]; then
     fi
   fi
   
-  REMOTE_DIR="$(yq '.settings.backups.remote_backup_dir' $QTOOLS_CONFIG_FILE)/$NODE_BACKUP_DIR/"
-  REMOTE_URL="$(yq '.settings.backups.backup_url' $QTOOLS_CONFIG_FILE)"
-  REMOTE_USER="$(yq '.settings.backups.remote_user' $QTOOLS_CONFIG_FILE)"
-  SSH_KEY_PATH="$(yq '.settings.backups.ssh_key_path' $QTOOLS_CONFIG_FILE)"
+  REMOTE_DIR="$(yq '.scheduled_tasks.backup.remote_backup_dir' $QTOOLS_CONFIG_FILE)/$NODE_BACKUP_NAME/"
+  REMOTE_URL="$(yq '.scheduled_tasks.backup.backup_url' $QTOOLS_CONFIG_FILE)"
+  REMOTE_USER="$(yq '.scheduled_tasks.backup.remote_user' $QTOOLS_CONFIG_FILE)"
+  SSH_KEY_PATH="$(yq '.scheduled_tasks.backup.ssh_key_path' $QTOOLS_CONFIG_FILE)"
 
   # Check if any required variable is empty
-  if [ "$REMOTE_DIR" == "/$NODE_BACKUP_DIR/" ] || [ -z "$REMOTE_URL" ] || [ -z "$REMOTE_USER" ] || [ -z "$SSH_KEY_PATH" ]; then
+  if [ "$REMOTE_DIR" == "/$NODE_BACKUP_NAME/" ] || [ -z "$REMOTE_URL" ] || [ -z "$REMOTE_USER" ] || [ -z "$SSH_KEY_PATH" ]; then
     echo "One or more required restore settings are missing in the configuration."
     exit 1
   fi
