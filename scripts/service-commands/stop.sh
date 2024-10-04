@@ -72,7 +72,7 @@ if [ "$IS_CLUSTERING_ENABLED" == "true" ] && echo "$(hostname -I)" | grep -q "$M
     echo "Clustering is enabled and this is the main IP. Stopping services on all servers..."
     
     # Get the list of servers
-    servers=$(echo "$config" | yq eval '.service.clustering.servers' -)
+    servers=$(yq eval '.service.clustering.servers' $QTOOLS_CONFIG_FILE)
     server_count=$(echo "$servers" | yq eval '. | length' -)
 
     # Loop through each server
