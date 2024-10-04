@@ -173,6 +173,7 @@ wait
 # If master, configure data worker servers
 if [ "$MASTER" == "true" ]; then
     # Read the config file
+   
     config=$(yq eval . $QTOOLS_CONFIG_FILE)
     
     # Get the array of servers
@@ -207,6 +208,8 @@ if [ "$MASTER" == "true" ]; then
         echo "Server: $ip, Dataworker count: $dataworker_count"
         
         if echo "$(hostname -I)" | grep -q "$ip"; then
+            yq eval -i ".service.clustering.main_ip = \"$ip\"" $QTOOLS_CONFIG_FILE
+            echo "Set main IP to $ip in clustering configuration"
             # This is the master server, so subtract 1 from the total core count
             if [ "$dataworker_count" == "false" ]; then
                 dataworker_count=$(($(nproc) - 1))
