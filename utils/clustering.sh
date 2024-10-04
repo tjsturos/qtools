@@ -31,6 +31,7 @@ Restart=always
 RestartSec=50ms
 User=$USER
 Group=$GROUP
+WorkingDirectory=$QUIL_NODE_DIR
 PATH=/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
 ExecStart=qtools start-cluster --core-index-start $CORE_INDEX_START --data-worker-count $DATA_WORKER_COUNT
 
