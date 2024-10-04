@@ -76,6 +76,13 @@ export QTOOLS_BIN_PATH=/usr/local/bin/qtools
 export QUIL_QCLIENT_BIN=/usr/local/bin/qclient
 export SYSTEMD_SERVICE_PATH=/etc/systemd/system
 
+# Check if SYSTEMD_SERVICE_PATH exists, if not, use /lib/systemd/system
+if [ ! -d "$SYSTEMD_SERVICE_PATH" ]; then
+    export SYSTEMD_SERVICE_PATH=/lib/systemd/system
+    log "SYSTEMD_SERVICE_PATH not found. Using /lib/systemd/system instead."
+fi
+
+
 export BASHRC_FILE="$HOME/.bashrc"
 
 # Define Go vars
