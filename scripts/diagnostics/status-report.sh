@@ -86,7 +86,7 @@ check_clustering_status() {
             echo -e "${GREEN_CHECK} Clustering is enabled"
         fi
         local main_ip=$(yq '.service.clustering.main_ip' "$config_file")
-        
+        local total_dataworkers=0
         if echo "$(hostname -I)" | grep -q "$main_ip"; then
             if $JSON_OUTPUT; then
                 REPORT_DATA+=("node_role:main")
@@ -109,6 +109,7 @@ check_clustering_status() {
             for ((i=0; i<server_count; i++)); do
                 server=$(echo "$servers" | yq eval ".[$i]" -)
                 server_ip=$(echo "$server" | yq eval '.ip' -)
+                dataworker_count=$(echo "$server" | yq eval '.dataworker_count // 0' -)
 
                 if [[ "$dataworker_count" == "0" || "$dataworker_count" == "null" ]]; then
                     if [[ "$server_ip" == "$main_ip" ]]; then
