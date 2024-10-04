@@ -86,36 +86,41 @@ if [ "$IS_CLUSTERING_ENABLED" == "true" ]; then
 fi
 
 # Check if clustering is enabled
-if [ "$IS_CLUSTERING_ENABLED" == "true" ] && [ "$(is_master)" == "true" ]; then
-    echo "Clustering is enabled and this is the main IP. Stopping services on all servers..."
-    
-    # Get the list of servers
-    servers=$(yq eval '.service.clustering.servers' $QTOOLS_CONFIG_FILE)
-    server_count=$(echo "$servers" | yq eval '. | length' -)
+if [ "$IS_CLUSTERING_ENABLED" == "true" ]; then
 
-
-    MAIN_IP=$(yq '.service.clustering.main_ip' $QTOOLS_CONFIG_FILE)
-    # Loop through each server
-    for ((i=0; i<server_count; i++)); do
-        server=$(yq eval ".service.clustering.servers[$i]" $QTOOLS_CONFIG_FILE)
-       
-        ip=$(echo "$server" | yq eval '.ip' -)
-
-        if [ "$ip" == "$MAIN_IP" ]; then
-           continue
-        fi
-        echo "Stopping services on $ip"
+    if [ "$(is_master)" == "true" ]; then
+        echo "Clustering is enabled and this is the main IP. Stopping services on all servers..."
         
-        # Run the qtools stop command on the remote server
-        # Note: This assumes SSH key-based authentication is set up
-        ssh -i ~/.ssh/cluster-key $ip "qtools stop"
+        # Get the list of servers
+        servers=$(yq eval '.service.clustering.servers' $QTOOLS_CONFIG_FILE)
+        server_count=$(echo "$servers" | yq eval '. | length' -)
+
+
+        MAIN_IP=$(yq '.service.clustering.main_ip' $QTOOLS_CONFIG_FILE)
+        # Loop through each server
+        for ((i=0; i<server_count; i++)); do
+            server=$(yq eval ".service.clustering.servers[$i]" $QTOOLS_CONFIG_FILE)
         
-        if [ $? -eq 0 ]; then
-            echo "Successfully stopped services on $ip"
-        else
-            echo "Failed to stop services on $ip"
-        fi
-    done
+            ip=$(echo "$server" | yq eval '.ip' -)
+
+            if [ "$ip" == "$MAIN_IP" ]; then
+            continue
+            fi
+            echo "Stopping services on $ip"
+            
+            # Run the qtools stop command on the remote server
+            # Note: This assumes SSH key-based authentication is set up
+            ssh -i ~/.ssh/cluster-key $ip "qtools stop"
+            
+            if [ $? -eq 0 ]; then
+                echo "Successfully stopped services on $ip"
+            else
+                echo "Failed to stop services on $ip"
+            fi
+        done
+    else
+        echo "Not the master node, nothing to do further."
+    fi
 else
     echo "Clustering is not enabled. Skipping remote server operations."
 fi
