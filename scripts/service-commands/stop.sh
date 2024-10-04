@@ -79,6 +79,10 @@ if [ "$IS_CLUSTERING_ENABLED" == "true" ] && echo "$(hostname -I)" | grep -q "$M
     for ((i=0; i<server_count; i++)); do
         server=$(echo "$servers" | yq eval ".[$i]" -)
         ip=$(echo "$server" | yq eval '.ip' -)
+
+        if echo "$(hostname -I)" | grep -q "$MAIN_IP"; then
+           continue
+        fi
         echo "Stopping services on $ip"
         
         # Run the qtools stop command on the remote server
