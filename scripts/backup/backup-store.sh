@@ -37,6 +37,13 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+IS_CLUSTERING_ENABLED="$(yq '.service.clustering.enabled // false' $QTOOLS_CONFIG_FILE)"
+
+if [ "$IS_CLUSTERING_ENABLED" == "true" ] && [ "$(is_master)" == "false" ]; then
+  echo "Clustering is enabled, skipping backup."
+  exit 0
+fi
+
 if [ "$IS_BACKUP_ENABLED" == "true" ] || [ "$FORCE_RESTORE" == "true" ]; then
 
   if [ -z "$PEER_ID" ]; then

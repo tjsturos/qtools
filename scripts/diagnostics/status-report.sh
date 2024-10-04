@@ -24,6 +24,13 @@ BLUE="\e[34m"
 INFO_ICON="\u2139"
 NC="\e[0m"
 
+IS_CLUSTERING_ENABLED="$(yq '.service.clustering.enabled // false' $QTOOLS_CONFIG_FILE)"
+
+if [ "$IS_CLUSTERING_ENABLED" == "true" ] && [ "$(is_master)" == "false" ]; then
+    echo "Not the master node, skipping report."
+    exit 0
+fi
+
 check_ports_status() {
     local PORTS_ACTUAL_OUTPUT="$(qtools ports-listening)"
     local ALL_PORTS_FUNCTIONAL=true
