@@ -367,7 +367,7 @@ check_proof_info() {
 
 check_statistics_enabled() {
     local config_file="$QTOOLS_CONFIG_FILE"
-    local enabled=$(yq '.scheduled_tasks.stats.enabled' "$config_file" 2>/dev/null || qyaml .scheduled_tasks.stats.enabled "$config_file")
+    local enabled=$(yq '.scheduled_tasks.statistics.enabled' "$config_file")
 
     if [[ "$enabled" == "true" ]]; then
         if $JSON_OUTPUT; then
@@ -399,6 +399,55 @@ check_diagnostics_enabled() {
             REPORT_DATA+=("diagnostics_enabled:false")
         else
             echo -e "${RED_CROSS} Diagnostics are not enabled"
+        fi
+    fi
+}
+
+check_auto_updates_enabled() {
+    local config_file="$QTOOLS_CONFIG_FILE"
+    local qtools_enabled=$(yq '.scheduled_tasks.updates.qtools.enabled' "$config_file")
+    local node_enabled=$(yq '.scheduled_tasks.updates.node.enabled' "$config_file")
+    local system_enabled=$(yq '.scheduled_tasks.updates.system.enabled' "$config_file")
+
+    if [[ "$qtools_enabled" == "true" ]]; then
+        if $JSON_OUTPUT; then
+            REPORT_DATA+=("auto_updates_qtools_enabled:true")
+        else
+            echo -e "${GREEN_CHECK} Auto updates for qtools are enabled"
+        fi
+    else
+        if $JSON_OUTPUT; then
+            REPORT_DATA+=("auto_updates_qtools_enabled:false")
+        else
+            echo -e "${RED_CROSS} Auto updates for qtools are not enabled"
+        fi
+    fi
+
+    if [[ "$node_enabled" == "true" ]]; then
+        if $JSON_OUTPUT; then
+            REPORT_DATA+=("auto_updates_node_enabled:true")
+        else
+            echo -e "${GREEN_CHECK} Auto updates for node are enabled"
+        fi
+    else
+        if $JSON_OUTPUT; then
+            REPORT_DATA+=("auto_updates_node_enabled:false")
+        else
+            echo -e "${RED_CROSS} Auto updates for node are not enabled"
+        fi
+    fi
+
+    if [[ "$system_enabled" == "true" ]]; then
+        if $JSON_OUTPUT; then
+            REPORT_DATA+=("auto_updates_system_enabled:true")
+        else
+            echo -e "${GREEN_CHECK} Auto updates for system are enabled"
+        fi
+    else
+        if $JSON_OUTPUT; then
+            REPORT_DATA+=("auto_updates_system_enabled:false")
+        else
+            echo -e "${RED_CROSS} Auto updates for system are not enabled"
         fi
     fi
 }
@@ -470,6 +519,7 @@ print_status_report() {
     check_backup_status
     check_statistics_enabled
     check_diagnostics_enabled
+    check_auto_updates_enabled
     check_hardware_info
 
     if $JSON_OUTPUT; then
