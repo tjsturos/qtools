@@ -86,9 +86,8 @@ check_clustering_status() {
             echo -e "${GREEN_CHECK} Clustering is enabled"
         fi
         local main_ip=$(yq '.service.clustering.main_ip' "$config_file")
-        local current_ip=$(hostname -I | awk '{print $1}')
         
-        if [[ "$current_ip" == "$main_ip" ]]; then
+        if echo "$(hostname -I)" | grep -q "$main_ip"; then
             if $JSON_OUTPUT; then
                 REPORT_DATA+=("node_role:main")
                 REPORT_DATA+=("main_ip:$main_ip")
@@ -97,15 +96,22 @@ check_clustering_status() {
             fi
             
             # Count total data workers across all servers
-            local servers=$(yq '.service.clustering.servers // []' "$config_file")
-            local total_dataworkers=0
+            # Read the config file
+            config=$(yq eval . $QTOOLS_CONFIG_FILE)
             
-            while IFS= read -r server; do
-                local server_ip=$(echo "$server" | yq '.ip' 2>/dev/null || echo "$server" | qyaml .ip)
-                local dataworker_count=$(echo "$server" | yq '.dataworker_count // 0' 2>/dev/null || echo "$server" | qyaml '.dataworker_count // 0')
-                
+            # Get the array of servers
+            servers=$(echo "$config" | yq eval '.service.clustering.servers' -)
+
+            # Get the number of servers
+            server_count=$(echo "$servers" | yq eval '. | length' -)
+
+            # Loop through each server
+            for ((i=0; i<server_count; i++)); do
+                server=$(echo "$servers" | yq eval ".[$i]" -)
+                server_ip=$(echo "$server" | yq eval '.ip' -)
+
                 if [[ "$dataworker_count" == "0" || "$dataworker_count" == "null" ]]; then
-                    if [[ "$server_ip" == "$current_ip" ]]; then
+                    if [[ "$server_ip" == "$main_ip" ]]; then
                         dataworker_count=$(($(nproc) - 1))
                     else
                         dataworker_count=$(ssh -i ~/.ssh/cluster-key "$server_ip" nproc)
