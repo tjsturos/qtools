@@ -4,8 +4,6 @@ INFO_ICON="\u2139"
 RESET="\e[0m"
 DRY_RUN=false  # Set this to true for dry run mode
 
-
-
 # Get the number of CPU cores
 TOTAL_CORES=$(nproc)
 
@@ -110,7 +108,7 @@ declare -a WORKER_PIDS
 
 # Cleanup function to kill all worker processes
 cleanup() {
-    if [ "$DRY_RUN" = true ]; then
+    if [ "$DRY_RUN" == "true" ]; then
         echo -e "${BLUE}${INFO_ICON} [DRY RUN] Would stop all services${RESET}"
     else
         qtools stop
@@ -121,14 +119,14 @@ cleanup() {
 trap cleanup SIGINT SIGTERM SIGHUP
 
 # Adjust COUNT if master is specified, but only if not all cores are used for workers
-if [ "$MASTER" = true ] && [ "$TOTAL_CORES" -eq "$DATA_WORKER_COUNT" ]; then
+if [ "$MASTER" == "true" ] && [ "$TOTAL_CORES" -eq "$DATA_WORKER_COUNT" ]; then
     DATA_WORKER_COUNT=$((TOTAL_CORES - 1))
 fi
 
 MASTER_PID=false
 # Start the master if specified
-if [ "$MASTER" = true ]; then
-    if [ "$DRY_RUN" = true ]; then
+if [ "$MASTER" == "true" ]; then
+    if [ "$DRY_RUN" == "true" ]; then
         echo -e "${BLUE}${INFO_ICON} [DRY RUN] Would start $QUIL_SERVICE_NAME.service${RESET}"
     else
         echo -e "${BLUE}${INFO_ICON} Starting $QUIL_SERVICE_NAME.service${RESET}"
@@ -137,9 +135,9 @@ if [ "$MASTER" = true ]; then
     fi
 fi
 
-# Start the workers
-for ((i=0; i<DATA_WORKER_COUNT; i++)); do
-    CORE=$((INDEX_START + i))
+# Function to start a single core
+start_core() {
+    local CORE=$1
     if [ "$DRY_RUN" = true ]; then
         echo -e "${BLUE}${INFO_ICON} [DRY RUN] Would enable and start $QUIL_SERVICE_NAME-dataworker@$CORE.service${RESET}"
     else
@@ -155,8 +153,22 @@ for ((i=0; i<DATA_WORKER_COUNT; i++)); do
             echo -e "\e[32mStarted $QUIL_SERVICE_NAME-dataworker@$CORE.service\e[0m"
         fi
     fi
+}
+
+start_remote_cores() {
+    local IP=$1
+    echo -e "${BLUE}${INFO_ICON} Starting cluster's dataworkers on $IP${RESET}"
+    ssh -i ~/.ssh/cluster-key "$IP" "qtools start-cluster"
+}
+
+# Start the workers
+for ((i=0; i<DATA_WORKER_COUNT; i++)); do
+    CORE=$((INDEX_START + i))
+    start_core $CORE &
 done
 
+# Wait for all background processes to finish
+wait
 
 # If master, configure data worker servers
 if [ "$MASTER" == "true" ]; then
@@ -247,8 +259,7 @@ if [ "$MASTER" == "true" ]; then
             # SCP the QTools config to the remote server
             scp -i ~/.ssh/cluster-key "$QTOOLS_CONFIG_FILE" "$ip:$HOME/qtools/config.yml"
             if [ "$DRY_RUN" == "false" ]; then
-                echo -e "${BLUE}${INFO_ICON} Starting cluster's dataworkers on $ip${RESET}"
-                ssh -i ~/.ssh/cluster-key "$ip" "qtools start-cluster"
+                start_remote_cores "$ip" &
             fi
         fi
     done
