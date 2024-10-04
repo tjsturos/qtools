@@ -78,14 +78,14 @@ if [ "$MASTER" == "true" ]; then
         start_control_process
     fi
 
-    local servers=$(yq eval '.service.clustering.servers' $QTOOLS_CONFIG_FILE)
-    local server_count=$(echo "$servers" | yq eval '. | length' -)
+    servers=$(yq eval '.service.clustering.servers' $QTOOLS_CONFIG_FILE)
+    server_count=$(echo "$servers" | yq eval '. | length' -)
 
     for ((i=0; i<$server_count; i++)); do
-        local server=$(yq eval ".service.clustering.servers[$i]" $QTOOLS_CONFIG_FILE)
-        local ip=$(echo "$server" | yq eval '.ip' -)
-        local dataworker_count=$(echo "$server" | yq eval '.dataworker_count' -)
-        local index_start=$(echo "$server" | yq eval '.index_start' -)
+        server=$(yq eval ".service.clustering.servers[$i]" $QTOOLS_CONFIG_FILE)
+        ip=$(echo "$server" | yq eval '.ip' -)
+        dataworker_count=$(echo "$server" | yq eval '.dataworker_count' -)
+        index_start=$(echo "$server" | yq eval '.index_start' -)
 
         if ! echo "$(hostname -I)" | grep -q "$ip"; then
             if [ "$DRY_RUN" == "false" ]; then
