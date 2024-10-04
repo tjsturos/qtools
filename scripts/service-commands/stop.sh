@@ -78,7 +78,8 @@ if [ "$IS_CLUSTERING_ENABLED" == "true" ] && echo "$(hostname -I)" | grep -q "$M
     echo "Server count: $server_count"
     # Loop through each server
     for ((i=0; i<server_count; i++)); do
-        server=$(echo "$servers" | yq eval ".[$i]" -)
+        server=$(yq eval ".service.clustering.servers[$i]" $QTOOLS_CONFIG_FILE)
+        echo "Server: $server"
         ip=$(echo "$server" | yq eval '.ip' -)
 
         if echo "$(hostname -I)" | grep -q "$MAIN_IP"; then
