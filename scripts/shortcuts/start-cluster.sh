@@ -50,17 +50,21 @@ if [ "$DATA_WORKER_COUNT" -gt "$MAX_CORES" ]; then
     echo "DATA_WORKER_COUNT adjusted down to maximum: $DATA_WORKER_COUNT"
 fi
 
+MASTER_PID=0
+
+pkill node-*
+
+start_master() {
+    $QUIL_NODE_PATH/$NODE_BINARY &
+    MASTER_PID=$!
+}
+
+if [ $START_CORE_INDEX -eq 1 ]; then
+    start_master
+fi
 
 # Loop through the data worker count and start each core
-start_cluster() {
-    # Kill all node-* processes
-    pkill node-*
-
-    if [ $START_CORE_INDEX -eq 1 ]; then
-        $QUIL_NODE_PATH/$NODE_BINARY &
-        PARENT_PID=$!
-    fi
-
+start_workers() {
     # start the master node
     for ((i=0; i<DATA_WORKER_COUNT; i++)); do
         CORE=$((START_CORE_INDEX + i))
@@ -69,19 +73,19 @@ start_cluster() {
     done
 }
 
-is_parent_process_running() {
-    ps -p $PARENT_PID > /dev/null 2>&1
+is_master_process_running() {
+    ps -p $MASTER_PID > /dev/null 2>&1
     return $?
 }
 
-start_cluster
+start_workers
 
 while true
 do
-  if ! is_parent_process_running; then
+  if [ $START_CORE_INDEX -eq 1 ] && ! is_master_process_running; then
     echo "Process crashed or stopped. restarting..."
 	CRASHED=$(expr $CRASHED + 1)
-    start_cluster
+    start_master
   fi
   sleep 440
 done
