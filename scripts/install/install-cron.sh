@@ -42,6 +42,16 @@ if [ "$AUTO_BACKUP_STORE" = true ]; then
   append_to_file $FILE_CRON "$BACKUP_STORE_CRON_EXPRESSION qtools backup-store" false
 fi
 
+STATS_ENABLED=$(yq eval '.scheduled_tasks.stats.enabled // true' $QTOOLS_CONFIG_FILE)
+
+if [ "$STATS_ENABLED" = true ]; then
+  STATS_CRON_EXPRESSION=$(yq eval '.scheduled_tasks.stats.cron_expression // "*/10 * * * *"' $QTOOLS_CONFIG_FILE)
+  append_to_file $FILE_CRON '0 * * * * qtools record-unclaimed-rewards hourly' false
+  append_to_file $FILE_CRON '0 0 * * * qtools record-unclaimed-rewards daily' false
+  append_to_file $FILE_CRON '0 0 * * 0 qtools record-unclaimed-rewards weekly' false
+  append_to_file $FILE_CRON '0 0 1 * * qtools record-unclaimed-rewards monthly' false
+fi
+
 
 echo "$(crontab -l)" > $FILE_ACTUAL_OUTPUT
 DIFF_BEFORE="$(colordiff -u $FILE_CRON $FILE_ACTUAL_OUTPUT)"
