@@ -79,6 +79,7 @@ if [ "$IS_CLUSTERING_ENABLED" == "true" ] && echo "$(hostname -I)" | grep -q "$M
     for ((i=0; i<server_count; i++)); do
         server=$(echo "$servers" | yq eval ".[$i]" -)
         ip=$(echo "$server" | yq eval '.ip' -)
+        echo "Stopping services on $ip"
         
         # Run the qtools stop command on the remote server
         # Note: This assumes SSH key-based authentication is set up
@@ -94,8 +95,6 @@ else
     echo "Clustering is not enabled. Skipping remote server operations."
 fi
 
-
-wait
 
 clean_up_process() {
     # and to make sure any stray node commands are exited
@@ -116,9 +115,9 @@ clean_up_process() {
 # Quick mode is essentially no clean up, with intention to immediately restart the node process
 if [ "$IS_QUICK_MODE" == "false" ]; then
     # Check if clustering is enabled and if this is the orchestrator node
-    if [ "$IS_CLUSTERING_ENABLED" == "true" ]; then
+    if [ "$IS_CLUSTERING_ENABLED" == "true" ] && echo "$(hostname -I)" | grep -q "$MAIN_IP"; then
         # Only stop the node processes on the orchestrator node (they aren't running on non-orchestrator nodes)
-        echo "Orchestrator node detected. Disabling peripheral services."
+       
         clean_up_process
     elif [ "$IS_CLUSTERING_ENABLED" == "false" ]; then
         # Always stop the node processes when there is no clustering
