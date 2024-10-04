@@ -31,7 +31,7 @@ Restart=always
 RestartSec=50ms
 User=$USER
 Group=$GROUP
-WorkingDirectory=$QUIL_NODE_DIR
+WorkingDirectory=$QUIL_NODE_PATH
 PATH=/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
 ExecStart=qtools start-cluster --core-index-start $CORE_INDEX_START --data-worker-count $DATA_WORKER_COUNT
 
@@ -154,17 +154,14 @@ update_quil_config() {
             fi
             SERVER_CORE_INDEX_END=$((SERVER_CORE_INDEX_END + 1))
         done
-        # Count unique IPs for this server
-        unique_ips=$(yq eval '.engine.dataWorkerMultiaddrs[] | select(contains("'$ip'"))' "$QUIL_CONFIG_FILE" | grep -oP '/ip4/\K[^/]+' | sort | uniq | wc -l)
         
         # Count total lines with this IP
         total_lines=$(yq eval '.engine.dataWorkerMultiaddrs[] | select(contains("'$ip'"))' "$QUIL_CONFIG_FILE" | wc -l)
         
-        echo "Server $ip: Unique IPs: $unique_ips, Total lines: $total_lines, Expected dataworkers: $dataworker_count"
+        echo "Server $ip:  Total lines: $total_lines, Expected dataworkers: $dataworker_count"
         
-        if [ "$unique_ips" -ne 1 ] || [ "$total_lines" -ne "$dataworker_count" ]; then
+        if [ "$total_lines" -ne "$dataworker_count" ]; then
             echo -e "\e[33mWarning: Mismatch detected for server $ip\e[0m"
-            echo -e "\e[33m  - Expected 1 unique IP, found $unique_ips\e[0m"
             echo -e "\e[33m  - Expected $dataworker_count dataworkers, found $total_lines\e[0m"
         fi
         
