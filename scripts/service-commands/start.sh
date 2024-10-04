@@ -50,23 +50,16 @@ if [ "$(yq '.service.clustering.enabled // false' $QTOOLS_CONFIG_FILE)" == "fals
     enable_peripheral_services
 else
     # Starting cluster mode for this config
+    echo "Starting cluster mode for this config"
     # Check if the current hostname matches the orchestrator hostname
     if [ "$(hostname)" == "$(yq '.service.clustering.orchestrator_hostname' $QTOOLS_CONFIG_FILE)" ]; then
-        echo "This is the orchestrator node. Starting the main service."
-        sudo systemctl start $QUIL_SERVICE_NAME.service
-        enable_peripheral_services
-    else
-        echo "This is not the orchestrator node. Skipping main service start."
-    fi
-
-    HAS_DATA_WORKERS="$(yq '.service.clustering.has_data_workers' $QTOOLS_CONFIG_FILE)"
-    DATA_WORKER_COUNT="$(yq '.service.clustering.data_worker_count' $QTOOLS_CONFIG_FILE)"
-
-    if [ "$HAS_DATA_WORKERS" == "true" ] && [ "$DATA_WORKER_COUNT" != "false" ] && [ "$DATA_WORKER_COUNT" -gt 0 ]; then
-        for ((i = 0; i < DATA_WORKER_COUNT; i++)); do
-            qtools update-service --core $i --enable
-            sudo systemctl start $QUIL_SERVICE_NAME-$i.service
-        done
+        if [ "$(yq '.service.clustering.main_ip' $QTOOLS_CONFIG_FILE)" == "$(hostname -I)" ]; then
+            echo "Starting node process on the master node"
+            qtools start-cluster --master
+            enable_peripheral_services
+        else
+            qtools start-cluster
+        fi
     fi
 fi
 

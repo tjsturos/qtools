@@ -137,7 +137,7 @@ start_core() {
 start_remote_cores() {
     local IP=$1
     echo -e "${BLUE}${INFO_ICON} Starting cluster's dataworkers on $IP${RESET}"
-    ssh -i ~/.ssh/cluster-key "$IP" "qtools start-cluster"
+    ssh -i ~/.ssh/cluster-key "$IP" "qtools start"
 }
 
 # Start the workers
