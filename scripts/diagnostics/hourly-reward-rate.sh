@@ -58,7 +58,7 @@ for ((i=num_lines-1; i>=0; i--)); do
     continue
   fi
 
-  if [[ "$first_line" == true ]]; then
+  if [[ "$first_line" == "true" ]]; then
     prev_balance=$balance
     prev_timestamp=$timestamp
     first_line=false

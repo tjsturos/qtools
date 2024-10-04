@@ -89,7 +89,7 @@ updateOrAddLine() {
 
 updateServiceBinary() {
     # Check if --core parameter is passed
-    if [ "$IS_CORE_SERVICE" != true ]; then
+    if [ "$IS_CORE_SERVICE" != "true" ]; then
         local goMaxProcs=$(yq '.service.max_threads // false' $QTOOLS_CONFIG_FILE)
 
         if [ "$goMaxProcs" != "false" ] && [ "$goMaxProcs" != "0" ] && [ "$goMaxProcs" -eq "$goMaxProcs" ] 2>/dev/null; then

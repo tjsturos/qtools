@@ -166,7 +166,7 @@ if ! find_script "$1"; then
 fi
 
 # Clear screen if flag is set
-if [ "$CLEAR_SCREEN" = true ]; then
+if [ "$CLEAR_SCREEN" == "true" ]; then
   clear
 fi
 

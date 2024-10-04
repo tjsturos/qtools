@@ -16,7 +16,7 @@ append_to_file $FILE_CRON "@reboot qtools start" false
 
 AUTO_UPDATE_NODE=$(yq eval '.scheduled_tasks.updates.node.enabled // true' $QTOOLS_CONFIG_FILE)
 
-if [ "$AUTO_UPDATE_NODE" = true ]; then
+if [ "$AUTO_UPDATE_NODE" == "true" ]; then
   NODE_UPDATE_CRON_EXPRESSION=$(yq eval '.scheduled_tasks.updates.node.cron_expression // "*/10 * * * *"' $QTOOLS_CONFIG_FILE)
   
   # Check if Expression is valid
@@ -30,7 +30,7 @@ fi
 
 AUTO_UPDATE_QTOOLS=$(yq eval '.scheduled_tasks.updates.qtools.enabled // true' $QTOOLS_CONFIG_FILE)
 
-if [ "$AUTO_UPDATE_QTOOLS" = true ]; then
+if [ "$AUTO_UPDATE_QTOOLS" == "true" ]; then
   QTOOLS_UPDATE_CRON_EXPRESSION=$(yq eval '.scheduled_tasks.updates.qtools.cron_expression // "*/10 * * * *"' $QTOOLS_CONFIG_FILE)
   
   # Check if Expression is valid
@@ -44,7 +44,7 @@ fi
 
 AUTO_RUN_DIAGNOSTICS=$(yq eval '.scheduled_tasks.diagnostics.enabled // true' $QTOOLS_CONFIG_FILE)
 
-if [ "$AUTO_RUN_DIAGNOSTICS" = true ]; then
+if [ "$AUTO_RUN_DIAGNOSTICS" == "true" ]; then
   DIAGNOSTICS_CRON_EXPRESSION=$(yq eval '.scheduled_tasks.diagnostics.cron_expression // "*/10 * * * *"' $QTOOLS_CONFIG_FILE)
   
   # Check if Expression is valid
@@ -58,7 +58,7 @@ fi
 
 AUTO_BACKUP_STORE=$(yq eval '.scheduled_tasks.backup.enabled // true' $QTOOLS_CONFIG_FILE)
 
-if [ "$AUTO_BACKUP_STORE" = true ]; then
+if [ "$AUTO_BACKUP_STORE" == "true" ]; then
   BACKUP_STORE_CRON_EXPRESSION=$(yq eval '.scheduled_tasks.backup.cron_expression // "*/10 * * * *"' $QTOOLS_CONFIG_FILE)
   
   # Check if Expression is valid
@@ -72,7 +72,7 @@ fi
 
 STATS_ENABLED=$(yq eval '.scheduled_tasks.stats.enabled // true' $QTOOLS_CONFIG_FILE)
 
-if [ "$STATS_ENABLED" = true ]; then
+if [ "$STATS_ENABLED" == "true" ]; then
   append_to_file $FILE_CRON '0 * * * * qtools record-unclaimed-rewards hourly' false
   append_to_file $FILE_CRON '0 0 * * * qtools record-unclaimed-rewards daily' false
   append_to_file $FILE_CRON '0 0 * * 0 qtools record-unclaimed-rewards weekly' false

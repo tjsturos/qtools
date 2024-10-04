@@ -20,7 +20,7 @@ TOTAL_EXPECTED_DATAWORKERS=0
 # Function to create the systemd service file if it doesn't exist
 create_service_file() {
     local service_file="/etc/systemd/system/$QUIL_SERVICE_NAME-dataworker@.service"
-    if [ "$DRY_RUN" = true ]; then
+    if [ "$DRY_RUN" == "true" ]; then
         echo -e "${BLUE}${INFO_ICON} [DRY RUN] Would create $service_file if it doesn't exist${RESET}"
     else
         USER=$(whoami)
@@ -138,7 +138,7 @@ fi
 # Function to start a single core
 start_core() {
     local CORE=$1
-    if [ "$DRY_RUN" = true ]; then
+    if [ "$DRY_RUN" == "true" ]; then
         echo -e "${BLUE}${INFO_ICON} [DRY RUN] Would enable and start $QUIL_SERVICE_NAME-dataworker@$CORE.service${RESET}"
     else
         sudo systemctl enable $QUIL_SERVICE_NAME-dataworker@$CORE.service
