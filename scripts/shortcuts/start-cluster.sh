@@ -74,14 +74,14 @@ is_parent_process_running() {
     return $?
 }
 
-start_cores
+start_cluster
 
 while true
 do
   if ! is_parent_process_running; then
     echo "Process crashed or stopped. restarting..."
 	CRASHED=$(expr $CRASHED + 1)
-    start_cores
+    start_cluster
   fi
   sleep 440
 done
