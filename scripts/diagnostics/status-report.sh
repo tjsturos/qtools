@@ -77,7 +77,7 @@ check_hourly_reward_rate() {
 
 check_clustering_status() {
     local config_file="$QTOOLS_CONFIG_FILE"
-    local enabled=$(yq '.service.clustering.enabled' "$config_file" 2>/dev/null || qyaml .service.clustering.enabled "$config_file")
+    local enabled=$(yq '.service.clustering.enabled // false' "$config_file")
 
     if [[ "$enabled" == "true" ]]; then
         if $JSON_OUTPUT; then
@@ -85,7 +85,7 @@ check_clustering_status() {
         else
             echo -e "${GREEN_CHECK} Clustering is enabled"
         fi
-        local main_ip=$(yq '.service.clustering.main_ip' "$config_file" 2>/dev/null || qyaml .service.clustering.main_ip "$config_file")
+        local main_ip=$(yq '.service.clustering.main_ip' "$config_file")
         local current_ip=$(hostname -I | awk '{print $1}')
         
         if [[ "$current_ip" == "$main_ip" ]]; then
@@ -97,7 +97,7 @@ check_clustering_status() {
             fi
             
             # Count total data workers across all servers
-            local servers=$(yq '.service.clustering.servers[]' "$config_file" 2>/dev/null || qyaml .service.clustering.servers[] "$config_file")
+            local servers=$(yq '.service.clustering.servers // []' "$config_file")
             local total_dataworkers=0
             
             while IFS= read -r server; do
@@ -452,6 +452,7 @@ print_status_report() {
     check_frame_count
     check_ports_status
     check_service_status
+    check_clustering_status
     check_command_installed "grpcurl"
     check_command_installed "go" "go version"
     check_command_installed "yq" "yq --version"
