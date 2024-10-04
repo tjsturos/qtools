@@ -108,16 +108,7 @@ if [ "$MASTER" == "true" ] && [ "$TOTAL_CORES" -eq "$DATA_WORKER_COUNT" ]; then
     DATA_WORKER_COUNT=$((TOTAL_CORES - 1))
 fi
 
-# Start the master if specified
-if [ "$MASTER" == "true" ]; then
-    if [ "$DRY_RUN" == "true" ]; then
-        echo -e "${BLUE}${INFO_ICON} [DRY RUN] Would start $QUIL_SERVICE_NAME.service${RESET}"
-    else
-        echo -e "${BLUE}${INFO_ICON} Starting $QUIL_SERVICE_NAME.service${RESET}"
-        sudo systemctl enable $QUIL_SERVICE_NAME.service
-        sudo systemctl start $QUIL_SERVICE_NAME.service
-    fi
-fi
+
 
 # Function to start a single core
 start_core() {
@@ -141,11 +132,16 @@ start_remote_cores() {
     ssh -i ~/.ssh/cluster-key "$IP" "qtools start-cluster --index-start $CORE_INDEX_START"
 }
 
-# Start the workers
-for ((i=0; i<DATA_WORKER_COUNT; i++)); do
-    CORE=$((INDEX_START + i))
-    start_core $CORE &
-done
+start_local_cores() {
+    local CORE_INDEX_START=$1
+    echo -e "${BLUE}${INFO_ICON} Starting cluster's dataworkers on local machine${RESET}"
+    for ((i=0; i<DATA_WORKER_COUNT; i++)); do
+        CORE=$((INDEX_START + i))
+        start_core $CORE &
+    done
+}
+
+
 
 # If master, configure data worker servers
 if [ "$MASTER" == "true" ]; then
@@ -259,8 +255,21 @@ if [ "$MASTER" == "true" ]; then
     fi
 fi
 
+# Start the master if specified
+if [ "$MASTER" == "true" ]; then
+    if [ "$DRY_RUN" == "true" ]; then
+        echo -e "${BLUE}${INFO_ICON} [DRY RUN] Would start $QUIL_SERVICE_NAME.service${RESET}"
+    else
+        echo -e "${BLUE}${INFO_ICON} Starting $QUIL_SERVICE_NAME.service${RESET}"
+        sudo systemctl enable $QUIL_SERVICE_NAME.service
+        sudo systemctl start $QUIL_SERVICE_NAME.service
+    fi
+fi
+
 
 # Add a final message for dry run
 if [ "$DRY_RUN" == "true" ]; then
     echo -e "\n${BLUE}${INFO_ICON} Dry run completed. No actual changes were made.${RESET}"
+else
+    start_local_cores $INDEX_START  
 fi
