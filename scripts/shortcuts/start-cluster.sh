@@ -167,7 +167,7 @@ if [ "$MASTER" == "true" ]; then
     server_count=$(echo "$servers" | yq eval '. | length' -)
 
     SERVER_CORE_INDEX_START=1
-    SERVER_CORE_INDEX_END=1
+    SERVER_CORE_INDEX_END=0
     # Loop through each server
     for ((i=0; i<server_count; i++)); do
         server=$(echo "$servers" | yq eval ".[$i]" -)
