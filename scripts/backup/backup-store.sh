@@ -9,7 +9,7 @@
 IS_BACKUP_ENABLED="$(yq '.scheduled_tasks.backup.enabled // false' $QTOOLS_CONFIG_FILE)"
 CONFIRM=false
 PEER_ID=""
-FORCE_RESTORE=false
+FORCE_BACKUP=false
 AUTO=false
 # Parse command-line arguments
 while [[ $# -gt 0 ]]; do
@@ -23,7 +23,7 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     --force)
-      FORCE_RESTORE=true
+      FORCE_BACKUP=true
       shift
       ;;
     --peer-id)
@@ -44,7 +44,7 @@ if [ "$IS_CLUSTERING_ENABLED" == "true" ] && [ "$(is_master)" == "false" ]; then
   exit 0
 fi
 
-if [ "$IS_BACKUP_ENABLED" == "true" ] || [ "$FORCE_RESTORE" == "true" ]; then
+if [ "$IS_BACKUP_ENABLED" == "true" ] || [ "$FORCE_BACKUP" == "true" ]; then
 
   if [ -z "$PEER_ID" ]; then
     NODE_BACKUP_NAME="$(yq '.scheduled_tasks.backup.node_backup_name' $QTOOLS_CONFIG_FILE)"
