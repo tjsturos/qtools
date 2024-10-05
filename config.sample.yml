@@ -73,7 +73,7 @@ scheduled_tasks:
                 template_file: "/files/alloy.config"
                 config_file: /etc/alloy/alloy.conf
     diagnostics:
-        enabled: true
+        enabled: false
         cron_expression: ""
 settings:
     listenAddr:
