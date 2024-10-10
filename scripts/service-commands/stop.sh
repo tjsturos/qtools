@@ -48,6 +48,8 @@ clean_up_process() {
 
         # Disable statistics
         qtools toggle-statistics --off
+
+        qtools update-cron
     else
         echo "Skipping process cleanup in quick mode."
     fi
