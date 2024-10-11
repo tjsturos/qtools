@@ -78,6 +78,7 @@ Group=$(id -gn)
 WorkingDirectory=$QUIL_NODE_PATH
 Environment="GOMAXPROCS=$(getProcessorCount)"
 ExecStart=$QUIL_NODE_PATH/$(get_versioned_node)
+KillSignal=SIGINT
 
 [Install]
 WantedBy=multi-user.target"
