@@ -32,7 +32,7 @@ if [ "$IS_CLUSTERING_ENABLED" == "true" ]; then
     if [ "$CORE_ID" == "false" ]; then
         sudo journalctl -u $QUIL_SERVICE_NAME -f --no-hostname -o cat
     else
-        sudo journalctl -u $QUIL_SERVICE_NAME-dataworker@$CORE_ID -f --no-hostname -o cat
+        sudo journalctl -u dataworker@$CORE_ID -f --no-hostname -o cat
     fi
 else
     sudo journalctl -u $QUIL_SERVICE_NAME -f --no-hostname -o cat
