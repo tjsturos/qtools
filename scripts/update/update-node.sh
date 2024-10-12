@@ -8,7 +8,7 @@ current_version="$(get_current_version)"
 restart_required="false"
 force_update="false"
 auto_update="false"
-is_auto_update_enabled=$(yq '.settings.auto_updates.node // true' $QTOOLS_CONFIG_FILE)
+is_auto_update_enabled=$(yq '.scheduled_tasks.updates.node.enabled // "false"' $QTOOLS_CONFIG_FILE)
 
 for param in "$@"; do
     case $param in

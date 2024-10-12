@@ -2,7 +2,7 @@
 # HELP: Updates the Qtools suite, as well as adding auto-complete and installing any new cron tasks.
 
 log "Starting qtools update..."
-is_auto_update_enabled=$(yq '.settings.auto_updates.qtools // true' $QTOOLS_CONFIG_FILE)
+is_auto_update_enabled=$(yq '.scheduled_tasks.updates.qtools.enabled // "false"' $QTOOLS_CONFIG_FILE)
 
 auto_update="false"
 

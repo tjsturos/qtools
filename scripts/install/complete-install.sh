@@ -35,7 +35,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 
-DISABLE_SSH_PASSWORDS="$(yq '.settings.install.ssh.disable_password_login // true') $QTOOLS_CONFIG_FILE"
+DISABLE_SSH_PASSWORDS="$(yq '.settings.install.ssh.disable_password_login // "false"') $QTOOLS_CONFIG_FILE"
 
 cd $QUIL_HOME
 

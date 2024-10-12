@@ -33,7 +33,6 @@ scheduled_tasks:
     backup:
         enabled: true
         cron_expression: ""
-        # TODO: refer scripts to use this and remove .settings.backups values
         node_backup_name: ""
         backup_url: backups.example.com
         remote_user: root

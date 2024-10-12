@@ -134,7 +134,7 @@ find_script() {
 
 # Function to check if snapshots are enabled
 are_snapshots_enabled() {
-  local enabled=$(yq '.settings.snapshots.enabled // true' $QTOOLS_CONFIG_FILE)
+  local enabled=$(yq '.settings.snapshots.enabled // "false"' $QTOOLS_CONFIG_FILE)
   [[ "$enabled" == "true" ]]
 }
 
