@@ -19,12 +19,12 @@ if [[ $# -eq 1 ]]; then
     case $1 in
         --on)
             set_statistics_status true
-            sudo systemctl start $STATISTICS_SERVICE_NAME
+            #sudo systemctl start $STATISTICS_SERVICE_NAME
             exit 0
             ;;
         --off)
             set_statistics_status false
-            sudo systemctl stop $STATISTICS_SERVICE_NAME
+            #sudo systemctl stop $STATISTICS_SERVICE_NAME
             exit 0
             ;;
         *)
