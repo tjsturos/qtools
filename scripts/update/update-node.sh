@@ -47,6 +47,14 @@ download_matching_files_if_different() {
   done <<< "$file_list"
 }
 
+link_node_binary() {
+  sudo ln -sf $QUIL_NODE_PATH/$(get_versioned_node) $QUIL_NODE_BIN
+}
+
+link_qclient_binary() {
+  sudo ln -sf $QUIL_CLIENT_PATH/$(get_versioned_qclient) $QUIL_QCLIENT_BIN
+}
+
 # Main script execution
 main() {
   # Fetch current version
@@ -81,6 +89,8 @@ fi
 main
 
 if [ "$restart_required" == "true" ]; then
+  link_node_binary
+  link_qclient_binary
   qtools update-service
   qtools restart
   sleep 10

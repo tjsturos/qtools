@@ -77,17 +77,13 @@ User=$(whoami)
 Group=$(id -gn)
 WorkingDirectory=$QUIL_NODE_PATH
 Environment="GOMAXPROCS=$(getProcessorCount)"
-ExecStart=$QUIL_NODE_PATH/$(get_versioned_node)
+ExecStart=/usr/local/bin/node
 KillSignal=SIGINT
+TimeoutStopSec=30
 
 [Install]
 WantedBy=multi-user.target"
 
-# Update service file name and content if it's a core service
-if [ "$IS_CORE_SERVICE" == "true" ] && [ "$IS_CLUSTER_MODE" == "true" ]; then
-    SERVICE_CONTENT=$(echo "$SERVICE_CONTENT" | sed -e "s/Description=Quilibrium Ceremony Client Service/Description=Quilibrium Ceremony Client Service - Core $CORE_NUMBER/")
-    SERVICE_CONTENT=$(echo "$SERVICE_CONTENT" | sed -e "s/ExecStart=$QUIL_NODE_PATH\/$(get_versioned_node)/ExecStart=$QUIL_NODE_PATH\/$(get_versioned_node) --core $CORE_NUMBER/")
-fi
 
 updateOrAddLine() {
     local KEY=$1
