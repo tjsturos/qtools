@@ -9,6 +9,7 @@ set_backup_status() {
     local status=$1
     yq -i ".scheduled_tasks.backup.enabled = $status" $QTOOLS_CONFIG_FILE
     echo "Backups have been turned $([[ $status == true ]] && echo "on" || echo "off")."
+    qtools update-cron
 }
 
 # Check current backup status
@@ -46,5 +47,3 @@ if [[ $current_status == "true" ]]; then
 else
     set_backup_status true
 fi
-
-qtools update-cron
