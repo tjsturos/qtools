@@ -37,8 +37,10 @@ fi
 # If no arguments provided, toggle the current status
 if [[ $current_status == "true" ]]; then
     set_statistics_status false
-    sudo systemctl stop $STATISTICS_SERVICE_NAME
+    #sudo systemctl stop $STATISTICS_SERVICE_NAME
 else
     set_statistics_status true
-    sudo systemctl start $STATISTICS_SERVICE_NAME
+    #sudo systemctl start $STATISTICS_SERVICE_NAME
 fi
+
+qtools update-cron

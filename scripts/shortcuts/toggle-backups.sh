@@ -46,3 +46,5 @@ if [[ $current_status == "true" ]]; then
 else
     set_backup_status true
 fi
+
+qtools update-cron

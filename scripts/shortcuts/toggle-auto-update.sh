@@ -46,3 +46,5 @@ if [[ $current_status == "true" ]]; then
 else
     set_auto_update_status true
 fi
+
+qtools update-cron

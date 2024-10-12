@@ -38,3 +38,5 @@ if [[ $current_status == "true" ]]; then
 else
     set_diagnostics_status true
 fi
+
+qtools update-cron
