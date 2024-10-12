@@ -30,12 +30,13 @@ download_matching_files_if_different() {
   local available_version=$1
   local file_list=$2
   local base_url=$3
+  local output_path=$4
 
   while IFS= read -r file; do
     # only download files that are for this architecture
     if [[ "$file" == *"$OS_ARCH"* ]]; then
       local file_url="${base_url}/${file}"
-      local dest_file="${QUIL_NODE_PATH}/${file}"
+      local dest_file="${output_path}/${file}"
 
       if [ ! -f "$dest_file" ]; then
           log "Downloading $file_url to $dest_file"
@@ -71,9 +72,9 @@ main() {
   if [[ "$current_version" != "$available_version" ]] || [[ $force_update == "true" ]]; then
     restart_required="true"
     # Download all matching files if necessary
-    download_matching_files_if_different "$release_version" "$available_files" "https://releases.quilibrium.com"
+    download_matching_files_if_different "$release_version" "$available_files" "https://releases.quilibrium.com" "$QUIL_NODE_PATH"
     sudo chmod +x $QUIL_NODE_PATH/$(get_versioned_node)
-    download_matching_files_if_different "$release_version" "$available_qclient_files" "https://releases.quilibrium.com"
+    download_matching_files_if_different "$release_version" "$available_qclient_files" "https://releases.quilibrium.com" "$QUIL_CLIENT_PATH"
     sudo chmod +x $QUIL_CLIENT_PATH/$(get_versioned_qclient)
 
     # Get a list of all files in $QUIL_NODE_PATH that don't match $release_version and remove them
