@@ -7,20 +7,20 @@
 # Function to set auto-update status
 set_auto_update_status() {
     local status=$1
-    yq -i ".scheduled_tasks.updates.node.enabled = $status" $QTOOLS_CONFIG_FILE
-    echo "Auto-updates have been turned $([[ $status == true ]] && echo "on" || echo "off")."
+    yq -i ".scheduled_tasks.updates.qtools.enabled = $status" $QTOOLS_CONFIG_FILE
+    echo "Qtools auto-updates have been turned $([[ $status == true ]] && echo "on" || echo "off")."
     qtools update-cron
 }
 
 # Check current auto-update status
-current_status=$(yq '.settings.auto_updates.node // true' $QTOOLS_CONFIG_FILE)
+current_status=$(yq '.scheduled_tasks.updates.qtools.enabled // true' $QTOOLS_CONFIG_FILE)
 
 # Parse command line arguments
 if [[ $# -eq 1 ]]; then
     case $1 in
         --on)
             if [ "$current_status" == "true" ]; then
-                echo "Auto-updates are already enabled."
+                echo "Qtools auto-updates are already enabled."
                 exit 0
             fi
             set_auto_update_status true
@@ -28,7 +28,7 @@ if [[ $# -eq 1 ]]; then
             ;;
         --off)
             if [ "$current_status" == "false" ]; then
-                echo "Auto-updates are already disabled."
+                echo "Qtools auto-updates are already disabled."
                 exit 0
             fi
             set_auto_update_status false
