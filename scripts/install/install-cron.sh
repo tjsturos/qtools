@@ -17,7 +17,7 @@ append_to_file $FILE_CRON "PATH=${GOPATH}/bin:${GOROOT}/bin:/usr/local/sbin:/usr
 append_to_file $FILE_CRON "QTOOLS_PATH=$QTOOLS_PATH" false
 append_to_file $FILE_CRON "@reboot qtools start" false
 
-AUTO_UPDATE_NODE=$(yq eval '.scheduled_tasks.updates.node.enabled // "false"' $QTOOLS_CONFIG_FILE)
+AUTO_UPDATE_NODE=$(yq eval '.scheduled_tasks.updates.node.enabled' $QTOOLS_CONFIG_FILE)
 
 if [ "$AUTO_UPDATE_NODE" == "true" ]; then
   NODE_UPDATE_CRON_EXPRESSION=$(yq eval '.scheduled_tasks.updates.node.cron_expression // "*/10 * * * *"' $QTOOLS_CONFIG_FILE)
@@ -31,7 +31,7 @@ if [ "$AUTO_UPDATE_NODE" == "true" ]; then
   append_to_file $FILE_CRON "$NODE_UPDATE_CRON_EXPRESSION qtools update-node --auto" false
 fi
 
-AUTO_UPDATE_QTOOLS=$(yq eval '.scheduled_tasks.updates.qtools.enabled // "false"' $QTOOLS_CONFIG_FILE)
+AUTO_UPDATE_QTOOLS=$(yq eval '.scheduled_tasks.updates.qtools.enabled' $QTOOLS_CONFIG_FILE)
 
 if [ "$AUTO_UPDATE_QTOOLS" == "true" ]; then
   QTOOLS_UPDATE_CRON_EXPRESSION=$(yq eval '.scheduled_tasks.updates.qtools.cron_expression // "*/10 * * * *"' $QTOOLS_CONFIG_FILE)
