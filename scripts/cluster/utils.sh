@@ -53,6 +53,8 @@ ssh_to_remote() {
         ssh -i $SSH_CLUSTER_KEY -q -p $SSH_PORT -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "$USER@$IP" "$COMMAND"
     else
         echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would run: ssh -i $SSH_CLUSTER_KEY -q -p $SSH_PORT -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $USER@$IP ${COMMAND}${RESET}"
+        # Return a dummy value for dry run
+        echo "4"  # Assuming 4 cores as a default value for dry run
     fi
 }
 
@@ -315,7 +317,12 @@ update_quil_config() {
         else
             echo "Getting available cores for $ip (user: $remote_user)"
             # Get the number of available cores
-            available_cores=$(ssh_to_remote $ip $remote_user $ssh_port "nproc")
+            if [ "$DRY_RUN" == "false" ]; then
+                available_cores=$(ssh_to_remote $ip $remote_user $ssh_port "nproc")
+            else
+                available_cores=$(ssh_to_remote $ip $remote_user $ssh_port "nproc")
+                echo "[DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would get available cores for $ip: $available_cores"
+            fi
         fi
 
         if [ "$data_worker_count" == "false" ]; then
