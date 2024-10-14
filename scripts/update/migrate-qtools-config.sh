@@ -61,7 +61,18 @@ VERSION_2() {
 }
 # Version 1 was the unversioned config.
 
+VERSION_3() {
+    local VERSION=3
+    current_version=$(yq eval '.qtools_version // "0"' "$QTOOLS_PATH/config.yml")
+    echo "Current version: $current_version vs $VERSION"
+    if [ "$current_version" -lt "$VERSION" ]; then
+        echo "Migrating config.yml to version 3"
+        yq eval -i '.qtools_version = 3' "$QTOOLS_PATH/config.yml"
+        echo "Updated qtools_version to 3"
+    fi
+}
 # run the version migration
 VERSION_2
+VERSION_3
 
 
