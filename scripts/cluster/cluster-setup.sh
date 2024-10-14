@@ -78,7 +78,6 @@ fi
 
 if [ "$DRY_RUN" == "false" ]; then  
     yq eval -i ".service.clustering.local_data_worker_count = $DATA_WORKER_COUNT" $QTOOLS_CONFIG_FILE
-
 else
     echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ LOCAL ] [ $LOCAL_IP ] Would set $QTOOLS_CONFIG_FILE's data_worker_count to $DATA_WORKER_COUNT${RESET}"
 fi
@@ -155,17 +154,14 @@ setup_remote_data_workers() {
     local SSH_PORT=$3
     local CORE_COUNT=$4
 
-    if [ "$DRY_RUN" == "false" ]; then
-        echo -e "${BLUE}${INFO_ICON} Configuring cluster's data workers on $IP ($USER)${RESET}"
-    else
-        echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would configure cluster's data workers on $IP ($USER)${RESET}"
-    fi
 
     if [ "$DRY_RUN" == "false" ]; then
+        echo -e "${BLUE}${INFO_ICON} Configuring cluster's data workers on $IP ($USER)${RESET}"
         # Log the core count
         echo "Setting up remote server with core count: $CORE_COUNT"
         ssh_to_remote $IP $USER $SSH_PORT "qtools cluster-setup --data-worker-count $CORE_COUNT" 
     else
+        echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would configure cluster's data workers on $IP ($USER)${RESET}"
         echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would run setup-cluster.sh on $IP ($USER) with data worker count of $CORE_COUNT${RESET}"
     fi
 }
