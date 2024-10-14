@@ -77,7 +77,7 @@ if [ "$MASTER" == "true" ]; then
 fi
 
 if [ "$DRY_RUN" == "false" ]; then  
-    yq eval -i ".service.clustering.local_dataworker_count = $DATA_WORKER_COUNT" $QTOOLS_CONFIG_FILE
+    yq eval -i ".service.clustering.local_data_worker_count = $DATA_WORKER_COUNT" $QTOOLS_CONFIG_FILE
 
 else
     echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ LOCAL ] [ $LOCAL_IP ] Would set $QTOOLS_CONFIG_FILE's data_worker_count to $DATA_WORKER_COUNT${RESET}"

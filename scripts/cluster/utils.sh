@@ -9,9 +9,11 @@ export DEFAULT_SSH_PORT=$(yq eval '.service.clustering.default_ssh_port // "22"'
 export QUIL_DATA_WORKER_SERVICE_NAME="$(yq eval '.service.clustering.data_worker_service_name // "dataworker"' $QTOOLS_CONFIG_FILE)"
 export BASE_PORT=$(yq eval '.service.clustering.base_port // "40000"' $QTOOLS_CONFIG_FILE)
 
-MASTER_SERVICE_FILE="/etc/systemd/system/$QUIL_SERVICE_NAME.service"
-DATA_WORKER_SERVICE_FILE="/etc/systemd/system/$QUIL_DATA_WORKER_SERVICE_NAME@.service"
-DATA_WORKER_COUNT=$(yq eval '.service.clustering.local_dataworker_count' $QTOOLS_CONFIG_FILE)
+MASTER_SERVICE_NAME=$(yq eval '.service.clustering.master_service_name' $QTOOLS_CONFIG_FILE)
+MASTER_SERVICE_FILE="/etc/systemd/system/$MASTER_SERVICE_NAME.service"
+DATA_WORKER_SERVICE_NAME=$(yq eval '.service.clustering.data_worker_service_name' $QTOOLS_CONFIG_FILE)
+DATA_WORKER_SERVICE_FILE="/etc/systemd/system/$DATA_WORKER_SERVICE_NAME@.service"
+DATA_WORKER_COUNT=$(yq eval '.service.clustering.local_data_worker_count' $QTOOLS_CONFIG_FILE)
 
 is_master() {
     local config=$(yq eval . $QTOOLS_CONFIG_FILE)

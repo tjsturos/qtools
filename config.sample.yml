@@ -21,7 +21,7 @@ service:
         base_port: 40000
         default_ssh_port: 22
         default_user: ubuntu
-        local_dataworker_count: null
+        local_data_worker_count: null
         ssh_key_path: $HOME/.ssh
         ssh_key_name: cluster-key
         main_ip: ""

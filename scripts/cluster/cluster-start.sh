@@ -51,5 +51,5 @@ if [ "$(is_master)" == "true" ]; then
     check_ssh_connections
 
     ssh_command_to_each_server "qtools cluster-start"
-    start_master_service
+    sudo systemctl start $MASTER_SERVICE_NAME
 fi

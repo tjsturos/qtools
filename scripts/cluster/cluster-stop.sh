@@ -22,7 +22,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 if [ "$IS_MASTER" == "true" ] || [ "$(is_master)" == "true" ]; then
-    stop_master_service
+    sudo systemctl stop $MASTER_SERVICE_NAME
     echo "Stopping services on remote servers..."
     ssh_command_to_each_server "qtools cluster-stop"
 fi
