@@ -3,7 +3,7 @@ quilibrium_repo_install_dir: .
 release_version: 1.4.19.1
 current_version: 1.4.19.1
 os_arch: linux-amd64
-qtools_version: 2
+qtools_version: 3
 service:
     file_name: ceremonyclient
     debug: false
@@ -20,6 +20,7 @@ service:
         data_worker_service_name: dataworker
         base_port: 40000
         default_ssh_port: 22
+        default_user: ubuntu
         local_dataworker_count: null
         ssh_key_path: $HOME/.ssh
         ssh_key_name: cluster-key
