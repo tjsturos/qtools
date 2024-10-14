@@ -266,19 +266,12 @@ copy_file_to_each_server() {
     done
 }
 
-start_remote_server_services() {
-    ssh_command_to_each_server "bash $HOME/clustering/start-cluster.sh"
-}
-
-update_binaries_on_slave_servers() {
-    ssh_command_to_each_server "cd $HOME/clustering && git pull && ./update-cluster-node.sh"
-}
 
 update_quil_config() {
-    config=$(yq eval . $CLUSTER_CONFIG_FILE)
+    config=$(yq eval . $QTOOLS_CONFIG_FILE)
     
     # Get the array of servers
-    servers=$(echo "$config" | yq eval '.servers' -)
+    servers=$(echo "$config" | yq eval '.service.clustering.servers' -)
 
     # Clear the existing dataWorkerMultiaddrs array
     if [ "$DRY_RUN" == "false" ]; then
@@ -310,7 +303,7 @@ update_quil_config() {
         echo "Processing server: $ip (user: $remote_user, worker count: $data_worker_count)"
         if echo "$(hostname -I)" | grep -q "$ip"; then
             if [ "$DRY_RUN" == "false" ]; then
-                yq eval -i ".main_ip = \"$ip\"" $CLUSTER_CONFIG_FILE
+                yq eval -i ".service.clustering.main_ip = \"$ip\"" $QTOOLS_CONFIG_FILE
                 echo "Set main IP to $ip in clustering configuration"
             else
                 echo "[DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would set main IP to $ip in clustering configuration"
