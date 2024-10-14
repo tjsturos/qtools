@@ -83,9 +83,6 @@ else
     echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ LOCAL ] [ $LOCAL_IP ] Would set $QTOOLS_CONFIG_FILE's data_worker_count to $DATA_WORKER_COUNT${RESET}"
 fi
 
-START_CORE_INDEX=1
-END_CORE_INDEX=$(($START_CORE_INDEX + $DATA_WORKER_COUNT))
-
 update_local_quil_config() {
     local data_worker_count=$1
 
@@ -96,7 +93,7 @@ update_local_quil_config() {
     fi
     
 
-    for ((i=0; i<$end_core_index; i++)); do
+    for ((i=0; i<$DATA_WORKER_COUNT; i++)); do
         if [ "$DRY_RUN" == "false" ]; then
             yq eval -i ".engine.dataWorkerMultiaddrs += \"/ip4/$LOCAL_IP/tcp/$(($BASE_PORT + $i))" $QUIL_CONFIG_FILE
         else
@@ -109,11 +106,11 @@ update_local_quil_config() {
 if [ "$DRY_RUN" == "false" ]; then
     echo "Enabling $QUIL_SERVICE_NAME"
     sudo systemctl enable $QUIL_SERVICE_NAME
-    echo "Enabling $QUIL_DATA_WORKER_SERVICE_NAME@{$START_CORE_INDEX..$END_CORE_INDEX}"
-    enable_local_data_worker_services $START_CORE_INDEX $END_CORE_INDEX
+    echo "Enabling $QUIL_DATA_WORKER_SERVICE_NAME@{1..$DATA_WORKER_COUNT}"
+    enable_local_data_worker_services 1 $DATA_WORKER_COUNT
     sudo systemctl daemon-reload
 else
-    echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ LOCAL ] [ $LOCAL_IP ] Would enable local $QUIL_DATA_WORKER_SERVICE_NAME@{$START_CORE_INDEX..$END_CORE_INDEX}${RESET}"
+    echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ LOCAL ] [ $LOCAL_IP ] Would enable local $QUIL_DATA_WORKER_SERVICE_NAME@{1..$DATA_WORKER_COUNT}${RESET}"
 fi
 
 setup_remote_firewall() {
@@ -121,6 +118,7 @@ setup_remote_firewall() {
     local REMOTE_USER=$2
     local SSH_PORT=$3
     local DATA_WORKER_COUNT=$4
+    
     local END_PORT=$((BASE_PORT + DATA_WORKER_COUNT))
     local MASTER_IP=$(yq eval '.service.clustering.main_ip' $QTOOLS_CONFIG_FILE)
     if [ -z "$MASTER_IP" ]; then
@@ -132,10 +130,10 @@ setup_remote_firewall() {
     echo -e "${BLUE}${INFO_ICON} Setting up remote firewall on $IP ($REMOTE_USER) for ports $BASE_PORT to $END_PORT${RESET}"
 
     if [ "$DRY_RUN" == "false" ]; then
-        ssh_to_remote $IP $REMOTE_USER "sudo ufw allow $BASE_PORT:$END_PORT/tcp from $MASTER_IP" $SSH_PORT
+        ssh_to_remote $IP $REMOTE_USER $SSH_PORT "sudo ufw allow $BASE_PORT:$END_PORT/tcp from $MASTER_IP" 
         
         # Reload ufw to apply changes
-        ssh_to_remote $IP $REMOTE_USER "sudo ufw reload" $SSH_PORT
+        ssh_to_remote $IP $REMOTE_USER $SSH_PORT "sudo ufw reload" 
         
         echo -e "${GREEN}${SUCCESS_ICON} Remote firewall setup completed on $IP${RESET}"
     else
@@ -158,36 +156,36 @@ setup_remote_data_workers() {
     if [ "$DRY_RUN" == "false" ]; then
         # Log the core count
         echo "Setting up remote server with core count: $CORE_COUNT"
-        ssh_to_remote $IP $USER "bash qtools setup-cluster \
-            --data-worker-count $CORE_COUNT" $SSH_PORT
+        ssh_to_remote $IP $USER $SSH_PORT "bash qtools setup-cluster \
+            --data-worker-count $CORE_COUNT" 
     else
         echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would run setup-cluster.sh on $IP ($USER) with data worker count of $CORE_COUNT${RESET}"
     fi
 }
 
 copy_quil_config_to_server() {
-    local ip=$1
-    local user=$2
-    local ssh_port=$3
+    local IP=$1
+    local REMOTE_USER=$2
+    local SSH_PORT=$3
     if [ "$DRY_RUN" == "false" ]; then  
         echo -e "${BLUE}${INFO_ICON} Copying $QTOOLS_CONFIG_FILE to $ip${RESET}"
-        ssh_to_remote $IP $USER "mkdir -p $HOME/ceremonyclient/node/.config" $ssh_port
-        scp_to_remote "$QUIL_CONFIG_FILE $user@$ip:$HOME/ceremonyclient/node/.config/config.yml" $ssh_port
+        ssh_to_remote $IP $REMOTE_USER $SSH_PORT "mkdir -p $HOME/ceremonyclient/node/.config"
+        scp_to_remote "$QUIL_CONFIG_FILE $REMOTE_USER@$IP:$HOME/ceremonyclient/node/.config/config.yml"
     else
-        echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would copy $QUIL_CONFIG_FILE to $ip ($user)${RESET}"
+        echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would copy $QUIL_CONFIG_FILE to $IP ($REMOTE_USER)${RESET}"
     fi
 }
 
 copy_cluster_config_to_server() {
-    local ip=$1
-    local user=$2
-    local ssh_port=$3
+    local IP=$1
+    local REMOTE_USER=$2
+    local SSH_PORT=$3
     if [ "$DRY_RUN" == "false" ]; then  
-        echo -e "${BLUE}${INFO_ICON} Copying $QTOOLS_CONFIG_FILE to $ip${RESET}"
-        ssh_to_remote $IP $USER "mkdir -p $HOME/qtools" $ssh_port
-        scp_to_remote "$QTOOLS_CONFIG_FILE $user@$ip:$HOME/qtools/config.yml" $ssh_port
+        echo -e "${BLUE}${INFO_ICON} Copying $QTOOLS_CONFIG_FILE to $IP ($REMOTE_USER)${RESET}"
+        ssh_to_remote $IP $REMOTE_USER $SSH_PORT "mkdir -p $HOME/qtools"
+        scp_to_remote "$QTOOLS_CONFIG_FILE $REMOTE_USER@$IP:$HOME/qtools/config.yml" $SSH_PORT
     else
-        echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would copy $QTOOLS_CONFIG_FILE to $ip ($user)${RESET}"
+        echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would copy $QTOOLS_CONFIG_FILE to $IP ($REMOTE_USER)${RESET}"
     fi
 }
 
@@ -215,7 +213,7 @@ if [ "$MASTER" == "true" ]; then
         else
             echo "Getting available cores for $ip (user: $remote_user)"
             # Get the number of available cores
-            available_cores=$(ssh_to_remote $ip $remote_user "nproc")
+            available_cores=$(ssh_to_remote $ip $remote_user "nproc" $ssh_port)
         fi
 
         if [ "$data_worker_count" == "false" ] || [ "$data_worker_count" -gt "$available_cores" ]; then

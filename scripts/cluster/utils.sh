@@ -11,6 +11,7 @@ export BASE_PORT=$(yq eval '.service.clustering.base_port // "40000"' $QTOOLS_CO
 
 MASTER_SERVICE_FILE="/etc/systemd/system/$QUIL_SERVICE_NAME.service"
 DATA_WORKER_SERVICE_FILE="/etc/systemd/system/$QUIL_DATA_WORKER_SERVICE_NAME@.service"
+DATA_WORKER_COUNT=$(yq eval '.service.clustering.local_dataworker_count' $QTOOLS_CONFIG_FILE)
 
 is_master() {
     local config=$(yq eval . $QTOOLS_CONFIG_FILE)
@@ -45,8 +46,8 @@ LOCAL_IP=$(get_local_ip)
 ssh_to_remote() {
     local IP=$1
     local USER=$2
-    local COMMAND=$3
-    local SSH_PORT=$4
+    local SSH_PORT=$3
+    local COMMAND=$4
 
     if [ "$DRY_RUN" == "false" ]; then
         ssh -i $SSH_CLUSTER_KEY -q -p $SSH_PORT -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "$USER@$IP" "$COMMAND"
@@ -98,7 +99,7 @@ WantedBy=multi-user.target
 EOF
 
     if [ "$DRY_RUN" == "true" ]; then
-        echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would create master service file ($service_file) with the following content:${RESET}"
+        echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would create master service file ($MASTER_SERVICE_FILE) with the following content:${RESET}"
         cat "$temp_file"
         rm "$temp_file"
     else
@@ -291,6 +292,7 @@ update_quil_config() {
         server=$(echo "$servers" | yq eval ".[$i]" -)
         ip=$(echo "$server" | yq eval '.ip' -)
         remote_user=$(echo "$server" | yq eval ".user // \"$DEFAULT_USER\"" -)
+        ssh_port=$(echo "$server" | yq eval ".ssh_port // \"$DEFAULT_SSH_PORT\"" -)
         data_worker_count=$(echo "$server" | yq eval '.data_worker_count // "false"' -)
         available_cores=$(nproc)
         
@@ -313,7 +315,7 @@ update_quil_config() {
         else
             echo "Getting available cores for $ip (user: $remote_user)"
             # Get the number of available cores
-            available_cores=$(ssh_to_remote $ip $remote_user nproc)
+            available_cores=$(ssh_to_remote $ip $remote_user nproc $ssh_port)
         fi
 
         if [ "$data_worker_count" == "false" ]; then

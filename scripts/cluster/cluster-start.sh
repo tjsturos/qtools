@@ -1,6 +1,4 @@
 
-
-DATA_WORKER_COUNT=$(yq eval '.service.clustering.local_dataworker_count' $QTOOLS_CONFIG_FILE)
 DRY_RUN=false
 
 # Parse command line arguments
@@ -39,20 +37,17 @@ if [ "$DATA_WORKER_COUNT" -gt "$MAX_CORES" ]; then
     echo "DATA_WORKER_COUNT adjusted down to maximum: $DATA_WORKER_COUNT"
 fi
 
-START_CORE_INDEX=1
-END_CORE_INDEX=$((1 + DATA_WORKER_COUNT))
+start_local_data_worker_services 1 $DATA_WORKER_COUNT
 
-# Loop through the data worker count and start each core
-
-start_local_data_worker_services $START_CORE_INDEX $END_CORE_INDEX
-
-if [ $START_CORE_INDEX -eq 1 ]; then
+if [ "$(is_master)" == "true" ]; then
     if [ -f "$SSH_CLUSTER_KEY" ]; then
         echo -e "${GREEN}${CHECK_ICON} SSH key found: $SSH_CLUSTER_KEY${RESET}"
     else
         echo -e "${RED}${WARNING_ICON} SSH file: $SSH_CLUSTER_KEY not found!${RESET}"
     fi
 
-    start_remote_server_services
+    check_ssh_connections
+
+    ssh_command_to_each_server "qtools cluster-start"
     start_master_service
 fi

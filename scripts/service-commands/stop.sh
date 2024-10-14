@@ -59,19 +59,7 @@ sudo systemctl stop $QUIL_SERVICE_NAME.service
 
 # Check if clustering is enabled
 if [ "$IS_CLUSTERING_ENABLED" == "true" ]; then
-
-    if [ "$(is_master)" == "true" ]; then
-        echo "Clustering is enabled and this is the main IP. Stopping services on all servers..."
-        
-        servers=$(get_cluster_ips)
-        for ip in $servers; do
-            if echo "$(hostname -I)" | grep -q "$ip"; then
-                continue
-            fi
-            echo "Stopping services on $ip"
-            ssh -i ~/.ssh/cluster-key "client@$ip" "sudo systemctl stop $QUIL_SERVICE_NAME.service"
-        done
-    fi
+    qtools cluster-stop
 fi
 
 # Quick mode is essentially no clean up, with intention to immediately restart the node process
