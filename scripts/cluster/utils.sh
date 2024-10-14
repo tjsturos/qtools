@@ -310,19 +310,15 @@ update_quil_config() {
                 yq eval -i ".service.clustering.main_ip = \"$ip\"" $QTOOLS_CONFIG_FILE
                 echo "Set main IP to $ip in clustering configuration"
             else
-                echo "[DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would set main IP to $ip in clustering configuration"
+                echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would set main IP to $ip in clustering configuration${RESET}"
             fi
             # This is the master server, so subtract 1 from the total core count
             available_cores=$(($(nproc) - 1))
         else
             echo "Getting available cores for $ip (user: $remote_user)"
             # Get the number of available cores
-            if [ "$DRY_RUN" == "false" ]; then
-                available_cores=$(ssh_to_remote $ip $remote_user $ssh_port "nproc")
-            else
-                available_cores=$(ssh_to_remote $ip $remote_user $ssh_port "nproc")
-                echo "[DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would get available cores for $ip: $available_cores"
-            fi
+            available_cores=$(ssh_to_remote $ip $remote_user $ssh_port "nproc")
+            
         fi
 
         if [ "$data_worker_count" == "false" ]; then
