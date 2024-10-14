@@ -133,7 +133,7 @@ setup_remote_firewall() {
         ssh_to_remote $IP $REMOTE_USER $SSH_PORT "sudo ufw allow $BASE_PORT:$END_PORT/tcp from $MASTER_IP" 
         
         # Reload ufw to apply changes
-        ssh_to_remote $IP $REMOTE_USER $SSH_PORT "sudo ufw reload" 
+        ssh_to_remote $IP $REMOTE_USER $SSH_PORT "sudo ufw reload"
         
         echo -e "${GREEN}${SUCCESS_ICON} Remote firewall setup completed on $IP${RESET}"
     else
@@ -156,8 +156,7 @@ setup_remote_data_workers() {
     if [ "$DRY_RUN" == "false" ]; then
         # Log the core count
         echo "Setting up remote server with core count: $CORE_COUNT"
-        ssh_to_remote $IP $USER $SSH_PORT "bash qtools setup-cluster \
-            --data-worker-count $CORE_COUNT" 
+        ssh_to_remote $IP $USER $SSH_PORT "qtools cluster-setup --data-worker-count $CORE_COUNT" 
     else
         echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would run setup-cluster.sh on $IP ($USER) with data worker count of $CORE_COUNT${RESET}"
     fi
