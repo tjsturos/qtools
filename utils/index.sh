@@ -32,6 +32,22 @@ log() {
     echo "$LOG" >> "$QTOOLS_PATH/$LOG_OUTPUT_FILE"
 }
 
+get_local_ip() {
+    local servers=$(yq eval '.service.clustering.servers' $QTOOLS_CONFIG_FILE)
+    local server_count=$(echo "$servers" | yq eval '. | length' -)
+    local local_ips=$(hostname -I)
+
+    for ((i=0; i<server_count; i++)); do
+        local server=$(echo "$servers" | yq eval ".[$i]" -)
+        local ip=$(echo "$server" | yq eval '.ip' -)
+        
+        if echo "$local_ips" | grep -q "$ip"; then
+            echo "$ip"
+            return
+        fi
+    done
+}
+
 is_master() {
     local main_ip=$(yq eval '.service.clustering.main_ip' $QTOOLS_CONFIG_FILE)
     local local_ip=$(get_local_ip)

@@ -16,24 +16,6 @@ DATA_WORKER_SERVICE_FILE="/etc/systemd/system/$DATA_WORKER_SERVICE_NAME@.service
 DATA_WORKER_COUNT=$(yq eval '.service.clustering.local_data_worker_count' $QTOOLS_CONFIG_FILE)
 
 
-
-get_local_ip() {
-    local config=$(yq eval . $QTOOLS_CONFIG_FILE)
-    local servers=$(echo "$config" | yq eval '.service.clustering.servers' -)
-    local server_count=$(echo "$servers" | yq eval '. | length' -)
-    local local_ips=$(hostname -I)
-
-    for ((i=0; i<server_count; i++)); do
-        local server=$(echo "$servers" | yq eval ".[$i]" -)
-        local ip=$(echo "$server" | yq eval '.ip' -)
-        
-        if echo "$local_ips" | grep -q "$ip"; then
-            echo "$ip"
-            return
-        fi
-    done
-}
-
 LOCAL_IP=$(get_local_ip)
 
 ssh_to_remote() {
