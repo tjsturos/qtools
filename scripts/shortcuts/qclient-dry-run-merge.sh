@@ -23,7 +23,6 @@ cd $QUIL_CLIENT_PATH
 run_merge() {
     local folders=("$@")
     local output=$(./qclient-2.0.0-$OS_ARCH config prover merge $QUIL_NODE_PATH/.config/ "${folders[@]}" --dry-run)
-    echo -e "\nCommand used: ./qclient-2.0.0-$OS_ARCH config prover merge $QUIL_NODE_PATH/.config/ "${folders[@]}" --dry-run\n"
     local score=$(echo "$output" | grep "Effective seniority score:" | awk '{print $NF}')
     echo "$score"
 }
@@ -46,7 +45,7 @@ for ((num_folders=1; num_folders<=${#folders[@]}; num_folders++)); do
         for index in $combination; do
             selected_folders+=("${folders[index]}")
         done
-        
+        echo -e "\nCommand used: ./qclient-2.0.0-$OS_ARCH config prover merge $QUIL_NODE_PATH/.config/ "${selected_folders[@]}" --dry-run\n"
         score=$(run_merge "${selected_folders[@]}")
         log_result "$score" "${selected_folders[@]}"
     done <<< "$combinations"
