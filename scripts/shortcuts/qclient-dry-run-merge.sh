@@ -23,6 +23,7 @@ cd $QUIL_CLIENT_PATH
 run_merge() {
     local folders=("$@")
     local output=$(./qclient-2.0.0-$OS_ARCH config prover merge $QUIL_NODE_PATH/.config/ "${folders[@]}" --dry-run)
+    log "Command used: ./qclient-2.0.0-$OS_ARCH config prover merge $QUIL_NODE_PATH/.config/ "${folders[@]}" --dry-run"
     local score=$(echo "$output" | grep "Effective seniority score:" | awk '{print $NF}')
     echo "$score"
 }
