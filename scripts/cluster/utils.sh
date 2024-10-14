@@ -12,6 +12,17 @@ export BASE_PORT=$(yq eval '.service.clustering.base_port // "40000"' $QTOOLS_CO
 MASTER_SERVICE_FILE="/etc/systemd/system/$QUIL_SERVICE_NAME.service"
 DATA_WORKER_SERVICE_FILE="/etc/systemd/system/$QUIL_DATA_WORKER_SERVICE_NAME@.service"
 
+is_master() {
+    local config=$(yq eval . $QTOOLS_CONFIG_FILE)
+    local main_ip=$(echo "$config" | yq eval '.service.clustering.main_ip' -)
+    local local_ip=$(get_local_ip)
+    if [ "$main_ip" == "$local_ip" ]; then
+        echo "true"
+    else
+        echo "false"
+    fi
+}
+
 get_local_ip() {
     local config=$(yq eval . $QTOOLS_CONFIG_FILE)
     local servers=$(echo "$config" | yq eval '.service.clustering.servers' -)

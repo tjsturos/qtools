@@ -70,7 +70,6 @@ if [ "$server_count" -eq 0 ]; then
     exit 1
 fi
 
-
 create_data_worker_service_file
 
 if [ "$MASTER" == "true" ]; then
