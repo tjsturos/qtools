@@ -130,7 +130,7 @@ setup_remote_firewall() {
     echo -e "${BLUE}${INFO_ICON} Setting up remote firewall on $IP ($REMOTE_USER) for ports $BASE_PORT to $END_PORT${RESET}"
 
     if [ "$DRY_RUN" == "false" ]; then
-        ssh_to_remote $IP $REMOTE_USER $SSH_PORT "sudo ufw allow from $MASTER_IP to any port $BASE_PORT:$END_PORT/tcp" 
+        ssh_to_remote $IP $REMOTE_USER $SSH_PORT "sudo ufw allow proto tcp from $MASTER_IP to any port $BASE_PORT-$END_PORT/tcp" 
         
         # Reload ufw to apply changes
         ssh_to_remote $IP $REMOTE_USER $SSH_PORT "sudo ufw reload"
