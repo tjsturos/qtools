@@ -130,12 +130,20 @@ setup_remote_firewall() {
     echo -e "${BLUE}${INFO_ICON} Setting up remote firewall on $IP ($REMOTE_USER) for ports $BASE_PORT to $END_PORT${RESET}"
 
     if [ "$DRY_RUN" == "false" ]; then
-        ssh_to_remote $IP $REMOTE_USER $SSH_PORT "sudo ufw allow proto tcp from $MASTER_IP to any port $BASE_PORT:$END_PORT" 
+        # Check if UFW is enabled
+        ufw_status=$(ssh_to_remote $IP $REMOTE_USER $SSH_PORT "sudo ufw status" | grep -i "Status: active")
+        if [ -z "$ufw_status" ]; then
+            echo -e "${YELLOW}${WARNING_ICON} Warning: UFW is not enabled on $IP. Skipping firewall setup.${RESET}"
+            echo -e "${BLUE}${INFO_ICON} Please enable UFW on the remote server and try again.${RESET}"
+        else
+            ssh_to_remote $IP $REMOTE_USER $SSH_PORT "sudo ufw allow proto tcp from $MASTER_IP to any port $BASE_PORT:$END_PORT" 
+            
+            # Reload ufw to apply changes
+            ssh_to_remote $IP $REMOTE_USER $SSH_PORT "sudo ufw reload"
+            
+            echo -e "${GREEN}${CHECK_ICON} Remote firewall setup completed on $IP${RESET}"
+        fi
         
-        # Reload ufw to apply changes
-        ssh_to_remote $IP $REMOTE_USER $SSH_PORT "sudo ufw reload"
-        
-        echo -e "${GREEN}${CHECK_ICON} Remote firewall setup completed on $IP${RESET}"
     else
         echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would set up remote firewall on $IP ($USER) for ports $BASE_PORT-$END_PORT${RESET}"
     fi
