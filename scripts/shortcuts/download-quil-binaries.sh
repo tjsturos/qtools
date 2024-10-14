@@ -4,7 +4,7 @@
 NODE_RELEASE_LIST_URL="https://releases.quilibrium.com/release"
 
 # Fetch the list of files from the release page
-NODE_RELEASE_FILES=$(curl -s $NODE_RELEASE_LIST_URL | grep -oE "node-[0-9]+\.[0-9]+(\.[0-9]+)*-${OS_ARCH}(\.dgst)?(\.sig\.[0-9]+)?")
+NODE_RELEASE_FILES=$(curl -s $NODE_RELEASE_LIST_URL | grep -oE "node-[0-9]+\.[0-9]+(\.[0-9]+)*(\.[0-9]+)?-${OS_ARCH}(\.dgst)?(\.sig\.[0-9]+)?")
 
 # Change to the download directory
 mkdir -p $QUIL_NODE_PATH
@@ -30,7 +30,7 @@ download_file() {
 for file in $NODE_RELEASE_FILES; do
     download_file $file
 
-    if [[ $file =~ ^node-[0-9]+\.[0-9]+(\.[0-9]+)*-${OS_ARCH}$ ]]; then
+    if [[ $file =~ ^node-[0-9]+\.[0-9]+(\.[0-9]+)*(\.[0-9]+)?-${OS_ARCH}$ ]]; then
         log "Making $file executable..."
         chmod +x "$file"
         if [ $? -eq 0 ]; then
@@ -54,7 +54,7 @@ for file in $QCLIENT_RELEASE_FILES; do
     log "Downloading $file..."
     download_file $file
 
-    if [[ $file =~ ^qclient-[0-9]+\.[0-9]+(\.[0-9]+)*-${OS_ARCH}$ ]]; then
+    if [[ $file =~ ^qclient-[0-9]+\.[0-9]+(\.[0-9]+)*(\.[0-9]+)?-${OS_ARCH}$ ]]; then
         log "Making $file executable..."
         chmod +x "$file"
         if [ $? -eq 0 ]; then
