@@ -14,6 +14,7 @@ fi
 
 if ! command -v "yq" >/dev/null 2>&1; then
   source $QTOOLS_PATH/scripts/install/install-yq.sh
+  source ~/.bashrc
   if ! command -v "yq" >/dev/null 2>&1; then
     echo "Could not install command 'yq'.  Please try again or install manually."
     exit 1
@@ -51,3 +52,7 @@ if [ ! -L "$QTOOLS_BIN_PATH" ]; then
 fi
 
 source $QTOOLS_PATH/qtools.sh add-auto-complete
+
+# Update the INIT_COMPLETE file with the current date and time
+touch $QTOOLS_PATH/INIT_COMPLETE
+date > $QTOOLS_PATH/INIT_COMPLETE

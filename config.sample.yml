@@ -1,30 +1,29 @@
-# settings: settings used when running these QTools scripts
-## linked_node: 
-#### enabled: true = run this node in linked mode (requires same config as other nodes)
-#### start_cpu_index: if you want to start with a specific core, default = 1
-#### end_cpu_index: define this as the last CPU to use, i.e. if you have 16, an want to use all, set to 16 or less
-#### process_start_index: the index that this machine should start from when defining the core to use with the binary
-## cpulimit: when running a bare-metal machine, it is common to use cpu limiting
-#### enabled: when enabled will limit the CPUQuota variable in the service file
-#### limit_percentage: determines the amount to limit it by
-## backups: 
-#### enabled: true = will back up (default to false due to needing to set up backup)
-#### server_ip: the location of the backup server
-#### remote_backup_dir: the custom location of the backup directory on the backup server to save to
 user: ubuntu
 quilibrium_repo_install_dir: .
 release_version: 1.4.19.1
 current_version: 1.4.19.1
 os_arch: linux-amd64
-qtools_version: 1
+qtools_version: 2
 service:
-    # must run qtools update-service to load updated values
     file_name: ceremonyclient
     debug: false
     working_dir: /home/ubuntu/ceremonyclient/node
+    link_directory: /usr/local/bin
+    link_name: node
+    default_user: quilibrium
+    quilibrium_node_path: $HOME/ceremonyclient/node
+    quilibrium_client_path: $HOME/ceremonyclient/client
     restart_time: 5s
     clustering:
         enabled: false
+        master_service_name: ceremonyclient
+        data_worker_service_name: dataworker
+        base_port: 40000
+        default_ssh_port: 22
+        local_dataworker_count: null
+        local_core_start_index: null
+        ssh_key_path: $HOME/.ssh
+        ssh_key_name: cluster-key
         main_ip: ""
         servers: []
     args: "" # args to be passed into the main process: e.g. node-1.4.19.1-linux-amd64 --debug

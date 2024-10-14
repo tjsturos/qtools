@@ -1,3 +1,11 @@
+BLUE="\e[34m"
+INFO_ICON="\u2139"
+RESET="\e[0m"
+RED="\e[31m"
+WARNING_ICON="\u26A0"
+GREEN="\e[32m"
+CHECK_ICON="\u2705"
+
 qyaml() {
   local key_path=$1
   local file_path=$2
@@ -294,5 +302,3 @@ source $QTOOLS_PATH/utils/hardware.sh
 # Source the snapshot utils (requires hardware.sh)
 source $QTOOLS_PATH/utils/snapshot.sh
 
-# Source the clustering utils
-source $QTOOLS_PATH/utils/clustering.sh

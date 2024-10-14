@@ -94,7 +94,7 @@ export QTOOLS_CONFIG_FILE=$QTOOLS_PATH/config.yml
 export QUIL_CONFIG_FILE="$QUIL_NODE_PATH/.config/config.yml"
 
 # many util scripts require the log
-if [ "$1" == "init" ]; then
+if [ "$1" == "init" ] || [ ! -f "$QTOOLS_PATH/INIT_COMPLETE" ]; then
   source $QTOOLS_PATH/scripts/init.sh
   exit 0
 fi
@@ -104,6 +104,11 @@ source $QTOOLS_PATH/utils/index.sh
 
 export QUIL_SERVICE_NAME="$(yq '.service.file_name' $QTOOLS_CONFIG_FILE)"
 export QUIL_SERVICE_FILE="$SYSTEMD_SERVICE_PATH/$QUIL_SERVICE_NAME.service"
+
+export LINKED_BINARY_PATH="$(yq '.service.link_directory // "/usr/local/bin"' $QTOOLS_CONFIG_FILE)"
+export LINKED_BINARY_NAME="$(yq '.service.link_name // "node"' $QTOOLS_CONFIG_FILE)"
+
+export LINKED_BINARY="$LINKED_BINARY_PATH/$LINKED_BINARY_NAME"
 
 # statistics service name
 export STATISTICS_SERVICE_NAME="$(yq '.scheduled_tasks.statistics.service_name' $QTOOLS_CONFIG_FILE)"
@@ -151,6 +156,9 @@ case "$1" in
       log "Command 'grpcurl' doesn't exist, proceeding to install."
       qtools install-grpc
     fi
+    ;;
+  cluster-*)
+    source $QTOOLS_PATH/scripts/cluster/utils.sh
     ;;
   start)
     if are_snapshots_enabled; then
