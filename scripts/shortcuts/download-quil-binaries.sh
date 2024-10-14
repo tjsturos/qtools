@@ -54,8 +54,6 @@ for file in $QCLIENT_RELEASE_FILES; do
     log "Downloading $file..."
     download_file $file
 
-    # Check if the download was successful
-    if [ $? -eq 0 ]; then   
     if [[ $file =~ ^qclient-[0-9]+\.[0-9]+\.[0-9]+-${OS_ARCH}$ ]]; then
         log "Making $file executable..."
         chmod +x "$file"
