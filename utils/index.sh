@@ -32,6 +32,16 @@ log() {
     echo "$LOG" >> "$QTOOLS_PATH/$LOG_OUTPUT_FILE"
 }
 
+is_master() {
+    local main_ip=$(yq eval '.service.clustering.main_ip' $QTOOLS_CONFIG_FILE)
+    local local_ip=$(get_local_ip)
+    if [ "$main_ip" == "$local_ip" ]; then
+        echo "true"
+    else
+        echo "false"
+    fi
+}
+
 get_last_started_at() {
     echo "$(echo "$(sudo systemctl status $QUIL_SERVICE_NAME)" | grep -oP '\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}' -m1)"
 }
