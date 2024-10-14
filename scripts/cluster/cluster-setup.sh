@@ -61,6 +61,16 @@ if [ "$MASTER" == "true" ] && [ "$TOTAL_CORES" -eq "$DATA_WORKER_COUNT" ]; then
     echo -e "${BLUE}${INFO_ICON} Adjusting master's data worker count to $DATA_WORKER_COUNT${RESET}"
 fi
 
+# Check if there are any servers configured
+server_count=$(yq eval '.service.clustering.servers | length' $QTOOLS_CONFIG_FILE)
+
+if [ "$server_count" -eq 0 ]; then
+    echo -e "${RED}${WARNING_ICON} No servers configured in $QTOOLS_CONFIG_FILE${RESET}"
+    echo -e "${BLUE}${INFO_ICON} Please add server configurations to the clustering section before running this script${RESET}"
+    exit 1
+fi
+
+
 create_data_worker_service_file
 
 if [ "$MASTER" == "true" ]; then
