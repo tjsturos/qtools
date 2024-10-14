@@ -134,7 +134,7 @@ setup_remote_firewall() {
         ufw_status=$(ssh_to_remote $IP $REMOTE_USER $SSH_PORT "sudo ufw status" | grep -i "Status: active")
         if [ -z "$ufw_status" ]; then
             echo -e "${YELLOW}${WARNING_ICON} Warning: UFW is not enabled on $IP. Skipping firewall setup.${RESET}"
-            echo -e "${BLUE}${INFO_ICON} Please enable UFW on the remote server and try again.${RESET}"
+            echo -e "${BLUE}${INFO_ICON} If you enable UFW on the remote server, run this script again.${RESET}"
         else
             ssh_to_remote $IP $REMOTE_USER $SSH_PORT "sudo ufw allow proto tcp from $MASTER_IP to any port $BASE_PORT:$END_PORT" 
             
