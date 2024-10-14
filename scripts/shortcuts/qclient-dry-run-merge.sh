@@ -33,7 +33,7 @@ log_result() {
     local folders=("$@")
     local score=$1
     shift
-    log "Folders: ${folders[*]} - Score: $score"
+    echo -e "\nFolders: ${folders[*]} - Score: $score"
 }
 
 # Loop through increasing number of folders
