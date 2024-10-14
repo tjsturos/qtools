@@ -305,17 +305,17 @@ check_frame_count() {
 
 check_backup_status() {
     local config_file="$QTOOLS_CONFIG_FILE"
-    local enabled=$(yq '.scheduled_tasks.backup.enabled' "$config_file" 2>/dev/null || qyaml .scheduled_tasks.backup.enabled "$config_file")
+    local enabled=$(yq '.scheduled_tasks.backup.enabled' "$config_file" 2>/dev/null)
 
     if [[ "$enabled" == "true" ]]; then
-        local node_backup_name=$(yq '.scheduled_tasks.backup.node_backup_name' "$config_file" 2>/dev/null || qyaml '.scheduled_tasks.backup.node_backup_name' "$config_file")
+        local node_backup_name=$(yq '.scheduled_tasks.backup.node_backup_name' "$config_file" 2>/dev/null)
         if [ -z "$node_backup_name" ]; then
             node_backup_name=$(qtools peer-id)
         fi
-        local backup_url=$(yq '.scheduled_tasks.backup.backup_url' "$config_file" 2>/dev/null || qyaml '.scheduled_tasks.backup.backup_url' "$config_file")
-        local remote_user=$(yq '.scheduled_tasks.backup.remote_user' "$config_file" 2>/dev/null || qyaml '.scheduled_tasks.backup.remote_user' "$config_file")
-        local ssh_key_path=$(yq '.scheduled_tasks.backup.ssh_key_path' "$config_file" 2>/dev/null || qyaml '.scheduled_tasks.backup.ssh_key_path' "$config_file")
-        local remote_backup_dir=$(yq '.scheduled_tasks.backup.remote_backup_dir' "$config_file" 2>/dev/null || qyaml '.scheduled_tasks.backup.remote_backup_dir' "$config_file")
+        local backup_url=$(yq '.scheduled_tasks.backup.backup_url' "$config_file" 2>/dev/null)
+        local remote_user=$(yq '.scheduled_tasks.backup.remote_user' "$config_file" 2>/dev/null)
+        local ssh_key_path=$(yq '.scheduled_tasks.backup.ssh_key_path' "$config_file" 2>/dev/null)
+        local remote_backup_dir=$(yq '.scheduled_tasks.backup.remote_backup_dir' "$config_file" 2>/dev/null)
 
         if $JSON_OUTPUT; then
             REPORT_DATA+=("backup_status:Enabled")
@@ -393,7 +393,7 @@ check_statistics_enabled() {
 
 check_diagnostics_enabled() {
     local config_file="$QTOOLS_CONFIG_FILE"
-    local enabled=$(yq '.scheduled_tasks.diagnostics.enabled' "$config_file" 2>/dev/null || qyaml .scheduled_tasks.diagnostics.enabled "$config_file")
+    local enabled=$(yq '.scheduled_tasks.diagnostics.enabled' "$config_file" 2>/dev/null)
 
     if [[ "$enabled" == "true" ]]; then
         if $JSON_OUTPUT; then
