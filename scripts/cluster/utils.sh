@@ -323,22 +323,18 @@ update_quil_config() {
         TOTAL_EXPECTED_DATA_WORKERS=$((TOTAL_EXPECTED_DATA_WORKERS + data_worker_count))
         # Calculate the starting port for this server
        
-        if [ "$DRY_RUN" == "true" ]; then
-            echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Starting port for $ip: $BASE_PORT${RESET}"
-            end_port=$((BASE_PORT + $data_worker_count))
-            echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Ending port for $ip: $end_port${RESET}"
-            echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would count total lines with this IP: $ip (expected $data_worker_count)"
-        else 
-            echo -e "${BLUE}${INFO_ICON} Starting port for $ip: $BASE_PORT${RESET}"
-            for ((j=0; j<data_worker_count; j++)); do
-                port=$((BASE_PORT + j))
-                addr="/ip4/$ip/tcp/$port"
-                if [ "$DRY_RUN" == "false" ]; then
-                    yq eval -i ".engine.dataWorkerMultiaddrs += \"$addr\"" "$QUIL_CONFIG_FILE"
-                fi
-            done
-
-             # Count total lines with this IP
+       
+        for ((j=0; j<data_worker_count; j++)); do
+            port=$((BASE_PORT + j))
+            addr="/ip4/$ip/tcp/$port"
+            if [ "$DRY_RUN" == "false" ]; then
+                yq eval -i ".engine.dataWorkerMultiaddrs += \"$addr\"" "$QUIL_CONFIG_FILE"
+            else
+                echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would add $addr to $QUIL_CONFIG_FILE's $dataWorkerMultiaddrs${RESET}"
+            fi
+        done
+        if [ "$DRY_RUN" == "false" ]; then
+            # Count total lines with this IP
             total_lines=$(yq eval '.engine.dataWorkerMultiaddrs[] | select(contains("'$ip'"))' "$QUIL_CONFIG_FILE" | wc -l)
         
             echo "Server $ip:  Total lines: $total_lines, Expected data workers: $data_worker_count"

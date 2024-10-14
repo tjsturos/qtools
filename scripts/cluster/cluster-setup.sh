@@ -119,7 +119,7 @@ setup_remote_firewall() {
     local SSH_PORT=$3
     local DATA_WORKER_COUNT=$4
 
-    local END_PORT=$((BASE_PORT + DATA_WORKER_COUNT))
+    local END_PORT=$((BASE_PORT + DATA_WORKER_COUNT - 1))
     local MASTER_IP=$(yq eval '.service.clustering.main_ip' $QTOOLS_CONFIG_FILE)
     if [ -z "$MASTER_IP" ] && [ "$DRY_RUN" == "false" ]; then
         echo -e "${RED}${WARNING_ICON} Warning: .service.clustering.main_ip is not set in $QTOOLS_CONFIG_FILE${RESET}"
