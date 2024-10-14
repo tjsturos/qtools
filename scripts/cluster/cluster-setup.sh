@@ -145,7 +145,7 @@ setup_remote_data_workers() {
     local IP=$1
     local USER=$2
     local SSH_PORT=$3
-    local CORE_COUNT=$5
+    local CORE_COUNT=$4
 
     if [ "$DRY_RUN" == "false" ]; then
         echo -e "${BLUE}${INFO_ICON} Configuring cluster's data workers on $IP ($USER)${RESET}"
