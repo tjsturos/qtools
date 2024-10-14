@@ -60,19 +60,8 @@ sudo systemctl stop $QUIL_SERVICE_NAME.service
 # Check if clustering is enabled
 if [ "$IS_CLUSTERING_ENABLED" == "true" ]; then
     qtools cluster-stop
-fi
-
-# Quick mode is essentially no clean up, with intention to immediately restart the node process
-if [ "$IS_QUICK_MODE" == "false" ]; then
-    # Check if clustering is enabled and if this is the orchestrator node
-    if [ "$IS_CLUSTERING_ENABLED" == "true" ] && [ "$(is_master)" == "true" ]; then
-        # Only stop the node processes on the master node (they aren't running on non-orchestrator nodes)
-       
-        clean_up_process
-    elif [ "$IS_CLUSTERING_ENABLED" == "false" ]; then
-        # Always stop the node processes when there is no clustering
-        clean_up_process
-    fi
+elif [ "$IS_QUICK_MODE" == "false" ]; then
+    clean_up_process
 fi
 
 # Kill mode is essentially quick mode + kill the node process
