@@ -21,7 +21,6 @@ service:
         base_port: 40000
         default_ssh_port: 22
         local_dataworker_count: null
-        local_core_start_index: null
         ssh_key_path: $HOME/.ssh
         ssh_key_name: cluster-key
         main_ip: ""

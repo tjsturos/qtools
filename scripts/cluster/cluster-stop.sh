@@ -27,9 +27,9 @@ if [ "$IS_MASTER" == "true" ] || [ "$(is_master)" == "true" ]; then
     ssh_command_to_each_server "qtools stop-cluster"
 fi
 
-START_CORE_INDEX="$(yq eval '.start_core_index' $CLUSTER_CONFIG_FILE)"
-DATA_WORKER_COUNT="$(yq eval '.data_worker_count' $CLUSTER_CONFIG_FILE)"
-END_CORE_INDEX=$((START_CORE_INDEX + DATA_WORKER_COUNT - 1))
-stop_local_data_worker_services $START_CORE_INDEX $END_CORE_INDEX
+CORE_START_INDEX=1
+DATA_WORKER_COUNT="$(yq eval '.service.clustering.local_dataworker_count' $QTOOLS_CONFIG_FILE)"
+END_CORE_INDEX=$((CORE_START_INDEX + DATA_WORKER_COUNT - 1))
+stop_local_data_worker_services $CORE_START_INDEX $END_CORE_INDEX
 
 

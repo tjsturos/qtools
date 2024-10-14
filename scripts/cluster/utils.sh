@@ -12,6 +12,23 @@ export BASE_PORT=$(yq eval '.service.clustering.base_port // "40000"' $QTOOLS_CO
 MASTER_SERVICE_FILE="/etc/systemd/system/$QUIL_SERVICE_NAME.service"
 DATA_WORKER_SERVICE_FILE="/etc/systemd/system/$QUIL_DATA_WORKER_SERVICE_NAME@.service"
 
+get_local_ip() {
+    local config=$(yq eval . $QTOOLS_CONFIG_FILE)
+    local servers=$(echo "$config" | yq eval '.service.clustering.servers' -)
+    local server_count=$(echo "$servers" | yq eval '. | length' -)
+    local local_ips=$(hostname -I)
+
+    for ((i=0; i<server_count; i++)); do
+        local server=$(echo "$servers" | yq eval ".[$i]" -)
+        local ip=$(echo "$server" | yq eval '.ip' -)
+        
+        if echo "$local_ips" | grep -q "$ip"; then
+            echo "$ip"
+            return
+        fi
+    done
+}
+
 ssh_to_remote() {
     local IP=$1
     local USER=$2
@@ -21,7 +38,7 @@ ssh_to_remote() {
     if [ "$DRY_RUN" == "false" ]; then
         ssh -i $SSH_CLUSTER_KEY -q -p $SSH_PORT -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "$USER@$IP" "$COMMAND"
     else
-        echo "[DRY RUN] Would run: ssh -i $SSH_CLUSTER_KEY -q -p $SSH_PORT -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $USER@$IP $COMMAND"
+        echo "[DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would run: ssh -i $SSH_CLUSTER_KEY -q -p $SSH_PORT -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $USER@$IP $COMMAND"
     fi
 }
 
@@ -32,7 +49,7 @@ scp_to_remote() {
     if [ "$DRY_RUN" == "false" ]; then
         scp -i $SSH_CLUSTER_KEY -P $SSH_PORT -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $FILE_ARGS
     else
-        echo "[DRY RUN] Would run: scp -i $SSH_CLUSTER_KEY -P $SSH_PORT -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $FILE_ARGS"
+        echo "[DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would run: scp -i $SSH_CLUSTER_KEY -P $SSH_PORT -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $FILE_ARGS"
     fi
 }
 
@@ -68,7 +85,7 @@ WantedBy=multi-user.target
 EOF
 
     if [ "$DRY_RUN" == "true" ]; then
-        echo -e "${BLUE}${INFO_ICON} [DRY RUN] Would create master service file ($service_file) with the following content:${RESET}"
+        echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would create master service file ($service_file) with the following content:${RESET}"
         cat "$temp_file"
         rm "$temp_file"
     else
@@ -111,7 +128,8 @@ WantedBy=multi-user.target
 EOF
 
     if [ "$DRY_RUN" == "true" ]; then
-        echo -e "${BLUE}${INFO_ICON} [DRY RUN] Would create data worker service file ($service_file) with the following content:${RESET}"
+        local node_type=$(is_master == "true" && echo "MASTER" || echo "LOCAL")
+        echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ $node_type ] [ $LOCAL_IP ] Would create data worker service file ($DATA_WORKER_SERVICE_FILE) with the following content:${RESET}"
         cat "$temp_file"
         rm "$temp_file"
     else
@@ -134,14 +152,14 @@ create_service_file_if_not_exists() {
     sudo systemctl daemon-reload
 }
 
-enable_local_worker_services() {
+enable_local_data_worker_services() {
     local START_CORE_INDEX=$1
     local END_CORE_INDEX=$2
     # start the master node
     bash -c "sudo systemctl enable $QUIL_DATA_WORKER_SERVICE_NAME\@{$START_CORE_INDEX..$END_CORE_INDEX}"
 }
 
-disable_local_worker_services() {
+disable_local_data_worker_services() {
     local START_CORE_INDEX=$1
     local END_CORE_INDEX=$2
     # start the master node
@@ -152,15 +170,15 @@ start_local_data_worker_services() {
     local START_CORE_INDEX=$1
     local END_CORE_INDEX=$2
     # start the master node
-    enable_local_worker_services $START_CORE_INDEX $END_CORE_INDEX
+    enable_local_data_worker_services $START_CORE_INDEX $END_CORE_INDEX
     bash -c "sudo systemctl start $QUIL_DATA_WORKER_SERVICE_NAME\@{$START_CORE_INDEX..$END_CORE_INDEX}"
 }
 
-stop_local_worker_services() {
+stop_local_data_worker_services() {
     local START_CORE_INDEX=$1
     local END_CORE_INDEX=$2
     # stop the master node
-    disable_local_worker_services $START_CORE_INDEX $END_CORE_INDEX
+    disable_local_data_worker_services $START_CORE_INDEX $END_CORE_INDEX
     bash -c "sudo systemctl stop $QUIL_DATA_WORKER_SERVICE_NAME\@{$START_CORE_INDEX..$END_CORE_INDEX}"
 }
 
@@ -201,7 +219,7 @@ ssh_command_to_each_server() {
                     ssh_to_remote $ip $remote_user "$command" $ssh_port
                 fi
             else
-                echo "[DRY RUN] Would run $command on $remote_user@$ip"
+                echo "[DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would run $command on $remote_user@$ip"
             fi
         fi
     done
@@ -229,7 +247,7 @@ copy_file_to_each_server() {
                     scp_to_remote "$file_path $remote_user@$ip:$destination_path" $ssh_port
                 fi
             else
-                echo "[DRY RUN] Would copy $file_path to $remote_user@$ip:$destination_path"
+                echo "[DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would copy $file_path to $remote_user@$ip:$destination_path"
             fi
         fi
     done
@@ -253,7 +271,7 @@ update_quil_config() {
     if [ "$DRY_RUN" == "false" ]; then
         yq eval -i '.engine.dataWorkerMultiaddrs = []' "$QUIL_CONFIG_FILE"
     else
-        echo -e "${BLUE}${INFO_ICON} [DRY RUN] Would clear $QUIL_CONFIG_FILE's $dataWorkerMultiaddrs${RESET}"
+        echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would clear $QUIL_CONFIG_FILE's $dataWorkerMultiaddrs${RESET}"
     fi
 
     # Initialize TOTAL_EXPECTED_DATA_WORKERS
@@ -262,8 +280,6 @@ update_quil_config() {
     # Get the number of servers
     server_count=$(echo "$servers" | yq eval '. | length' -)
 
-    SERVER_CORE_INDEX_START=0
-    SERVER_CORE_INDEX_END=0
     # Loop through each server
     for ((i=0; i<server_count; i++)); do
         server=$(echo "$servers" | yq eval ".[$i]" -)
@@ -271,7 +287,6 @@ update_quil_config() {
         remote_user=$(echo "$server" | yq eval ".user // \"$DEFAULT_USER\"" -)
         data_worker_count=$(echo "$server" | yq eval '.data_worker_count // "false"' -)
         available_cores=$(nproc)
-        
         
         # Skip invalid entries
         if [ -z "$ip" ] || [ "$ip" == "null" ]; then
@@ -285,7 +300,7 @@ update_quil_config() {
                 yq eval -i ".main_ip = \"$ip\"" $CLUSTER_CONFIG_FILE
                 echo "Set main IP to $ip in clustering configuration"
             else
-                echo "[DRY RUN] Would set main IP to $ip in clustering configuration"
+                echo "[DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would set main IP to $ip in clustering configuration"
             fi
             # This is the master server, so subtract 1 from the total core count
             available_cores=$(($(nproc) - 1))
@@ -308,30 +323,23 @@ update_quil_config() {
         # Increment the global count
         TOTAL_EXPECTED_DATA_WORKERS=$((TOTAL_EXPECTED_DATA_WORKERS + data_worker_count))
         # Calculate the starting port for this server
-        starting_port=$((40000 + SERVER_CORE_INDEX_START))
-        
+       
         if [ "$DRY_RUN" == "true" ]; then
-            echo -e "${BLUE}${INFO_ICON} [DRY RUN] Starting port for $ip: $starting_port${RESET}"
-        fi
+            echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Starting port for $ip: $BASE_PORT${RESET}"
+            end_port=$((BASE_PORT + $data_worker_count))
+            echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Ending port for $ip: $end_port${RESET}"
+            echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would count total lines with this IP: $ip (expected $data_worker_count)"
+        else 
+            echo -e "${BLUE}${INFO_ICON} Starting port for $ip: $BASE_PORT${RESET}"
+            for ((j=0; j<data_worker_count; j++)); do
+                port=$((BASE_PORT + j))
+                addr="/ip4/$ip/tcp/$port"
+                if [ "$DRY_RUN" == "false" ]; then
+                    yq eval -i ".engine.dataWorkerMultiaddrs += \"$addr\"" "$QUIL_CONFIG_FILE"
+                fi
+            done
 
-        for ((j=0; j<data_worker_count; j++)); do
-            port=$((starting_port + j))
-            addr="/ip4/$ip/tcp/$port"
-            if [ "$DRY_RUN" == "false" ]; then
-                yq eval -i ".engine.dataWorkerMultiaddrs += \"$addr\"" "$QUIL_CONFIG_FILE"
-            fi
-            SERVER_CORE_INDEX_END=$((SERVER_CORE_INDEX_END + 1))
-        done
-        
-        # Calculate the end port for this server
-        
-        if [ "$DRY_RUN" == "true" ]; then
-            end_port=$((40000 + $SERVER_CORE_INDEX_END - 1))
-            echo -e "${BLUE}${INFO_ICON} [DRY RUN] Ending port for $ip: $end_port${RESET}"
-        fi
-        
-        if [ "$DRY_RUN" == "false" ]; then
-            # Count total lines with this IP
+             # Count total lines with this IP
             total_lines=$(yq eval '.engine.dataWorkerMultiaddrs[] | select(contains("'$ip'"))' "$QUIL_CONFIG_FILE" | wc -l)
         
             echo "Server $ip:  Total lines: $total_lines, Expected data workers: $data_worker_count"
@@ -339,11 +347,7 @@ update_quil_config() {
                 echo -e "\e[33mWarning: Mismatch detected for server $ip\e[0m"
                 echo -e "\e[33m  - Expected $data_worker_count data workers, found $total_lines\e[0m"
             fi
-        else
-            echo "[DRY RUN] Would count total lines with this IP: $ip (expected $data_worker_count)"
         fi
-        
-        SERVER_CORE_INDEX_START=$((SERVER_CORE_INDEX_END))
     done
 
     if [ "$DRY_RUN" == "false" ]; then
@@ -358,7 +362,7 @@ update_quil_config() {
             echo -e "${BLUE}${INFO_ICON} Number of actual data workers found ($actual_data_workers) matches the expected amount.${RESET}"
         fi
     else 
-        echo -e "${BLUE}${INFO_ICON} [DRY RUN] Would update data worker multiaddrs to have $TOTAL_EXPECTED_DATA_WORKERS data workers${RESET}"
+        echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would update data worker multiaddrs to have $TOTAL_EXPECTED_DATA_WORKERS data workers${RESET}"
     fi
 }
 
