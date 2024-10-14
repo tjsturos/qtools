@@ -7,7 +7,7 @@ GREEN="\e[32m"
 CHECK_ICON="✓"
 YELLOW="\e[33m"
 
-if ! command_exists yq; then
+if ! command -v yq &> /dev/null; then
     source $QTOOLS_PATH/scripts/install/install-yq.sh
     source ~/.bashrc
 fi
