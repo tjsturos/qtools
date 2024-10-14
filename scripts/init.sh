@@ -51,7 +51,6 @@ if [ ! -L "$QTOOLS_BIN_PATH" ]; then
   fi
 fi
 
-
 # Update the INIT_COMPLETE file with the current date and time
 touch $QTOOLS_PATH/INIT_COMPLETE
 date > $QTOOLS_PATH/INIT_COMPLETE
