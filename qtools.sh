@@ -138,13 +138,13 @@ are_snapshots_enabled() {
   [[ "$enabled" == "true" ]]
 }
 
-NODE_BINARY=$(get_versioned_node)
+NODE_BINARY=$(get_current_versioned_node)
 
 # Set environment variables based on the option
 case "$1" in
   peer-id|unclaimed-balance)
     cd $QUIL_NODE_PATH
-    export QUIL_BIN=$(get_versioned_node)
+    export QUIL_BIN=$(get_current_versioned_node)
     ;;
   get-node-count|get-node-info|get-peer-info|get-token-info|get-node-version|get-peer-id|get-frame-count)
     if ! command_exists grpcurl; then

@@ -49,10 +49,16 @@ download_matching_files_if_different() {
 }
 
 link_node_binary() {
-  sudo ln -sf $QUIL_NODE_PATH/$(get_versioned_node) $QUIL_NODE_BIN
+  if [ -l $QUIL_NODE_BIN ]; then
+    sudo rm $QUIL_NODE_BIN
+  fi
+  sudo ln -sf $QUIL_NODE_PATH/$(get_release_node_version) $QUIL_NODE_BIN
 }
 
 link_qclient_binary() {
+  if [ -l $QUIL_QCLIENT_BIN ]; then
+    sudo rm $QUIL_QCLIENT_BIN
+  fi
   sudo ln -sf $QUIL_CLIENT_PATH/$(get_versioned_qclient) $QUIL_QCLIENT_BIN
 }
 
@@ -73,7 +79,7 @@ main() {
     restart_required="true"
     # Download all matching files if necessary
     download_matching_files_if_different "$release_version" "$available_files" "https://releases.quilibrium.com" "$QUIL_NODE_PATH"
-    sudo chmod +x $QUIL_NODE_PATH/$(get_versioned_node)
+    sudo chmod +x $QUIL_NODE_PATH/$(get_release_node_version)
     download_matching_files_if_different "$release_version" "$available_qclient_files" "https://releases.quilibrium.com" "$QUIL_CLIENT_PATH"
     sudo chmod +x $QUIL_CLIENT_PATH/$(get_versioned_qclient)
 

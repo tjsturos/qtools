@@ -276,8 +276,12 @@ get_os_arch() {
     echo "${os}-${arch}"
 }
 
-get_versioned_node() {
+get_release_node_version() {
     echo "node-$(fetch_release_version)-$(get_os_arch)"
+}
+
+get_current_versioned_node() {
+    echo "node-$(get_current_version)-$(get_os_arch)"
 }
 
 get_versioned_qclient() {

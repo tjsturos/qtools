@@ -50,7 +50,7 @@ qtools install-cron
 
 generate_default_config() {
     # This first command generates a default config file
-    BINARY_NAME="$(get_versioned_node)"
+    BINARY_NAME="$(get_current_versioned_node)"
     BINARY_FILE=$QUIL_NODE_PATH/$BINARY_NAME
     $BINARY_FILE -peer-id
     sleep 3

@@ -8,7 +8,7 @@ if [ ! -n "$PEER_ID" ]; then
     # Run the node-get-peer-id script with the extracted Peer ID
     cd $QUIL_NODE_PATH
 
-    QUIL_BIN="$(get_versioned_node)"
+    QUIL_BIN="$(get_current_versioned_node)"
 
     OUTPUT="$($QUIL_NODE_PATH/$QUIL_BIN -peer-id)"
 

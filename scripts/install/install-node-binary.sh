@@ -10,4 +10,4 @@ node_files=$(fetch_available_files "https://releases.quilibrium.com/release")
 
 get_remote_quil_files node_files[@] $QUIL_NODE_PATH
 
-sudo chmod +x $QUIL_NODE_PATH/$(get_versioned_node)
+sudo chmod +x $QUIL_NODE_PATH/$(get_release_node_version)
