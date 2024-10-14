@@ -168,9 +168,9 @@ copy_quil_config_to_server() {
     local REMOTE_USER=$2
     local SSH_PORT=$3
     if [ "$DRY_RUN" == "false" ]; then  
-        echo -e "${BLUE}${INFO_ICON} Copying $QTOOLS_CONFIG_FILE to $ip${RESET}"
+        echo -e "${BLUE}${INFO_ICON} Copying $QUIL_CONFIG_FILE to $IP ($REMOTE_USER)${RESET}"
         ssh_to_remote $IP $REMOTE_USER $SSH_PORT "mkdir -p ~/ceremonyclient/node/.config"
-        scp_to_remote "$QUIL_CONFIG_FILE $REMOTE_USER@$IP:~/ceremonyclient/node/.config/config.yml"
+        scp_to_remote "$QUIL_CONFIG_FILE $REMOTE_USER@$IP:~/ceremonyclient/node/.config/config.yml" $SSH_PORT
     else
         echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would copy $QUIL_CONFIG_FILE to $IP ($REMOTE_USER)${RESET}"
     fi
