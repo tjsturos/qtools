@@ -1,5 +1,7 @@
 
 DRY_RUN=false
+MAX_CORES=$(nproc)
+DATA_WORKER_COUNT=$(yq eval '.service.clustering.data_worker_count' $QTOOLS_CONFIG_FILE)
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
