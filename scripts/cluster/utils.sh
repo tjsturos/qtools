@@ -49,7 +49,7 @@ ssh_to_remote() {
     local SSH_PORT=$3
     local COMMAND=$4
 
-    ssh -i $SSH_CLUSTER_KEY -q -p $SSH_PORT -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "$USER@$IP" "$COMMAND"
+    ssh -i $SSH_CLUSTER_KEY -q -p $SSH_PORT -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "$USER@$IP" -c "$COMMAND"
 }
 
 scp_to_remote() {
