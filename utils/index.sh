@@ -49,10 +49,15 @@ get_local_ip() {
 }
 
 is_master() {
-    local main_ip=$(yq eval '.service.clustering.main_ip' $QTOOLS_CONFIG_FILE)
-    local local_ip=$(get_local_ip)
-    if [ "$main_ip" == "$local_ip" ]; then
-        echo "true"
+    local is_clustering_enabled=$(yq eval '.service.clustering.enabled' $QTOOLS_CONFIG_FILE)
+    if [ "$is_clustering_enabled" == "true" ]; then
+        local main_ip=$(yq eval '.service.clustering.main_ip' $QTOOLS_CONFIG_FILE)
+        local local_ip=$(get_local_ip)
+        if [ "$main_ip" == "$local_ip" ]; then
+            echo "true"
+        else
+            echo "false"
+        fi
     else
         echo "false"
     fi
