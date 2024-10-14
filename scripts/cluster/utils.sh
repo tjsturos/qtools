@@ -2,7 +2,7 @@
 # IGNORE
 
 SSH_KEY_PAIR_NAME=$(yq eval '.service.clustering.ssh_key_name' $QTOOLS_CONFIG_FILE)
-SSH_KEY_PATH=$(yq eval '.service.clustering.ssh_key_path' $QTOOLS_CONFIG_FILE)
+SSH_KEY_PATH=$(eval echo $(yq eval '.service.clustering.ssh_key_path' $QTOOLS_CONFIG_FILE))
 export SSH_CLUSTER_KEY=$SSH_KEY_PATH/$SSH_KEY_PAIR_NAME
 export DEFAULT_USER=$(eval echo $(yq eval '.service.clustering.default_user // "ubuntu"' $QTOOLS_CONFIG_FILE))
 export DEFAULT_SSH_PORT=$(yq eval '.service.clustering.default_ssh_port // "22"' $QTOOLS_CONFIG_FILE)
