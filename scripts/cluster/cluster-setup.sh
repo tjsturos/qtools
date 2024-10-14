@@ -76,13 +76,6 @@ if [ "$MASTER" == "true" ]; then
     create_master_service_file
 fi
 
-if [ "$DRY_RUN" == "false" ]; then  
-    yq eval -i ".service.clustering.local_data_worker_count = $DATA_WORKER_COUNT" $QTOOLS_CONFIG_FILE
-    update_local_quil_config $DATA_WORKER_COUNT
-else
-    echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ LOCAL ] [ $LOCAL_IP ] Would set $QTOOLS_CONFIG_FILE's data_worker_count to $DATA_WORKER_COUNT${RESET}"
-fi
-
 update_local_quil_config() {
     local data_worker_count=$1
 
@@ -102,6 +95,15 @@ update_local_quil_config() {
     done
    
 }
+
+if [ "$DRY_RUN" == "false" ]; then  
+    yq eval -i ".service.clustering.local_data_worker_count = $DATA_WORKER_COUNT" $QTOOLS_CONFIG_FILE
+    update_local_quil_config $DATA_WORKER_COUNT
+else
+    echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ LOCAL ] [ $LOCAL_IP ] Would set $QTOOLS_CONFIG_FILE's data_worker_count to $DATA_WORKER_COUNT${RESET}"
+fi
+
+
 
 if [ "$DRY_RUN" == "false" ]; then
     echo "Enabling $QUIL_SERVICE_NAME"
