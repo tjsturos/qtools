@@ -52,7 +52,7 @@ ssh_to_remote() {
     if [ "$DRY_RUN" == "false" ]; then
         ssh -i $SSH_CLUSTER_KEY -q -p $SSH_PORT -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "$USER@$IP" "$COMMAND"
     else
-        echo "[DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would run: ssh -i $SSH_CLUSTER_KEY -q -p $SSH_PORT -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $USER@$IP $COMMAND"
+        echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would run: ssh -i $SSH_CLUSTER_KEY -q -p $SSH_PORT -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $USER@$IP ${COMMAND}${RESET}"
     fi
 }
 
@@ -63,7 +63,7 @@ scp_to_remote() {
     if [ "$DRY_RUN" == "false" ]; then
         scp -i $SSH_CLUSTER_KEY -P $SSH_PORT -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $FILE_ARGS
     else
-        echo "[DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would run: scp -i $SSH_CLUSTER_KEY -P $SSH_PORT -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $FILE_ARGS"
+        echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would run: scp -i $SSH_CLUSTER_KEY -P $SSH_PORT -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $FILE_ARGS${RESET}"
     fi
 }
 
