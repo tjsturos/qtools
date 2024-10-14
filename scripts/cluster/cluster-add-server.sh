@@ -3,8 +3,8 @@
 # Function to add a server to the cluster configuration
 add_server_to_config() {
     local ip=$1
-    local ssh_port=${2:-22}  # Default SSH port is 22 if not specified
-    local user=${3:-$USER}   # Default user is the current user if not specified
+    local ssh_port=${2:-$DEFAULT_SSH_PORT}  # Default SSH port is 22 if not specified
+    local user=${3:-$DEFAULT_USER}   # Default user is the current user if not specified
 
     # Check if the server already exists in the config
     if yq eval ".service.clustering.servers[] | select(.ip == \"$ip\")" "$QTOOLS_CONFIG_FILE" | grep -q .; then
