@@ -118,7 +118,7 @@ setup_remote_firewall() {
     local REMOTE_USER=$2
     local SSH_PORT=$3
     local DATA_WORKER_COUNT=$4
-    
+
     local END_PORT=$((BASE_PORT + DATA_WORKER_COUNT))
     local MASTER_IP=$(yq eval '.service.clustering.main_ip' $QTOOLS_CONFIG_FILE)
     if [ -z "$MASTER_IP" ]; then
@@ -213,7 +213,7 @@ if [ "$MASTER" == "true" ]; then
         else
             echo "Getting available cores for $ip (user: $remote_user)"
             # Get the number of available cores
-            available_cores=$(ssh_to_remote $ip $remote_user "nproc" $ssh_port)
+            available_cores=$(ssh_to_remote $ip $remote_user $ssh_port "nproc")
         fi
 
         if [ "$data_worker_count" == "false" ] || [ "$data_worker_count" -gt "$available_cores" ]; then

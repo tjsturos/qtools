@@ -230,7 +230,7 @@ ssh_command_to_each_server() {
             if [ "$DRY_RUN" == "false" ]; then
                 if ! echo "$(hostname -I)" | grep -q "$ip"; then
                     echo "Running $command on $ip ($remote_user)"
-                    ssh_to_remote $ip $remote_user "$command" $ssh_port
+                    ssh_to_remote $ip $remote_user $ssh_port "$command" 
                 fi
             else
                 echo "[DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would run $command on $remote_user@$ip"
@@ -315,7 +315,7 @@ update_quil_config() {
         else
             echo "Getting available cores for $ip (user: $remote_user)"
             # Get the number of available cores
-            available_cores=$(ssh_to_remote $ip $remote_user nproc $ssh_port)
+            available_cores=$(ssh_to_remote $ip $remote_user $ssh_port "nproc")
         fi
 
         if [ "$data_worker_count" == "false" ]; then
