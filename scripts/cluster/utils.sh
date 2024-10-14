@@ -29,6 +29,8 @@ get_local_ip() {
     done
 }
 
+LOCAL_IP=$(get_local_ip)
+
 ssh_to_remote() {
     local IP=$1
     local USER=$2
