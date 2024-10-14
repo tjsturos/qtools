@@ -49,24 +49,13 @@ ssh_to_remote() {
     local SSH_PORT=$3
     local COMMAND=$4
 
-    if [ "$DRY_RUN" == "false" ]; then
-        ssh -i $SSH_CLUSTER_KEY -q -p $SSH_PORT -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "$USER@$IP" "$COMMAND"
-    else
-        echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would run: ssh -i $SSH_CLUSTER_KEY -q -p $SSH_PORT -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $USER@$IP ${COMMAND}${RESET}"
-        # Return a dummy value for dry run
-        echo "4"  # Assuming 4 cores as a default value for dry run
-    fi
+    ssh -i $SSH_CLUSTER_KEY -q -p $SSH_PORT -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "$USER@$IP" "$COMMAND"
 }
 
 scp_to_remote() {
     local FILE_ARGS=$1
     local SSH_PORT=$2
-
-    if [ "$DRY_RUN" == "false" ]; then
-        scp -i $SSH_CLUSTER_KEY -P $SSH_PORT -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $FILE_ARGS
-    else
-        echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would run: scp -i $SSH_CLUSTER_KEY -P $SSH_PORT -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $FILE_ARGS${RESET}"
-    fi
+    scp -i $SSH_CLUSTER_KEY -P $SSH_PORT -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $FILE_ARGS
 }
 
 create_master_service_file() {
@@ -315,10 +304,9 @@ update_quil_config() {
             # This is the master server, so subtract 1 from the total core count
             available_cores=$(($(nproc) - 1))
         else
-            echo "Getting available cores for $ip (user: $remote_user)"
+            echo -e "${BLUE}${INFO_ICON} Getting available cores for $ip (user: $remote_user)${RESET}"
             # Get the number of available cores
             available_cores=$(ssh_to_remote $ip $remote_user $ssh_port "nproc")
-            
         fi
 
         if [ "$data_worker_count" == "false" ]; then
