@@ -15,15 +15,7 @@ DATA_WORKER_SERVICE_NAME=$(yq eval '.service.clustering.data_worker_service_name
 DATA_WORKER_SERVICE_FILE="/etc/systemd/system/$DATA_WORKER_SERVICE_NAME@.service"
 DATA_WORKER_COUNT=$(yq eval '.service.clustering.local_data_worker_count' $QTOOLS_CONFIG_FILE)
 
-is_master() {
-    local main_ip=$(yq eval '.service.clustering.main_ip' $QTOOLS_CONFIG_FILE)
-    local local_ip=$(get_local_ip)
-    if [ "$main_ip" == "$local_ip" ]; then
-        echo "true"
-    else
-        echo "false"
-    fi
-}
+
 
 get_local_ip() {
     local config=$(yq eval . $QTOOLS_CONFIG_FILE)
