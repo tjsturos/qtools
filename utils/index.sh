@@ -4,7 +4,7 @@ RESET="\e[0m"
 RED="\e[31m"
 WARNING_ICON="\u26A0"
 GREEN="\e[32m"
-CHECK_ICON="\u2705"
+CHECK_ICON="✓"
 YELLOW="\e[33m"
 
 qyaml() {
