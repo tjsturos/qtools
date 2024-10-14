@@ -121,8 +121,8 @@ setup_remote_firewall() {
 
     local END_PORT=$((BASE_PORT + DATA_WORKER_COUNT))
     local MASTER_IP=$(yq eval '.service.clustering.main_ip' $QTOOLS_CONFIG_FILE)
-    if [ -z "$MASTER_IP" ]; then
-        echo -e "${RED}${WARNING_ICON} Warning: master_ip is not set in $QTOOLS_CONFIG_FILE${RESET}"
+    if [ -z "$MASTER_IP" ] && [ "$DRY_RUN" == "false" ]; then
+        echo -e "${RED}${WARNING_ICON} Warning: .service.clustering.main_ip is not set in $QTOOLS_CONFIG_FILE${RESET}"
         echo -e "${BLUE}${INFO_ICON} Skipping firewall setup for this server${RESET}"
         return 1
     fi
