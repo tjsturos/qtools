@@ -380,10 +380,10 @@ update_quil_config() {
 }
 
 check_ssh_key_pair() {
-    if [ -f "$SSH_CLUSTER_KEY" ] && [ -f "${SSH_CLUSTER_KEY}.pub" ]; then
-        echo -e "${GREEN}${CHECK_ICON} SSH key pair exists at $SSH_CLUSTER_KEY${RESET}"
+    if [ -f "$SSH_CLUSTER_KEY" ]; then
+        echo -e "${GREEN}${CHECK_ICON} SSH private key exists at $SSH_CLUSTER_KEY${RESET}"
     else
-        echo -e "${RED}${WARNING_ICON} SSH key pair is required for the master to send commands to the slave nodes.${RESET}"
+        echo -e "${RED}${WARNING_ICON} A SSH key pair is required for the master to send commands to the slave nodes.${RESET}"
         echo -e "${BLUE}${INFO_ICON} This key is used solely for cluster communication and not for any other purposes.${RESET}"
         echo -e "${BLUE}${INFO_ICON} You can generate it yourself by running the following on your master node server:${RESET}"
         echo -e "${YELLOW}ssh-keygen -t ed25519 -f $SSH_CLUSTER_KEY -N '' -C 'cluster-key'${RESET}"
