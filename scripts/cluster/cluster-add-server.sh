@@ -14,7 +14,7 @@ add_server_to_config() {
 
     # Add the new server to the configuration
     yq eval -i ".service.clustering.servers += {\"ip\": \"$ip\", \"ssh_port\": $ssh_port, \"user\": \"$user\"}" "$QTOOLS_CONFIG_FILE"
-    echo -e "${GREEN}${SUCCESS_ICON} Added server $ip to the cluster configuration.${RESET}"
+    echo -e "${GREEN}${CHECK_ICON} Added server $ip to the cluster configuration.${RESET}"
 }
 
 # Main script execution
@@ -30,5 +30,5 @@ for ip in "$@"; do
     add_server_to_config "$ip"
 done
 
-echo -e "${GREEN}${SUCCESS_ICON} All provided servers have been processed.${RESET}"
+echo -e "${GREEN}${CHECK_ICON} All provided servers have been processed.${RESET}"
 echo -e "${BLUE}${INFO_ICON} Please run 'qtools setup-cluster' to configure the newly added servers.${RESET}"

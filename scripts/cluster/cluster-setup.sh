@@ -130,12 +130,12 @@ setup_remote_firewall() {
     echo -e "${BLUE}${INFO_ICON} Setting up remote firewall on $IP ($REMOTE_USER) for ports $BASE_PORT to $END_PORT${RESET}"
 
     if [ "$DRY_RUN" == "false" ]; then
-        ssh_to_remote $IP $REMOTE_USER $SSH_PORT "sudo ufw allow $BASE_PORT:$END_PORT/tcp from $MASTER_IP" 
+        ssh_to_remote $IP $REMOTE_USER $SSH_PORT "sudo ufw allow from $MASTER_IP to any port $BASE_PORT:$END_PORT/tcp" 
         
         # Reload ufw to apply changes
         ssh_to_remote $IP $REMOTE_USER $SSH_PORT "sudo ufw reload"
         
-        echo -e "${GREEN}${SUCCESS_ICON} Remote firewall setup completed on $IP${RESET}"
+        echo -e "${GREEN}${CHECK_ICON} Remote firewall setup completed on $IP${RESET}"
     else
         echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would set up remote firewall on $IP ($USER) for ports $BASE_PORT-$END_PORT${RESET}"
     fi
