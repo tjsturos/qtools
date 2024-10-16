@@ -21,6 +21,7 @@ while [[ $# -gt 0 ]]; do
         shift # past value
         ;;
         *)    # unknown option
+        log "Unknown parameter: $1"
         shift # past argument
         ;;
     esac
@@ -42,6 +43,13 @@ else
     echo "Node binary found: $QUIL_NODE_PATH/node-$NODE_VERSION-$OS_ARCH"
 fi
 
+update_qclient_link() {
+    local VERSION=$1
+    echo "Switching to qclient version: $VERSION"
+    rm $LINKED_QCLIENT_BINARY
+    ln -s $QUIL_CLIENT_PATH/qclient-$VERSION-$OS_ARCH $LINKED_QCLIENT_BINARY
+}
+
 if [ -f "$QUIL_CLIENT_PATH/qclient-$QCLIENT_VERSION-$OS_ARCH" ]; then
     update_qclient_link $QCLIENT_VERSION
 else
@@ -53,13 +61,6 @@ update_node_link() {
     echo "Switching to node version: $VERSION"
     rm $LINKED_BINARY
     ln -s $QUIL_NODE_PATH/node-$VERSION-$OS_ARCH $LINKED_BINARY
-}
-
-update_qclient_link() {
-    local VERSION=$1
-    echo "Switching to qclient version: $VERSION"
-    rm $LINKED_QCLIENT_BINARY
-    ln -s $QUIL_CLIENT_PATH/qclient-$VERSION-$OS_ARCH $LINKED_QCLIENT_BINARY
 }
 
 restart_service() {
