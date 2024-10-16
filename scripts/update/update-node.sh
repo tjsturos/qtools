@@ -25,8 +25,12 @@ for param in "$@"; do
     esac
 done
 
-$RELEASE_VERSION=$(get_release_node_version)
+RELEASE_VERSION=$(fetch_release_version)
 SKIP_VERSION=$(yq '.scheduled_tasks.updates.node.skip_version // "false"' $QTOOLS_CONFIG_FILE)
+
+CURRENT_VERSION=$(get_current_version)
+
+
 
 # if this is an auto update, and auto update is disabled, exit
 if [ "$auto_update" == "true" ] && [ "$is_auto_update_enabled" == "false" ]; then
@@ -35,8 +39,13 @@ if [ "$auto_update" == "true" ] && [ "$is_auto_update_enabled" == "false" ]; the
 fi
 
 # otherwise we may want to skip updating to the current version for now, but on the next update we will update it
-if [ "$SKIP_VERSION" != "false" ] && [ "$RELEASE_VERSION" == "$SKIP_VERSION" ]; then
+if [ "$SKIP_VERSION" != "false" ] && [ "$SKIP_VERSION" != "" ] && [ "$RELEASE_VERSION" == "$SKIP_VERSION" ]; then
   log "Skipping update for version $SKIP_VERSION"
+  exit 0
+fi
+
+if [ "$CURRENT_VERSION" == "$RELEASE_VERSION" ]; then
+  log "Node is already up to date. Exiting."
   exit 0
 fi
 
