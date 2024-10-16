@@ -2,18 +2,20 @@
 
 # Get the default version from the release
 NODE_VERSION=$(fetch_release_version)
-QCLIENT_VERSION=$(fetch_qclient_version)
+QCLIENT_VERSION=$(fetch_qclient_release_version)
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
     key="$1"
     case $key in
         --node-version)
+        log "Overriding node version to $2"
         NODE_VERSION="$2"
         shift # past argument
         shift # past value
         ;;
         --qclient-version)
+        log "Overriding qclient version to $2"
         QCLIENT_VERSION="$2"
         shift # past argument
         shift # past value
@@ -37,7 +39,7 @@ if [ ! -f "$QUIL_NODE_PATH/node-$NODE_VERSION-$OS_ARCH" ]; then
         exit 1
     fi
 else
-    echo "Node binary found in $QUIL_NODE_PATH"
+    echo "Node binary found: $QUIL_NODE_PATH/node-$NODE_VERSION-$OS_ARCH"
 fi
 
 if [ -f "$QUIL_CLIENT_PATH/qclient-$QCLIENT_VERSION-$OS_ARCH" ]; then
