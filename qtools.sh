@@ -99,19 +99,22 @@ if [ "$1" == "init" ] || [ ! -f "$QTOOLS_PATH/INIT_COMPLETE" ]; then
   exit 0
 fi
 
-export LOG_OUTPUT_FILE="$(yq '.settings.log_file' $QTOOLS_CONFIG_FILE)"
+export LOG_OUTPUT_FILE="$(yq '.settings.log_file // "${HOME}/qtools/qtools.log"' $QTOOLS_CONFIG_FILE)"
 source $QTOOLS_PATH/utils/index.sh
 
-export QUIL_SERVICE_NAME="$(yq '.service.file_name' $QTOOLS_CONFIG_FILE)"
+export QUIL_SERVICE_NAME="$(yq '.service.file_name // "ceremonyclient"' $QTOOLS_CONFIG_FILE)"
 export QUIL_SERVICE_FILE="$SYSTEMD_SERVICE_PATH/$QUIL_SERVICE_NAME.service"
 
 export LINKED_BINARY_PATH="$(yq '.service.link_directory // "/usr/local/bin"' $QTOOLS_CONFIG_FILE)"
 export LINKED_BINARY_NAME="$(yq '.service.link_name // "node"' $QTOOLS_CONFIG_FILE)"
 
+export QCLIENT_CLI_NAME="$(yq '.qclient_cli_name // "qclient"' $QTOOLS_CONFIG_FILE)"
+export LINKED_QCLIENT_BINARY="$LINKED_BINARY_PATH/$QCLIENT_CLI_NAME"
+
 export LINKED_BINARY="$LINKED_BINARY_PATH/$LINKED_BINARY_NAME"
 
 # statistics service name
-export STATISTICS_SERVICE_NAME="$(yq '.scheduled_tasks.statistics.service_name' $QTOOLS_CONFIG_FILE)"
+export STATISTICS_SERVICE_NAME="$(yq '.scheduled_tasks.statistics.service_name // "statistics"' $QTOOLS_CONFIG_FILE)"
 
 export OS_ARCH="$(get_os_arch)"
 
@@ -139,7 +142,7 @@ find_script() {
 
 # Function to check if snapshots are enabled
 are_snapshots_enabled() {
-  local enabled=$(yq '.settings.snapshots.enabled // "false"' $QTOOLS_CONFIG_FILE)
+  local enabled=$(yq '.settings.snapshots.enabled' $QTOOLS_CONFIG_FILE)
   [[ "$enabled" == "true" ]]
 }
 

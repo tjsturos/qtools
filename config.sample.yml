@@ -3,7 +3,8 @@ quilibrium_repo_install_dir: .
 release_version: 1.4.19.1
 current_version: 1.4.19.1
 os_arch: linux-amd64
-qtools_version: 3
+qtools_version: 4
+qclient_cli_name: qclient
 service:
     file_name: ceremonyclient
     debug: false
@@ -43,6 +44,7 @@ scheduled_tasks:
             cron_expression: ""
         node:
             enabled: true
+            skip_version: ""
             cron_expression: ""
         system:
             enabled: false
