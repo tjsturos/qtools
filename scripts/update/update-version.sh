@@ -46,7 +46,9 @@ fi
 update_qclient_link() {
     local VERSION=$1
     echo "Switching to qclient version: $VERSION"
-    rm $LINKED_QCLIENT_BINARY
+    if [ -s "$LINKED_QCLIENT_BINARY" ]; then
+        rm $LINKED_QCLIENT_BINARY
+    fi
     ln -s $QUIL_CLIENT_PATH/qclient-$VERSION-$OS_ARCH $LINKED_QCLIENT_BINARY
 }
 
@@ -59,8 +61,11 @@ fi
 update_node_link() {
     local VERSION=$1
     echo "Switching to node version: $VERSION"
-    rm $LINKED_BINARY
-    ln -s $QUIL_NODE_PATH/node-$VERSION-$OS_ARCH $LINKED_BINARY
+
+    if [ -s "$LINKED_NODE_BINARY" ]; then
+        rm $LINKED_NODE_BINARY
+    fi
+    ln -s $QUIL_NODE_PATH/node-$VERSION-$OS_ARCH $LINKED_NODE_BINARY
 }
 
 restart_service() {
