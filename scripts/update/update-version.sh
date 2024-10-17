@@ -46,7 +46,7 @@ fi
 update_qclient_link() {
     local VERSION=$1
     echo "Switching to qclient version: $VERSION"
-    if [ -s "$LINKED_QCLIENT_BINARY" ]; then
+    if [ -f "$LINKED_QCLIENT_BINARY" ]; then
         sudo rm $LINKED_QCLIENT_BINARY
     fi
     log "Linking link $LINKED_QCLIENT_BINARY to ${QUIL_CLIENT_PATH}/qclient-$VERSION-$OS_ARCH"
@@ -63,7 +63,7 @@ update_node_link() {
     local VERSION=$1
     echo "Switching to node version: $VERSION"
 
-    if [ -s "$LINKED_NODE_BINARY" ]; then
+    if [ -f "$LINKED_NODE_BINARY" ]; then
         sudo rm $LINKED_NODE_BINARY
     fi
     log "Linking link $LINKED_NODE_BINARY to ${QUIL_NODE_PATH}/node-$VERSION-$OS_ARCH"
