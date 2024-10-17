@@ -41,6 +41,7 @@ if [ -n "$ALLOW_FROM_IP" ] && [ "$ALLOW_FROM_IP" != "false" ]; then
 
     # Delete existing rule for SSH port (if any)
     sudo ufw delete allow $SSH_PORT/tcp
+    sudo ufw delete allow 22
 
     # Add new rule to allow SSH from specific IP
     sudo ufw allow from $ALLOW_FROM_IP to any port $SSH_PORT proto tcp
