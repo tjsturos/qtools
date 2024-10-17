@@ -58,7 +58,11 @@ StartLimitBurst=5
 User=$USER
 WorkingDirectory=$QUIL_NODE_PATH
 ExecStart=$LINKED_NODE_BINARY
+ExecStop=/bin/kill -s SIGINT $MAINPID
+ExecReload=/bin/kill -s SIGINT $MAINPID && $LINKED_NODE_BINARY
 KillSignal=SIGINT
+RestartKillSignal=SIGINT
+FinalKillSignal=SIGINT
 
 [Install]
 WantedBy=multi-user.target
@@ -101,7 +105,11 @@ RestartSec=5
 StartLimitBurst=5
 User=$USER
 ExecStart=$LINKED_NODE_BINARY --core %i
+ExecStop=/bin/kill -s SIGINT $MAINPID
+ExecReload=/bin/kill -s SIGINT $MAINPID && $LINKED_NODE_BINARY --core %i
 KillSignal=SIGINT
+RestartKillSignal=SIGINT
+FinalKillSignal=SIGINT
 
 [Install]
 WantedBy=multi-user.target
