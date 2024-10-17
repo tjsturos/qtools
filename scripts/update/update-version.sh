@@ -49,7 +49,7 @@ update_qclient_link() {
     if [ -s "$LINKED_QCLIENT_BINARY" ]; then
         sudo rm $LINKED_QCLIENT_BINARY
     fi
-    log "Linking link /usr/local/bin/qclient to ${QUIL_CLIENT_PATH}/qclient-$VERSION-$OS_ARCH"
+    log "Linking link $LINKED_QCLIENT_BINARY to ${QUIL_CLIENT_PATH}/qclient-$VERSION-$OS_ARCH"
     sudo ln -s "${QUIL_CLIENT_PATH}/qclient-$VERSION-$OS_ARCH" "${LINKED_QCLIENT_BINARY}"
 }
 
@@ -66,7 +66,7 @@ update_node_link() {
     if [ -s "$LINKED_NODE_BINARY" ]; then
         sudo rm $LINKED_NODE_BINARY
     fi
-    log "Linking link /usr/local/bin/node to ${QUIL_NODE_PATH}/node-$VERSION-$OS_ARCH"
+    log "Linking link $LINKED_NODE_BINARY to ${QUIL_NODE_PATH}/node-$VERSION-$OS_ARCH"
     sudo ln -s "${QUIL_NODE_PATH}/node-$VERSION-$OS_ARCH" "${LINKED_NODE_BINARY}"
 }
 
