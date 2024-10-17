@@ -77,7 +77,12 @@ User=$(whoami)
 Group=$(id -gn)
 WorkingDirectory=$QUIL_NODE_PATH
 Environment="GOMAXPROCS=$(getProcessorCount)"
-ExecStart=/usr/local/bin/node
+ExecStart=${LINKED_NODE_BINARY}
+ExecStop=/bin/kill -s SIGINT $MAINPID
+ExecReload=/bin/kill -s SIGINT $MAINPID && ${LINKED_NODE_BINARY}
+KillSignal=SIGINT
+RestartKillSignal=SIGINT
+FinalKillSignal=SIGINT
 KillSignal=SIGINT
 TimeoutStopSec=30
 
