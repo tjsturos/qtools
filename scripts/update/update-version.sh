@@ -65,7 +65,7 @@ update_node_link() {
     if [ -s "$LINKED_NODE_BINARY" ]; then
         sudo rm $LINKED_NODE_BINARY
     fi
-    sudoln -s $QUIL_NODE_PATH/node-$VERSION-$OS_ARCH $LINKED_NODE_BINARY
+    sudo ln -s $QUIL_NODE_PATH/node-$VERSION-$OS_ARCH $LINKED_NODE_BINARY
 }
 
 restart_service() {
