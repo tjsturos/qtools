@@ -57,7 +57,7 @@ RestartSec=5
 StartLimitBurst=5
 User=$USER
 WorkingDirectory=$QUIL_NODE_PATH
-ExecStart=$LINKED_BINARY
+ExecStart=$LINKED_NODE_BINARY
 KillSignal=SIGINT
 
 [Install]
@@ -100,7 +100,7 @@ Restart=on-failure
 RestartSec=5
 StartLimitBurst=5
 User=$USER
-ExecStart=$LINKED_BINARY --core %i
+ExecStart=$LINKED_NODE_BINARY --core %i
 KillSignal=SIGINT
 
 [Install]
