@@ -111,7 +111,7 @@ export LINKED_BINARY_NAME="$(yq '.service.link_name // "node"' $QTOOLS_CONFIG_FI
 export QCLIENT_CLI_NAME="$(yq '.qclient_cli_name // "qclient"' $QTOOLS_CONFIG_FILE)"
 export LINKED_QCLIENT_BINARY="$LINKED_BINARY_PATH/$QCLIENT_CLI_NAME"
 
-export LINKED_BINARY="$LINKED_BINARY_PATH/$LINKED_BINARY_NAME"
+export LINKED_NODE_BINARY="$LINKED_BINARY_PATH/$LINKED_BINARY_NAME"
 
 # statistics service name
 export STATISTICS_SERVICE_NAME="$(yq '.scheduled_tasks.statistics.service_name // "statistics"' $QTOOLS_CONFIG_FILE)"
