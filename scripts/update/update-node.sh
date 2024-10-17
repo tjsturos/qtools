@@ -75,8 +75,6 @@ clean_old_node_files() {
 clean_old_node_files
 
 if [ "$restart_required" == "true" ]; then
-  link_node_binary
-  link_qclient_binary
   qtools update-service
   qtools restart
 fi
