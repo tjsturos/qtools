@@ -4,7 +4,6 @@
 # Usage: qtools update-node
 # Usage: qtools update-node --force
 
-current_version="$(get_current_version)"
 restart_required="false"
 force_update="false"
 auto_update="false"
@@ -25,14 +24,13 @@ for param in "$@"; do
     esac
 done
 
-RELEASE_VERSION=$(fetch_release_version)
+
 SKIP_VERSION=$(yq '.scheduled_tasks.updates.node.skip_version // "false"' $QTOOLS_CONFIG_FILE)
 
-CURRENT_VERSION=$(get_current_version)
+CURRENT_NODE_VERSION=$(get_current_node_version)
+CURRENT_QCLIENT_VERSION=$(get_current_qclient_version)
+RELEASE_NODE_VERSION=$(fetch_node_release_version)
 RELEASE_QCLIENT_VERSION=$(fetch_qclient_release_version)
-
-
-
 
 # if this is an auto update, and auto update is disabled, exit
 if [ "$auto_update" == "true" ] && [ "$is_auto_update_enabled" == "false" ]; then
@@ -46,19 +44,20 @@ if [ "$SKIP_VERSION" != "false" ] && [ "$SKIP_VERSION" != "" ] && [ "$RELEASE_VE
   exit 0
 fi
 
-if [ "$CURRENT_VERSION" == "$RELEASE_VERSION" ]; then
+if [ "$CURRENT_NODE_VERSION" == "$RELEASE_NODE_VERSION" ]; then
   log "Node is already up to date. Exiting."
   exit 0
 fi
 
-qtools update-version --node-version $RELEASE_VERSION --qclient-version $RELEASE_QCLIENT_VERSION
-set_current_version $RELEASE_VERSION
+qtools update-version --node-version $RELEASE_NODE_VERSION --qclient-version $RELEASE_QCLIENT_VERSION
+set_current_node_version $RELEASE_NODE_VERSION
+set_current_qclient_version $RELEASE_QCLIENT_VERSION
 
 clean_old_node_files() {
     # Get a list of all files in $QUIL_NODE_PATH that don't match $release_version and remove them
     log "Removing old node files..."
     for file in "$QUIL_NODE_PATH"/*; do
-      if [[ -f "$file" && ! "$file" =~ .*$RELEASE_VERSION.* ]]; then
+      if [[ -f "$file" && ! "$file" =~ .*$RELEASE_NODE_VERSION.* ]]; then
         log "Removing old file: $file"
         rm -f "$file"
       fi
@@ -67,7 +66,7 @@ clean_old_node_files() {
     # Get a list of all files in $QUIL_CLIENT_PATH that don't match $release_version and remove them
     log "Removing old qclient files..."
     for file in "$QUIL_CLIENT_PATH"/*; do
-      if [[ -f "$file" && ! "$file" =~ $RELEASE_VERSION ]]; then
+      if [[ -f "$file" && ! "$file" =~ $RELEASE_QCLIENT_VERSION ]]; then
         log "Removing old file: $file"
         rm -f "$file"
       fi

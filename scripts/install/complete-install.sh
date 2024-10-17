@@ -39,8 +39,7 @@ DISABLE_SSH_PASSWORDS="$(yq '.settings.install.ssh.disable_password_login // "fa
 
 cd $QUIL_HOME
 
-qtools install-node-binary
-qtools install-qclient
+qtools download-quil-binaries
 qtools update-service
 
 qtools install-go

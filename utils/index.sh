@@ -197,14 +197,53 @@ fetch_qclient_release_version() {
     echo $RELEASE_VERSION
 }
 
-set_current_version() {
-    current_version="$1" yq -i e '.current_version = strenv(current_version)' $QTOOLS_CONFIG_FILE
+set_current_node_version() {
+    current_version="$1" yq -i e '.current_node_version = strenv(current_version)' $QTOOLS_CONFIG_FILE
 }
 
-get_current_version() {
-    local CURRENT_VERSION=$(systemctl status $QUIL_SERVICE_NAME --no-pager | grep -oP "\-([0-9]+\.)+([0-9]+)\-" | head -n 1 | tr -d 'node-')
-    
-    set_current_version $CURRENT_VERSION
+set_current_qclient_version() {
+    current_version="$1" yq -i e '.current_qclient_version = strenv(current_version)' $QTOOLS_CONFIG_FILE
+}
+
+get_current_node_version() {
+    local CURRENT_VERSION="$(yq eval '.current_node_version' $QTOOLS_CONFIG_FILE)"
+
+    if [ -z "$CURRENT_VERSION" ]; then
+        # Get the version from the symlinked binary
+        local LINKED_BINARY_NAME=$(readlink -f "$LINKED_NODE_BINARY")
+        if [[ -n "$LINKED_BINARY_NAME" ]]; then
+            CURRENT_VERSION=$(basename "$LINKED_BINARY_NAME" | grep -oP "node-\K([0-9]+\.?)+")
+            if [[ -z "$CURRENT_VERSION" ]]; then
+                log "Warning: Unable to extract version from linked binary. Using default version."
+                CURRENT_VERSION="0.0.0"
+            fi
+        else
+            log "Warning: Unable to resolve symlink for $LINKED_NODE_BINARY ($LINKED_BINARY_NAME). Using default version."
+            CURRENT_VERSION="0.0.0"
+        fi
+        set_current_node_version $CURRENT_VERSION
+    fi
+
+    echo $CURRENT_VERSION
+}
+
+get_current_qclient_version() {
+    local CURRENT_VERSION="$(yq eval '.current_qclient_version' $QTOOLS_CONFIG_FILE)"
+    if [ -z "$CURRENT_VERSION" ]; then
+        # Get the version from the symlinked binary
+        local LINKED_BINARY_NAME=$(readlink -f "$LINKED_QCLIENT_BINARY")
+        if [[ -n "$LINKED_BINARY_NAME" ]]; then
+            CURRENT_VERSION=$(basename "$LINKED_BINARY_NAME" | grep -oP "qclient-\K([0-9]+\.?)+")
+            if [[ -z "$CURRENT_VERSION" ]]; then
+                log "Warning: Unable to extract version from linked binary. Using default version."
+                CURRENT_VERSION="0.0.0"
+            fi
+        else
+            log "Warning: Unable to resolve symlink for $LINKED_QCLIENT_BINARY ($LINKED_BINARY_NAME). Using default version."
+            CURRENT_VERSION="0.0.0"
+        fi
+        set_current_qclient_version $CURRENT_VERSION
+    fi
     echo $CURRENT_VERSION
 }
 
@@ -261,7 +300,11 @@ get_release_node_version() {
 }
 
 get_current_versioned_node() {
-    echo "node-$(get_current_version)-$(get_os_arch)"
+    echo "node-$(get_current_node_version)-$(get_os_arch)"
+}
+
+get_current_versioned_qclient() {
+    echo "qclient-$(get_current_qclient_version)-$(get_os_arch)"
 }
 
 get_versioned_qclient() {

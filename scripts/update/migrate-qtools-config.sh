@@ -71,8 +71,23 @@ VERSION_3() {
         echo "Updated qtools_version to 3"
     fi
 }
+
+VERSION_5() {
+    local VERSION=5
+    current_version=$(yq eval '.qtools_version // "0"' "$QTOOLS_PATH/config.yml")
+    
+    echo "Current version: $current_version vs $VERSION"
+    if [ "$current_version" -lt "$VERSION" ]; then
+        echo "Migrating config.yml to version 5"
+        yq eval -i '.qtools_version = 5' "$QTOOLS_PATH/config.yml"
+        get_current_node_version
+        get_current_qclient_version
+        echo "Updated qtools_version to 5"
+    fi
+}
 # run the version migration
 VERSION_2
 VERSION_3
+VERSION_5
 
 
