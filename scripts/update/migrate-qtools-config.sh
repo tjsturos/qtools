@@ -85,6 +85,7 @@ VERSION_5() {
         echo "Updated qtools_version to 5"
     fi
 }
+
 # run the version migration
 VERSION_2
 VERSION_3

@@ -1,10 +1,14 @@
 user: ubuntu
 quilibrium_repo_install_dir: .
 release_version: 1.4.19.1
-current_version: 1.4.19.1
+current_node_version: 1.4.19.1
+current_qclient_version: 1.4.19.1
 os_arch: linux-amd64
-qtools_version: 4
+qtools_version: 6
 qclient_cli_name: qclient
+ssh:
+    allow_from_ip: false
+    port: 22
 service:
     file_name: ceremonyclient
     debug: false
