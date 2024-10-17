@@ -29,6 +29,8 @@ RELEASE_VERSION=$(fetch_release_version)
 SKIP_VERSION=$(yq '.scheduled_tasks.updates.node.skip_version // "false"' $QTOOLS_CONFIG_FILE)
 
 CURRENT_VERSION=$(get_current_version)
+RELEASE_QCLIENT_VERSION=$(fetch_qclient_release_version)
+
 
 
 
@@ -49,7 +51,7 @@ if [ "$CURRENT_VERSION" == "$RELEASE_VERSION" ]; then
   exit 0
 fi
 
-qtools update-version --version $RELEASE_VERSION
+qtools update-version --node-version $RELEASE_VERSION --qclient-version $RELEASE_QCLIENT_VERSION
 set_current_version $RELEASE_VERSION
 
 clean_old_node_files() {
