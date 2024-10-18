@@ -74,7 +74,6 @@ Type=simple
 Restart=always
 RestartSec=$(yq '.service.restart_time' $QTOOLS_CONFIG_FILE)
 User=$(whoami)
-Group=$(id -gn)
 WorkingDirectory=$QUIL_NODE_PATH
 Environment="GOMAXPROCS=$(getProcessorCount)"
 ExecStart=${LINKED_NODE_BINARY}
