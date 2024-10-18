@@ -186,7 +186,7 @@ set_release_version() {
     new_version="$1" yq -i e '.release_version = strenv(new_version)' $QTOOLS_CONFIG_FILE
 }
 
-fetch_release_version() {
+fetch_node_release_version() {
     local RELEASE_VERSION="$(curl -s https://releases.quilibrium.com/release | grep -oP "\-([0-9]+\.?)+\-" | head -n 1 | tr -d 'node-')"
     set_release_version $RELEASE_VERSION
     echo $RELEASE_VERSION
@@ -296,7 +296,7 @@ get_os_arch() {
 }
 
 get_release_node_version() {
-    echo "node-$(fetch_release_version)-$(get_os_arch)"
+    echo "node-$(fetch_node_release_version)-$(get_os_arch)"
 }
 
 get_current_versioned_node() {

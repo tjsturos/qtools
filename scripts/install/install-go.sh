@@ -1,12 +1,17 @@
 #!/bin/bash
 # HELP: Installs Go 1.22.4 on this node.
-log "Installing Go"
+echo "Installing Go"
+
+GO_BIN_DIR=/usr/local
+GOROOT=$GO_BIN_DIR/go
+GOPATH=$HOME/go
+
 GO_COMPRESSED_FILE=go1.22.4.linux-amd64.tar.gz
 
-log "Downloading $GO_COMPRESSED_FILE..."
+echo "Downloading $GO_COMPRESSED_FILE..."
 wget https://go.dev/dl/$GO_COMPRESSED_FILE 
 
-log "Uncompressing $GO_COMPRESSED_FILE"
+echo "Uncompressing $GO_COMPRESSED_FILE"
 tar -xvf $GO_COMPRESSED_FILE &> /dev/null
 
 if [ -d $GOROOT ]; then

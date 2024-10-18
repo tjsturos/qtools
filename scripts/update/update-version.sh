@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Get the default version from the release
-NODE_VERSION=$(fetch_release_version)
+NODE_VERSION=$(fetch_node_release_version)
 QCLIENT_VERSION=$(fetch_qclient_release_version)
 
 # Parse command line arguments
