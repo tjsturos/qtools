@@ -32,9 +32,7 @@ done
 if [ -n "$NODE_VERSION" ]; then
     NODE_RELEASE_FILES="node-${NODE_VERSION}-${OS_ARCH} node-${NODE_VERSION}-${OS_ARCH}.dgst"
     for i in $(seq 1 $SIGNER_COUNT); do
-        if wget --spider "https://releases.quilibrium.com/node-${NODE_VERSION}-${OS_ARCH}.sig.$i" 2>/dev/null; then
-            NODE_RELEASE_FILES+=" node-${NODE_VERSION}-${OS_ARCH}.sig.$i"
-        fi
+        NODE_RELEASE_FILES+=" node-${NODE_VERSION}-${OS_ARCH}.sig.$i"
     done
 else
     # Fetch the list of latest files from the release page
