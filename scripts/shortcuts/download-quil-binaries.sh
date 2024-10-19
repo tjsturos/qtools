@@ -83,7 +83,7 @@ download_file() {
 for file in $NODE_RELEASE_FILES; do
     download_file $file
 
-    if [[ $file =~ ^node-[0-9]+\.[0-9]+(\.[0-9]+)*(\.[0-9]+)?-${OS_ARCH}$ ]]; then
+    if [[ $file =~ ^node-[0-9]+\.[0-9]+(\.[0-9]+)*(-[a-zA-Z0-9-]+)?-${OS_ARCH}$ ]]; then
         log "Making $file executable..."
         chmod +x "$file"
         if [ $? -eq 0 ]; then
@@ -115,7 +115,7 @@ cd $QUIL_CLIENT_PATH
 for file in $QCLIENT_RELEASE_FILES; do
     download_file $file
 
-    if [[ $file =~ ^qclient-[0-9]+\.[0-9]+(\.[0-9]+)*(\.[0-9]+)?-${OS_ARCH}$ ]]; then
+    if [[ $file =~ ^qclient-[0-9]+\.[0-9]+(\.[0-9]+)*(-[a-zA-Z0-9-]+)?-${OS_ARCH}$ ]]; then
         log "Making $file executable..."
         chmod +x "$file"
         if [ $? -eq 0 ]; then
