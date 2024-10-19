@@ -11,6 +11,8 @@ TOKEN_BALANCE=""
 AMOUNT=""
 NUMBER_OF_TOKENS=1
 TOKEN_CREATE_ARRAY=()
+
+initialial_tokens_list=($(qtools get-tokens ${SKIP_SIG_CHECK:+--skip-sig-check}))
 while [[ $# -gt 0 ]]; do
     key="$1"
     case $key in
@@ -202,7 +204,7 @@ if [[ $CONFIRM == "n" ]]; then
     exit 0
 fi
 
-echo "Splitting tokens... this may take a while to process and the network to sync."
+echo "Splitting tokens... this may take a while to process."
 
 # Construct the command
 CMD="$LINKED_QCLIENT_BINARY${SKIP_SIG_CHECK:+ --signature-check=false} token split $TOKEN ${TOKEN_CREATE_ARRAY[@]}"
@@ -210,3 +212,18 @@ CMD="$LINKED_QCLIENT_BINARY${SKIP_SIG_CHECK:+ --signature-check=false} token spl
 # Execute the command
 $CMD
 
+echo "Done splitting tokens. Waiting for the network to sync..."
+echo "Press 'q' or any other key to quit"
+while true; do
+    # Allow user to quit
+    read -t 1 -n 1 -p "" input
+    if [[ -n $input ]]; then
+        echo -e "\nQuitting..."
+        exit 0
+    fi
+    current_tokens_list=($(qtools get-tokens ${SKIP_SIG_CHECK:+--skip-sig-check}))
+    if [[ "${current_tokens_list[@]}" == "${initialial_tokens_list[@]}" ]]; then
+        break
+    fi
+    sleep 1
+done
