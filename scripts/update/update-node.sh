@@ -8,6 +8,7 @@ restart_required="false"
 force_update="false"
 auto_update="false"
 is_auto_update_enabled=$(yq '.scheduled_tasks.updates.node.enabled // "false"' $QTOOLS_CONFIG_FILE)
+skip_clean="false"
 
 for param in "$@"; do
     case $param in
@@ -16,6 +17,9 @@ for param in "$@"; do
             ;;
         --force)
             force_update="true"
+            ;;
+        --skip-clean)
+            skip_clean="true"
             ;;
         *)
             echo "Unknown parameter: $param"
@@ -73,7 +77,11 @@ clean_old_node_files() {
     done
 }
 
-clean_old_node_files
+if [ "$skip_clean" == "true" ]; then
+  log "Skipping clean of old node files."
+else
+  clean_old_node_files
+fi
 
 if [ "$restart_required" == "true" ]; then
   qtools update-service
