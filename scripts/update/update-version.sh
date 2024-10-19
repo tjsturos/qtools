@@ -1,8 +1,10 @@
 #!/bin/bash
 
 # Get the default version from the release
-NODE_VERSION=$(fetch_node_release_version)
-QCLIENT_VERSION=$(fetch_qclient_release_version)
+NODE_VERSION=""
+NODE_VERSION=""
+
+BINARY_ONLY=false
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -20,6 +22,10 @@ while [[ $# -gt 0 ]]; do
         shift # past argument
         shift # past value
         ;;
+        --binary-only)
+        BINARY_ONLY=true
+        shift # past argument
+        ;;
         *)    # unknown option
         log "Unknown parameter: $1"
         shift # past argument
@@ -27,10 +33,19 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+
 # Check if the node binary exists in $QUIL_NODE_PATH
-if [ ! -f "$QUIL_NODE_PATH/node-$NODE_VERSION-$OS_ARCH" ]; then
-    echo "Node binary not found in $QUIL_NODE_PATH. Downloading latest binaries..."
-    qtools download-quil-binaries --node-version $NODE_VERSION
+if [[ ! -f "$QUIL_NODE_PATH/node-$NODE_VERSION-$OS_ARCH" ]] || [[ -z "$NODE_VERSION" ]] || [[ -z "$QCLIENT_VERSION" ]]; then
+
+    if [ -z "$NODE_VERSION" ]; then
+        echo "Node version not specified. Using latest version..."
+    fi
+
+    if [ -z "$QCLIENT_VERSION" ]; then
+        echo "QClient version not specified. Using latest version..."
+    fi
+
+    qtools download-quil-binaries${BINARY_ONLY:+ --binary-only}${NODE_VERSION:+ --node-version $NODE_VERSION}${QCLIENT_VERSION:+ --qclient-version $QCLIENT_VERSION}
     
     # Check again after download
     if [ ! -f "$QUIL_NODE_PATH/node-$NODE_VERSION-$OS_ARCH" ]; then
