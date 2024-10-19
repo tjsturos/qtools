@@ -19,6 +19,7 @@ SERVICE_NAME=$QUIL_SERVICE_NAME
 ENABLE_SERVICE=false
 RESTART_SERVICE=false
 TESTNET=false
+DEBUG_MODE=false
 
 if [ "$IS_CLUSTER_MODE" == "true" ] && [ "$(is_master)" == "false" ]; then
     if [ "$(is_master)" == "true" ]; then
@@ -61,6 +62,10 @@ while [[ $# -gt 0 ]]; do
             RESTART_SERVICE=true
             shift
             ;;
+        --debug)
+            DEBUG_MODE=true
+            shift
+            ;;
         *)
             echo "Unknown option: $1"
             exit 1
@@ -81,9 +86,9 @@ RestartSec=$(yq '.service.restart_time' $QTOOLS_CONFIG_FILE)
 User=$(whoami)
 WorkingDirectory=$QUIL_NODE_PATH
 Environment="GOMAXPROCS=$(getProcessorCount)"
-ExecStart=${LINKED_NODE_BINARY}${TESTNET:+ --network 1}
+ExecStart=${LINKED_NODE_BINARY}${TESTNET:+ --network 1}${DEBUG_MODE:+ --debug}
 ExecStop=/bin/kill -s SIGINT \$MAINPID
-ExecReload=/bin/kill -s SIGINT \$MAINPID && ${LINKED_NODE_BINARY}${TESTNET:+ --network 1}
+ExecReload=/bin/kill -s SIGINT \$MAINPID && ${LINKED_NODE_BINARY}${TESTNET:+ --network 1}${DEBUG_MODE:+ --debug}
 KillSignal=SIGINT
 RestartKillSignal=SIGINT
 FinalKillSignal=SIGINT
