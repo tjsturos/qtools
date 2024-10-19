@@ -4,6 +4,7 @@
 NODE_VERSION=""
 QCLIENT_VERSION=""
 SIGNER_COUNT=17
+BINARY_ONLY=false
 while [[ $# -gt 0 ]]; do
     key="$1"
     case $key in
@@ -22,6 +23,10 @@ while [[ $# -gt 0 ]]; do
         shift # past argument
         shift # past value
         ;;
+        --binary-only)
+        BINARY_ONLY=true
+        shift # past argument
+        ;;
         *)    # unknown option
         shift # past argument
         ;;
@@ -30,10 +35,14 @@ done
 
 # If NODE_VERSION is set, get release files for that specific version
 if [ -n "$NODE_VERSION" ]; then
-    NODE_RELEASE_FILES="node-${NODE_VERSION}-${OS_ARCH} node-${NODE_VERSION}-${OS_ARCH}.dgst"
-    for i in $(seq 1 $SIGNER_COUNT); do
-        NODE_RELEASE_FILES+=" node-${NODE_VERSION}-${OS_ARCH}.dgst.sig.$i"
-    done
+    NODE_RELEASE_FILES="node-${NODE_VERSION}-${OS_ARCH}"
+    if [ "$BINARY_ONLY" == "false" ]; then
+        NODE_RELEASE_FILES+=" node-${NODE_VERSION}-${OS_ARCH}.dgst"
+        for i in $(seq 1 $SIGNER_COUNT); do
+            NODE_RELEASE_FILES+=" node-${NODE_VERSION}-${OS_ARCH}.dgst.sig.$i"
+        done
+    fi
+    
 else
     # Fetch the list of latest files from the release page
     NODE_RELEASE_LIST_URL="https://releases.quilibrium.com/release"
@@ -89,12 +98,13 @@ for file in $NODE_RELEASE_FILES; do
 done
 
 if [ -n "$QCLIENT_VERSION" ]; then
-    QCLIENT_RELEASE_FILES="qclient-${QCLIENT_VERSION}-${OS_ARCH} qclient-${QCLIENT_VERSION}-${OS_ARCH}.dgst"
-    for i in $(seq 1 $SIGNER_COUNT); do
-        if wget --spider "https://releases.quilibrium.com/qclient-${QCLIENT_VERSION}-${OS_ARCH}.dgst.sig.$i" 2>/dev/null; then
+    QCLIENT_RELEASE_FILES="qclient-${QCLIENT_VERSION}-${OS_ARCH}"
+    if [ "$BINARY_ONLY" == "false" ]; then
+        QCLIENT_RELEASE_FILES+=" qclient-${QCLIENT_VERSION}-${OS_ARCH}.dgst"
+        for i in $(seq 1 $SIGNER_COUNT); do
             QCLIENT_RELEASE_FILES+=" qclient-${QCLIENT_VERSION}-${OS_ARCH}.dgst.sig.$i"
-        fi
-    done
+        done
+    fi
 else
     QCLIENT_RELEASE_LIST_URL="https://releases.quilibrium.com/qclient-release"
     QCLIENT_RELEASE_FILES=$(curl -s $QCLIENT_RELEASE_LIST_URL | grep -oE "qclient-[0-9]+\.[0-9]+(\.[0-9]+)*(\.[0-9]+)?-${OS_ARCH}(\.dgst)?(\.sig\.[0-9]+)?")
