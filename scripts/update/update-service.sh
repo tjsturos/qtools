@@ -18,6 +18,7 @@ SERVICE_FILE=$QUIL_SERVICE_FILE
 SERVICE_NAME=$QUIL_SERVICE_NAME
 ENABLE_SERVICE=false
 RESTART_SERVICE=false
+TESTNET=false
 
 if [ "$IS_CLUSTER_MODE" == "true" ] && [ "$(is_master)" == "false" ]; then
     if [ "$(is_master)" == "true" ]; then
@@ -31,6 +32,10 @@ fi
 
 while [[ $# -gt 0 ]]; do
     case $1 in
+        --testnet)
+            TESTNET=true
+            shift
+            ;;
         --core)
             if [ "$IS_CLUSTER_MODE" == "true" ]; then
                 if [[ "$2" =~ ^[0-9]+$ ]]; then
@@ -76,9 +81,9 @@ RestartSec=$(yq '.service.restart_time' $QTOOLS_CONFIG_FILE)
 User=$(whoami)
 WorkingDirectory=$QUIL_NODE_PATH
 Environment="GOMAXPROCS=$(getProcessorCount)"
-ExecStart=${LINKED_NODE_BINARY}
+ExecStart=${LINKED_NODE_BINARY}${TESTNET:+ --network 1}
 ExecStop=/bin/kill -s SIGINT \$MAINPID
-ExecReload=/bin/kill -s SIGINT \$MAINPID && ${LINKED_NODE_BINARY}
+ExecReload=/bin/kill -s SIGINT \$MAINPID && ${LINKED_NODE_BINARY}${TESTNET:+ --network 1}
 KillSignal=SIGINT
 RestartKillSignal=SIGINT
 FinalKillSignal=SIGINT
