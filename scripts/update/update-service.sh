@@ -73,8 +73,6 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-
-
 # Define the initial service file content as a variable
 SERVICE_CONTENT="[Unit]
 Description=Quilibrium Ceremony Client Service
@@ -97,7 +95,6 @@ TimeoutStopSec=30
 
 [Install]
 WantedBy=multi-user.target"
-
 
 updateOrAddLine() {
     local KEY=$1
@@ -174,4 +171,3 @@ if [ "$RESTART_SERVICE" == "true" ]; then
     log "Restarting service..."
     sudo systemctl restart "$SERVICE_NAME"
 fi
-
