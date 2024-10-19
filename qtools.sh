@@ -129,6 +129,9 @@ fi
 find_script() {
   for dir in $(find "$QTOOLS_PATH/scripts" -type d); do
     for subdir in $(find "$dir" -type d); do
+      if [ "$subdir" == "qclient" ]; then
+        cd $QUIL_NODE_PATH
+      fi
       for subsubdir in $(find "$subdir" -type d); do
         if [ -f "$subsubdir/$1.sh" ]; then
           export SERVICE_PATH="${subsubdir%/}"
