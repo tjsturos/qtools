@@ -54,9 +54,7 @@ download_file() {
     
     log "Downloading $FILE_NAME..."
     # Check if the remote file exists
-    if wget --spider "https://releases.quilibrium.com/$FILE_NAME" 2>/dev/null; then
-        log "Remote file $FILE_NAME exists. Proceeding with download."
-    else
+    if ! wget --spider "https://releases.quilibrium.com/$FILE_NAME" 2>/dev/null; then
         log "Remote file $FILE_NAME does not exist. Skipping download."
         return
     fi
