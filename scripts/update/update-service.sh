@@ -20,6 +20,7 @@ ENABLE_SERVICE=false
 RESTART_SERVICE=false
 TESTNET=false
 DEBUG_MODE=false
+SKIP_SIGNATURE_CHECK=false
 
 if [ "$IS_CLUSTER_MODE" == "true" ] && [ "$(is_master)" == "false" ]; then
     if [ "$(is_master)" == "true" ]; then
@@ -66,6 +67,10 @@ while [[ $# -gt 0 ]]; do
             DEBUG_MODE=true
             shift
             ;;
+        --skip-sig-check)
+            SKIP_SIGNATURE_CHECK=true
+            shift
+            ;;
         *)
             echo "Unknown option: $1"
             exit 1
@@ -86,7 +91,7 @@ WorkingDirectory=$QUIL_NODE_PATH
 Environment="GOMAXPROCS=$(getProcessorCount)"
 ExecStart=${LINKED_NODE_BINARY}${TESTNET:+ --network 1}${DEBUG_MODE:+ --debug}
 ExecStop=/bin/kill -s SIGINT \$MAINPID
-ExecReload=/bin/kill -s SIGINT \$MAINPID && ${LINKED_NODE_BINARY}${TESTNET:+ --network 1}${DEBUG_MODE:+ --debug}
+ExecReload=/bin/kill -s SIGINT \$MAINPID && ${LINKED_NODE_BINARY}${TESTNET:+ --network=1}${DEBUG_MODE:+ --debug}${SKIP_SIGNATURE_CHECK:+ --signature-check=false}
 KillSignal=SIGINT
 RestartKillSignal=SIGINT
 FinalKillSignal=SIGINT

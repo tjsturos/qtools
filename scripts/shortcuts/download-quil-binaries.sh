@@ -42,7 +42,6 @@ if [ -n "$NODE_VERSION" ]; then
             NODE_RELEASE_FILES+=" node-${NODE_VERSION}-${OS_ARCH}.dgst.sig.$i"
         done
     fi
-    
 else
     # Fetch the list of latest files from the release page
     NODE_RELEASE_LIST_URL="https://releases.quilibrium.com/release"
