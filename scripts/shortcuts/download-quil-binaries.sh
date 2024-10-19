@@ -23,7 +23,7 @@ while [[ $# -gt 0 ]]; do
         shift # past argument
         shift # past value
         ;;
-        --binary-only)
+        --no-sigs)
         BINARY_ONLY=true
         shift # past argument
         ;;
