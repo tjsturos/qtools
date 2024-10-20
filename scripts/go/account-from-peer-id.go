@@ -47,8 +47,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Convert the first 20 bytes of the hash to a hex string
-	accountAddress := "0x" + hex.EncodeToString(addr[:20])
+	accountAddress := "0x" + hex.EncodeToString(addr.FillBytes(make([]byte, 32)))
 
 	fmt.Printf("Account address for peer ID %s: %s\n", *peerID, accountAddress)
 }
