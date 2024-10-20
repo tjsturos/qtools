@@ -62,6 +62,20 @@ get_token_from_user_input() {
     
     # Prompt user to select a token
     while true; do
+        # If there's only one token, select it automatically
+        if [ ${#TOKEN_ARRAY[@]} -eq 1 ]; then
+            SELECTED_TOKEN="${TOKEN_ARRAY[0]}"
+            TOKEN=$(echo "$SELECTED_TOKEN" | awk '{print $NF}' | sed 's/^(Coin //' | sed 's/)$//')
+            TOKEN_BALANCE=$(echo "$SELECTED_TOKEN" | awk '{print $1}')
+            echo "Only one token available: $SELECTED_TOKEN"
+            read -p "Do you want to use this token? (y/n): " USE_TOKEN
+            if [[ $USE_TOKEN =~ ^[Nn]$ ]]; then
+                echo "Operation cancelled."
+                exit 0
+            fi
+            echo "Selected token: $SELECTED_TOKEN"
+            break
+        fi
         read -p "Enter the index for the token you want to split (1-${#TOKEN_ARRAY[@]}): " SELECTION
         if [[ "$SELECTION" =~ ^[0-9]+$ ]] && [ "$SELECTION" -ge 1 ] && [ "$SELECTION" -le "${#TOKEN_ARRAY[@]}" ]; then
             SELECTED_TOKEN="${TOKEN_ARRAY[$SELECTION-1]}"
