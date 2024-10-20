@@ -220,6 +220,7 @@ if [[ " ${ROOT_SCRIPTS[@]} " =~ " $(basename "$SCRIPT" .sh) " ]]; then
   sudo su -c "QTOOLS_PATH=$QTOOLS_PATH $SCRIPT $*" - root
 else
   if [ "$IS_GO_SCRIPT" == "true" ]; then
+    cd $QTOOLS_PATH/scripts/go
     go run "$SCRIPT" "$@"
   else
     source "$SCRIPT" "$@"
