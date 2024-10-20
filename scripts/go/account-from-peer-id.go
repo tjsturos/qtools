@@ -9,36 +9,34 @@ import (
 	"strings"
 
 	"github.com/iden3/go-iden3-crypto/poseidon"
+	"github.com/mr-tron/base58/base58"
 )
 
 func main() {
-	peerID := flag.String("peer-id", "", "Peer ID to convert to account address")
+	peerIdInput := flag.String("peer-id", "", "Peer ID to convert to account address")
 	flag.Parse()
 
-	if *peerID == "" {
-		// If peer ID is not provided, try to get it from qtools
+	if *peerIdInput == "" {
+		// If no peer ID is provided, get it from the qtools peer-id command
 		output, err := exec.Command("qtools", "peer-id").Output()
 		if err != nil {
-			fmt.Println("Error: Failed to get peer ID from qtools")
-			flag.Usage()
+			fmt.Printf("Error executing qtools peer-id: %v\n", err)
 			os.Exit(1)
 		}
+		*peerIdInput = strings.TrimSpace(string(output))
 
-		// Trim any whitespace from the output
-		peerIDFromQtools := strings.TrimSpace(string(output))
-
-		if peerIDFromQtools == "Peer ID is not" {
-			fmt.Println("Error: Peer ID is not available from qtools")
-			flag.Usage()
+		if *peerIdInput == "" {
+			fmt.Println("Error: No peer ID provided and unable to retrieve it from qtools")
 			os.Exit(1)
 		}
-
-		// Use the peer ID from qtools
-		*peerID = peerIDFromQtools
-		fmt.Printf("Using peer ID from qtools: %s\n", *peerID)
 	}
 
-	addr, err := poseidon.HashBytes([]byte(strings.TrimSpace(string(*peerID))))
+	peerIDBytes, err := base58.Decode(*peerIdInput)
+	if err != nil {
+		fmt.Printf("Error decoding peer ID: %v\n", err)
+		os.Exit(1)
+	}
+	addr, err := poseidon.HashBytes(peerIDBytes)
 	if err != nil {
 		fmt.Printf("Error hashing peer ID: %v\n", err)
 		os.Exit(1)
@@ -48,5 +46,5 @@ func main() {
 
 	accountAddress := "0x" + hex.EncodeToString(addrBytes)
 
-	fmt.Printf("Account address for peer ID %s: %s\n", *peerID, accountAddress)
+	fmt.Println(accountAddress)
 }
