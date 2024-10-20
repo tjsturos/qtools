@@ -47,6 +47,8 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Print the raw bytes before encoding to hex
+	fmt.Printf("Raw bytes: %v\n", addr.FillBytes(make([]byte, 32)))
 	accountAddress := "0x" + hex.EncodeToString(addr.FillBytes(make([]byte, 32)))
 
 	fmt.Printf("Account address for peer ID %s: %s\n", *peerID, accountAddress)
