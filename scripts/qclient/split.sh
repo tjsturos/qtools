@@ -11,11 +11,15 @@ TOKEN_BALANCE=""
 AMOUNT=""
 NUMBER_OF_TOKENS=1
 TOKEN_CREATE_ARRAY=()
-
+DEBUG=false
 initialial_tokens_list=($(qtools get-tokens ${SKIP_SIG_CHECK:+--skip-sig-check}))
 while [[ $# -gt 0 ]]; do
     key="$1"
     case $key in
+        --debug)
+        DEBUG=true
+        shift
+        ;;
         --token)
         TOKEN="$2"
         shift
@@ -207,6 +211,10 @@ echo "Splitting tokens... this may take a while to process."
 
 # Construct the command
 CMD="$LINKED_QCLIENT_BINARY${SKIP_SIG_CHECK:+ --signature-check=false} token split $TOKEN ${TOKEN_CREATE_ARRAY[@]}"
+
+if $DEBUG; then
+    echo "DEBUG: $CMD"
+fi
 
 # Execute the command
 $CMD
