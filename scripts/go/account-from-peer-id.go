@@ -36,9 +36,6 @@ func main() {
 		// Use the peer ID from qtools
 		*peerID = peerIDFromQtools
 		fmt.Printf("Using peer ID from qtools: %s\n", *peerID)
-		fmt.Println("Error: --peer-id is required")
-		flag.Usage()
-		os.Exit(1)
 	}
 
 	addr, err := poseidon.HashBytes([]byte(strings.TrimSpace(string(*peerID))))
@@ -47,10 +44,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Print the raw bytes before encoding to hex
-	fmt.Printf("Raw bytes: %v\n", addr.FillBytes(make([]byte, 32)))
-	fmt.Printf("Bytes to string: %s\n", string(addr.FillBytes(make([]byte, 32))[:]))
-	accountAddress := "0x" + hex.EncodeToString(addr.FillBytes(make([]byte, 32)))
+	addrBytes := addr.FillBytes(make([]byte, 32))
+
+	accountAddress := "0x" + hex.EncodeToString(addrBytes)
 
 	fmt.Printf("Account address for peer ID %s: %s\n", *peerID, accountAddress)
 }
