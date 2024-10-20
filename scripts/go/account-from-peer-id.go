@@ -1,4 +1,4 @@
-package qtools
+package main
 
 import (
 	"encoding/hex"
