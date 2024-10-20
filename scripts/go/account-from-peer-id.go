@@ -41,7 +41,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	addr, err := poseidon.HashBytes([]byte(*peerID))
+	addr, err := poseidon.HashBytes([]byte(strings.TrimSpace(string(*peerID))))
 	if err != nil {
 		fmt.Printf("Error hashing peer ID: %v\n", err)
 		os.Exit(1)
@@ -49,6 +49,7 @@ func main() {
 
 	// Print the raw bytes before encoding to hex
 	fmt.Printf("Raw bytes: %v\n", addr.FillBytes(make([]byte, 32)))
+	fmt.Printf("Bytes to string: %s\n", string(addr.FillBytes(make([]byte, 32))[:]))
 	accountAddress := "0x" + hex.EncodeToString(addr.FillBytes(make([]byte, 32)))
 
 	fmt.Printf("Account address for peer ID %s: %s\n", *peerID, accountAddress)
