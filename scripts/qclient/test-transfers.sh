@@ -71,6 +71,9 @@ transfer_token() {
 
 update_suitable_tokens
 
+# Initialize transfer count
+transfer_count=0
+
 # Main loop
 while true; do
     update_suitable_tokens &
@@ -81,6 +84,12 @@ while true; do
         token_id=$(echo "$suitable_token" | awk '{print $NF}' | sed 's/^(Coin //' | sed 's/)$//')
         
         transfer_token $token_id &
+        
+        # Increment transfer count
+        ((transfer_count++))
+        
+        # Log the current number of transfers
+        echo "Total transfers completed: $transfer_count"
         
         # Refresh the list of suitable tokens
         update_suitable_tokens &
