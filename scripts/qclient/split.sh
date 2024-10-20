@@ -162,7 +162,7 @@ get_split_evenly_from_user_input() {
         # Add full tokens to TOKEN_CREATE_ARRAY
         for ((i=0; i<full_tokens; i++)); do
             if (( $(echo "$AMOUNT < 1" | bc -l) )); then
-                AMOUNT=$(printf "%.${#AMOUNT##*.}f" $AMOUNT)
+                AMOUNT=$(printf "%.8f" $AMOUNT)
             fi
             TOKEN_CREATE_ARRAY+=("$AMOUNT")
         done
@@ -171,7 +171,7 @@ get_split_evenly_from_user_input() {
         if (( $(echo "$remainder > 0" | bc -l) )); then
             # Ensure remainder has a leading zero if less than 1
             if (( $(echo "$remainder < 1" | bc -l) )); then
-                remainder=$(printf "%.${#AMOUNT##*.}f" $remainder)
+                remainder=$(printf "%.8f" $remainder)
             fi
             TOKEN_CREATE_ARRAY+=("$remainder")
         fi
