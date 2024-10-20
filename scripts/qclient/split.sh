@@ -61,7 +61,7 @@ get_token_from_user_input() {
         read -p "Enter the index for the token you want to split (1-${#TOKEN_ARRAY[@]}): " SELECTION
         if [[ "$SELECTION" =~ ^[0-9]+$ ]] && [ "$SELECTION" -ge 1 ] && [ "$SELECTION" -le "${#TOKEN_ARRAY[@]}" ]; then
             SELECTED_TOKEN="${TOKEN_ARRAY[$SELECTION-1]}"
-            TOKEN=$(echo "$SELECTED_TOKEN" | awk '{print $(NF-1)}' | sed 's/^0x//')
+            TOKEN=$(echo "$SELECTED_TOKEN" | awk '{print $NF}' | sed 's/^(Coin //' | sed 's/)$//')
             TOKEN_BALANCE=$(echo "$SELECTED_TOKEN" | awk '{print $1}')
             break
         else
@@ -72,7 +72,7 @@ get_token_from_user_input() {
 
 get_amount_from_user_input() {
     while true; do
-        read -p "Enter the total balance of the selected token to split (max $TOKEN_BALANCE): " AMOUNT
+        read -p "Enter the new token amount (max $TOKEN_BALANCE): " AMOUNT
         if [[ $AMOUNT =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
             if (( $(echo "$AMOUNT <= $TOKEN_BALANCE" | bc -l) )); then
                 break
@@ -184,7 +184,6 @@ fi
 
 echo "Using token $TOKEN with balance $TOKEN_BALANCE"
 
-print_token_create_array
 
 # Confirm with user before proceeding
 while true; do
