@@ -22,7 +22,7 @@ while [[ $# -gt 0 ]]; do
         shift # past argument
         shift # past value
         ;;
-        --binary-only)
+        --no-signatures)
         BINARY_ONLY=true
         shift # past argument
         ;;
@@ -45,8 +45,8 @@ if [[ ! -f "$QUIL_NODE_PATH/node-$NODE_VERSION-$OS_ARCH" ]] || [[ -z "$NODE_VERS
         echo "QClient version not specified. Using latest version..."
     fi
 
-    qtools download-quil-binaries${BINARY_ONLY:+ --binary-only}${NODE_VERSION:+ --node-version $NODE_VERSION}${QCLIENT_VERSION:+ --qclient-version $QCLIENT_VERSION}
-    
+    qtools download-node${BINARY_ONLY:+ --no-signatures}${NODE_VERSION:+ --version $NODE_VERSION}
+    qtools download-qclient${BINARY_ONLY:+ --no-signatures}${QCLIENT_VERSION:+ --version $QCLIENT_VERSION}
     # Check again after download
     if [ ! -f "$QUIL_NODE_PATH/node-$NODE_VERSION-$OS_ARCH" ]; then
         echo "Error: Failed to download node binary. Please check your network connection and try again."
