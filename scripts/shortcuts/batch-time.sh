@@ -1,5 +1,28 @@
 #!/bin/bash
 
+# Function to get the start time from user input
+get_start_time() {
+    local start_time=""
+    while [ -z "$start_time" ]; do
+        read -p "Enter the start time (YYYY-MM-DDTHH:MM:SS format): " start_time
+        if ! date -d "$start_time" >/dev/null 2>&1; then
+            echo "Invalid date format. Please use YYYY-MM-DDTHH:MM:SS format."
+            start_time=""
+        fi
+    done
+    echo "$start_time"
+}
+
+# Get the start time from user input
+START_TIME=$(get_start_time)
+
+# Update the journalctl command with the user-provided start time
+JOURNALCTL_CMD="journalctl -u $QUIL_SERVICE_NAME -f --no-hostname -g \"publishing proof batch\" --since \"$START_TIME\""
+
+echo "Using start time: $START_TIME"
+echo "Journalctl command: $JOURNALCTL_CMD"
+
+
 # Function to calculate average time difference
 calculate_average() {
     local total=0
@@ -27,4 +50,4 @@ calculate_average() {
 }
 
 # Run journalctl command and pipe output to calculate_average function
-journalctl -u $QUIL_SERVICE_NAME -f --no-hostname -g "publishing proof batch" --since "2024-10-23T01:09:00.468198+00:00" | calculate_average
+$JOURNALCTL_CMD | calculate_average
