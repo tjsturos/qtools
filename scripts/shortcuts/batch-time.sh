@@ -13,30 +13,28 @@ get_start_time() {
 START_TIME=$(get_start_time)
 
 # Update the journalctl command with the user-provided start time
-JOURNALCTL_CMD="journalctl -u $QUIL_SERVICE_NAME -f --no-hostname -g \"publishing proof batch\" --since \"$START_TIME\""
+JOURNALCTL_CMD="journalctl -u $QUIL_SERVICE_NAME -f --no-hostname -g \"publishing proof batch\" --since \"$START_TIME\" --output=cat --no-pager"
 
 echo "Using start time: $START_TIME"
 echo "Journalctl command: $JOURNALCTL_CMD"
 
-
 # Function to calculate average time difference
 calculate_average() {
+    local proof_batches=$1
     local total=0
     local count=0
     local prev_timestamp=""
     echo "Calculating average time between batches..."
+    
     while IFS= read -r line; do
-        timestamp=$(echo "$line" | awk '{print $1" "$2" "$3}')
-        echo "Timestamp: $timestamp"
+        timestamp=$(echo "$line" | jq -r '.ts')
         if [ -n "$prev_timestamp" ]; then
-            diff=$(date -d "$timestamp" +%s.%N)
-            prev=$(date -d "$prev_timestamp" +%s.%N)
-            time_diff=$(echo "$diff - $prev" | bc)
+            time_diff=$(echo "$timestamp - $prev_timestamp" | bc)
             total=$(echo "$total + $time_diff" | bc)
             count=$((count + 1))
         fi
         prev_timestamp=$timestamp
-    done
+    done <<< "$proof_batches"
 
     if [ $count -gt 0 ]; then
         average=$(echo "scale=3; $total / $count" | bc)
@@ -47,4 +45,6 @@ calculate_average() {
 }
 
 # Run journalctl command and pipe output to calculate_average function
-$JOURNALCTL_CMD | calculate_average
+PROOF_BATCHES=$($JOURNALCTL_CMD)
+
+calculate_average "$PROOF_BATCHES"
