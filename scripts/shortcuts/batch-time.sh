@@ -13,7 +13,7 @@ get_start_time() {
 START_TIME=$(get_start_time)
 
 # Update the journalctl command with the user-provided start time
-JOURNALCTL_CMD="journalctl -u $QUIL_SERVICE_NAME -f --no-hostname -g \"publishing proof batch\" --since \"$START_TIME\" --output=cat --no-pager"
+JOURNALCTL_CMD="bash -c 'journalctl -u $QUIL_SERVICE_NAME -f --no-hostname -g \"publishing proof batch\" --since $START_TIME --output=cat --no-pager'"
 
 echo "Using start time: $START_TIME"
 echo "Journalctl command: $JOURNALCTL_CMD"
