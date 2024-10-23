@@ -30,7 +30,7 @@ calculate_average() {
     local prev_timestamp=""
 
     while IFS= read -r line; do
-        timestamp=$(echo "$line" | awk '{print $1}')
+        timestamp=$(echo "$line" | awk '{print $1" "$2" "$3}')
         if [ -n "$prev_timestamp" ]; then
             diff=$(date -d "$timestamp" +%s.%N)
             prev=$(date -d "$prev_timestamp" +%s.%N)
