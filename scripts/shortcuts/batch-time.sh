@@ -5,10 +5,6 @@ get_start_time() {
     local start_time=""
     while [ -z "$start_time" ]; do
         read -p "Enter the start time (YYYY-MM-DDTHH:MM:SS format): " start_time
-        if ! date -d "$start_time" >/dev/null 2>&1; then
-            echo "Invalid date format. Please use YYYY-MM-DDTHH:MM:SS format."
-            start_time=""
-        fi
     done
     echo "$start_time"
 }
