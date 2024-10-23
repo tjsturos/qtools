@@ -27,4 +27,4 @@ calculate_average() {
 }
 
 # Run journalctl command and pipe output to calculate_average function
-journalctl -u ceremonyclient.service -f --no-hostname -g "publishing proof batch" --since "2024-10-23T01:09:00.468198+00:00" | calculate_average
+journalctl -u $QUIL_SERVICE_NAME -f --no-hostname -g "publishing proof batch" --since "2024-10-23T01:09:00.468198+00:00" | calculate_average
