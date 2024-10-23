@@ -163,7 +163,6 @@ NODE_BINARY=$(get_current_versioned_node)
 case "$1" in
   peer-id|unclaimed-balance)
     cd $QUIL_NODE_PATH
-    export QUIL_BIN=$(get_current_versioned_node)
     ;;
   get-node-count|get-node-info|get-peer-info|get-token-info|get-node-version|get-peer-id|get-frame-count)
     if ! command_exists grpcurl; then

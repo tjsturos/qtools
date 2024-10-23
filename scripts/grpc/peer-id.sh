@@ -8,7 +8,7 @@ if [ ! -n "$PEER_ID" ]; then
     # Run the node-get-peer-id script with the extracted Peer ID
     cd $QUIL_NODE_PATH
 
-    OUTPUT="$($LINKED_NODE_BINARY -peer-id)"
+    OUTPUT="$($LINKED_NODE_BINARY --peer-id)"
 
     PEER_ID="$(echo "$OUTPUT" | grep -oP 'Peer ID: \K.*')"
 
