@@ -24,7 +24,7 @@ calculate_average() {
     local total=0
     local count=0
     local prev_timestamp=""
-
+    echo "Calculating average time between batches..."
     while IFS= read -r line; do
         timestamp=$(echo "$line" | awk '{print $1" "$2" "$3}')
         if [ -n "$prev_timestamp" ]; then
