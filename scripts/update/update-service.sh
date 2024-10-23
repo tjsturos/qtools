@@ -18,9 +18,9 @@ SERVICE_FILE=$QUIL_SERVICE_FILE
 SERVICE_NAME=$QUIL_SERVICE_NAME
 ENABLE_SERVICE=false
 RESTART_SERVICE=false
-TESTNET=false
-DEBUG_MODE=false
-SKIP_SIGNATURE_CHECK=false
+TESTNET=""
+DEBUG_MODE=""
+SKIP_SIGNATURE_CHECK=""
 
 if [ "$IS_CLUSTER_MODE" == "true" ] && [ "$(is_master)" == "false" ]; then
     if [ "$(is_master)" == "true" ]; then
