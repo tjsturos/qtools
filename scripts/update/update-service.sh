@@ -123,8 +123,6 @@ updateServiceBinary() {
         fi
     fi
 
-    sudo chmod +x $QUIL_NODE_PATH/$QUIL_BIN
-
     echo "$SERVICE_CONTENT" | sudo tee "$SERVICE_FILE" > /dev/null
     sudo systemctl daemon-reload
 }
