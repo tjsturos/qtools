@@ -40,6 +40,6 @@ calculate_average() {
 }
 
 # Run journalctl command and pipe output to calculate_average function
-PROOF_BATCHES=$(journalctl -u $QUIL_SERVICE_NAME -f --no-hostname -g "publishing proof batch" --since $START_TIME --output=cat --until=now)
+PROOF_BATCHES=$(journalctl -u $QUIL_SERVICE_NAME --no-hostname -g "publishing proof batch" --since $START_TIME --output=cat --until=now)
 
 calculate_average "$PROOF_BATCHES"
