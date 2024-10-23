@@ -11,12 +11,7 @@ get_start_time() {
 
 # Get the start time from user input
 START_TIME=$(get_start_time)
-
-# Update the journalctl command with the user-provided start time
-JOURNALCTL_CMD="bash -c 'journalctl -u $QUIL_SERVICE_NAME -f --no-hostname -g \"publishing proof batch\" --since $START_TIME --output=cat --no-pager'"
-
 echo "Using start time: $START_TIME"
-echo "Journalctl command: $JOURNALCTL_CMD"
 
 # Function to calculate average time difference
 calculate_average() {
@@ -45,6 +40,6 @@ calculate_average() {
 }
 
 # Run journalctl command and pipe output to calculate_average function
-PROOF_BATCHES=$($JOURNALCTL_CMD)
+PROOF_BATCHES=$(bash -c 'journalctl -u $QUIL_SERVICE_NAME -f --no-hostname -g \"publishing proof batch\" --since $START_TIME --output=cat --no-pager')
 
 calculate_average "$PROOF_BATCHES"
