@@ -27,6 +27,7 @@ calculate_average() {
     echo "Calculating average time between batches..."
     while IFS= read -r line; do
         timestamp=$(echo "$line" | awk '{print $1" "$2" "$3}')
+        echo "Timestamp: $timestamp"
         if [ -n "$prev_timestamp" ]; then
             diff=$(date -d "$timestamp" +%s.%N)
             prev=$(date -d "$prev_timestamp" +%s.%N)
