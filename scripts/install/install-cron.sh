@@ -46,7 +46,7 @@ fi
 FRESH_FRAME_CHECK_ENABLED=$(yq eval '.scheduled_tasks.check_if_fresh_frames.enabled' $QTOOLS_CONFIG_FILE)
 
 if [ "$FRESH_FRAME_CHECK_ENABLED" == "true" ]; then
-  FRESH_FRAME_CHECK_CRON_EXPRESSION=$(yq eval '.scheduled_tasks.check_if_fresh_frames.cron_expression' $QTOOLS_CONFIG_FILE)
+  FRESH_FRAME_CHECK_CRON_EXPRESSION=$(yq eval '.scheduled_tasks.check_if_fresh_frames.cron_expression // ""' $QTOOLS_CONFIG_FILE)
   if [ -z "$FRESH_FRAME_CHECK_CRON_EXPRESSION" ]; then
     FRESH_FRAME_CHECK_CRON_EXPRESSION="*/3 * * * *"
   fi
