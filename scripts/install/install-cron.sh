@@ -48,7 +48,7 @@ FRESH_FRAME_CHECK_ENABLED=$(yq eval '.scheduled_tasks.check_if_fresh_frames.enab
 if [ "$FRESH_FRAME_CHECK_ENABLED" == "true" ]; then
   FRESH_FRAME_CHECK_CRON_EXPRESSION=$(yq eval '.scheduled_tasks.check_if_fresh_frames.cron_expression // ""' $QTOOLS_CONFIG_FILE)
   if [ -z "$FRESH_FRAME_CHECK_CRON_EXPRESSION" ]; then
-    FRESH_FRAME_CHECK_CRON_EXPRESSION="*/5 * * * *"
+    FRESH_FRAME_CHECK_CRON_EXPRESSION="*/10 * * * *"
   fi
 
   log "Adding fresh frame check cron expression: $FRESH_FRAME_CHECK_CRON_EXPRESSION"
