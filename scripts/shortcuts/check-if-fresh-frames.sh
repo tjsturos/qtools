@@ -16,15 +16,7 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Validate that DIFF and CYCLE are positive integers
-if ! [[ "$DIFF" =~ ^[0-9]+$ ]] || ! [[ "$CYCLE" =~ ^[0-9]+$ ]]; then
-    echo "Error: --diff and --cycle must be positive integers"
-    exit 1
-fi
-
 echo "Using diff: $DIFF seconds"
-echo "Using cycle: $CYCLE seconds"
-
 
 # Function to get the latest timestamp
 get_latest_frame_received_timestamp() {
