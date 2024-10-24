@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Parse command line arguments
-DIFF=120  # Default value for diff
+DIFF=180  # Default value for diff
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -47,11 +47,10 @@ time_diff=$(echo "$current_timestamp - $last_timestamp" | bc)
 
 echo "Time difference: $time_diff seconds"
 
-# If the time difference is more than 2 minutes (120 seconds)
+# If the time difference is more than $DIFF, restart the node
 if [ $time_diff -gt $DIFF ]; then
     echo "No new leading frame received in the last $DIFF seconds. Restarting the node..."
     qtools restart
 else
     echo "New leading frame received within the last $DIFF seconds. No action needed."
 fi
-
