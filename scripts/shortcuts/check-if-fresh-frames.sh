@@ -37,7 +37,7 @@ echo "Last timestamp: $last_timestamp"
 echo "Current timestamp: $current_timestamp"
 
 # Calculate the time difference
-time_diff=$(echo "$current_timestamp - $prev_timestamp" | bc)
+time_diff=$(echo "$current_timestamp - $last_timestamp" | bc)
 
 echo "Time difference: $time_diff seconds"
 
