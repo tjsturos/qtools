@@ -20,39 +20,38 @@ append_to_file $FILE_CRON "@reboot qtools start" false
 AUTO_UPDATE_NODE=$(yq eval '.scheduled_tasks.updates.node.enabled' $QTOOLS_CONFIG_FILE)
 
 if [ "$AUTO_UPDATE_NODE" == "true" ]; then
-  NODE_UPDATE_CRON_EXPRESSION=$(yq eval '.scheduled_tasks.updates.node.cron_expression // "*/10 * * * *"' $QTOOLS_CONFIG_FILE)
+  NODE_UPDATE_CRON_EXPRESSION=$(yq eval '.scheduled_tasks.updates.node.cron_expression' $QTOOLS_CONFIG_FILE)
   
   # Check if Expression is valid
   if [ -z "$NODE_UPDATE_CRON_EXPRESSION" ]; then
-    log "Node update cron expression is empty. Using default value: */10 * * * *"
     NODE_UPDATE_CRON_EXPRESSION="*/10 * * * *"
   fi
-  
+  log "Adding node update cron expression: $NODE_UPDATE_CRON_EXPRESSION"
   append_to_file $FILE_CRON "$NODE_UPDATE_CRON_EXPRESSION qtools update-node --auto" false
 fi
 
 AUTO_UPDATE_QTOOLS=$(yq eval '.scheduled_tasks.updates.qtools.enabled' $QTOOLS_CONFIG_FILE)
 
 if [ "$AUTO_UPDATE_QTOOLS" == "true" ]; then
-  QTOOLS_UPDATE_CRON_EXPRESSION=$(yq eval '.scheduled_tasks.updates.qtools.cron_expression // "*/10 * * * *"' $QTOOLS_CONFIG_FILE)
+  QTOOLS_UPDATE_CRON_EXPRESSION=$(yq eval '.scheduled_tasks.updates.qtools.cron_expression' $QTOOLS_CONFIG_FILE)
   
   # Check if Expression is valid
   if [ -z "$QTOOLS_UPDATE_CRON_EXPRESSION" ]; then
-    log "Qtools update cron expression is empty. Using default value: */10 * * * *"
     QTOOLS_UPDATE_CRON_EXPRESSION="*/10 * * * *"
   fi
-  
+  log "Adding qtools update cron expression: $QTOOLS_UPDATE_CRON_EXPRESSION"
   append_to_file $FILE_CRON "$QTOOLS_UPDATE_CRON_EXPRESSION qtools self-update --auto" false
 fi
 
 FRESH_FRAME_CHECK_ENABLED=$(yq eval '.scheduled_tasks.check_if_fresh_frames.enabled' $QTOOLS_CONFIG_FILE)
 
 if [ "$FRESH_FRAME_CHECK_ENABLED" == "true" ]; then
-  FRESH_FRAME_CHECK_CRON_EXPRESSION=$(yq eval '.scheduled_tasks.check_if_fresh_frames.cron_expression // "* * * * *"' $QTOOLS_CONFIG_FILE)
+  FRESH_FRAME_CHECK_CRON_EXPRESSION=$(yq eval '.scheduled_tasks.check_if_fresh_frames.cron_expression' $QTOOLS_CONFIG_FILE)
   if [ -z "$FRESH_FRAME_CHECK_CRON_EXPRESSION" ]; then
-    log "Fresh frame check cron expression is empty. Using default value: * * * * *"
-    FRESH_FRAME_CHECK_CRON_EXPRESSION="* * * * *"
+    FRESH_FRAME_CHECK_CRON_EXPRESSION="*/3 * * * *"
   fi
+
+  log "Adding fresh frame check cron expression: $FRESH_FRAME_CHECK_CRON_EXPRESSION"
   append_to_file $FILE_CRON "$FRESH_FRAME_CHECK_CRON_EXPRESSION qtools check-if-fresh-frames" false
 fi
 
@@ -60,28 +59,28 @@ if [ "$IS_CLUSTERING_ENABLED" == "true" ] && [ "$IS_MASTER" == "true" ] || [ "$I
   AUTO_RUN_DIAGNOSTICS=$(yq eval '.scheduled_tasks.diagnostics.enabled' $QTOOLS_CONFIG_FILE)
 
   if [ "$AUTO_RUN_DIAGNOSTICS" == "true" ] ; then
-    DIAGNOSTICS_CRON_EXPRESSION=$(yq eval '.scheduled_tasks.diagnostics.cron_expression // "*/10 * * * *"' $QTOOLS_CONFIG_FILE)
+    DIAGNOSTICS_CRON_EXPRESSION=$(yq eval '.scheduled_tasks.diagnostics.cron_expression' $QTOOLS_CONFIG_FILE)
     
     # Check if Expression is valid
     if [ -z "$DIAGNOSTICS_CRON_EXPRESSION" ]; then
-      log "Diagnostics cron expression is empty. Using default value: */10 * * * *"
       DIAGNOSTICS_CRON_EXPRESSION="*/10 * * * *"
     fi
     
+    log "Adding diagnostics cron expression: $DIAGNOSTICS_CRON_EXPRESSION"
     append_to_file $FILE_CRON "$DIAGNOSTICS_CRON_EXPRESSION qtools run-diagnostics --auto" false
   fi
 
   AUTO_BACKUP_STORE=$(yq eval '.scheduled_tasks.backup.enabled // "false"' $QTOOLS_CONFIG_FILE)
 
   if [ "$AUTO_BACKUP_STORE" == "true" ]; then
-    BACKUP_STORE_CRON_EXPRESSION=$(yq eval '.scheduled_tasks.backup.cron_expression // "*/10 * * * *"' $QTOOLS_CONFIG_FILE)
+    BACKUP_STORE_CRON_EXPRESSION=$(yq eval '.scheduled_tasks.backup.cron_expression' $QTOOLS_CONFIG_FILE)
     
     # Check if Expression is valid
     if [ -z "$BACKUP_STORE_CRON_EXPRESSION" ]; then
-      log "Backup store cron expression is empty. Using default value: */10 * * * *"
       BACKUP_STORE_CRON_EXPRESSION="*/10 * * * *"
     fi
     
+    log "Adding backup store cron expression: $BACKUP_STORE_CRON_EXPRESSION"
     append_to_file $FILE_CRON "$BACKUP_STORE_CRON_EXPRESSION qtools backup-store" false
   fi
 
