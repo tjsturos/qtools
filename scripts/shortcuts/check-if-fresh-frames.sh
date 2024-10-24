@@ -30,6 +30,12 @@ get_latest_timestamp() {
 # Get the initial timestamp
 last_timestamp=$(get_latest_frame_received_timestamp | awk '{print int($1)}')
 
+if [ -z "$last_timestamp" ]; then
+    echo "No frames recieved timestamp found at all in latest logs. Restarting the node..."
+    qtools restart
+    exit 1
+fi
+
 # Get the current timestamp
 current_timestamp=$(get_latest_timestamp | awk '{print int($1)}')
 

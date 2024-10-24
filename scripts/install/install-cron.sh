@@ -45,8 +45,19 @@ if [ "$AUTO_UPDATE_QTOOLS" == "true" ]; then
   append_to_file $FILE_CRON "$QTOOLS_UPDATE_CRON_EXPRESSION qtools self-update --auto" false
 fi
 
+FRESH_FRAME_CHECK_ENABLED=$(yq eval '.scheduled_tasks.check_if_fresh_frames.enabled' $QTOOLS_CONFIG_FILE)
+
+if [ "$FRESH_FRAME_CHECK_ENABLED" == "true" ]; then
+  FRESH_FRAME_CHECK_CRON_EXPRESSION=$(yq eval '.scheduled_tasks.check_if_fresh_frames.cron_expression // "* * * * *"' $QTOOLS_CONFIG_FILE)
+  if [ -z "$FRESH_FRAME_CHECK_CRON_EXPRESSION" ]; then
+    log "Fresh frame check cron expression is empty. Using default value: * * * * *"
+    FRESH_FRAME_CHECK_CRON_EXPRESSION="* * * * *"
+  fi
+  append_to_file $FILE_CRON "$FRESH_FRAME_CHECK_CRON_EXPRESSION qtools check-if-fresh-frames" false
+fi
+
 if [ "$IS_CLUSTERING_ENABLED" == "true" ] && [ "$IS_MASTER" == "true" ] || [ "$IS_CLUSTERING_ENABLED" == "false" ]; then
-  AUTO_RUN_DIAGNOSTICS=$(yq eval '.scheduled_tasks.diagnostics.enabled // "false"' $QTOOLS_CONFIG_FILE)
+  AUTO_RUN_DIAGNOSTICS=$(yq eval '.scheduled_tasks.diagnostics.enabled' $QTOOLS_CONFIG_FILE)
 
   if [ "$AUTO_RUN_DIAGNOSTICS" == "true" ] ; then
     DIAGNOSTICS_CRON_EXPRESSION=$(yq eval '.scheduled_tasks.diagnostics.cron_expression // "*/10 * * * *"' $QTOOLS_CONFIG_FILE)
