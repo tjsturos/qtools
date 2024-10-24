@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Parse command line arguments
-DIFF=180  # Default value for diff
+DIFF=300  # Default value for diff
 
 while [[ $# -gt 0 ]]; do
     case $1 in
