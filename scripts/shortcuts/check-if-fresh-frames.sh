@@ -37,7 +37,7 @@ echo "Last timestamp: $last_timestamp"
 echo "Current timestamp: $current_timestamp"
 
 # Calculate the time difference
-time_diff=$(echo "$timestamp - $prev_timestamp" | bc)
+time_diff=$(echo "$current_timestamp - $prev_timestamp" | bc)
 
 echo "Time difference: $time_diff seconds"
 
@@ -45,10 +45,7 @@ echo "Time difference: $time_diff seconds"
 if [ $time_diff -gt $DIFF ]; then
     echo "No new leading frame received in the last $DIFF seconds. Restarting the node..."
     qtools restart
-    # Update the last timestamp after restart
-    last_timestamp=$(get_latest_timestamp)
 else
     echo "New leading frame received within the last $DIFF seconds. No action needed."
-    last_timestamp=$current_timestamp
 fi
 
