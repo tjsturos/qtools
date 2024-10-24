@@ -28,10 +28,10 @@ get_latest_timestamp() {
 }
 
 # Get the initial timestamp
-last_timestamp=$(get_latest_frame_received_timestamp)
+last_timestamp=$(get_latest_frame_received_timestamp | awk '{print int($1)}')
 
 # Get the current timestamp
-current_timestamp=$(get_latest_timestamp)
+current_timestamp=$(get_latest_timestamp | awk '{print int($1)}')
 
 echo "Last timestamp: $last_timestamp"
 echo "Current timestamp: $current_timestamp"
