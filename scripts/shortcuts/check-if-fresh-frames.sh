@@ -20,11 +20,11 @@ echo "Using diff: $DIFF seconds"
 
 # Function to get the latest timestamp
 get_latest_frame_received_timestamp() {
-    journalctl -u $QUIL_SERVICE_NAME --no-hostname -g "received new leading frame" --output=json -n 1 | jq -r '.ts'
+    journalctl -u $QUIL_SERVICE_NAME --no-hostname -g "received new leading frame" --output=cat -n 1 | jq -r '.ts'
 }
 
 get_latest_timestamp() {
-    journalctl -u $QUIL_SERVICE_NAME --no-hostname --output=json -n 1 | jq -r '.ts'
+    journalctl -u $QUIL_SERVICE_NAME --no-hostname --output=cat -n 1 | jq -r '.ts'
 }
 
 # Get the initial timestamp
