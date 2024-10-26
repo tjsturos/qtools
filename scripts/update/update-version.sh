@@ -4,7 +4,7 @@
 NODE_VERSION=""
 NODE_VERSION=""
 
-BINARY_ONLY=false
+BINARY_ONLY=""
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
