@@ -45,7 +45,7 @@ done
 get_to_address_from_user_input() {
     while true; do
         read -p "Enter the recipient's address (0x...) or Peer ID (Qm...): " TO_ADDRESS
-        if [[ $TO_ADDRESS =~ ^0x[a-fA-F0-9]{40}$ ]] || [[ $TO_ADDRESS =~ ^Qm[a-zA-Z0-9]+$ ]]; then
+        if [[ $TO_ADDRESS =~ ^0x[a-fA-F0-9]+$ ]] || [[ $TO_ADDRESS =~ ^Qm[a-zA-Z0-9]+$ ]]; then
             break
         else
             echo "Error: Invalid address format. Please enter a valid address (0x followed by 40 hexadecimal characters) or Peer ID (Qm followed by alphanumeric characters)."
