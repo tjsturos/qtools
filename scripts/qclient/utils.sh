@@ -97,7 +97,7 @@ get_token_from_user_input() {
     local SKIP_SIG_CHECK="$2"
     local TOKENS=$(get_tokens $CONFIG_PATH $SKIP_SIG_CHECK)
 
-    echo "$TOKENS"
+    echo "Tokens: $TOKENS"
     # Create an array to store the tokens
     TOKEN_ARRAY=()
     
