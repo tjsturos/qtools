@@ -25,7 +25,7 @@ get_tokens() {
         CONFIG_PATH=$USER_CONFIG_PATH
     fi
     
-    $LINKED_QCLIENT_BINARY token coins --config $CONFIG_PATH ${SKIP_SIG_CHECK:+--signature-check=false} | grep "Coin 0x"
+    echo $($LINKED_QCLIENT_BINARY token coins --config $CONFIG_PATH ${SKIP_SIG_CHECK:+--signature-check=false} | grep "Coin 0x")
 }
 
 get_config_account_address() {
