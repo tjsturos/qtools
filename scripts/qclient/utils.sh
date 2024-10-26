@@ -95,8 +95,9 @@ get_token_from_amount() {
 get_token_from_user_input() {
     local CONFIG_PATH=$1
     local SKIP_SIG_CHECK="$2"
-    TOKENS=$(get_tokens $CONFIG_PATH $SKIP_SIG_CHECK | grep "0x")
+    local TOKENS=$(get_tokens $CONFIG_PATH $SKIP_SIG_CHECK)
 
+    echo "$TOKENS"
     # Create an array to store the tokens
     TOKEN_ARRAY=()
     
