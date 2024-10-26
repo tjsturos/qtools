@@ -48,7 +48,7 @@ get_to_address_from_user_input() {
         if [[ $TO_ADDRESS =~ ^0x[a-fA-F0-9]+$ ]] || [[ $TO_ADDRESS =~ ^Qm[a-zA-Z0-9]+$ ]]; then
             break
         else
-            echo "Error: Invalid address format. Please enter a valid address (0x followed by 40 hexadecimal characters) or Peer ID (Qm followed by alphanumeric characters)."
+            echo "Error: Invalid address format. Please enter a valid address (0x followed by alphanumeric characters) or Peer ID (Qm followed by alphanumeric characters)."
         fi
     done
 
