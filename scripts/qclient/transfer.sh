@@ -78,6 +78,7 @@ fi
 
 # Check if TOKEN is blank
 if [ -z "$TOKEN" ]; then
+    echo "No token specified, selecting from available tokens..."
     TOKEN=$(get_token_from_user_input $CONFIG_PATH $SKIP_SIG_CHECK)
 fi
 
