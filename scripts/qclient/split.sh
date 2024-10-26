@@ -1,7 +1,9 @@
 #!/bin/bash
-
 # HELP: Split tokens
 # PARAM: --skip-sig-check: Skip signature check (optional)
+# PARAM: --config: Path to the config file (optional)
+
+source $QUIL_NODE_PATH/scripts/qclient/utils.sh
 
 # Parse command line arguments
 SKIP_SIG_CHECK=false
@@ -12,7 +14,7 @@ AMOUNT=""
 NUMBER_OF_TOKENS=1
 TOKEN_CREATE_ARRAY=()
 DEBUG=false
-initialial_tokens_list=($(qtools get-tokens ${SKIP_SIG_CHECK:+--skip-sig-check}))
+
 while [[ $# -gt 0 ]]; do
     key="$1"
     case $key in
@@ -43,49 +45,18 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-get_token_from_user_input() {
-    TOKENS=$(qtools get-tokens ${SKIP_SIG_CHECK:+--skip-sig-check} | grep "0x")
+initial_tokens_list=($(get_tokens $CONFIG_PATH $SKIP_SIG_CHECK))
 
-    # Create an array to store the tokens
-    TOKEN_ARRAY=()
-    
-    # Populate the array with tokens
-    while IFS= read -r line; do
-        TOKEN_ARRAY+=("$line")
-    done <<< "$TOKENS"
-    
-    # Display the tokens with numbers
-    echo "Available tokens:"
-    for i in "${!TOKEN_ARRAY[@]}"; do
-        echo "$((i+1)). ${TOKEN_ARRAY[$i]}"
-    done
-    
-    # Prompt user to select a token
-    while true; do
-        # If there's only one token, select it automatically
-        if [ ${#TOKEN_ARRAY[@]} -eq 1 ]; then
-            SELECTED_TOKEN="${TOKEN_ARRAY[0]}"
-            TOKEN=$(echo "$SELECTED_TOKEN" | awk '{print $NF}' | sed 's/^(Coin //' | sed 's/)$//')
-            TOKEN_BALANCE=$(echo "$SELECTED_TOKEN" | awk '{print $1}')
-            echo "Only one token available: $SELECTED_TOKEN"
-            read -p "Do you want to use this token? (y/n): " USE_TOKEN
-            if [[ $USE_TOKEN =~ ^[Nn]$ ]]; then
-                echo "Operation cancelled."
-                exit 0
-            fi
-            echo "Selected token: $SELECTED_TOKEN"
-            break
-        fi
-        read -p "Enter the index for the token you want to split (1-${#TOKEN_ARRAY[@]}): " SELECTION
-        if [[ "$SELECTION" =~ ^[0-9]+$ ]] && [ "$SELECTION" -ge 1 ] && [ "$SELECTION" -le "${#TOKEN_ARRAY[@]}" ]; then
-            SELECTED_TOKEN="${TOKEN_ARRAY[$SELECTION-1]}"
-            TOKEN=$(echo "$SELECTED_TOKEN" | awk '{print $NF}' | sed 's/^(Coin //' | sed 's/)$//')
-            TOKEN_BALANCE=$(echo "$SELECTED_TOKEN" | awk '{print $1}')
-            break
-        else
-            echo "Invalid selection. Please enter a number between 1 and ${#TOKEN_ARRAY[@]}."
-        fi
-    done
+get_token_from_user_input() {
+    local SELECTED_TOKEN=$(get_token_from_user_input $CONFIG_PATH $SKIP_SIG_CHECK)
+
+    if [ -z "$SELECTED_TOKEN" ]; then
+        echo "Error: No token selected"
+        exit 1
+    fi
+
+    TOKEN=$(echo "$SELECTED_TOKEN" | awk '{print $NF}' | sed 's/^(Coin //' | sed 's/)$//')
+    TOKEN_BALANCE=$(echo "$SELECTED_TOKEN" | awk '{print $1}')
 }
 
 get_amount_from_user_input() {
@@ -230,12 +201,66 @@ fi
 
 echo "Splitting tokens... this may take a while to process."
 
-# Construct the command
-CMD="$LINKED_QCLIENT_BINARY${SKIP_SIG_CHECK:+ --signature-check=false} token split $TOKEN ${TOKEN_CREATE_ARRAY[@]}"
+# Function to split tokens recursively
+split_tokens() {
+    local token=$1
+    shift
+    local amounts=("$@")
+    
+    if [ ${#amounts[@]} -le 100 ]; then
+        # If 100 or fewer tokens, split directly
+        CMD="$LINKED_QCLIENT_BINARY${SKIP_SIG_CHECK:+ --signature-check=false} token split $token ${amounts[@]}"
+        if $DEBUG; then
+            echo "DEBUG: $CMD"
+        fi
+        $CMD
+    else
+        # If more than 100 tokens, split into batches of 99 + remainder
+        local chunk_size=99
+        local total_amount=$(echo "${amounts[@]}" | tr ' ' '+' | bc)
+        local batch_amount=$(echo "scale=8; $total_amount / ${#amounts[@]}" | bc)
+        
+        while [ ${#amounts[@]} -gt 100 ]; do
+            # Create an array of 99 equal parts and the remainder
+            local batch_amounts=()
+            for ((i=0; i<$chunk_size; i++)); do
+                batch_amounts+=($batch_amount)
+            done
+            local remainder=$(echo "scale=8; $total_amount - ($batch_amount * $chunk_size)" | bc)
+            batch_amounts+=($remainder)
+            
+            # Split into 99 equal parts + remainder
+            CMD="$LINKED_QCLIENT_BINARY${SKIP_SIG_CHECK:+ --signature-check=false} token split $token ${batch_amounts[@]}"
+            if $DEBUG; then
+                echo "DEBUG: $CMD"
+            fi
+            $CMD
+            
+            # Wait for the split to complete and find the new token with the remainder amount
+            echo "Waiting for split to complete..."
+            local new_token=""
+            while [ -z "$new_token" ]; do
+                sleep 5
+                new_token=$(qtools get-tokens ${SKIP_SIG_CHECK:+--skip-sig-check} | awk -v amount="$remainder" '$1 == amount {print $NF}' | sed 's/^(Coin //' | sed 's/)$//')
+            done
+            
+            echo "New token found: $new_token"
+            
+            # Update variables for next iteration
+            token=$new_token
+            total_amount=$remainder
+            amounts=("${amounts[@]:$chunk_size}")
+        done
+        
+        # If remaining amounts are less than or equal to 100, split directly
+        if [ ${#amounts[@]} -gt 0 ]; then
+            split_tokens $token "${amounts[@]}"
+        fi
+    fi
+}
 
-if $DEBUG; then
-    echo "DEBUG: $CMD"
-fi
+# Call the recursive function
+split_tokens $TOKEN "${TOKEN_CREATE_ARRAY[@]}"
 
 # Execute the command
 $CMD

@@ -10,7 +10,6 @@ SKIP_SIG_CHECK=false
 TOKEN=""
 TOKEN_BALANCE=""
 TO_ADDRESS=""
-AMOUNT=""
 DRY_RUN="false"
 
 while [[ $# -gt 0 ]]; do
@@ -30,7 +29,7 @@ while [[ $# -gt 0 ]]; do
         shift
         ;;
         --token)
-        AMOUNT="$2"
+        TOKEN="$2"
         shift
         shift
         ;;
@@ -42,37 +41,6 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-get_token_from_user_input() {
-    # Check if there are tokens with the specified amount
-    ACCOUNT_TOKENS=$(qtools get-tokens ${SKIP_SIG_CHECK:+--skip-sig-check})
-
-    if [ -n "$ACCOUNT_TOKENS" ]; then
-        echo "Available tokens:"
-        IFS=$'\n' read -d '' -r -a token_array <<< "$ACCOUNT_TOKENS"
-        for i in "${!token_array[@]}"; do
-            echo "$((i+1)). ${token_array[i]}"
-        done
-        # Prompt user if they want to use one of these tokens
-        echo "Which token would you like to use? Enter the token ID or 'q' to exit:"
-        select TOKEN in $(echo "$ACCOUNT_TOKENS" | awk '{print $NF}' | sed 's/^(Coin //' | sed 's/)$//') "q"; do
-            case $TOKEN in
-                q)
-                    echo "Exiting..."
-                    exit 0
-                    ;;
-                *)
-                    if [ -n "$TOKEN" ]; then
-                        TOKEN_BALANCE=$(echo "$ACCOUNT_TOKENS" | awk -v token="$TOKEN" '$NF ~ token {print $1}')
-                        echo "Selected token: $TOKEN with balance: $TOKEN_BALANCE QUIL"
-                        break
-                    else
-                        echo "Invalid selection. Please try again or enter 'q' to exit."
-                    fi
-                    ;;
-            esac
-        done
-    fi
-}
 
 get_to_address_from_user_input() {
     while true; do
@@ -91,31 +59,31 @@ get_to_address_from_user_input() {
 
     if [[ $TO_ADDRESS =~ ^Qm[a-zA-Z0-9]+$ ]]; then
         echo "Peer ID detected: $TO_ADDRESS"
-        TO_ADDRESS=$(qtools account-from-peer-id --peer-id $TO_ADDRESS)
+        TO_ADDRESS=$(convert_peer_id_to_address $TO_ADDRESS)
         echo "Converted Peer ID to token address: $TO_ADDRESS"
     fi
 }
 
-get_token_amount() {
-    local TOKEN_NAME=$1
-    echo "$(qtools get-tokens ${SKIP_SIG_CHECK:+--skip-sig-check} | awk -v token="$TOKEN_NAME" '$NF ~ token {print $1}')"
+convert_peer_id_to_address() {
+    local PEER_ID=$1
+    echo "$(qtools account-from-peer-id --peer-id $PEER_ID)"
 }
-
-# Check if TOKEN is blank
-if [ -z "$TOKEN" ]; then
-    get_token_from_user_input
-fi
-
-AMOUNT="$(get_token_amount $TOKEN)"
-echo "Found token: $TOKEN with balance: $AMOUNT QUIL"
-if [ -z "$AMOUNT" ]; then
-    echo "Error: Token input not found. Please try again."
-    exit 1
-fi
 
 # Check if TO_ADDRESS is blank
 if [ -z "$TO_ADDRESS" ]; then
     get_to_address_from_user_input
+fi
+
+# Check if TOKEN is blank
+if [ -z "$TOKEN" ]; then
+    TOKEN=$(get_token_from_user_input $CONFIG_PATH $SKIP_SIG_CHECK)
+fi
+
+AMOUNT="$(get_token_amount $TOKEN $CONFIG_PATH $SKIP_SIG_CHECK)"
+
+if [ -z "$AMOUNT" ]; then
+    echo "Error: Token input not found. Please try again."
+    exit 1
 fi
 
 echo "Transferring $AMOUNT QUIL from token $TOKEN to address $TO_ADDRESS"
@@ -135,15 +103,17 @@ if [[ $CONFIRM == "n" ]]; then
     exit 0
 fi
 
-echo "Transferring tokens... this may take a while to process."
-
 # Construct the command
-CMD="$LINKED_QCLIENT_BINARY${SKIP_SIG_CHECK:+ --signature-check=false} token transfer $TO_ADDRESS $TOKEN"
+CMD="$LINKED_QCLIENT_BINARY${SKIP_SIG_CHECK:+ --signature-check=false} token transfer $TO_ADDRESS $TOKEN --config $CONFIG_PATH"
 
 if [[ $DRY_RUN == "false" ]]; then
+    echo "Submitting transfer..."
     $CMD
+    echo "Transfer submitted. This may take a while to reflect on the yours and recipient's account."
+    echo "Please check the recipient's balance to confirm a successful transfer."
+    echo "The token will also be removed from your coins list when processed."
+    echo "Subsequent transfers of the same coin will not be processed after the first one is processed by the network.."
 else
     echo "Dry run: $CMD"
 fi
 
-echo "Transfer complete. Please check the recipient's balance to confirm the transaction."
