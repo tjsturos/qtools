@@ -4,7 +4,7 @@
 NODE_VERSION=""
 
 SIGNER_COUNT=17
-BINARY_ONLY=false
+BINARY_ONLY=""
 while [[ $# -gt 0 ]]; do
     key="$1"
     case $key in
@@ -19,7 +19,7 @@ while [[ $# -gt 0 ]]; do
         shift # past value
         ;;
         --no-signatures)
-        BINARY_ONLY=true
+        BINARY_ONLY="true"
         shift # past argument
         ;;
         *)    # unknown option
@@ -31,7 +31,7 @@ done
 # If NODE_VERSION is set, get release files for that specific version
 if [ -n "$NODE_VERSION" ]; then
     NODE_RELEASE_FILES="node-${NODE_VERSION}-${OS_ARCH}"
-    if [ "$BINARY_ONLY" == "false" ]; then
+    if [ "$BINARY_ONLY" != "true" ]; then
         NODE_RELEASE_FILES+=" node-${NODE_VERSION}-${OS_ARCH}.dgst"
         for i in $(seq 1 $SIGNER_COUNT); do
             NODE_RELEASE_FILES+=" node-${NODE_VERSION}-${OS_ARCH}.dgst.sig.$i"
@@ -51,25 +51,25 @@ download_file() {
     local FILE_NAME=$1
     # Check if the file already exists
     if [ -f "$FILE_NAME" ]; then
-        log "$FILE_NAME already exists. Skipping download."
+        echo "$FILE_NAME already exists. Skipping download."
         return
     fi
     
-    log "Downloading $FILE_NAME..."
+    echo "Downloading $FILE_NAME..."
     # Check if the remote file exists
     if ! wget --spider "https://releases.quilibrium.com/$FILE_NAME" 2>/dev/null; then
-        log "Remote file $FILE_NAME does not exist. Skipping download."
+        echo "Remote file $FILE_NAME does not exist. Skipping download."
         return
     fi
     wget "https://releases.quilibrium.com/$FILE_NAME"
 
     # Check if the download was successful
     if [ $? -eq 0 ]; then
-        log "Successfully downloaded $FILE_NAME"
+        echo "Successfully downloaded $FILE_NAME"
         # Check if the file is the base binary (without .dgst or .sig suffix)
        
     else
-        log "Failed to download $file"
+        echo "Failed to download $file"
     fi
 
 }
@@ -79,16 +79,16 @@ for file in $NODE_RELEASE_FILES; do
     download_file $file
 
     if [[ $file =~ ^node-[0-9]+\.[0-9]+(\.[0-9]+)*(-[a-zA-Z0-9-]+)?-${OS_ARCH}$ ]]; then
-        log "Making $file executable..."
+        echo "Making $file executable..."
         chmod +x "$file"
         if [ $? -eq 0 ]; then
-            log "Successfully made $file executable"
+            echo "Successfully made $file executable"
         else
-            log "Failed to make $file executable"
+            echo "Failed to make $file executable"
         fi
     fi
     
-    log "------------------------"
+    echo "------------------------"
 done
 
-log "Download process completed."
+echo "Download process completed."
