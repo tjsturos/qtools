@@ -5,6 +5,8 @@
 # PARAM: --to: Recipient address (required)
 # PARAM: --amount: Amount to transfer (required)
 
+source $QTOOLS_PATH/scripts/qclient/utils.sh
+
 # Parse command line arguments
 SKIP_SIG_CHECK=false
 TOKEN=""
