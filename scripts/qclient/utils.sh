@@ -99,6 +99,13 @@ get_token_from_amount() {
     done
 }
 
+print_token_array() {
+    local TOKEN_ARRAY=$1
+    for i in "${!TOKEN_ARRAY[@]}"; do
+        echo "$((i)). ${TOKEN_ARRAY[$i]}"
+    done
+}
+
 get_token_from_user_input() {
     local CONFIG_PATH=$1
     local SKIP_SIG_CHECK="$2"
@@ -109,26 +116,22 @@ get_token_from_user_input() {
     
     # Populate the array with tokens
     while IFS= read -r line; do
-        echo "Token found: $line"
         TOKEN_ARRAY+=("$line")
     done <<< "$TOKENS"
     
     # Display the tokens with numbers
     echo "Available tokens:"
-    for i in "${!TOKEN_ARRAY[@]}"; do
-        echo "$((i)). ${TOKEN_ARRAY[$i]}"
+    print_token_array "${TOKEN_ARRAY[@]}"
 
+    local SELECTED_TOKEN_INDEX=-1
+
+    while true; do
+        read -p "Select a token by number: " SELECTED_TOKEN_INDEX
+        if [[ $SELECTED_TOKEN_INDEX =~ ^[0-9]+$ ]] && [[ $SELECTED_TOKEN_INDEX -gt 0 ]] && [[ $SELECTED_TOKEN_INDEX -le ${#TOKEN_ARRAY[@]} ]]; then
+            echo $(($SELECTED_TOKEN_INDEX - 1))
+            break
+        fi
     done
-
-    # local SELECTED_TOKEN_INDEX=-1
-
-    # while true; do
-    #     read -p "Select a token by number: " SELECTED_TOKEN_INDEX
-    #     if [[ $SELECTED_TOKEN_INDEX =~ ^[0-9]+$ ]] && [[ $SELECTED_TOKEN_INDEX -gt 0 ]] && [[ $SELECTED_TOKEN_INDEX -le ${#TOKEN_ARRAY[@]} ]]; then
-    #         echo $(($SELECTED_TOKEN_INDEX - 1))
-    #         break
-    #     fi
-    # done
 
     if [[ $SELECTED_TOKEN_INDEX -eq -1 ]]; then
         echo "Error: Invalid token index"

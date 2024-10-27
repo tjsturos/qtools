@@ -94,7 +94,7 @@ fi
 
 AMOUNT="$(get_token_amount $TOKEN $CONFIG_PATH $SKIP_SIG_CHECK)"
 
-if [ -z "$AMOUNT" ]; then
+if [ -z "$AMOUNT" ] || [[ $AMOUNT == "Error"* ]]; then
     echo "Error: Token input not found. Please try again."
     exit 1
 fi
