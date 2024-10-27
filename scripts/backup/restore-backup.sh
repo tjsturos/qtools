@@ -10,6 +10,7 @@ IS_BACKUP_ENABLED="$(yq '.scheduled_tasks.backup.enabled' $QTOOLS_CONFIG_FILE)"
 PEER_ID=""
 FORCE_RESTORE=false
 CONFIRM=false
+OUTPUT_DIR=".config"
 
 # Parse command-line arguments
 while [[ $# -gt 0 ]]; do
@@ -25,6 +26,11 @@ while [[ $# -gt 0 ]]; do
       ;;
     --confirm)
       CONFIRM=true
+      shift
+      ;;
+    --out)
+      shift
+      OUTPUT_DIR="$1"
       shift
       ;;
     *)
@@ -80,15 +86,15 @@ if [ "$IS_BACKUP_ENABLED" == "true" ] || [ "$FORCE_RESTORE" == "true" ]; then
   fi
 
   # Backup existing .config directory
-  if [ -d "$QUIL_NODE_PATH/.config" ]; then
-    if [ -d "$QUIL_NODE_PATH/.config.bak" ]; then
-      rm -rf $QUIL_NODE_PATH/.config.bak
+  if [ -d "$QUIL_NODE_PATH/$OUTPUT_DIR" ]; then
+    if [ -d "$QUIL_NODE_PATH/$OUTPUT_DIR.bak" ]; then
+      rm -rf $QUIL_NODE_PATH/$OUTPUT_DIR.bak
     fi
-    mv $QUIL_NODE_PATH/.config $QUIL_NODE_PATH/.config.bak
+    mv $QUIL_NODE_PATH/$OUTPUT_DIR $QUIL_NODE_PATH/$OUTPUT_DIR.bak
   fi
 
   # Restore .config directory
-  rsync -avz --ignore-existing -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR.config" "$QUIL_NODE_PATH/"
+  rsync -avz --ignore-existing -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR.config/" "$QUIL_NODE_PATH/$OUTPUT_DIR/"
 
   # Move existing CSV files to .bak if they exist
   for csv_file in "$QTOOLS_PATH"/unclaimed_*_balance.csv; do
