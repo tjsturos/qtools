@@ -25,7 +25,14 @@ get_tokens() {
         CONFIG_PATH=$USER_CONFIG_PATH
     fi
     
-    echo $($LINKED_QCLIENT_BINARY token coins --config $CONFIG_PATH ${SKIP_SIG_CHECK:+--signature-check=false} | grep "Coin 0x")
+    local TOKENS=$($LINKED_QCLIENT_BINARY token coins --config $CONFIG_PATH ${SKIP_SIG_CHECK:+--signature-check=false} | grep "Coin 0x")
+    
+    if [[ -z "$TOKENS" ]]; then
+        echo "Error: No tokens found"
+        exit 1
+    fi
+
+    echo "$TOKENS"
 }
 
 get_config_account_address() {
@@ -109,18 +116,19 @@ get_token_from_user_input() {
     # Display the tokens with numbers
     echo "Available tokens:"
     for i in "${!TOKEN_ARRAY[@]}"; do
-        echo "$((i+1)). ${TOKEN_ARRAY[$i]}"
+        echo "$((i)). ${TOKEN_ARRAY[$i]}"
+
     done
 
-    local SELECTED_TOKEN_INDEX=-1
+    # local SELECTED_TOKEN_INDEX=-1
 
-    while true; do
-        read -p "Select a token by number: " SELECTED_TOKEN_INDEX
-        if [[ $SELECTED_TOKEN_INDEX =~ ^[0-9]+$ ]] && [[ $SELECTED_TOKEN_INDEX -gt 0 ]] && [[ $SELECTED_TOKEN_INDEX -le ${#TOKEN_ARRAY[@]} ]]; then
-            echo $(($SELECTED_TOKEN_INDEX - 1))
-            break
-        fi
-    done
+    # while true; do
+    #     read -p "Select a token by number: " SELECTED_TOKEN_INDEX
+    #     if [[ $SELECTED_TOKEN_INDEX =~ ^[0-9]+$ ]] && [[ $SELECTED_TOKEN_INDEX -gt 0 ]] && [[ $SELECTED_TOKEN_INDEX -le ${#TOKEN_ARRAY[@]} ]]; then
+    #         echo $(($SELECTED_TOKEN_INDEX - 1))
+    #         break
+    #     fi
+    # done
 
     if [[ $SELECTED_TOKEN_INDEX -eq -1 ]]; then
         echo "Error: Invalid token index"

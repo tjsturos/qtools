@@ -13,6 +13,7 @@ TOKEN=""
 TOKEN_BALANCE=""
 TO_ADDRESS=""
 DRY_RUN="false"
+CONFIG_PATH="$QUIL_NODE_PATH/.config"
 
 while [[ $# -gt 0 ]]; do
     key="$1"
@@ -32,6 +33,11 @@ while [[ $# -gt 0 ]]; do
         ;;
         --token)
         TOKEN="$2"
+        shift
+        shift
+        ;;
+        --config)
+        CONFIG_PATH="$2"
         shift
         shift
         ;;
