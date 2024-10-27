@@ -111,8 +111,13 @@ get_token_from_user_input() {
     local SKIP_SIG_CHECK="$2"
     local TOKENS=$(get_tokens $CONFIG_PATH $SKIP_SIG_CHECK)
 
+    if [[ -z "$TOKENS" ]]; then
+        echo "Error: No tokens found"
+        exit 1
+    fi
+
     # Create an array to store the tokens
-    TOKEN_ARRAY=()
+    local TOKEN_ARRAY=()
     
     # Populate the array with tokens
     while IFS= read -r line; do
