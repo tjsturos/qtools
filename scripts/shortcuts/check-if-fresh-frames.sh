@@ -48,6 +48,9 @@ fi
 # Get the current timestamp
 current_timestamp=$(get_latest_timestamp | jq -r '.ts' | awk '{printf "%d", $1}')
 
+last_timestamp=$(printf "%.0f" $last_timestamp)
+current_timestamp=$(printf "%.0f" $current_timestamp)
+
 echo "Last timestamp: $last_timestamp"
 echo "Current timestamp: $current_timestamp"
 
