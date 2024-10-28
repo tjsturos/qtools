@@ -3,6 +3,7 @@
 # Parse command line arguments
 DIFF="$(yq '.scheduled_tasks.check_if_fresh_proof_batches.default_diff // 1800' $QTOOLS_CONFIG_FILE)"  # Default value for diff
 DRY_RUN=""
+DEBUG=""
 
 if [ -z "$QUIL_SERVICE_NAME" ]; then
     QUIL_SERVICE_NAME="ceremonyclient"
@@ -18,6 +19,10 @@ while [[ $# -gt 0 ]]; do
             DRY_RUN=true
             shift
             ;;
+        --debug)
+            DEBUG=true
+            shift
+            ;;
         *)
             echo "Unknown option: $1"
             exit 1
@@ -29,8 +34,8 @@ echo "Using diff: $DIFF seconds"
 # Get logs from last $DIFF seconds
 LOGS="$(journalctl -u $QUIL_SERVICE_NAME --no-hostname --output=cat --since "$DIFF seconds ago")"
 
-if [ ! -z "$DRY_RUN" ]; then
-    echo "Dry run mode - showing logs:"
+if [ ! -z "$DEBUG" ]; then
+    echo "Debug mode - showing logs:"
     echo "$LOGS"
 fi
 
@@ -48,6 +53,11 @@ restart_application() {
     echo "Restarting the node..."
     qtools restart
 }
+
+if [ ! -z "$DEBUG" ]; then
+    echo "get_latest_proof_batch_log: $(get_latest_proof_batch_log)"
+    echo "get_latest_timestamp: $(get_latest_timestamp)"
+fi
 
 # Get the initial timestamp
 lastest_proof_batch_timestamp=$(get_latest_proof_batch_log | jq -r '.ts')
