@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Parse command line arguments
-DIFF="$(yq '.scheduled_tasks.check_if_fresh_proof_batches.default_diff // 1800' $QTOOLS_CONFIG_PATH)"  # Default value for diff
+DIFF="$(yq '.scheduled_tasks.check_if_fresh_proof_batches.default_diff // 1800' $QTOOLS_CONFIG_FILE)"  # Default value for diff
 
 if [ -z "$QUIL_SERVICE_NAME" ]; then
     QUIL_SERVICE_NAME="ceremonyclient"
