@@ -37,7 +37,7 @@ restart_application() {
 }
 
 # Get the initial timestamp
-last_timestamp=$(get_latest_frame_received_log | jq -r '.ts')
+last_timestamp=$(get_latest_frame_received_log | jq -r '.ts' )
 
 if [ -z "$last_timestamp" ]; then
     echo "No frames recieved timestamp found at all in latest logs. Restarting the node..."
@@ -45,6 +45,7 @@ if [ -z "$last_timestamp" ]; then
     exit 1
 fi
 
+last_timestamp=$(echo $last_timestamp | awk '{print int($1)}')
 # Get the current timestamp
 current_timestamp=$(get_latest_timestamp | awk '{print int($1)}')
 
