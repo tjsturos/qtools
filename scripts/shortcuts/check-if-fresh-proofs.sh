@@ -29,13 +29,19 @@ echo "Using diff: $DIFF seconds"
 # Get logs from last $DIFF seconds
 LOGS="$(journalctl -u $QUIL_SERVICE_NAME --no-hostname --output=cat --since "$DIFF seconds ago")"
 
+if [ ! -z "$DRY_RUN" ]; then
+    echo "Dry run mode - showing logs:"
+    echo "$LOGS"
+fi
+
+
 # Function to get the latest proof batch log
 get_latest_proof_batch_log() {
-    echo "$LOGS" | grep "publishing proof batch" | head -n 1
+    echo "$LOGS" | grep "publishing proof batch" | tail -n 1
 }
 
 get_latest_timestamp() {
-    echo "$LOGS" | head -n 1 | jq -r '.ts'
+    echo "$LOGS" | tail -n 1 | jq -r '.ts'
 }
 
 restart_application() {
