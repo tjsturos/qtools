@@ -2,6 +2,7 @@
 
 # Parse command line arguments
 DIFF="$(yq '.scheduled_tasks.check_if_fresh_proof_batches.default_diff // 1800' $QTOOLS_CONFIG_FILE)"  # Default value for diff
+DRY_RUN=""
 
 if [ -z "$QUIL_SERVICE_NAME" ]; then
     QUIL_SERVICE_NAME="ceremonyclient"
@@ -12,6 +13,10 @@ while [[ $# -gt 0 ]]; do
         --diff)
             DIFF="$2"
             shift 2
+            ;;
+        --dry-run)
+            DRY_RUN=true
+            shift
             ;;
         *)
             echo "Unknown option: $1"
@@ -42,13 +47,17 @@ current_timestamp=$(get_latest_timestamp | awk '{printf "%d", $1}')
 
 if [ "$(get_latest_proof_batch_log | jq -r '.increment')" == "0" ]; then
     echo "Reached the end of publishing proofs. Turning off fresh proof check..."
-    qtools toggle-fresh-proof-check --off
+    if [ -z "$DRY_RUN" ]; then
+        qtools toggle-fresh-proof-check --off
+    fi
     exit 1
 fi
 
-if [ -z "$last_timestamp" ]; then
+if [ -z "$lastest_proof_batch_timestamp" ]; then
     echo "No proofs published timestamp found at all in latest logs. Restarting the node..."
-    restart_application
+    if [ -z "$DRY_RUN" ]; then
+        restart_application
+    fi
     exit 1
 fi
 
@@ -68,7 +77,9 @@ echo "Time difference: $time_diff seconds"
 # If the time difference is more than $DIFF, restart the node
 if [ $time_diff -gt $DIFF ]; then
     echo "No new proofs published in the last $DIFF seconds. Restarting the node..."
-    restart_application
+    if [ -z "$DRY_RUN" ]; then
+        restart_application
+    fi
 else
     echo "New proofs published within the last $DIFF seconds. No action needed."
 fi
