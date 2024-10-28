@@ -62,8 +62,9 @@ fi
 # Get the initial timestamp
 lastest_proof_batch_timestamp=$(get_latest_proof_batch_log | jq -r '.ts')
 current_timestamp=$(get_latest_timestamp | awk '{printf "%d", $1}')
+increment=$(get_latest_proof_batch_log | jq -r '.increment')
 
-if [ "$(get_latest_proof_batch_log | jq -r '.increment')" == "0" ]; then
+if [ "$increment" == "0" ]; then
     echo "Reached the end of publishing proofs. Turning off fresh proof check..."
     if [ -z "$DRY_RUN" ]; then
         qtools toggle-fresh-proof-check --off
@@ -99,5 +100,5 @@ if [ $time_diff -gt $DIFF ]; then
         restart_application
     fi
 else
-    echo "New proofs published within the last $DIFF seconds. No action needed."
+    echo "New proofs published ($increment) within the last $DIFF seconds. No action needed."
 fi
