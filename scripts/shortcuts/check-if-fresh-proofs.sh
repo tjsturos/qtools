@@ -24,7 +24,7 @@ echo "Using diff: $DIFF seconds"
 
 # Function to get the latest timestamp
 get_latest_proof_batch_log() {
-    journalctl -u $QUIL_SERVICE_NAME --no-hostname -g "publishing proof batch" --output=cat -r -n 1
+    journalctl -u $QUIL_SERVICE_NAME --no-hostname -g "publishing proof batch" --output=cat -n 1
 }
 
 get_latest_timestamp() {
@@ -37,7 +37,8 @@ restart_application() {
 }
 
 # Get the initial timestamp
-last_timestamp=$(get_latest_proof_batch_log | jq -r '.ts')
+lastest_proof_batch_timestamp=$(get_latest_proof_batch_log | jq -r '.ts')
+current_timestamp=$(get_latest_timestamp | awk '{printf "%d", $1}')
 
 if [ "$(get_latest_proof_batch_log | jq -r '.increment')" == "0" ]; then
     echo "Reached the end of publishing proofs. Turning off fresh proof check..."
@@ -52,16 +53,15 @@ if [ -z "$last_timestamp" ]; then
 fi
 
 # Get the current timestamp
-current_timestamp=$(get_latest_timestamp | awk '{printf "%d", $1}')
 
-last_timestamp=$(printf "%.0f" $last_timestamp)
+lastest_proof_batch_timestamp=$(printf "%.0f" $lastest_proof_batch_timestamp)
 current_timestamp=$(printf "%.0f" $current_timestamp)
 
-echo "Last timestamp: $last_timestamp"
+echo "Lastest proof batch timestamp: $lastest_proof_batch_timestamp"
 echo "Current timestamp: $current_timestamp"
 
 # Calculate the time difference
-time_diff=$((current_timestamp - last_timestamp))
+time_diff=$((current_timestamp - lastest_proof_batch_timestamp))
 
 echo "Time difference: $time_diff seconds"
 
