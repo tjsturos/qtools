@@ -37,7 +37,7 @@ restart_application() {
 }
 
 # Get the initial timestamp
-last_timestamp=$(get_latest_frame_received_log | jq -r '.ts' )
+last_timestamp=$(get_latest_frame_received_log | jq -r '.ts' | awk '{printf "%d", $1}')
 
 if [ -z "$last_timestamp" ]; then
     echo "No frames recieved timestamp found at all in latest logs. Restarting the node..."
@@ -45,15 +45,14 @@ if [ -z "$last_timestamp" ]; then
     exit 1
 fi
 
-last_timestamp=$(echo $last_timestamp | awk '{print int($1)}')
 # Get the current timestamp
-current_timestamp=$(get_latest_timestamp | awk '{print int($1)}')
+current_timestamp=$(get_latest_timestamp | jq -r '.ts' | awk '{printf "%d", $1}')
 
 echo "Last timestamp: $last_timestamp"
 echo "Current timestamp: $current_timestamp"
 
 # Calculate the time difference
-time_diff=$(echo "$current_timestamp - $last_timestamp" | bc)
+time_diff=$((current_timestamp - last_timestamp))
 
 echo "Time difference: $time_diff seconds"
 
