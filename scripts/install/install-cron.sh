@@ -55,6 +55,18 @@ if [ "$FRESH_FRAME_CHECK_ENABLED" == "true" ]; then
   append_to_file $FILE_CRON "$FRESH_FRAME_CHECK_CRON_EXPRESSION qtools check-if-fresh-frames" false
 fi
 
+FRESH_PROOF_CHECK_ENABLED=$(yq eval '.scheduled_tasks.check_if_fresh_proof_batches.enabled' $QTOOLS_CONFIG_FILE)
+
+if [ "$FRESH_PROOF_CHECK_ENABLED" == "true" ]; then
+  FRESH_PROOF_CHECK_CRON_EXPRESSION=$(yq eval '.scheduled_tasks.check_if_fresh_proof_batches.cron_expression // ""' $QTOOLS_CONFIG_FILE)
+  if [ -z "$FRESH_PROOF_CHECK_CRON_EXPRESSION" ]; then
+    FRESH_PROOF_CHECK_CRON_EXPRESSION="*/30 * * * *"
+  fi
+
+  log "Adding fresh proof check cron expression: $FRESH_PROOF_CHECK_CRON_EXPRESSION"
+  append_to_file $FILE_CRON "$FRESH_PROOF_CHECK_CRON_EXPRESSION qtools check-if-fresh-proofs" false
+fi
+
 if [ "$IS_CLUSTERING_ENABLED" == "true" ] && [ "$IS_MASTER" == "true" ] || [ "$IS_CLUSTERING_ENABLED" == "false" ]; then
   AUTO_RUN_DIAGNOSTICS=$(yq eval '.scheduled_tasks.diagnostics.enabled' $QTOOLS_CONFIG_FILE)
 

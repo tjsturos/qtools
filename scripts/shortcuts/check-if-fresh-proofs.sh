@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Parse command line arguments
-DIFF="$(yq '.scheduled_tasks.check_if_fresh_frames.default_diff // 1800' $QTOOLS_CONFIG_PATH)"  # Default value for diff
+DIFF="$(yq '.scheduled_tasks.check_if_fresh_proof_batches.default_diff // 1800' $QTOOLS_CONFIG_PATH)"  # Default value for diff
 
 if [ -z "$QUIL_SERVICE_NAME" ]; then
     QUIL_SERVICE_NAME="ceremonyclient"
@@ -22,9 +22,9 @@ done
 
 echo "Using diff: $DIFF seconds"
 
-
-get_latest_frame_received_log() {
-    journalctl -u $QUIL_SERVICE_NAME --no-hostname -g "received new leading frame" --output=cat -r -n 1
+# Function to get the latest timestamp
+get_latest_proof_batch_log() {
+    journalctl -u $QUIL_SERVICE_NAME --no-hostname -g "publishing proof batch" --output=cat -r -n 1
 }
 
 get_latest_timestamp() {
@@ -37,10 +37,16 @@ restart_application() {
 }
 
 # Get the initial timestamp
-last_timestamp=$(get_latest_frame_received_log | jq -r '.ts')
+last_timestamp=$(get_latest_proof_batch_log | jq -r '.ts')
+
+if [ "$(get_latest_proof_batch_log | jq -r '.increment')" == "0" ]; then
+    echo "Reached the end of publishing proofs. Turning off fresh proof check..."
+    qtools toggle-fresh-proof-check --off
+    exit 1
+fi
 
 if [ -z "$last_timestamp" ]; then
-    echo "No frames recieved timestamp found at all in latest logs. Restarting the node..."
+    echo "No proofs published timestamp found at all in latest logs. Restarting the node..."
     restart_application
     exit 1
 fi
@@ -58,8 +64,8 @@ echo "Time difference: $time_diff seconds"
 
 # If the time difference is more than $DIFF, restart the node
 if [ $time_diff -gt $DIFF ]; then
-    echo "No new proofs submitted in the last $DIFF seconds. Restarting the node..."
+    echo "No new proofs published in the last $DIFF seconds. Restarting the node..."
     restart_application
 else
-    echo "New proofs submitted within the last $DIFF seconds. No action needed."
+    echo "New proofs published within the last $DIFF seconds. No action needed."
 fi
