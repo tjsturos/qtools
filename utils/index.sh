@@ -308,6 +308,14 @@ get_versioned_qclient() {
     echo "qclient-$(fetch_qclient_release_version)-$(get_os_arch)"
 }
 
+check_yq() {
+    if ! command -v yq &> /dev/null; then
+        echo "Error: yq is not installed. Please install yq to continue."
+        exit 1
+    fi
+    return 0
+}
+
 # Source the hardware utils
 source $QTOOLS_PATH/utils/hardware.sh
 
