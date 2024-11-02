@@ -31,7 +31,7 @@ while [[ $# -gt 0 ]]; do
         shift
         ;;
         --config)
-        if [[ detect_config_path "$2" ]]; then
+        if detect_config_path "$2"; then
             CONFIG_PATH="$2"
         fi
         shift
