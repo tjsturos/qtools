@@ -4,7 +4,7 @@
 # PARAM: --skip-sig-check: Skip signature check (optional)
 # PARAM: --config: Path to the config file (optional)
 
-source $QUIL_NODE_PATH/scripts/qclient/utils.sh
+source $QTOOLS_PATH/scripts/qclient/utils.sh
 # Parse command line arguments
 SKIP_SIG_CHECK=false
 CONFIG_PATH="$QUIL_NODE_PATH/.config"
