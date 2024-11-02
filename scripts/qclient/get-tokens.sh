@@ -12,7 +12,7 @@ while [[ $# -gt 0 ]]; do
     key="$1"
     case $key in
         --config)
-        if [[ detect_config_path "$2" ]]; then
+        if [[ $(detect_config_path "$2") ]]; then
             CONFIG_PATH="$2"
         fi
         shift
