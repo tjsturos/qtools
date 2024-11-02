@@ -39,8 +39,8 @@ if [ "$SKIP_SIG_CHECK" == true ]; then
 fi
 
 # Execute the command
-TOKEN_OUTPUT=$($CMD)
+TOKEN_OUTPUT=$($CMD | grep "Coin 0x")
 
 if [ ! -z "$TOKEN_OUTPUT" ]; then
-    echo "$TOKEN_OUTPUT | grep 'Coin 0x'"
+    echo "$TOKEN_OUTPUT"
 fi
