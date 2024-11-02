@@ -34,13 +34,13 @@ done
 CMD="$LINKED_QCLIENT_BINARY token coins --config $CONFIG_PATH"
 
 # Add signature check flag if needed
-if [ "$SKIP_SIG_CHECK" = true ]; then
+if [ "$SKIP_SIG_CHECK" == true ]; then
     CMD="$CMD --signature-check=false"
 fi
 
 # Execute the command
 TOKEN_OUTPUT=$($CMD)
 
-if [ -z "$TOKEN" ]; then
+if [ ! -z "$TOKEN_OUTPUT" ]; then
     echo "$TOKEN_OUTPUT | grep 'Coin 0x'"
 fi
