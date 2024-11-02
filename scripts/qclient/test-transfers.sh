@@ -64,8 +64,8 @@ update_suitable_tokens() {
 
 transfer_token() {
     local TOKEN_ID=$1
-    echo "Transferring $AMOUNT QUIL from token $TOKEN_ID to address $TO_ADDRESS"
     CMD="qclient token transfer $TO_ADDRESS $TOKEN_ID ${SKIP_SIG_CHECK:+ --signature-check=false}"
+    echo "Executing: $CMD"
     $CMD
 }
 
