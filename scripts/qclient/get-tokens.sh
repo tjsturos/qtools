@@ -8,6 +8,8 @@ source $QTOOLS_PATH/scripts/qclient/utils.sh
 # Parse command line arguments
 SKIP_SIG_CHECK=false
 CONFIG_PATH="$QUIL_NODE_PATH/.config"
+SORTED=false
+SORT_ORDER="asc"
 while [[ $# -gt 0 ]]; do
     key="$1"
     case $key in
@@ -20,6 +22,14 @@ while [[ $# -gt 0 ]]; do
         ;;
         --skip-sig-check)
         SKIP_SIG_CHECK=true
+        shift
+        ;;
+        --sorted)
+        SORTED=true
+        if [ "$2" == "desc" ]; then
+            SORT_ORDER="desc"
+        fi
+        shift
         shift
         ;;
         *)
@@ -40,6 +50,10 @@ fi
 
 # Execute the command
 TOKEN_OUTPUT=$($CMD | grep "Coin 0x")
+
+if [ "$SORTED" == true ]; then
+    TOKEN_OUTPUT=$(echo "$TOKEN_OUTPUT" | sort -k1,$SORT_ORDER)
+fi
 
 if [ ! -z "$TOKEN_OUTPUT" ]; then
     echo "$TOKEN_OUTPUT"
