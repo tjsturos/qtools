@@ -24,7 +24,7 @@ while [[ $# -gt 0 ]]; do
         SKIP_SIG_CHECK=true
         shift
         ;;
-        --sorted)
+        --sort)
         SORTED=true
         if [ "$2" == "desc" ]; then
             SORT_ORDER="desc"
@@ -52,7 +52,11 @@ fi
 TOKEN_OUTPUT=$($CMD | grep "Coin 0x")
 
 if [ "$SORTED" == true ]; then
-    TOKEN_OUTPUT=$(echo "$TOKEN_OUTPUT" | sort -k1,$SORT_ORDER)
+    if [ "$SORT_ORDER" == "desc" ]; then
+        TOKEN_OUTPUT=$(echo "$TOKEN_OUTPUT" | sort -k1,1 -r)
+    else
+        TOKEN_OUTPUT=$(echo "$TOKEN_OUTPUT" | sort -k1,1)
+    fi
 fi
 
 if [ ! -z "$TOKEN_OUTPUT" ]; then
