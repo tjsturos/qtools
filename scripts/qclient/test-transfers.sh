@@ -5,7 +5,7 @@
 # PARAM: --to: Recipient address (required)
 
 # Parse command line arguments
-SKIP_SIG_CHECK=false
+SKIP_SIG_CHECK=""
 TO_ADDRESS=""
 AMOUNT=0.1
 
