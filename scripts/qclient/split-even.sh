@@ -13,6 +13,7 @@ CONFIG_PATH="$QUIL_NODE_PATH/.config"
 TOKEN=""
 AMOUNT=""
 WAIT=""
+DEBUG=""
 
 while [[ $# -gt 0 ]]; do
     key="$1"
@@ -37,6 +38,10 @@ while [[ $# -gt 0 ]]; do
         ;;
         --wait)
         WAIT="true"
+        shift
+        ;;
+        --debug)
+        DEBUG="true"
         shift
         ;;
         --config)
@@ -92,7 +97,9 @@ split_token() {
     fi
 
     echo "Executing split command..."
-    echo "$CMD"
+    if [ -n "$DEBUG" ]; then
+        echo "$CMD"
+    fi
     $CMD
 }
 
