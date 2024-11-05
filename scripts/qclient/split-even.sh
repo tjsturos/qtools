@@ -138,6 +138,7 @@ if [ "$WAIT" = "true" ]; then
 
         echo "Found ${#REMAINING_TOKENS[@]} tokens with amount $AMOUNT. Splitting again..."
         split_all
+        echo "Waiting 20 seconds before next check..."
         sleep 20
     done
 fi
