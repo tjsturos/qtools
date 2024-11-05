@@ -103,16 +103,24 @@ split_token() {
     $CMD > /dev/null 2>&1
 }
 
-GREP_AMOUNT=$(echo "$AMOUNT" | sed 's/\./\\./g')
+ # Ensure AMOUNT has .0 if no decimal
+if [[ ! "$AMOUNT" =~ \. ]]; then
+    AMOUNT="$AMOUNT.0"
+fi
+
+
+get_all_tokens() {
+    GREP_AMOUNT=$(echo "$AMOUNT" | sed 's/\./\\./g')
+    # Escape decimal point for grep
+    local TOKENS=($(get_tokens $CONFIG_PATH $SKIP_SIG_CHECK | grep "$GREP_AMOUNT"))
+    echo "${TOKENS[@]}"
+}
+
 split_all() {
     echo "Splitting all tokens with amount $AMOUNT"
-    # Ensure AMOUNT has .0 if no decimal
-    if [[ ! "$AMOUNT" =~ \. ]]; then
-        AMOUNT="$AMOUNT.0"
-    fi
-
+   
     # Escape decimal point for grep
-    mapfile -t TOKENS < <(get_tokens $CONFIG_PATH $SKIP_SIG_CHECK | grep "$GREP_AMOUNT")
+    local TOKENS=($(get_all_tokens))
     echo "Found tokens:"
     for TOKEN_INFO in "${TOKENS[@]}"; do
         ADDRESS=$(get_token_address "$TOKEN_INFO")
@@ -134,7 +142,7 @@ if [ "$WAIT" = "true" ]; then
     # Keep splitting while tokens with $AMOUNT exist
     while true; do
         # Get tokens with specified amount
-        mapfile -t REMAINING_TOKENS < <(get_tokens $CONFIG_PATH $SKIP_SIG_CHECK | grep "$GREP_AMOUNT")
+        local REMAINING_TOKENS=($(get_all_tokens))
         
         # Exit if no more tokens with target amount
         if [ ${#REMAINING_TOKENS[@]} -eq 0 ]; then
