@@ -100,10 +100,9 @@ if [ "$TOKEN" = "all" ]; then
 
     # Escape decimal point for grep
     GREP_AMOUNT=$(echo "$AMOUNT" | sed 's/\./\\./g')
-    TOKENS=$(get_tokens $CONFIG_PATH $SKIP_SIG_CHECK | grep "$GREP_AMOUNT")
+    mapfile -t TOKENS < <(get_tokens $CONFIG_PATH $SKIP_SIG_CHECK | grep "$GREP_AMOUNT")
     echo "Found tokens:"
-    echo "$TOKENS"
-    for TOKEN_INFO in $TOKENS; do
+    for TOKEN_INFO in "${TOKENS[@]}"; do
         ADDRESS=$(get_token_address "$TOKEN_INFO")
         echo "Splitting token $ADDRESS"
         split_token $ADDRESS
