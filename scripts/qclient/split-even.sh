@@ -96,11 +96,11 @@ split_token() {
         CMD="$CMD --config $CONFIG_PATH"
     fi
 
-    echo "Executing split command..."
     if [ -n "$DEBUG" ]; then
         echo "$CMD"
     fi
-    $CMD
+    
+    $CMD > /dev/null 2>&1
 }
 
 GREP_AMOUNT=$(echo "$AMOUNT" | sed 's/\./\\./g')
