@@ -96,8 +96,8 @@ split_token() {
     $CMD
 }
 
+GREP_AMOUNT=$(echo "$AMOUNT" | sed 's/\./\\./g')
 split_all() {
-    # Ensure AMOUNT has .0 if no decimal
     echo "Splitting all tokens with amount $AMOUNT"
     # Ensure AMOUNT has .0 if no decimal
     if [[ ! "$AMOUNT" =~ \. ]]; then
@@ -105,7 +105,6 @@ split_all() {
     fi
 
     # Escape decimal point for grep
-    GREP_AMOUNT=$(echo "$AMOUNT" | sed 's/\./\\./g')
     mapfile -t TOKENS < <(get_tokens $CONFIG_PATH $SKIP_SIG_CHECK | grep "$GREP_AMOUNT")
     echo "Found tokens:"
     for TOKEN_INFO in "${TOKENS[@]}"; do
