@@ -92,7 +92,15 @@ split_token() {
 }
 
 if [ "$TOKEN" = "all" ]; then
-    TOKENS=$(get_tokens $CONFIG_PATH $SKIP_SIG_CHECK | grep "$AMOUNT")
+    echo "Splitting all tokens with amount $AMOUNT"
+    # Ensure AMOUNT has .0 if no decimal
+    if [[ ! "$AMOUNT" =~ \. ]]; then
+        AMOUNT="$AMOUNT.0"
+    fi
+
+    # Escape decimal point for grep
+    GREP_AMOUNT=$(echo "$AMOUNT" | sed 's/\./\\./g')
+    TOKENS=$(get_tokens $CONFIG_PATH $SKIP_SIG_CHECK | grep "$GREP_AMOUNT")
     for TOKEN_INFO in $TOKENS; do
         split_token "$(get_token_address $TOKEN_INFO)"
     done
