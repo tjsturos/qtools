@@ -91,12 +91,11 @@ get_token_from_amount() {
         return 1
     fi
 
-    echo "Found tokens with amount $AMOUNT:"
-
-    echo "$MATCHING_TOKENS" | while read -r token_info; do
-        local TOKEN_ADDRESS=$(get_token_address "$token_info")
-        echo "$TOKEN_ADDRESS"
-    done
+    # Get first matching token's address
+    local FIRST_TOKEN=$(echo "$MATCHING_TOKENS" | head -n 1)
+    local FIRST_TOKEN_ADDRESS=$(get_token_address "$FIRST_TOKEN")
+    echo "$FIRST_TOKEN_ADDRESS"
+    return 0
 }
 
 print_token_array() {
@@ -110,6 +109,8 @@ get_token_from_user_input() {
     local CONFIG_PATH=$1
     local SKIP_SIG_CHECK="$2"
     local TOKENS=$(get_tokens $CONFIG_PATH $SKIP_SIG_CHECK)
+
+    echo "$TOKENS"
 
     if [[ -z "$TOKENS" ]]; then
         echo "Error: No tokens found"

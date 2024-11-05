@@ -47,8 +47,11 @@ done
 
 # Validate required parameters
 if [ -z "$TOKEN" ]; then
-    echo "Error: --token parameter is required"
-    exit 1
+    TOKEN=$(get_token_from_amount $AMOUNT $CONFIG_PATH $SKIP_SIG_CHECK)
+    if [ $? -ne 0 ]; then
+        echo "Error: No token found with amount $AMOUNT"
+        exit 1
+    fi
 fi
 
 if [ -z "$AMOUNT" ]; then
