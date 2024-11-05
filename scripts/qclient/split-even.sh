@@ -21,6 +21,10 @@ while [[ $# -gt 0 ]]; do
         shift
         shift
         ;;
+        --all)
+        TOKEN="all"
+        shift
+        ;;
         --amount)
         AMOUNT="$2"
         shift
@@ -62,23 +66,38 @@ fi
 # Calculate split amount (divide by 100)
 SPLIT_AMOUNT=$(echo "scale=8; $AMOUNT/100" | bc)
 
-# Construct split command with 100 equal amounts
-CMD="$LINKED_QCLIENT_BINARY token split $TOKEN"
-TOKEN_AMOUNT_LIST=()
-for i in {1..100}; do
-    TOKEN_AMOUNT_LIST+=($SPLIT_AMOUNT)
-done
+split_token() {
+    local TOKEN=$1
 
-CMD="$CMD ${TOKEN_AMOUNT_LIST[@]}"
+    # Construct split command with 100 equal amounts
+    local CMD="$LINKED_QCLIENT_BINARY token split $TOKEN"
+    local TOKEN_AMOUNT_LIST=()
+    for i in {1..100}; do
+        TOKEN_AMOUNT_LIST+=($SPLIT_AMOUNT)
+    done
 
-if [ "$SKIP_SIG_CHECK" = true ]; then
-    CMD="$CMD --signature-check=false"
+    CMD="$CMD ${TOKEN_AMOUNT_LIST[@]}"
+
+    if [ "$SKIP_SIG_CHECK" = true ]; then
+        CMD="$CMD --signature-check=false"
+    fi
+
+    if [ -n "$CONFIG_PATH" ]; then
+        CMD="$CMD --config $CONFIG_PATH"
+    fi
+
+    echo "Executing split command..."
+    echo "$CMD"
+    $CMD
+}
+
+if [ "$TOKEN" = "all" ]; then
+    TOKENS=$(get_tokens $CONFIG_PATH $SKIP_SIG_CHECK | grep "$AMOUNT")
+    for TOKEN in $TOKENS; do
+        split_token $TOKEN
+    done
+else
+    split_token $TOKEN
 fi
 
-if [ -n "$CONFIG_PATH" ]; then
-    CMD="$CMD --config $CONFIG_PATH"
-fi
 
-echo "Executing split command..."
-echo "$CMD"
-$CMD
