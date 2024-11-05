@@ -12,6 +12,7 @@ SKIP_SIG_CHECK=false
 CONFIG_PATH="$QUIL_NODE_PATH/.config"
 TOKEN=""
 AMOUNT=""
+WAIT=""
 
 while [[ $# -gt 0 ]]; do
     key="$1"
@@ -32,6 +33,10 @@ while [[ $# -gt 0 ]]; do
         ;;
         --skip-sig-check)
         SKIP_SIG_CHECK=true
+        shift
+        ;;
+        --wait)
+        WAIT="true"
         shift
         ;;
         --config)
@@ -91,7 +96,8 @@ split_token() {
     $CMD
 }
 
-if [ "$TOKEN" = "all" ]; then
+split_all() {
+    # Ensure AMOUNT has .0 if no decimal
     echo "Splitting all tokens with amount $AMOUNT"
     # Ensure AMOUNT has .0 if no decimal
     if [[ ! "$AMOUNT" =~ \. ]]; then
@@ -107,8 +113,32 @@ if [ "$TOKEN" = "all" ]; then
         echo "Splitting token $ADDRESS"
         split_token $ADDRESS
     done
+}
+
+if [ "$TOKEN" = "all" ]; then
+    split_all
 else
     split_token $TOKEN
 fi
 
+
+if [ "$WAIT" = "true" ]; then
+    echo "Waiting for confirmation..."
+    sleep 10
+    # Keep splitting while tokens with $AMOUNT exist
+    while true; do
+        # Get tokens with specified amount
+        mapfile -t REMAINING_TOKENS < <(get_tokens $CONFIG_PATH $SKIP_SIG_CHECK | grep "$GREP_AMOUNT")
+        
+        # Exit if no more tokens with target amount
+        if [ ${#REMAINING_TOKENS[@]} -eq 0 ]; then
+            echo "No more tokens with amount $AMOUNT found. Exiting..."
+            break
+        fi
+
+        echo "Found ${#REMAINING_TOKENS[@]} tokens with amount $AMOUNT. Splitting again..."
+        split_all
+        sleep 20
+    done
+fi
 
