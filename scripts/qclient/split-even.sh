@@ -108,10 +108,17 @@ if [[ ! "$AMOUNT" =~ \. ]]; then
     AMOUNT="$AMOUNT.0"
 fi
 
-GREP_AMOUNT=$(echo "$AMOUNT" | sed 's/\./\\./g')
+
+
 get_all_tokens() {
+    GREP_AMOUNT=$(echo "$AMOUNT" | sed 's/\./\\./g')
+
+    if [ -n "$DEBUG" ]; then
+        echo "GREP_AMOUNT: $GREP_AMOUNT"
+    fi
     # Escape decimal point for grep
-    local TOKENS=($(get_tokens $CONFIG_PATH $SKIP_SIG_CHECK | grep "$GREP_AMOUNT"))
+    local ALL_TOKENS=($(get_tokens $CONFIG_PATH $SKIP_SIG_CHECK))
+    local TOKENS=($(echo "$ALL_TOKENS" | grep "$GREP_AMOUNT"))
     echo "$TOKENS"
 }
 
