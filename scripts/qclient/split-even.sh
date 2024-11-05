@@ -93,8 +93,8 @@ split_token() {
 
 if [ "$TOKEN" = "all" ]; then
     TOKENS=$(get_tokens $CONFIG_PATH $SKIP_SIG_CHECK | grep "$AMOUNT")
-    for TOKEN in $TOKENS; do
-        split_token $TOKEN
+    for TOKEN_INFO in $TOKENS; do
+        split_token "$(get_token_address $TOKEN_INFO)"
     done
 else
     split_token $TOKEN
