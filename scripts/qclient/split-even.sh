@@ -104,7 +104,9 @@ if [ "$TOKEN" = "all" ]; then
     echo "Found tokens:"
     echo "$TOKENS"
     for TOKEN_INFO in $TOKENS; do
-        split_token "$(get_token_address $TOKEN_INFO)"
+        ADDRESS=$(get_token_address $TOKEN_INFO)
+        echo "Splitting token $ADDRESS"
+        split_token $ADDRESS
     done
 else
     split_token $TOKEN
