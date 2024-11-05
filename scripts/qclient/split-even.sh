@@ -101,6 +101,8 @@ if [ "$TOKEN" = "all" ]; then
     # Escape decimal point for grep
     GREP_AMOUNT=$(echo "$AMOUNT" | sed 's/\./\\./g')
     TOKENS=$(get_tokens $CONFIG_PATH $SKIP_SIG_CHECK | grep "$GREP_AMOUNT")
+    echo "Found tokens:"
+    echo "$TOKENS"
     for TOKEN_INFO in $TOKENS; do
         split_token "$(get_token_address $TOKEN_INFO)"
     done
