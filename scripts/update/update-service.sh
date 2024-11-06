@@ -21,6 +21,7 @@ RESTART_SERVICE=false
 TESTNET=""
 DEBUG_MODE=""
 SKIP_SIGNATURE_CHECK=""
+IPFS_DEBUGGING=""
 
 if [ "$IS_CLUSTER_MODE" == "true" ] && [ "$(is_master)" == "false" ]; then
     if [ "$(is_master)" == "true" ]; then
@@ -71,6 +72,10 @@ while [[ $# -gt 0 ]]; do
             SKIP_SIGNATURE_CHECK=true
             shift
             ;;
+        --ipfs-debug)
+            IPFS_DEBUGGING=true
+            shift
+            ;;
         *)
             echo "Unknown option: $1"
             exit 1
@@ -88,7 +93,7 @@ Restart=always
 RestartSec=$(yq '.service.restart_time' $QTOOLS_CONFIG_FILE)
 User=$(whoami)
 WorkingDirectory=$QUIL_NODE_PATH
-Environment="GOMAXPROCS=$(getProcessorCount)"
+Environment="GOMAXPROCS=$(getProcessorCount)${IPFS_DEBUGGING:+ IPFS_LOGGING=debug}"
 ExecStart=${LINKED_NODE_BINARY}${TESTNET:+ --network 1}${DEBUG_MODE:+ --debug}${SKIP_SIGNATURE_CHECK:+ --signature-check=false}
 ExecStop=/bin/kill -s SIGINT \$MAINPID
 ExecReload=/bin/kill -s SIGINT \$MAINPID && ${LINKED_NODE_BINARY}${TESTNET:+ --network=1}${DEBUG_MODE:+ --debug}${SKIP_SIGNATURE_CHECK:+ --signature-check=false}
