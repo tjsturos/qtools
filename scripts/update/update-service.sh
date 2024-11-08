@@ -37,6 +37,7 @@ while [[ $# -gt 0 ]]; do
     case $1 in
         --testnet)
             TESTNET=true
+            mkdir -p $QUIL_NODE_PATH/test
             shift
             ;;
         --core)
