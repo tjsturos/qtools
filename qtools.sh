@@ -92,6 +92,7 @@ export GOPATH=$HOME/go
 export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
 export QTOOLS_CONFIG_FILE=$QTOOLS_PATH/config.yml
 export QUIL_CONFIG_FILE="$QUIL_NODE_PATH/.config/config.yml"
+export QUIL_TESTNET_CONFIG_FILE="$QUIL_NODE_PATH/test/.config/config.yml"
 
 # many util scripts require the log
 if [ "$1" == "init" ] || [ ! -f "$QTOOLS_PATH/INIT_COMPLETE" ]; then
