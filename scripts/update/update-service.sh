@@ -92,7 +92,7 @@ Type=simple
 Restart=always
 RestartSec=$(yq '.service.restart_time' $QTOOLS_CONFIG_FILE)
 User=$(whoami)
-WorkingDirectory=$QUIL_NODE_PATH
+WorkingDirectory=$QUIL_NODE_PATH${TESTNET:+/test}
 Environment="GOMAXPROCS=$(getProcessorCount)${IPFS_DEBUGGING:+ IPFS_LOGGING=debug}"
 ExecStart=${LINKED_NODE_BINARY}${TESTNET:+ --network 1}${DEBUG_MODE:+ --debug}${SKIP_SIGNATURE_CHECK:+ --signature-check=false}
 ExecStop=/bin/kill -s SIGINT \$MAINPID
