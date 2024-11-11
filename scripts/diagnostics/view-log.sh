@@ -5,6 +5,7 @@
 IS_CLUSTERING_ENABLED="$(yq '.service.clustering.enabled' $QTOOLS_CONFIG_FILE)"
 FILTER_TEXT=""
 CORE_ID=false
+LINES=""
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -20,6 +21,10 @@ while [[ $# -gt 0 ]]; do
                 exit 1
             fi
             ;;
+        -n|--lines)
+            LINES=$2
+            shift
+            ;;
         --filter)
             FILTER_TEXT=$2
             shift
@@ -34,10 +39,10 @@ done
 
 if [ "$IS_CLUSTERING_ENABLED" == "true" ]; then
     if [ "$CORE_ID" == "false" ]; then
-        sudo journalctl -u $QUIL_SERVICE_NAME -f --no-hostname -o cat ${FILTER_TEXT:+--grep="$FILTER_TEXT"}
+        sudo journalctl -u $QUIL_SERVICE_NAME -f --no-hostname -o cat ${FILTER_TEXT:+--grep="$FILTER_TEXT"} ${LINES:+-n=$LINES}
     else
-        sudo journalctl -u dataworker@$CORE_ID -f --no-hostname -o cat ${FILTER_TEXT:+--grep="$FILTER_TEXT"}
+        sudo journalctl -u dataworker@$CORE_ID -f --no-hostname -o cat ${FILTER_TEXT:+--grep="$FILTER_TEXT"} ${LINES:+-n=$LINES}
     fi
 else
-    sudo journalctl -u $QUIL_SERVICE_NAME -f --no-hostname -o cat ${FILTER_TEXT:+--grep="$FILTER_TEXT"}
+    sudo journalctl -u $QUIL_SERVICE_NAME -f --no-hostname -o cat ${FILTER_TEXT:+--grep="$FILTER_TEXT"} ${LINES:+-n=$LINES}
 fi
