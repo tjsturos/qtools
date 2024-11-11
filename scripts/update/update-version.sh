@@ -40,12 +40,12 @@ done
 
 if [ -z "$NODE_VERSION" ]; then
     echo "Node version not specified. Using latest version..."
-    NODE_VERSION=$(qtools fetch_node_release_version)
+    NODE_VERSION=$(fetch_node_release_version)
 fi
 
 if [ -z "$QCLIENT_VERSION" ]; then
     echo "QClient version not specified. Using latest version..."
-    QCLIENT_VERSION=$(qtools fetch_qclient_release_version)
+    QCLIENT_VERSION=$(fetch_qclient_release_version)
 fi
 
 if [ "$OVERWRITE" == "true" ]; then
