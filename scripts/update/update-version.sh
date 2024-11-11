@@ -5,11 +5,15 @@ NODE_VERSION=""
 NODE_VERSION=""
 
 BINARY_ONLY=""
-
+OVERWRITE=""
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
     key="$1"
     case $key in
+        --overwrite|-ow)
+        OVERWRITE=true
+        shift # past argument
+        ;;
         --node-version)
         log "Overriding node version to $2"
         NODE_VERSION="$2"
@@ -34,16 +38,28 @@ while [[ $# -gt 0 ]]; do
 done
 
 
+if [ -z "$NODE_VERSION" ]; then
+    echo "Node version not specified. Using latest version..."
+    NODE_VERSION=$(qtools fetch_node_release_version)
+fi
+
+if [ -z "$QCLIENT_VERSION" ]; then
+    echo "QClient version not specified. Using latest version..."
+    QCLIENT_VERSION=$(qtools fetch_qclient_release_version)
+fi
+
+if [ "$OVERWRITE" == "true" ]; then
+    echo "Overwriting node and qclient versions"
+    if [[ -f "$QUIL_NODE_PATH/node-$NODE_VERSION-$OS_ARCH" ]]; then
+        rm "$QUIL_NODE_PATH/node-$NODE_VERSION-$OS_ARCH"
+    fi
+    if [[ -f "$QUIL_CLIENT_PATH/qclient-$QCLIENT_VERSION-$OS_ARCH" ]]; then
+        rm "$QUIL_CLIENT_PATH/qclient-$QCLIENT_VERSION-$OS_ARCH"
+    fi
+fi
+
 # Check if the node binary exists in $QUIL_NODE_PATH
-if [[ ! -f "$QUIL_NODE_PATH/node-$NODE_VERSION-$OS_ARCH" ]] || [[ -z "$NODE_VERSION" ]] || [[ -z "$QCLIENT_VERSION" ]]; then
-
-    if [ -z "$NODE_VERSION" ]; then
-        echo "Node version not specified. Using latest version..."
-    fi
-
-    if [ -z "$QCLIENT_VERSION" ]; then
-        echo "QClient version not specified. Using latest version..."
-    fi
+if [[ ! -f "$QUIL_NODE_PATH/node-$NODE_VERSION-$OS_ARCH" ]]; then
 
     qtools download-node${BINARY_ONLY:+ --no-signatures}${NODE_VERSION:+ --version $NODE_VERSION}
     qtools download-qclient${BINARY_ONLY:+ --no-signatures}${QCLIENT_VERSION:+ --version $QCLIENT_VERSION}
@@ -58,19 +74,10 @@ fi
 
 update_qclient_link() {
     local VERSION=$1
-    echo "Switching to qclient version: $VERSION"
-    if [ -L "$LINKED_QCLIENT_BINARY" ]; then
-        log "Removing existing link $LINKED_QCLIENT_BINARY"
-        sudo rm $LINKED_QCLIENT_BINARY
-        if [ $? -eq 0 ]; then
-            log "Successfully removed existing link $LINKED_QCLIENT_BINARY"
-        else
-            log "Failed to remove existing link $LINKED_QCLIENT_BINARY"
-            return 1
-        fi
-    fi
+    echo "Switching qclient link to qclient version: $VERSION"
+
     log "Linking link $LINKED_QCLIENT_BINARY to ${QUIL_CLIENT_PATH}/qclient-$VERSION-$OS_ARCH"
-    sudo ln -s "${QUIL_CLIENT_PATH}/qclient-$VERSION-$OS_ARCH" "${LINKED_QCLIENT_BINARY}"
+    sudo ln -sf "${QUIL_CLIENT_PATH}/qclient-$VERSION-$OS_ARCH" "${LINKED_QCLIENT_BINARY}"
     if [ $? -eq 0 ]; then
         log "Successfully linked $LINKED_QCLIENT_BINARY to ${QUIL_CLIENT_PATH}/qclient-$VERSION-$OS_ARCH"
     else
@@ -87,20 +94,10 @@ fi
 
 update_node_link() {
     local VERSION=$1
-    echo "Switching to node version: $VERSION"
+    echo "Switching node link to node version: $VERSION"
 
-    if [ -L "$LINKED_NODE_BINARY" ]; then
-        log "Removing existing link $LINKED_NODE_BINARY"
-        sudo rm $LINKED_NODE_BINARY
-        if [ $? -eq 0 ]; then
-            log "Successfully removed existing link $LINKED_NODE_BINARY"
-        else
-            log "Failed to remove existing link $LINKED_NODE_BINARY"
-            return 1
-        fi
-    fi
     log "Linking link $LINKED_NODE_BINARY to ${QUIL_NODE_PATH}/node-$VERSION-$OS_ARCH"
-    sudo ln -s "${QUIL_NODE_PATH}/node-$VERSION-$OS_ARCH" "${LINKED_NODE_BINARY}"
+    sudo ln -sf "${QUIL_NODE_PATH}/node-$VERSION-$OS_ARCH" "${LINKED_NODE_BINARY}"
     if [ $? -eq 0 ]; then
         log "Successfully linked $LINKED_NODE_BINARY to ${QUIL_NODE_PATH}/node-$VERSION-$OS_ARCH"
     else

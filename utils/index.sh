@@ -186,6 +186,10 @@ set_release_version() {
     new_version="$1" yq -i e '.release_version = strenv(new_version)' $QTOOLS_CONFIG_FILE
 }
 
+set_release_qclient_version() {
+    new_version="$1" yq -i e '.release_qclient_version = strenv(new_version)' $QTOOLS_CONFIG_FILE
+}
+
 fetch_node_release_version() {
     local RELEASE_VERSION="$(curl -s https://releases.quilibrium.com/release | grep -oP "\-([0-9]+\.?)+\-" | head -n 1 | tr -d 'node-')"
     set_release_version $RELEASE_VERSION
@@ -194,6 +198,7 @@ fetch_node_release_version() {
 
 fetch_qclient_release_version() {
     local RELEASE_VERSION="$(curl -s https://releases.quilibrium.com/qclient-release | grep -oP "\-([0-9]+\.?)+\-" | head -n 1 | tr -d 'qclient-')"
+    set_release_qclient_version $RELEASE_VERSION
     echo $RELEASE_VERSION
 }
 
