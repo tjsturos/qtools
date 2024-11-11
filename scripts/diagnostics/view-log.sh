@@ -21,7 +21,7 @@ while [[ $# -gt 0 ]]; do
                 exit 1
             fi
             ;;
-        -n|--lines)
+        -n)
             LINES=$2
             shift
             ;;
