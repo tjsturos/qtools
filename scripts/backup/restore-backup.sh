@@ -11,10 +11,15 @@ PEER_ID=""
 FORCE_RESTORE=false
 CONFIRM=false
 OUTPUT_DIR=".config"
+STORE=""
 
 # Parse command-line arguments
 while [[ $# -gt 0 ]]; do
   case $1 in
+    --store)
+      STORE=true
+      shift
+      ;;
     --force)
       FORCE_RESTORE=true
       shift
@@ -94,7 +99,7 @@ if [ "$IS_BACKUP_ENABLED" == "true" ] || [ "$FORCE_RESTORE" == "true" ]; then
   fi
 
   # Restore .config directory
-  rsync -avz --ignore-existing -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR.config/" "$QUIL_NODE_PATH/$OUTPUT_DIR/"
+  rsync -avz --ignore-existing -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR.config/${STORE:+store/}" "$QUIL_NODE_PATH/$OUTPUT_DIR/${STORE:+store/}"
 
   # Move existing CSV files to .bak if they exist
   for csv_file in "$QTOOLS_PATH"/unclaimed_*_balance.csv; do
