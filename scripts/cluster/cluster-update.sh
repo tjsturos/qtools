@@ -19,13 +19,15 @@ if [[ "$*" == *"--update-qtools"* ]]; then
 fi
 
 # Main script execution
+qtools self-update
 qtools update-node
 
 if [ "$IS_MASTER" == "true" ] || [ "$(is_master)" == "true" ]; then
     if [ "$UPDATE_QTOOLS" == "true" ]; then
         ssh_command_to_each_server "qtools self-update"
     fi
-        ssh_command_to_each_server "qtools update-node"
+
+    ssh_command_to_each_server "qtools update-node"
 fi
 
 
