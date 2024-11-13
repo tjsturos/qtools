@@ -188,6 +188,25 @@ get_cluster_ips() {
     echo "${ips[@]}"
 }
 
+get_cluster_worker_count() {
+    local ip="$1"
+    local config=$(yq eval . $QTOOLS_CONFIG_FILE)
+    local servers=$(echo "$config" | yq eval '.service.clustering.servers' -)
+    local server_count=$(echo "$servers" | yq eval '. | length' -)
+
+    for ((i=0; i<server_count; i++)); do
+        local server=$(echo "$servers" | yq eval ".[$i]" -)
+        local server_ip=$(echo "$server" | yq eval '.ip' -)
+        if [ "$server_ip" == "$ip" ]; then
+            local data_worker_count=$(echo "$server" | yq eval '.data_worker_count // "0"' -)
+            echo "$data_worker_count"
+            return
+        fi
+    done
+
+    echo "0"
+}
+
 ssh_command_to_each_server() {
     local command=$1
     local config=$(yq eval . $QTOOLS_CONFIG_FILE)
