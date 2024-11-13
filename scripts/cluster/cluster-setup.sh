@@ -4,7 +4,6 @@
 TOTAL_CORES=$(nproc)
 
 # Set default values
-DATA_WORKER_COUNT=$TOTAL_CORES
 MASTER=false
 DRY_RUN=false
 LOCAL_IP=$(get_local_ip)
@@ -75,12 +74,6 @@ if [ "$server_count" -eq 0 ]; then
     exit 1
 fi
 
-create_data_worker_service_file
-
-if [ "$MASTER" == "true" ]; then
-    create_master_service_file
-fi
-
 update_local_quil_config() {
     local data_worker_count=$1
 
@@ -104,12 +97,11 @@ update_local_quil_config() {
 
 if [ "$DRY_RUN" == "false" ]; then  
     yq eval -i ".service.clustering.local_data_worker_count = $DATA_WORKER_COUNT" $QTOOLS_CONFIG_FILE
+    echo -e "${BLUE}${INFO_ICON} [ LOCAL ] [ $LOCAL_IP ] Setting this server's data_worker_count to $DATA_WORKER_COUNT${RESET}"
     update_local_quil_config $DATA_WORKER_COUNT
 else
     echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ LOCAL ] [ $LOCAL_IP ] Would set $QTOOLS_CONFIG_FILE's data_worker_count to $DATA_WORKER_COUNT${RESET}"
 fi
-
-
 
 if [ "$DRY_RUN" == "false" ]; then
     echo "Enabling $QUIL_SERVICE_NAME"

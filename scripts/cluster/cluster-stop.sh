@@ -3,7 +3,13 @@
 IS_MASTER=false
 DRY_RUN=false
 MAX_CORES=$(nproc)
-DATA_WORKER_COUNT=$(yq eval ".service.clustering.local_data_worker_count // \"$MAX_CORES\"" $QTOOLS_CONFIG_FILE)
+DATA_WORKER_COUNT=$(yq eval ".service.clustering.local_data_worker_count" $QTOOLS_CONFIG_FILE)
+
+if [ "$DATA_WORKER_COUNT" == "null" ]; then
+    DATA_WORKER_COUNT=$MAX_CORES
+fi
+
+echo -e "${BLUE}${INFO_ICON} Found configuration for $DATA_WORKER_COUNT data workers${RESET}"
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
