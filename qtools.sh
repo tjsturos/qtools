@@ -91,6 +91,7 @@ export GOROOT=$GO_BIN_DIR/go
 export GOPATH=$HOME/go
 export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
 export QTOOLS_CONFIG_FILE=$QTOOLS_PATH/config.yml
+export QUIL_KEYS_FILE="$QUIL_NODE_PATH/.config/keys.yml"
 export QUIL_CONFIG_FILE="$QUIL_NODE_PATH/.config/config.yml"
 export QUIL_TESTNET_CONFIG_FILE="$QUIL_NODE_PATH/test/.config/config.yml"
 

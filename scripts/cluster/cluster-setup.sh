@@ -183,6 +183,19 @@ copy_quil_config_to_server() {
     fi
 }
 
+copy_quil_keys_to_server() {
+    local IP=$1
+    local REMOTE_USER=$2
+    local SSH_PORT=$3
+    if [ "$DRY_RUN" == "false" ]; then  
+        echo -e "${BLUE}${INFO_ICON} Copying $QUIL_KEYS_FILE to $IP ($REMOTE_USER)${RESET}"
+        ssh_to_remote $IP $REMOTE_USER $SSH_PORT "mkdir -p ~/ceremonyclient/node/.config"
+        scp_to_remote "$QUIL_KEYS_FILE $REMOTE_USER@$IP:~/ceremonyclient/node/.config/keys.yml" $SSH_PORT
+    else
+        echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would copy $QUIL_KEYS_FILE to $IP ($REMOTE_USER)${RESET}"
+    fi
+}
+
 copy_cluster_config_to_server() {
     local IP=$1
     local REMOTE_USER=$2
@@ -232,6 +245,7 @@ if [ "$MASTER" == "true" ]; then
 
         if ! echo "$(hostname -I)" | grep -q "$ip"; then
             copy_quil_config_to_server "$ip" "$remote_user" "$ssh_port"
+            copy_quil_keys_to_server "$ip" "$remote_user" "$ssh_port"
             copy_cluster_config_to_server "$ip" "$remote_user" "$ssh_port"
             setup_remote_data_workers "$ip" "$remote_user" "$ssh_port" "$data_worker_count" &
             # Call the function to set up the remote firewall
