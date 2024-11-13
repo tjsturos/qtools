@@ -27,6 +27,8 @@ if ! [[ "$DATA_WORKER_COUNT" =~ ^[1-9][0-9]*$ ]]; then
     exit 1
 fi
 
+echo -e "${BLUE}${INFO_ICON} Found configuration for $DATA_WORKER_COUNT data workers${RESET}"
+
 if [ "$(is_master)" == "true" ]; then
     # Adjust MAX_CORES if START_CORE_INDEX is 1
     echo "Adjusting max cores available to $((MAX_CORES - 1)) (from $MAX_CORES) due to starting the master node on core 0"
@@ -39,6 +41,7 @@ if [ "$DATA_WORKER_COUNT" -gt "$MAX_CORES" ]; then
     echo "DATA_WORKER_COUNT adjusted down to maximum: $DATA_WORKER_COUNT"
 fi
 
+echo -e "${BLUE}${INFO_ICON} Starting local data worker services on core 1 with count $DATA_WORKER_COUNT${RESET}"
 start_local_data_worker_services 1 $DATA_WORKER_COUNT
 
 if [ "$(is_master)" == "true" ]; then
