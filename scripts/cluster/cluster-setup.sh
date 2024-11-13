@@ -9,6 +9,11 @@ MASTER=false
 DRY_RUN=false
 LOCAL_IP=$(get_local_ip)
 
+DATA_WORKER_COUNT=$(get_cluster_worker_count "$LOCAL_IP")
+if [ "$DATA_WORKER_COUNT" == "0" ]; then
+    DATA_WORKER_COUNT=$TOTAL_CORES
+fi
+
 # Function to display usage information
 usage() {
     echo "Usage: $0 [--master] [--dry-run]"
