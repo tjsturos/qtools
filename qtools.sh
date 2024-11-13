@@ -172,7 +172,7 @@ case "$1" in
       qtools install-grpc
     fi
     ;;
-  cluster-start|cluster-stop|cluster-enable|cluster-setup|cluster-add-server|cluster-update-server|cluster-remove-server|cluster-update)
+  cluster-start|cluster-stop|cluster-enable|cluster-setup|cluster-add-server|cluster-update-server|cluster-remove-server|cluster-update|status|start|stop|restart|enable|disable)
     source $QTOOLS_PATH/scripts/cluster/utils.sh
     ;;
   start)
