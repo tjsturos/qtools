@@ -93,6 +93,7 @@ if [ "$IS_BACKUP_ENABLED" == "true" ] || [ "$FORCE_RESTORE" == "true" ]; then
   OUTPUT_DIR=".config"
   if [ ! -z "$STORE" ]; then
     OUTPUT_DIR="$OUTPUT_DIR/store"
+    mkdir -p $OUTPUT_DIR
   fi
 
   # Backup existing .config directory
@@ -106,25 +107,28 @@ if [ "$IS_BACKUP_ENABLED" == "true" ] || [ "$FORCE_RESTORE" == "true" ]; then
   # Restore .config directory
   rsync -avz --ignore-existing -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR.config/${STORE:+store/}" "$QUIL_NODE_PATH/$OUTPUT_DIR/}"
 
-  # Move existing CSV files to .bak if they exist
-  for csv_file in "$QTOOLS_PATH"/unclaimed_*_balance.csv; do
-    if [ -f "$csv_file" ]; then
-      bak_file="${csv_file}.bak"
-      if [ -f "$bak_file" ]; then
-        rm "$bak_file"
-      fi
-      mv "$csv_file" "$bak_file"
-      echo "Moved $csv_file to $bak_file"
-    fi
-  done
-  
-  # Restore CSV files from stats directory to $QTOOLS_PATH
-  rsync -avz --ignore-existing \
-    --include="unclaimed_*_balance.csv" \
-    --exclude="*" \
-    -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
-    "$REMOTE_USER@$REMOTE_URL:${REMOTE_DIR}stats/" "$QTOOLS_PATH/"
 
+  if [ ! -z "$STORE" ]; then
+    # Move existing CSV files to .bak if they exist
+    for csv_file in "$QTOOLS_PATH"/unclaimed_*_balance.csv; do
+      if [ -f "$csv_file" ]; then
+        bak_file="${csv_file}.bak"
+        if [ -f "$bak_file" ]; then
+          rm "$bak_file"
+        fi
+        mv "$csv_file" "$bak_file"
+        echo "Moved $csv_file to $bak_file"
+      fi
+    done
+    
+    # Restore CSV files from stats directory to $QTOOLS_PATH
+    rsync -avz --ignore-existing \
+      --include="unclaimed_*_balance.csv" \
+      --exclude="*" \
+      -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
+      "$REMOTE_USER@$REMOTE_URL:${REMOTE_DIR}stats/" "$QTOOLS_PATH/"
+
+  fi
   log "Restore completed successfully."
 else
   log "Restore for $LOCAL_HOSTNAME cannot be done while backups are disabled. Modify the qtools settings.backup config (qtools edit-qtools-config) to enable, or use the --force flag to bypass this check."
