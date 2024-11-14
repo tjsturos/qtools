@@ -1,22 +1,15 @@
 #!/bin/bash
 # HELP: Gets this node\'s Peer ID. Attempts to use grpcurl to get the peer id, but in the event of failure, will use the node binary\'s -peer-id command.
+# Run the node-get-peer-id script with the extracted Peer ID
+cd $QUIL_NODE_PATH
 
-PEER_ID="$(grpcurl -plaintext localhost:8337 quilibrium.node.node.pb.NodeService.GetNodeInfo 2> /dev/null | grep -oP '"peerId":\s*"\K[^"]+')"
+OUTPUT="$($LINKED_NODE_BINARY --peer-id)"
 
-# Check if a Peer ID was found
-if [ ! -n "$PEER_ID" ]; then
-    # Run the node-get-peer-id script with the extracted Peer ID
-    cd $QUIL_NODE_PATH
+PEER_ID="$(echo "$OUTPUT" | grep -oP 'Peer ID: \K.*')"
 
-    OUTPUT="$($LINKED_NODE_BINARY --peer-id)"
-
-    PEER_ID="$(echo "$OUTPUT" | grep -oP 'Peer ID: \K.*')"
-
-    if [ -n "$PEER_ID" ]; then
-        echo "$PEER_ID"
-    else
-        log "Could not find Peer ID."
-    fi
-else
+if [ -n "$PEER_ID" ]; then
     echo "$PEER_ID"
+else
+    log "Could not find Peer ID."
 fi
+ 
