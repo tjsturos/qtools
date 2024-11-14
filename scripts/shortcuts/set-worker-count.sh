@@ -1,6 +1,6 @@
 #!/bin/bash
 # HELP: Changes the number of workers for the Quilibrium service.
-# USAGE: qtools change-worker-count
+# USAGE: qtools set-worker-count
 # PARAM: <number>: Set the number of workers (between 4 and the total number of CPU threads)
 # PARAM: auto: Set the number of workers to automatic (default)
 # PARAM: 0: Equivalent to 'auto'
@@ -75,8 +75,6 @@ else
     echo "Max workers set to $result."
 fi
 
-qtools stop --quick
-
 qtools update-service
 
-qtools start --quick
+qtools restart
