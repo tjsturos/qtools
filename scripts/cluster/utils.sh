@@ -262,6 +262,34 @@ copy_file_to_each_server() {
     done
 }
 
+ssh_command_to_server() {
+    local ip=$1
+    local command=$2
+    
+    local config=$(yq eval . $QTOOLS_CONFIG_FILE)
+    local servers=$(echo "$config" | yq eval '.service.clustering.servers' -)
+    local server_count=$(echo "$servers" | yq eval '. | length' -)
+    
+    for ((i=0; i<server_count; i++)); do
+        local server=$(echo "$servers" | yq eval ".[$i]" -)
+        local server_ip=$(echo "$server" | yq eval '.ip' -)
+        
+        if [ "$server_ip" == "$ip" ]; then
+            local remote_user=$(echo "$server" | yq eval ".user // \"$DEFAULT_USER\"" -)
+            local ssh_port=$(echo "$server" | yq eval ".ssh_port // \"$DEFAULT_SSH_PORT\"" -)
+            if [ "$DRY_RUN" == "false" ]; then
+                if ! echo "$(hostname -I)" | grep -q "$ip"; then
+                    echo "Running $command on $ip ($remote_user)"
+                    ssh_to_remote $ip $remote_user $ssh_port "$command" &
+                    return
+                fi
+            else
+                echo "[DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would copy $file_path to $remote_user@$ip:$destination_path"
+            fi
+        fi
+    done
+}
+
 
 update_quil_config() {
     config=$(yq eval . $QTOOLS_CONFIG_FILE)
