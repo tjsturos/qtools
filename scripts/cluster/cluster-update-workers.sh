@@ -6,10 +6,6 @@ LOCAL_IP=$(get_local_ip)
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
-        --ip)
-            IP="$2"
-            shift 2
-            ;;
         --dry-run)
             DRY_RUN=true
             shift
@@ -21,14 +17,6 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-if [ -z "$IP" ]; then
-    echo "Error: --ip parameter is required"
-    exit 1
-fi
-
-# Get worker count for the IP
-WORKER_COUNT=$(get_cluster_worker_count $IP)
-
 update_remote_workers() {
     local ip=$1
     local worker_count=$2
@@ -38,7 +26,11 @@ update_remote_workers() {
         exit 1
     fi
 
-    echo "Setting up $worker_count workers on $ip"
+    echo -e "${BLUE}${INFO_ICON} [ $ip ] Updating number of workers to $worker_count${RESET}"
+
+    if [ "$DRY_RUN" == "true" ]; then
+        return
+    fi
 
     # Stop all existing data worker services
     ssh_command_to_server $ip "sudo systemctl stop dataworker@*.service"
@@ -53,41 +45,94 @@ update_remote_workers() {
     ssh_command_to_server $ip "sudo systemctl start dataworker@{1..$worker_count}.service"
 }
 
-# Get all servers from config
-servers=$(yq eval '.service.clustering.servers' $QTOOLS_CONFIG_FILE)
-server_count=$(echo "$servers" | yq eval '. | length' -)
+update_local_workers() {
+    local worker_count=$1
 
-# Loop through each server
-for ((i=0; i<server_count; i++)); do
-    server=$(echo "$servers" | yq eval ".[$i]" -)
-    server_ip=$(echo "$server" | yq eval '.ip' -)
-    
-    # Skip if IP doesn't match target IP
-    if [ "$server_ip" != "$IP" ]; then
-        continue
+    echo -e "${BLUE}${INFO_ICON} [LOCAL] Updating number of workers to $worker_count${RESET}"
+
+    if [ "$DRY_RUN" == "true" ]; then
+        return
     fi
-    
-    # Get worker count for this server
-    worker_count=$(get_cluster_worker_count $server_ip)
-    
-    if [ "$DRY_RUN" == "false" ]; then
-        if [ "$server_ip" != "$LOCAL_IP" ]; then
-            update_remote_workers $server_ip $worker_count
-        else
-            echo -e "${BLUE}${INFO_ICON} [LOCAL] [ $LOCAL_IP ] Would update $server_ip to run $worker_count workers${RESET}"
-            sudo systemctl stop dataworker@*.service
-            sudo systemctl disable dataworker@.service
-            sudo systemctl enable dataworker@{1..$worker_count}.service
-            sudo systemctl start dataworker@{1..$worker_count}.service
+
+    sudo systemctl stop dataworker@*.service
+    sudo systemctl disable dataworker@.service
+    sudo systemctl enable dataworker@{1..$worker_count}.service
+    sudo systemctl start dataworker@{1..$worker_count}.service
+}
+
+
+update_workers() {
+    # Get all servers from config
+    servers=$(yq eval '.service.clustering.servers' $QTOOLS_CONFIG_FILE)
+    server_count=$(echo "$servers" | yq eval '. | length' -)
+
+    # Loop through each server
+    for ((i=0; i<server_count; i++)); do
+        server=$(echo "$servers" | yq eval ".[$i]" -)
+        server_ip=$(echo "$server" | yq eval '.ip' -)
+        worker_count=$(echo "$server" | yq eval '.data_worker_count' -)
+      
+        if [ "$DRY_RUN" == "false" ]; then
+            if [ "$server_ip" != "$LOCAL_IP" ]; then
+                update_remote_workers $server_ip $worker_count
+            else
+                update_local_workers $worker_count
+            fi
         fi
-    else
-        if [ "$server_ip" != "$LOCAL_IP" ]; then
-            echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ $server_ip ] Would update $server_ip to run $worker_count workers${RESET}"
+    done
+}
+
+verify_changes() {
+    # Verify worker counts match expected values
+    RESTART_MASTER=true
+    for ((i=0; i<server_count; i++)); do
+        server=$(echo "$servers" | yq eval ".[$i]" -)
+        server_ip=$(echo "$server" | yq eval '.ip' -)
+        
+        # Get expected worker count
+        expected_count=$(get_cluster_worker_count $server_ip)
+
+        if [ "$DRY_RUN" == "false" ]; then
+            if [ "$server_ip" != "$LOCAL_IP" ]; then
+                # Get actual worker count from remote server
+                actual_count=$(ssh_command_to_server $server_ip "systemctl list-units --type=service --status=running | grep dataworker | wc -l")
+                echo "Server $server_ip: Expected $expected_count workers, found $actual_count running"
+                
+                if [ "$actual_count" != "$expected_count" ]; then
+                    echo -e "${RED}${WARNING_ICON} Warning: Worker count mismatch on $server_ip${RESET}"
+                    echo -e "${RED}${WARNING_ICON} Expected: $expected_count, Actual: $actual_count${RESET}"
+                    RESTART_MASTER=false
+                else
+                    echo -e "${GREEN}${CHECK_ICON} Worker count verified on $server_ip${RESET}"
+                fi
+            else
+                # Get actual worker count on local machine
+                actual_count=$(systemctl list-units --type=service | grep dataworker | wc -l)
+                echo "Local server: Expected $expected_count workers, found $actual_count running"
+                
+                if [ "$actual_count" != "$expected_count" ]; then
+                    echo -e "${RED}${WARNING_ICON} Warning: Local worker count mismatch${RESET}"
+                    echo -e "${RED}${WARNING_ICON} Expected: $expected_count, Actual: $actual_count${RESET}"
+                    RESTART_MASTER=false
+                else
+                    echo -e "${GREEN}${CHECK_ICON} Local worker count verified${RESET}"
+                fi
+            fi
         else
-            echo -e "${BLUE}${INFO_ICON} [DRY RUN] [LOCAL] [ $LOCAL_IP ] Would update $server_ip to run $worker_count workers${RESET}"
+            echo -e "${BLUE}${INFO_ICON} [DRY RUN] Would verify worker count on $server_ip matches $expected_count${RESET}"
         fi
-    fi
-done
+    done
+    echo "$RESTART_MASTER"
+}
+
+update_workers
 
 update_quil_config $DRY_RUN
+
+wait 
+
+if [ "$(verify_changes)" == "true" ] && [ "$DRY_RUN" == "false" ]; then
+    qtools restart
+fi
+
 
