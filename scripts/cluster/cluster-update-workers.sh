@@ -95,7 +95,7 @@ verify_changes() {
         if [ "$DRY_RUN" == "false" ]; then
             if [ "$server_ip" != "$LOCAL_IP" ]; then
                 # Get actual worker count from remote server
-                actual_count=$(ssh_command_to_server $server_ip "systemctl list-units --type=service --status=running | grep dataworker | wc -l")
+                actual_count=$(ssh_command_to_server $server_ip "systemctl list-units --type=service --state=running | grep dataworker | wc -l")
                 echo "Server $server_ip: Expected $expected_count workers, found $actual_count running"
                 
                 if [ "$actual_count" != "$expected_count" ]; then
@@ -107,7 +107,7 @@ verify_changes() {
                 fi
             else
                 # Get actual worker count on local machine
-                actual_count=$(systemctl list-units --type=service | grep dataworker | wc -l)
+                actual_count=$(systemctl list-units --type=service --state=running| grep dataworker | wc -l)
                 echo "Local server: Expected $expected_count workers, found $actual_count running"
                 
                 if [ "$actual_count" != "$expected_count" ]; then
