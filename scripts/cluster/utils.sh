@@ -151,7 +151,7 @@ disable_local_data_worker_services() {
     local START_CORE_INDEX=$1
     local END_CORE_INDEX=$2
     # start the master node
-    bash -c "sudo systemctl disable $QUIL_DATA_WORKER_SERVICE_NAME\@{$START_CORE_INDEX..$END_CORE_INDEX}"
+    bash -c "sudo systemctl disable $QUIL_DATA_WORKER_SERVICE_NAME@.service"
 }
 
 start_local_data_worker_services() {
@@ -209,6 +209,7 @@ get_cluster_worker_count() {
 
 ssh_command_to_each_server() {
     local command=$1
+    
     local config=$(yq eval . $QTOOLS_CONFIG_FILE)
     local servers=$(echo "$config" | yq eval '.service.clustering.servers' -)
     local server_count=$(echo "$servers" | yq eval '. | length' -)
@@ -223,13 +224,14 @@ ssh_command_to_each_server() {
             if [ "$DRY_RUN" == "false" ]; then
                 if ! echo "$(hostname -I)" | grep -q "$ip"; then
                     echo "Running $command on $ip ($remote_user)"
-                    ssh_to_remote $ip $remote_user $ssh_port "$command" 
+                    ssh_to_remote $ip $remote_user $ssh_port "$command" &
                 fi
             else
                 echo "[DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would run $command on $remote_user@$ip"
             fi
         fi
     done
+    wait
 }
 
 copy_file_to_each_server() {
