@@ -102,7 +102,7 @@ if [ "$IS_BACKUP_ENABLED" == "true" ] || [ "$FORCE_RESTORE" == "true" ]; then
 
   OUTPUT_DIR=".config"
   if [ ! -z "$STORE" ]; then
-    OUTPUT_DIR="$OUTPUT_DIR/store"
+    OUTPUT_DIR="$OUTPUT_DIR"
     mkdir -p $OUTPUT_DIR
   fi
 
