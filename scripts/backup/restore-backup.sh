@@ -123,7 +123,7 @@ if [ "$IS_BACKUP_ENABLED" == "true" ] || [ "$FORCE_RESTORE" == "true" ]; then
   fi
 
 
-  if [ ! -z "$STORE" ] && [ ! -z "$STATS" ]; then
+  if [ ! -z "$STORE" ] && [ "$STATS" == "true" ]; then
     # Move existing CSV files to .bak if they exist
     for csv_file in "$QTOOLS_PATH"/unclaimed_*_balance.csv; do
       if [ -f "$csv_file" ]; then
@@ -142,7 +142,6 @@ if [ "$IS_BACKUP_ENABLED" == "true" ] || [ "$FORCE_RESTORE" == "true" ]; then
       --exclude="*" \
       -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
       "$REMOTE_USER@$REMOTE_URL:${REMOTE_DIR}stats/" "$QTOOLS_PATH/"
-
   fi
   log "Restore completed successfully."
 else
