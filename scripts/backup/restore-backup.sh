@@ -114,7 +114,7 @@ if [ "$IS_BACKUP_ENABLED" == "true" ] || [ "$FORCE_RESTORE" == "true" ]; then
   if [ "$EXCLUDE_STORE" != "true" ]; then
     if [ "$STORE" == "true" ]; then
       log "Downloading store only"
-      rsync -avz --ignore-existing --no-delete -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR.config/store" "$QUIL_NODE_PATH/$OUTPUT_DIR/"
+      rsync -avz --ignore-existing -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR.config/store/" "$QUIL_NODE_PATH/$OUTPUT_DIR/store"
     else
       rsync -avz --ignore-existing -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR.config/" "$QUIL_NODE_PATH/$OUTPUT_DIR/"
     fi
