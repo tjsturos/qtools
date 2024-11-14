@@ -12,10 +12,15 @@ FORCE_RESTORE=false
 CONFIRM=false
 OUTPUT_DIR=".config"
 STORE=""
+EXCLUDE_STORE=""
 
 # Parse command-line arguments
 while [[ $# -gt 0 ]]; do
   case $1 in
+    --no-store)
+      EXCLUDE_STORE=true
+      shift
+      ;;
     --store)
       STORE=true
       shift
@@ -105,7 +110,11 @@ if [ "$IS_BACKUP_ENABLED" == "true" ] || [ "$FORCE_RESTORE" == "true" ]; then
   fi
 
   # Restore .config directory
-  rsync -avz --ignore-existing -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR.config/${STORE:+store/}" "$QUIL_NODE_PATH/$OUTPUT_DIR/}"
+  if [ -z "$EXCLUDE_STORE" ]; then
+    rsync -avz --ignore-existing -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR.config/${STORE:+store/}" "$QUIL_NODE_PATH/$OUTPUT_DIR/}"
+  else
+    rsync -avz --ignore-existing --exclude="store" -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR.config/" "$QUIL_NODE_PATH/$OUTPUT_DIR/"
+  fi
 
 
   if [ ! -z "$STORE" ]; then
