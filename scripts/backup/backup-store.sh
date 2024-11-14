@@ -11,9 +11,15 @@ CONFIRM=false
 PEER_ID=""
 FORCE_BACKUP=false
 AUTO=false
+NO_STORE=""
+
 # Parse command-line arguments
 while [[ $# -gt 0 ]]; do
   case $1 in
+    --no-store)
+      NO_STORE=true
+      shift
+      ;;
     --auto)
       AUTO=true
       shift
@@ -87,7 +93,7 @@ if [ "$IS_BACKUP_ENABLED" == "true" ] || [ "$FORCE_BACKUP" == "true" ]; then
   }
 
   # Perform the rsync backup for .config directory
-  if rsync -avzrP --delete-after -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" "$QUIL_NODE_PATH/.config" "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR"; then
+  if rsync -avzrP --delete-after ${NO_STORE:+--exclude "store"} -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" "$QUIL_NODE_PATH/.config" "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR"; then
     echo "Backup of .config directory completed successfully."
   else
     echo "Error: Backup of .config directory failed. Please check your rsync command and try again."
