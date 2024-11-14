@@ -111,5 +111,15 @@ restart_service() {
     sudo systemctl restart $QUIL_SERVICE_NAME
 }
 
-update_node_link $NODE_VERSION
-restart_service
+# Check if the current symlink target matches the desired version
+CURRENT_NODE_LINK=$(readlink -f "$LINKED_NODE_BINARY")
+DESIRED_NODE_LINK="${QUIL_NODE_PATH}/node-$NODE_VERSION-$OS_ARCH"
+
+if [ "$CURRENT_NODE_LINK" != "$DESIRED_NODE_LINK" ]; then
+    log "Node binary link needs updating"
+    update_node_link $NODE_VERSION
+    log "Restarting service"
+    restart_service
+fi
+
+
