@@ -100,12 +100,6 @@ if [ "$IS_BACKUP_ENABLED" == "true" ] || [ "$FORCE_RESTORE" == "true" ]; then
     exit 1
   fi
 
-  OUTPUT_DIR=".config"
-  if [ ! -z "$STORE" ]; then
-    OUTPUT_DIR="$OUTPUT_DIR/store"
-    mkdir -p $OUTPUT_DIR
-  fi
-
   # Backup existing .config directory
   if [ -d "$QUIL_NODE_PATH/$OUTPUT_DIR" ]; then
     if [ -d "$QUIL_NODE_PATH/$OUTPUT_DIR.bak" ]; then
@@ -114,11 +108,13 @@ if [ "$IS_BACKUP_ENABLED" == "true" ] || [ "$FORCE_RESTORE" == "true" ]; then
     mv $QUIL_NODE_PATH/$OUTPUT_DIR $QUIL_NODE_PATH/$OUTPUT_DIR.bak
   fi
 
+  mkdir -p $QUIL_NODE_PATH/$OUTPUT_DIR
+
   # Restore .config directory
   if [ "$EXCLUDE_STORE" != "true" ]; then
     if [ "$STORE" == "true" ]; then
       log "Downloading store only"
-      rsync -avz --ignore-existing -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR.config/store/" "$QUIL_NODE_PATH/$OUTPUT_DIR/store/"
+      rsync -avz --ignore-existing -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR.config/store" "$QUIL_NODE_PATH/$OUTPUT_DIR/"
     else
       rsync -avz --ignore-existing -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR.config/" "$QUIL_NODE_PATH/$OUTPUT_DIR/"
     fi
