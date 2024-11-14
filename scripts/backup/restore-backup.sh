@@ -13,10 +13,15 @@ CONFIRM=false
 OUTPUT_DIR=".config"
 STORE=""
 EXCLUDE_STORE=""
+STATS=""
 
 # Parse command-line arguments
 while [[ $# -gt 0 ]]; do
   case $1 in
+    --stats)
+      STATS=true
+      shift
+      ;;
     --no-store)
       EXCLUDE_STORE=true
       shift
@@ -118,7 +123,7 @@ if [ "$IS_BACKUP_ENABLED" == "true" ] || [ "$FORCE_RESTORE" == "true" ]; then
   fi
 
 
-  if [ ! -z "$STORE" ]; then
+  if [ ! -z "$STORE" ] && [ ! -z "$STATS" ]; then
     # Move existing CSV files to .bak if they exist
     for csv_file in "$QTOOLS_PATH"/unclaimed_*_balance.csv; do
       if [ -f "$csv_file" ]; then
