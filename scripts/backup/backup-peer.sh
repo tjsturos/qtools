@@ -1,30 +1,29 @@
 #!/bin/bash
-# HELP: Backs up store (if enabled in qtools config) to remote location.
+# HELP: Backs up peer config files (keys.yml and config.yml) to remote location.
 # PARAM: --confirm: prompts for confirmation before proceeding with the backup
 # PARAM: --peer-id <string>: the peer-id to use when backing up the config directory.
 # PARAM: --force: bypass the backup enabled check and force the backup operation.
-# Usage: qtools backup-store [--confirm]
-
+# Usage: qtools backup-peer [--confirm]
 
 IS_BACKUP_ENABLED="$(yq '.scheduled_tasks.backup.enabled // false' $QTOOLS_CONFIG_FILE)"
-
+CONFIRM=false
 PEER_ID=""
 FORCE_BACKUP=false
-CONFIG="$QUIL_NODE_PATH/.config"
+AUTO=false
+
 # Parse command-line arguments
 while [[ $# -gt 0 ]]; do
   case $1 in
-    --force)
-      FORCE_BACKUP=true
+    --auto)
+      AUTO=true
       shift
       ;;
-    --config)
+    --confirm) 
+      CONFIRM=true 
       shift
-      CONFIG="$1"
-      if [ ! -d "$CONFIG" ] || [ ! -d "$CONFIG/store" ] || [ -z "$(find "$CONFIG/store" -name "*.sst" 2>/dev/null)" ]; then
-        echo "Error: $CONFIG does not exist or does not contain a valid store directory with .sst files"
-        exit 1
-      fi
+      ;;
+    --force)
+      FORCE_BACKUP=true
       shift
       ;;
     --peer-id)
@@ -46,7 +45,38 @@ if [ "$IS_CLUSTERING_ENABLED" == "true" ] && [ "$(is_master)" == "false" ]; then
 fi
 
 if [ "$IS_BACKUP_ENABLED" == "true" ] || [ "$FORCE_BACKUP" == "true" ]; then
-  REMOTE_DIR="$(yq '.scheduled_tasks.backup.remote_backup_dir' $QTOOLS_CONFIG_FILE)/store"
+
+  if [ -z "$PEER_ID" ]; then
+    NODE_BACKUP_NAME="$(yq '.scheduled_tasks.backup.node_backup_name' $QTOOLS_CONFIG_FILE)"
+  
+    # see if there the default save dir is overridden
+    if [ -z "$NODE_BACKUP_NAME" ]; then
+      PEER_ID="$(qtools peer-id)"
+      NODE_BACKUP_NAME="$PEER_ID"
+    fi
+  else
+    NODE_BACKUP_NAME="$PEER_ID"
+  fi
+
+  # Check if NODE_BACKUP_NAME starts with "Qm"
+  if [[ ! "$NODE_BACKUP_NAME" =~ ^Qm ]]; then
+    echo "Error: Invalid backup name '$NODE_BACKUP_NAME'. Backup name must start with 'Qm'."
+    exit 1
+  fi
+
+  echo "Backing up peer config to $NODE_BACKUP_NAME"
+
+  # Add confirmation prompt if --confirm flag is set
+  if [ "$CONFIRM" == "true" ]; then
+    read -p "Do you want to continue with the peer config backup to $NODE_BACKUP_NAME? (y/n) " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+      echo "Backup cancelled."
+      exit 0
+    fi
+  fi
+
+  REMOTE_DIR="$(yq '.scheduled_tasks.backup.remote_backup_dir' $QTOOLS_CONFIG_FILE)/$NODE_BACKUP_NAME/"
   REMOTE_URL="$(yq '.scheduled_tasks.backup.backup_url' $QTOOLS_CONFIG_FILE)"
   REMOTE_USER="$(yq '.scheduled_tasks.backup.remote_user' $QTOOLS_CONFIG_FILE)"
   SSH_KEY_PATH="$(yq '.scheduled_tasks.backup.ssh_key_path' $QTOOLS_CONFIG_FILE)"
@@ -58,23 +88,24 @@ if [ "$IS_BACKUP_ENABLED" == "true" ] || [ "$FORCE_BACKUP" == "true" ]; then
   fi
 
   # Attempt to create the remote directory (if it doesn't exist)
-  ssh -i "$SSH_KEY_PATH" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "$REMOTE_USER@$REMOTE_URL" "mkdir -p $REMOTE_DIR" > /dev/null 2>&1 || {
+  ssh -i "$SSH_KEY_PATH" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "$REMOTE_USER@$REMOTE_URL" "mkdir -p $REMOTE_DIR/.config" > /dev/null 2>&1 || {
     echo "Warning: Failed to create remote directory. It may already exist or there might be permission issues." >&2
   }
 
-  # Perform the rsync backup for .config directory
+  # Perform the rsync backup for specific config files
   if rsync -avzrP --delete-after \
-    --exclude="keys.yml" \
-    --exclude="config.yml" \
+    --include="keys.yml" \
+    --include="config.yml" \
+    --exclude="*" \
     -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
-    "$CONFIG/" "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR"; then
-    echo "Backup of store directory completed successfully."
+    "$QUIL_NODE_PATH/.config/" "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR/.config/"; then
+    echo "Backup of peer config files completed successfully."
   else
-    echo "Error: Backup of .config directory failed. Please check your rsync command and try again."
+    echo "Error: Backup of peer config files failed. Please check your rsync command and try again."
     exit 1
   fi
 
-  echo "All backups completed successfully."
+  echo "Peer config backup completed successfully."
 else
   log "Backup for $LOCAL_HOSTNAME is not enabled. Modify the qtools config (qtools edit-qtools-config) to enable."
 fi

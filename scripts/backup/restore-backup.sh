@@ -11,7 +11,7 @@ PEER_ID=""
 FORCE_RESTORE=false
 CONFIRM=false
 OUTPUT_DIR=".config"
-STORE=""
+
 EXCLUDE_STORE=""
 STATS=""
 
@@ -26,9 +26,7 @@ while [[ $# -gt 0 ]]; do
       EXCLUDE_STORE=true
       shift
       ;;
-    --store)
-      STORE=true
-      shift
+
       ;;
     --force)
       FORCE_RESTORE=true
@@ -54,109 +52,41 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-if [ "$IS_BACKUP_ENABLED" == "true" ] || [ "$FORCE_RESTORE" == "true" ]; then
-
- if [ -z "$PEER_ID" ]; then
-    NODE_BACKUP_NAME="$(yq '.scheduled_tasks.backup.node_backup_name' $QTOOLS_CONFIG_FILE)"
-  
-    # see if there the default save dir is overridden
-    if [ -z "$NODE_BACKUP_NAME" ]; then
-      PEER_ID="$(qtools peer-id)"
-      NODE_BACKUP_NAME="$PEER_ID"
-    fi
-  else
-    NODE_BACKUP_NAME="$PEER_ID"
+# Add confirmation prompt if --confirm flag is set
+if [ "$CONFIRM" == "true" ]; then
+  read -p "Do you want to continue with the backup to $NODE_BACKUP_NAME? (y/n) " -n 1 -r
+  echo
+  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    echo "Backup cancelled."
+    exit 0
   fi
+fi
 
-  echo "Restoring from $NODE_BACKUP_NAME"
+REMOTE_DIR="$(yq '.scheduled_tasks.backup.remote_backup_dir' $QTOOLS_CONFIG_FILE)/$NODE_BACKUP_NAME/"
+REMOTE_URL="$(yq '.scheduled_tasks.backup.backup_url' $QTOOLS_CONFIG_FILE)"
+REMOTE_USER="$(yq '.scheduled_tasks.backup.remote_user' $QTOOLS_CONFIG_FILE)"
+SSH_KEY_PATH="$(yq '.scheduled_tasks.backup.ssh_key_path' $QTOOLS_CONFIG_FILE)"
 
-  # Add confirmation prompt if --confirm flag is set
-  if [ "$CONFIRM" == "true" ]; then
-    read -p "Do you want to continue with the backup to $NODE_BACKUP_NAME? (y/n) " -n 1 -r
-    echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-      echo "Backup cancelled."
-      exit 0
-    fi
-  fi
-  
-  REMOTE_DIR="$(yq '.scheduled_tasks.backup.remote_backup_dir' $QTOOLS_CONFIG_FILE)/$NODE_BACKUP_NAME/"
-  REMOTE_URL="$(yq '.scheduled_tasks.backup.backup_url' $QTOOLS_CONFIG_FILE)"
-  REMOTE_USER="$(yq '.scheduled_tasks.backup.remote_user' $QTOOLS_CONFIG_FILE)"
-  SSH_KEY_PATH="$(yq '.scheduled_tasks.backup.ssh_key_path' $QTOOLS_CONFIG_FILE)"
+# Check if any required variable is empty
+if [ "$REMOTE_DIR" == "/$NODE_BACKUP_NAME/" ] || [ -z "$REMOTE_URL" ] || [ -z "$REMOTE_USER" ] || [ -z "$SSH_KEY_PATH" ]; then
+  echo "One or more required restore settings are missing in the configuration."
+  exit 1
+fi
 
-  # Check if any required variable is empty
-  if [ "$REMOTE_DIR" == "/$NODE_BACKUP_NAME/" ] || [ -z "$REMOTE_URL" ] || [ -z "$REMOTE_USER" ] || [ -z "$SSH_KEY_PATH" ]; then
-    echo "One or more required restore settings are missing in the configuration."
-    exit 1
-  fi
+log "Restoring $LOCAL_HOSTNAME from remote $REMOTE_URL:$REMOTE_DIR"
 
-  log "Restoring $LOCAL_HOSTNAME from remote $REMOTE_URL:$REMOTE_DIR"
+ssh -i $SSH_KEY_PATH -q -o BatchMode=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=5 $REMOTE_USER@$REMOTE_URL exit
 
-  ssh -i $SSH_KEY_PATH -q -o BatchMode=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=5 $REMOTE_USER@$REMOTE_URL exit
+if [ $? -ne 0 ]; then
+  echo "SSH $REMOTE_URL does not exist or is not reachable or must be connected to initially. Try 'ssh -i $SSH_KEY_PATH $REMOTE_USER@$REMOTE_URL' and accept the fingerprint, then try again."
+  exit 1
+fi
 
-  if [ $? -ne 0 ]; then
-    echo "SSH $REMOTE_URL does not exist or is not reachable or must be connected to initially. Try 'ssh -i $SSH_KEY_PATH $REMOTE_USER@$REMOTE_URL' and accept the fingerprint, then try again."
-    exit 1
-  fi
+qtools restore-peer ${PEER_ID:+"--peer-id $PEER_ID"}
 
-  # Backup existing .config directory
-  if [ -d "$QUIL_NODE_PATH/$OUTPUT_DIR" ]; then
-    if [ -d "$QUIL_NODE_PATH/$OUTPUT_DIR.bak" ]; then
-      rm -rf $QUIL_NODE_PATH/$OUTPUT_DIR.bak
-    fi
-    mv $QUIL_NODE_PATH/$OUTPUT_DIR $QUIL_NODE_PATH/$OUTPUT_DIR.bak
-  fi
-
-  mkdir -p $QUIL_NODE_PATH/$OUTPUT_DIR
-
-  # Restore .config directory
-  if [ "$EXCLUDE_STORE" != "true" ]; then
-    if [ "$STORE" == "true" ]; then
-      log "Downloading store only"
-      # Create temp directory
-      TEMP_DIR=$(mktemp -d)
-      # Download to temp directory first
-      log "Downloading store to $TEMP_DIR"
-      rsync -avz --ignore-existing -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR.config/store/" "$TEMP_DIR/"
-      # Remove existing store directory if it exists
-      log "Removing existing store directory if it exists"
-      rm -rf "$QUIL_NODE_PATH/$OUTPUT_DIR/store"
-      # Move from temp to final location
-      log "Moving from temp to final location"
-      mv "$TEMP_DIR" "$QUIL_NODE_PATH/$OUTPUT_DIR/store"
-      log "Removing temp directory"
-      rm -rf "$TEMP_DIR"
-    else
-      rsync -avz --ignore-existing -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR.config/" "$QUIL_NODE_PATH/$OUTPUT_DIR/"
-    fi
-  else
-    log "Excluding store"
-    rsync -avz --ignore-existing --exclude "store" -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR.config/" "$QUIL_NODE_PATH/$OUTPUT_DIR"
-  fi
-
-
-  if [ ! -z "$STORE" ] && [ "$STATS" == "true" ]; then
-    # Move existing CSV files to .bak if they exist
-    for csv_file in "$QTOOLS_PATH"/unclaimed_*_balance.csv; do
-      if [ -f "$csv_file" ]; then
-        bak_file="${csv_file}.bak"
-        if [ -f "$bak_file" ]; then
-          rm "$bak_file"
-        fi
-        mv "$csv_file" "$bak_file"
-        echo "Moved $csv_file to $bak_file"
-      fi
-    done
-    
-    # Restore CSV files from stats directory to $QTOOLS_PATH
-    rsync -avz --ignore-existing \
-      --include="unclaimed_*_balance.csv" \
-      --exclude="*" \
-      -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
-      "$REMOTE_USER@$REMOTE_URL:${REMOTE_DIR}stats/" "$QTOOLS_PATH/"
-  fi
-  log "Restore completed successfully."
+# Restore .config directory
+if [ "$EXCLUDE_STORE" == "false" ]; then
+  qtools restore-store
 else
-  log "Restore for $LOCAL_HOSTNAME cannot be done while backups are disabled. Modify the qtools settings.backup config (qtools edit-qtools-config) to enable, or use the --force flag to bypass this check."
+  log "Excluding store"
 fi
