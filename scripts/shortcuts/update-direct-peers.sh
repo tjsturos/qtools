@@ -1,5 +1,11 @@
 #!/bin/bash
 
+
+DRY_RUN="false"
+if [ "$1" = "--dry-run" ]; then
+    DRY_RUN="true"
+fi
+
 # Get the multiaddr
 LOCAL_MULTIADDR=$(qtools get-multiaddr)
 
@@ -21,11 +27,15 @@ yq eval -i ".p2p.directPeers = []" $QUIL_CONFIG_FILE
 for peer in $REMOTE_PEERS; do
     if [ "$peer" != "$LOCAL_MULTIADDR" ]; then
         echo "Adding peer $peer to local config"
-        yq eval -i ".p2p.directPeers += [\"$peer\"]" $QUIL_CONFIG_FILE
+        if [ "$DRY_RUN" == "false" ]; then
+            yq eval -i ".p2p.directPeers += [\"$peer\"]" $QUIL_CONFIG_FILE
+        fi
     fi
 done
 
 # Cleanup
 rm $TEMP_FILE
 
-qtools restart
+if [ "$DRY_RUN" == "false" ]; then
+    qtools restart
+fi
