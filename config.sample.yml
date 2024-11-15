@@ -4,7 +4,7 @@ release_version: 1.4.19.1
 current_node_version: 1.4.19.1
 current_qclient_version: 1.4.19.1
 os_arch: linux-amd64
-qtools_version: 8
+qtools_version: 9
 qclient_cli_name: qclient
 ssh:
     allow_from_ip: false
@@ -90,6 +90,7 @@ scheduled_tasks:
 settings:
     listenAddr:
         mode: "udp"
+        port: 8336
     source_repository:
         default: https://github.com/QuilibriumNetwork/ceremonyclient.git
         # more for notes at this point
