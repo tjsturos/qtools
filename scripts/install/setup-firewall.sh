@@ -3,6 +3,7 @@
 
 log "Setting up firewall"
 
+# Disable IPv6 in UFW when adding new rules
 if [ -f /etc/default/ufw ]; then
     sudo sed -i 's/IPV6=yes/IPV6=no/' /etc/default/ufw
 fi
