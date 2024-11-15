@@ -1,8 +1,9 @@
 
 
 PUBLIC_IP=$(curl https://ipecho.net/plain ; echo)
-LISTEN_MODE=$(yq eval '.settings.listenAddr.mode' $QTOOLS_CONFIG_FILE)
-LISTEN_PORT=$(yq eval '.settings.listenAddr.port // "8336"' $QTOOLS_CONFIG_FILE)
+CURRENT_LISTEN_SETTINGS=$(yq eval '.p2p.listenMultiaddr' $QUIL_CONFIG_FILE)
+LISTEN_MODE=$(echo $CURRENT_LISTEN_SETTINGS | sed -n 's/.*\/ip4\/\([0-9\.]\+\)\/\([a-z]\+\)\/\([0-9]\+\).*/\2/p')
+LISTEN_PORT=$(echo $CURRENT_LISTEN_SETTINGS | sed -n 's/.*\/ip4\/\([0-9\.]\+\)\/\([a-z]\+\)\/\([0-9]\+\).*/\3/p')
 PEER_ID=$(qtools peer-id)
 PROTOCOL=""
 if [ "$LISTEN_MODE" = "udp" ]; then
