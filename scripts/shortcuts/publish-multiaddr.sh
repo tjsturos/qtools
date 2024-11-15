@@ -16,6 +16,13 @@ if [ ! -f $REMOTE_FILE ]; then
     echo 'directPeers: []' > $REMOTE_FILE
 fi
 
+# Check if multiaddr already exists
+if grep -q "$MULTIADDR" "$REMOTE_FILE"; then
+    echo 'Multiaddr already exists in the list'
+    exit 0
+fi
+
+
 # Remove any existing entries with the same peer-id
 yq eval -i 'del(.directPeers[] | select(test(\"$PEER_ID$\")))' $REMOTE_FILE
 
