@@ -17,7 +17,7 @@ if [ ! -f $REMOTE_FILE ]; then
 fi
 
 # Remove any existing entries with the same peer-id
-yq eval -i 'del(.directPeers[] | select(test(\"$PEER_ID$\"))' $REMOTE_FILE
+yq eval -i 'del(.directPeers[] | select(test(\"$PEER_ID$\")))' $REMOTE_FILE
 
 # Check if multiaddr already exists
 if ! grep -q \"$MULTIADDR\" $REMOTE_FILE; then
