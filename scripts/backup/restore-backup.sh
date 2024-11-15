@@ -114,7 +114,15 @@ if [ "$IS_BACKUP_ENABLED" == "true" ] || [ "$FORCE_RESTORE" == "true" ]; then
   if [ "$EXCLUDE_STORE" != "true" ]; then
     if [ "$STORE" == "true" ]; then
       log "Downloading store only"
-      rsync -avz --ignore-existing -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR.config/store/" "$QUIL_NODE_PATH/$OUTPUT_DIR/store"
+      # Create temp directory
+      TEMP_DIR=$(mktemp -d)
+      # Download to temp directory first
+      rsync -avz --ignore-existing -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR.config/store/" "$TEMP_DIR/"
+      # Remove existing store directory if it exists
+      rm -rf "$QUIL_NODE_PATH/$OUTPUT_DIR/store"
+      # Move from temp to final location
+      mv "$TEMP_DIR" "$QUIL_NODE_PATH/$OUTPUT_DIR/store"
+      rm -rf "$TEMP_DIR"
     else
       rsync -avz --ignore-existing -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR.config/" "$QUIL_NODE_PATH/$OUTPUT_DIR/"
     fi
