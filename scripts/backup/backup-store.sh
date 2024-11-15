@@ -64,6 +64,12 @@ if [ "$IS_BACKUP_ENABLED" == "true" ] || [ "$FORCE_BACKUP" == "true" ]; then
     NODE_BACKUP_NAME="$PEER_ID"
   fi
 
+  # Check if NODE_BACKUP_NAME starts with "Qm"
+  if [[ ! "$NODE_BACKUP_NAME" =~ ^Qm ]]; then
+    echo "Error: Invalid backup name '$NODE_BACKUP_NAME'. Backup name must start with 'Qm'."
+    exit 1
+  fi
+
   echo "Backing up to $NODE_BACKUP_NAME"
 
   # Add confirmation prompt if --confirm flag is set
