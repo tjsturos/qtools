@@ -14,6 +14,15 @@ else
 fi
 
 sudo ufw allow 8336
+sudo ufw deny out to 10.0.0.0/8
+sudo ufw deny out to 172.16.0.0/12
+sudo ufw deny out to 192.168.0.0/16
+
+# Block multicast
+sudo ufw deny out to 224.0.0.0/4
+
+# Block broadcast
+sudo ufw deny out to 255.255.255.255
 
 expected_rules=(
   "22                         ALLOW       Anywhere"
