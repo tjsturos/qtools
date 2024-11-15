@@ -2,6 +2,11 @@
 # HELP: Sets up the firewall to enable ports 22 (ssh), 8336 (other nodes), and 443 (general encrypted traffic).
 
 log "Setting up firewall"
+
+if [ -f /etc/default/ufw ]; then
+    sudo sed -i 's/IPV6=yes/IPV6=no/' /etc/default/ufw
+fi
+
 echo "y" | sudo ufw enable
 
 SSH_PORT=$(yq eval '.ssh.port //22' $QTOOLS_CONFIG_FILE)
@@ -13,7 +18,10 @@ else
     sudo ufw allow $SSH_PORT
 fi
 
+LISTEN_ADDR=$(yq eval '.settings.listenAddr.port' $QTOOLS_CONFIG_FILE)
 sudo ufw allow 8336
+
+# Block RFC1918 private address ranges
 sudo ufw deny out to 10.0.0.0/8
 sudo ufw deny out to 172.16.0.0/12
 sudo ufw deny out to 192.168.0.0/16
