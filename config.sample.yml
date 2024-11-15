@@ -4,7 +4,7 @@ release_version: 1.4.19.1
 current_node_version: 1.4.19.1
 current_qclient_version: 1.4.19.1
 os_arch: linux-amd64
-qtools_version: 9
+qtools_version: 10
 qclient_cli_name: qclient
 ssh:
     allow_from_ip: false
@@ -88,6 +88,12 @@ scheduled_tasks:
         enabled: false
         cron_expression: ""
 settings:
+    publish_multiaddr:
+        enabled: false
+        ssh_key_path: ~/.ssh/backup-server
+        remote_user: root
+        remote_host: backups.example.com
+        remote_file: ~/directPeersList.yml
     listenAddr:
         mode: "udp"
         port: 8336
