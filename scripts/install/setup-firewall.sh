@@ -3,17 +3,23 @@
 
 log "Setting up firewall"
 echo "y" | sudo ufw enable
-sudo ufw allow 22
+
+SSH_PORT=$(yq eval '.ssh.port //22' $QTOOLS_CONFIG_FILE)
+SSH_FROM_IP=$(yq eval '.ssh.allow_from_ip' $QTOOLS_CONFIG_FILE)
+
+if [ "$SSH_FROM_IP" != "false" ]; then
+    qtools set-ssh-port-from-ip
+else
+    sudo ufw allow $SSH_PORT
+fi
+
 sudo ufw allow 8336
-sudo ufw allow 443
 
 expected_rules=(
   "22                         ALLOW       Anywhere"
   "8336                       ALLOW       Anywhere"
-  "443                        ALLOW       Anywhere"
   "22 (v6)                    ALLOW       Anywhere (v6)"
   "8336 (v6)                  ALLOW       Anywhere (v6)"
-  "443 (v6)                   ALLOW       Anywhere (v6)"
 )
 
 # Get the actual output of 'ufw status'

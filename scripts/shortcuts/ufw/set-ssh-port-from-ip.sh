@@ -17,17 +17,18 @@ while [[ $# -gt 0 ]]; do
             fi
             shift 2
             ;;
+        --port)
+            SSH_PORT="$2"
+            echo "SSH port set to $SSH_PORT"
+            shift 2
+            ;;
         *)
             shift
             ;;
     esac
 done
 
-# If --ip is set, update the SSH_PORT
-if [ -n "$ALLOW_FROM_IP" ]; then
-    SSH_PORT=$(yq '.ssh.port // 22' $QTOOLS_CONFIG_FILE)
-    echo "SSH port set to $SSH_PORT"
-fi
+
 
 
 # Check if ALLOW_FROM_IP is set and not false
@@ -45,6 +46,9 @@ if [ -n "$ALLOW_FROM_IP" ] && [ "$ALLOW_FROM_IP" != "false" ]; then
 
     # Add new rule to allow SSH from specific IP
     sudo ufw allow from $ALLOW_FROM_IP to any port $SSH_PORT proto tcp
+
+    yq eval -i ".ssh.port = $SSH_PORT" $QTOOLS_CONFIG_FILE
+    yq eval -i ".ssh.allow_from_ip = '$ALLOW_FROM_IP'" $QTOOLS_CONFIG_FILE
 
     sudo ufw reload
 
