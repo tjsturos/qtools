@@ -67,8 +67,8 @@ process_log_line() {
     fi
 
     if [[ $line =~ "evaluating next frame" ]]; then
-        echo "Processing $line"
         frame_age=$(echo "$line" | jq -r '.frame_age')
+        echo "Received frame $frame_num (frame age $frame_age):"
         
         frame_data[$frame_num,received]=$frame_age
         # Add to frame numbers array if not already present
@@ -77,16 +77,16 @@ process_log_line() {
         fi
         
     elif [[ $line =~ "creating data shard ring proof" ]]; then
-        echo "Processing $line"
         frame_age=$(echo "$line" | jq -r '.frame_age')
         workers=$(echo "$line" | jq -r '.active_workers')
+        echo "Started creating proof for frame $frame_num ($workers workers, frame age $frame_age):"
         frame_data[$frame_num,proof_started]=$frame_age
         frame_data[$frame_num,proof_started,workers]=$workers
         
     elif [[ $line =~ "submitting data proof" ]]; then
-        echo "Processing $line"
         frame_age=$(echo "$line" | jq -r '.frame_age')
         ring_size=$(echo "$line" | jq -r '.ring')
+        echo "Completed creating proof for frame $frame_num ($ring_size ring, frame age $frame_age):"
         frame_data[$frame_num,proof_completed]=$frame_age
         frame_data[$frame_num,proof_completed,ring]=$ring_size
     fi
