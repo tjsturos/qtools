@@ -113,9 +113,9 @@ process_log_line() {
 
 echo "Processing historical logs (last $LINES lines)..."
 # Process historical logs first
-journalctl -u $QUIL_SERVICE_NAME -r -n "$LINES" -o cat | while read -r line; do
+while read -r line; do
     process_log_line "$line"
-done < $LOAD_PAST_FRAMES
+done < <(journalctl -u $QUIL_SERVICE_NAME -r -n "$LINES" -o cat)
 
 if $DEBUG; then
     echo "Frame numbers after processing historical logs: ${frame_numbers[@]}"
