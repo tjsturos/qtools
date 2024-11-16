@@ -130,7 +130,7 @@ if $ONE_SHOT; then
 fi
 
 # Now follow new logs
-journalctl -f -u $QUIL_SERVICE_NAME -o cat | while read -r line; do
+while read -r line; do
     process_log_line "$line"
     
     # Display stats every 10 seconds
@@ -138,4 +138,4 @@ journalctl -f -u $QUIL_SERVICE_NAME -o cat | while read -r line; do
         display_stats
         LAST_DISPLAY=$(date +%s)
     fi
-done
+done < <(journalctl -f -u $QUIL_SERVICE_NAME -o cat)
