@@ -7,6 +7,7 @@ frame_numbers=()
 # Start monitoring logs
 # Default number of lines to process
 LINES=1000
+ONE_SHOT=false
 
 # Parse command line args
 while [[ $# -gt 0 ]]; do
@@ -14,6 +15,10 @@ while [[ $# -gt 0 ]]; do
     -n|--lines)
       LINES="$2"
       shift 2
+      ;;
+    -o|--one-shot)
+      ONE_SHOT=true
+      shift
       ;;
     *)
       shift
@@ -100,6 +105,10 @@ done
 # Display initial stats
 
 display_stats
+
+if $ONE_SHOT; then
+    exit 0
+fi
 
 # Now follow new logs
 journalctl -f -u $QUIL_SERVICE_NAME -o cat | while read -r line; do
