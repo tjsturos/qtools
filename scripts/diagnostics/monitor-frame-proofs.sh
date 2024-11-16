@@ -20,7 +20,7 @@ display_stats() {
             local workers=${frame_data[$frame_num,proof_started,workers]}
             local ring=${frame_data[$frame_num,proof_completed,ring]}
 
-            echo "Frame $frame_num ($workers workers, $ring ring):"
+            echo "Frame $frame_num ($workers workers, ring $ring):"
             echo "  Received at: ${frame_data[$frame_num,received]} seconds"
             echo "  Proof started at: ${frame_data[$frame_num,proof_started]} seconds" 
             echo "  Proof completed at: ${frame_data[$frame_num,proof_completed]} seconds"
@@ -60,8 +60,8 @@ done
 # Function to process a single log line and record stats
 process_log_line() {
     local line="$1"
-    echo "Processing line: $line"
     if [[ $line =~ "evaluating next frame" ]]; then
+        echo "Processing $line"
         frame_num=$(echo "$line" | jq -r '.frame_number')
         frame_age=$(echo "$line" | jq -r '.frame_age')
         
@@ -72,6 +72,7 @@ process_log_line() {
         fi
         
     elif [[ $line =~ "creating data shard ring proof" ]]; then
+        echo "Processing $line"
         frame_num=$(echo "$line" | jq -r '.frame_number')
         frame_age=$(echo "$line" | jq -r '.frame_age')
         workers=$(echo "$line" | jq -r '.active_workers')
@@ -79,6 +80,7 @@ process_log_line() {
         frame_data[$frame_num,proof_started,workers]=$workers
         
     elif [[ $line =~ "submitting data proof" ]]; then
+        echo "Processing $line"
         frame_num=$(echo "$line" | jq -r '.frame_number')
         frame_age=$(echo "$line" | jq -r '.frame_age')
         ring_size=$(echo "$line" | jq -r '.ring')
