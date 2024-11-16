@@ -49,12 +49,12 @@ display_stats() {
     
     for frame_num in $(printf '%s\n' "${frame_numbers[@]}" | sort -n); do
         if [[ -n "${frame_data[$frame_num,received]}" && -n "${frame_data[$frame_num,proof_started]}" && -n "${frame_data[$frame_num,proof_completed]}" ]]; then
-            duration=$(echo "${frame_data[$frame_num,proof_completed]} - ${frame_data[$frame_num,received]}" | bc)
+            local duration=$(printf "%.4f" $(echo "${frame_data[$frame_num,proof_completed]} - ${frame_data[$frame_num,received]}" | bc))
             local workers=${frame_data[$frame_num,proof_started,workers]}
             local ring=${frame_data[$frame_num,proof_completed,ring]}
-            local received=${frame_data[$frame_num,received]}
-            local proof_started=${frame_data[$frame_num,proof_started]}
-            local proof_completed=${frame_data[$frame_num,proof_completed]}
+            local received=$(printf "%.4f" ${frame_data[$frame_num,received]})
+            local proof_started=$(printf "%.4f" ${frame_data[$frame_num,proof_started]})
+            local proof_completed=$(printf "%.4f" ${frame_data[$frame_num,proof_completed]})
 
             echo "Frame $frame_num ($workers workers, ring $ring): $received -> $proof_started -> $proof_completed ($duration seconds)"
             
