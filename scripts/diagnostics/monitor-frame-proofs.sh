@@ -4,6 +4,22 @@
 declare -A frame_data
 frame_numbers=()
 
+# Start monitoring logs
+# Default number of lines to process
+LINES=1000
+
+# Parse command line args
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    -n|--lines)
+      LINES="$2"
+      shift 2
+      ;;
+    *)
+      shift
+      ;;
+  esac
+done
 
 
 # Function to calculate and display statistics
@@ -40,23 +56,6 @@ display_stats() {
     echo "======================="
 }
 
-# Start monitoring logs
-# Default number of lines to process
-LINES=1000
-
-# Parse command line args
-while [[ $# -gt 0 ]]; do
-  case $1 in
-    -n|--lines)
-      LINES="$2"
-      shift 2
-      ;;
-    *)
-      shift
-      ;;
-  esac
-done
-
 # Function to process a single log line and record stats
 process_log_line() {
     local line="$1"
@@ -92,7 +91,6 @@ process_log_line() {
 echo "Processing historical logs (last $LINES lines)..."
 # Process historical logs first
 journalctl -u $QUIL_SERVICE_NAME -r -n "$LINES" -o cat | while read -r line; do
-    
     process_log_line "$line"
 done
 
