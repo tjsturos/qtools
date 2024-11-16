@@ -1,0 +1,1 @@
+yq -i '.engine.dataWorkerMultiaddrs = []' $QUIL_CONFIG_FILE
