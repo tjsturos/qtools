@@ -29,7 +29,9 @@ done
 
 # Function to calculate and display statistics
 display_stats() {
-    clear
+    if ! $ONE_SHOT; then
+        clear
+    fi
     echo "=== Frame Statistics === ($(date '+%Y-%m-%d %H:%M:%S'))"
     
     total_duration=0
