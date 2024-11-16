@@ -59,9 +59,15 @@ display_stats() {
 # Function to process a single log line and record stats
 process_log_line() {
     local line="$1"
+
+    # Extract frame number first and validate
+    frame_num=$(echo "$line" | jq -r '.frame_number')
+    if [[ -z "$frame_num" || "$frame_num" == "null" ]]; then
+        return
+    fi
+
     if [[ $line =~ "evaluating next frame" ]]; then
         echo "Processing $line"
-        frame_num=$(echo "$line" | jq -r '.frame_number')
         frame_age=$(echo "$line" | jq -r '.frame_age')
         
         frame_data[$frame_num,received]=$frame_age
@@ -72,7 +78,6 @@ process_log_line() {
         
     elif [[ $line =~ "creating data shard ring proof" ]]; then
         echo "Processing $line"
-        frame_num=$(echo "$line" | jq -r '.frame_number')
         frame_age=$(echo "$line" | jq -r '.frame_age')
         workers=$(echo "$line" | jq -r '.active_workers')
         frame_data[$frame_num,proof_started]=$frame_age
@@ -80,7 +85,6 @@ process_log_line() {
         
     elif [[ $line =~ "submitting data proof" ]]; then
         echo "Processing $line"
-        frame_num=$(echo "$line" | jq -r '.frame_number')
         frame_age=$(echo "$line" | jq -r '.frame_age')
         ring_size=$(echo "$line" | jq -r '.ring')
         frame_data[$frame_num,proof_completed]=$frame_age
