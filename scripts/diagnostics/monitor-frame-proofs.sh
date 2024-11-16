@@ -121,21 +121,22 @@ if $DEBUG; then
     echo "Frame numbers after processing historical logs: ${frame_numbers[@]}"
 fi
 
-# Display initial stats
-
-display_stats
-
 if $ONE_SHOT; then
+    display_stats
     exit 0
 fi
 
 # Now follow new logs
+current_frame_count=${#frame_numbers[@]}
 while read -r line; do
-    process_log_line "$line"
+    # Store current frame count before processing line
     
-    # Display stats every 10 seconds
-    if [[ ! -v LAST_DISPLAY ]] || [[ $(($(date +%s) - LAST_DISPLAY)) -ge 10 ]]; then
+    process_log_line "$line"
+    # Display stats every 10 seconds if frame count changed
+    if [[ ${#frame_numbers[@]} -gt $current_frame_count ]] && \
+       ([[ ! -v LAST_DISPLAY ]] || [[ $(($(date +%s) - LAST_DISPLAY)) -ge 10 ]]); then
         display_stats
+        current_frame_count=${#frame_numbers[@]}
         LAST_DISPLAY=$(date +%s)
     fi
 done < <(journalctl -f -u $QUIL_SERVICE_NAME -o cat)
