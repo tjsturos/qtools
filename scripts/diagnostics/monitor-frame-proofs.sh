@@ -75,6 +75,7 @@ display_stats() {
 # Function to process a single log line and record stats
 process_log_line() {
     local line="$1"
+    local log_type="$2"
 
     # Extract frame number first and validate
     frame_num=$(echo "$line" | jq -r '.frame_number')
@@ -108,14 +109,17 @@ process_log_line() {
         echo "Completed creating proof for frame $frame_num ($ring_size ring, frame age $frame_age):"
         frame_data[$frame_num,proof_completed]=$frame_age
         frame_data[$frame_num,proof_completed,ring]=$ring_size
-        display_stats
+
+        if [[ "$log_type" != "historical" ]]; then
+            display_stats
+        fi
     fi
 }
 
 echo "Processing historical logs (last $LINES lines)..."
 # Process historical logs first
 while read -r line; do
-    process_log_line "$line"
+    process_log_line "$line" "historical"
 done < <(journalctl -u $QUIL_SERVICE_NAME -r -n "$LINES" -o cat)
 
 if $DEBUG; then
@@ -130,5 +134,5 @@ fi
 
 # Now follow new logs
 while read -r line; do
-    process_log_line "$line"
+    process_log_line "$line" "new"
 done < <(journalctl -f -u $QUIL_SERVICE_NAME -o cat)
