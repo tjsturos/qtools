@@ -35,13 +35,11 @@ display_stats() {
             duration=$(echo "${frame_data[$frame_num,proof_completed]} - ${frame_data[$frame_num,received]}" | bc)
             local workers=${frame_data[$frame_num,proof_started,workers]}
             local ring=${frame_data[$frame_num,proof_completed,ring]}
+            local received=${frame_data[$frame_num,received]}
+            local proof_started=${frame_data[$frame_num,proof_started]}
+            local proof_completed=${frame_data[$frame_num,proof_completed]}
 
-            echo "Frame $frame_num ($workers workers, ring $ring):"
-            echo "  Received at: ${frame_data[$frame_num,received]} seconds"
-            echo "  Proof started at: ${frame_data[$frame_num,proof_started]} seconds" 
-            echo "  Proof completed at: ${frame_data[$frame_num,proof_completed]} seconds"
-            echo "  Total duration: $duration seconds"
-            echo ""
+            echo "Frame $frame_num ($workers workers, ring $ring): $received -> $proof_started -> $proof_completed ($duration seconds)"
             
             total_duration=$(echo "$total_duration + $duration" | bc)
             ((count++))
