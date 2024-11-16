@@ -108,6 +108,7 @@ process_log_line() {
         echo "Completed creating proof for frame $frame_num ($ring_size ring, frame age $frame_age):"
         frame_data[$frame_num,proof_completed]=$frame_age
         frame_data[$frame_num,proof_completed,ring]=$ring_size
+        display_stats
     fi
 }
 
@@ -128,16 +129,6 @@ if $ONE_SHOT; then
 fi
 
 # Now follow new logs
-current_frame_count=${#frame_numbers[@]}
 while read -r line; do
-    # Store current frame count before processing line
-    
     process_log_line "$line"
-    # Display stats every 10 seconds if frame count changed
-    if [[ ${#frame_numbers[@]} -gt $current_frame_count ]] && \
-       ([[ ! -v LAST_DISPLAY ]] || [[ $(($(date +%s) - LAST_DISPLAY)) -ge 10 ]]); then
-        display_stats
-        current_frame_count=${#frame_numbers[@]}
-        LAST_DISPLAY=$(date +%s)
-    fi
 done < <(journalctl -f -u $QUIL_SERVICE_NAME -o cat)
