@@ -47,7 +47,7 @@ display_stats() {
     total_duration=0
     count=0
     
-    for frame_num in "${frame_numbers[@]}"; do
+    for frame_num in $(printf '%s\n' "${frame_numbers[@]}" | sort -n); do
         if [[ -n "${frame_data[$frame_num,received]}" && -n "${frame_data[$frame_num,proof_started]}" && -n "${frame_data[$frame_num,proof_completed]}" ]]; then
             duration=$(echo "${frame_data[$frame_num,proof_completed]} - ${frame_data[$frame_num,received]}" | bc)
             local workers=${frame_data[$frame_num,proof_started,workers]}
