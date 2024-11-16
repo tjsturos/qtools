@@ -121,8 +121,9 @@ if $DEBUG; then
     echo "Frame numbers after processing historical logs: ${frame_numbers[@]}"
 fi
 
+display_stats
+
 if $ONE_SHOT; then
-    display_stats
     exit 0
 fi
 
