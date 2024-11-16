@@ -8,6 +8,7 @@ frame_numbers=()
 # Default number of lines to process
 LINES=1000
 ONE_SHOT=false
+DEBUG=false
 
 # Parse command line args
 while [[ $# -gt 0 ]]; do
@@ -18,6 +19,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     -o|--one-shot)
       ONE_SHOT=true
+      shift
+      ;;
+    -d|--debug)
+      DEBUG=true
       shift
       ;;
     *)
@@ -31,9 +36,12 @@ done
 display_stats() {
     if ! $ONE_SHOT; then
         clear
-    else
+    fi
+
+    if $DEBUG; then
         echo "Frame numbers: ${frame_numbers[@]}"
     fi
+
     echo "=== Frame Statistics === ($(date '+%Y-%m-%d %H:%M:%S'))"
     
     total_duration=0
@@ -82,7 +90,9 @@ process_log_line() {
         # Add to frame numbers array if not already present
         if [[ ! " ${frame_numbers[@]} " =~ " ${frame_num} " ]]; then
             frame_numbers+=($frame_num)
-            echo "Frame numbers after adding $frame_num: ${frame_numbers[@]}"
+            if $DEBUG; then
+                echo "Frame numbers after adding $frame_num: ${frame_numbers[@]}"
+            fi
         fi
         
     elif [[ $line =~ "creating data shard ring proof" ]]; then
@@ -106,6 +116,10 @@ echo "Processing historical logs (last $LINES lines)..."
 journalctl -u $QUIL_SERVICE_NAME -r -n "$LINES" -o cat | while read -r line; do
     process_log_line "$line"
 done
+
+if $DEBUG; then
+    echo "Frame numbers after processing historical logs: ${frame_numbers[@]}"
+fi
 
 # Display initial stats
 
