@@ -59,6 +59,7 @@ journalctl -f -o cat | while read -r line; do
     
     # Display stats every 10 seconds
     if [[ ! -v LAST_DISPLAY ]] || [[ $(($(date +%s) - LAST_DISPLAY)) -ge 10 ]]; then
+        clear
         display_stats
         LAST_DISPLAY=$(date +%s)
     fi
