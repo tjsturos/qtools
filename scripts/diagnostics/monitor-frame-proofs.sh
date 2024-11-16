@@ -31,6 +31,8 @@ done
 display_stats() {
     if ! $ONE_SHOT; then
         clear
+    else
+        echo "Frame numbers: ${frame_numbers[@]}"
     fi
     echo "=== Frame Statistics === ($(date '+%Y-%m-%d %H:%M:%S'))"
     
