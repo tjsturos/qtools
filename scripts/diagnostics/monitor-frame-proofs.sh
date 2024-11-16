@@ -82,6 +82,7 @@ process_log_line() {
         # Add to frame numbers array if not already present
         if [[ ! " ${frame_numbers[@]} " =~ " ${frame_num} " ]]; then
             frame_numbers+=($frame_num)
+            echo "Frame numbers after adding $frame_num: ${frame_numbers[@]}"
         fi
         
     elif [[ $line =~ "creating data shard ring proof" ]]; then
