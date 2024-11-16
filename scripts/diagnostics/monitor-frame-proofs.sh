@@ -48,6 +48,7 @@ display_stats() {
     
     if [ $count -gt 0 ]; then
         avg_duration=$(echo "scale=2; $total_duration / $count" | bc)
+        echo ""
         echo "Average proof duration: $avg_duration seconds"
         echo "Total frames processed: $count"
     fi
