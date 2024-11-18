@@ -138,7 +138,7 @@ truncate_frame_records() {
     unset IFS
 
     # If we have more frames than the limit
-    if [ ${#sorted_frames[@]} -gt $LIMIT ]; then
+    if [ "${#sorted_frames[@]}" -gt "$LIMIT" ]; then
         # Calculate how many frames to remove
         remove_count=$((${#sorted_frames[@]} - $LIMIT))
         
