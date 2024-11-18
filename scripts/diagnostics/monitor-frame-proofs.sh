@@ -9,13 +9,13 @@ frame_numbers=()
 LINES=1000
 ONE_SHOT=false
 DEBUG=false
-LMIIT=25
+LIMIT=25
 
 # Parse command line args
 while [[ $# -gt 0 ]]; do
   case $1 in
     -l|--limit)
-      LMIIT="$2"
+      LIMIT="$2"
       shift 2
       ;;
     -n|--lines)
