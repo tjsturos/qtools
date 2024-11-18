@@ -9,10 +9,15 @@ frame_numbers=()
 LINES=1000
 ONE_SHOT=false
 DEBUG=false
+LMIIT=25
 
 # Parse command line args
 while [[ $# -gt 0 ]]; do
   case $1 in
+    -l|--limit)
+      LMIIT="$2"
+      shift 2
+      ;;
     -n|--lines)
       LINES="$2"
       shift 2
@@ -81,7 +86,7 @@ process_log_line() {
     if ! [[ "$line" =~ "frame_number" ]]; then
         return
     fi
-    
+
     # Extract frame number first and validate
     frame_num=$(echo "$line" | jq -r '.frame_number')
     if [[ -z "$frame_num" || "$frame_num" == "null" ]]; then
@@ -127,6 +132,36 @@ process_log_line() {
     fi
 }
 
+truncate_frame_records() {
+    # Sort frame numbers in ascending order
+    IFS=$'\n' sorted_frames=($(sort -n <<<"${frame_numbers[*]}"))
+    unset IFS
+
+    # If we have more frames than the limit
+    if [ ${#sorted_frames[@]} -gt $LIMIT ]; then
+        # Calculate how many frames to remove
+        remove_count=$((${#sorted_frames[@]} - $LIMIT))
+        
+        # Remove oldest frames from frame_numbers array
+        for ((i=0; i<remove_count; i++)); do
+            old_frame=${sorted_frames[i]}
+            
+            # Remove from frame_numbers array
+            frame_numbers=("${frame_numbers[@]/$old_frame}")
+            
+            # Remove all associated data for this frame
+            unset frame_data[$old_frame,received]
+            unset frame_data[$old_frame,proof_started]
+            unset frame_data[$old_frame,proof_started,workers]
+            unset frame_data[$old_frame,proof_completed]
+            unset frame_data[$old_frame,proof_completed,ring]
+        done
+
+        # Clean up frame_numbers array (remove empty elements)
+        frame_numbers=("${frame_numbers[@]}")
+    fi
+}
+
 echo "Processing historical logs (last $LINES lines)..."
 # Process historical logs first
 while read -r line; do
@@ -146,4 +181,5 @@ fi
 # Now follow new logs
 while read -r line; do
     process_log_line "$line" "new"
+    truncate_frame_records
 done < <(journalctl -f -u $QUIL_SERVICE_NAME -o cat)
