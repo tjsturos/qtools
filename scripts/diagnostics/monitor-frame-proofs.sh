@@ -77,6 +77,11 @@ process_log_line() {
     local line="$1"
     local log_type="$2"
 
+    # Skip if line doesn't contain frame_number
+    if ! [[ "$line" =~ "frame_number" ]]; then
+        return
+    fi
+    
     # Extract frame number first and validate
     frame_num=$(echo "$line" | jq -r '.frame_number')
     if [[ -z "$frame_num" || "$frame_num" == "null" ]]; then
