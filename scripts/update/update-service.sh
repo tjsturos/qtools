@@ -22,6 +22,7 @@ TESTNET=""
 DEBUG_MODE=""
 SKIP_SIGNATURE_CHECK=""
 IPFS_DEBUGGING=""
+WORKERS="$(getProcessorCount)"
 
 if [ "$IS_CLUSTER_MODE" == "true" ] && [ "$(is_master)" == "false" ]; then
     if [ "$(is_master)" == "true" ]; then
@@ -35,6 +36,10 @@ fi
 
 while [[ $# -gt 0 ]]; do
     case $1 in
+        --workers)
+            WORKERS="$2"
+            shift 2
+            ;;
         --testnet)
             TESTNET=true
             mkdir -p $QUIL_NODE_PATH/test
@@ -94,7 +99,7 @@ Restart=always
 RestartSec=$(yq '.service.restart_time' $QTOOLS_CONFIG_FILE)
 User=$(whoami)
 WorkingDirectory=$QUIL_NODE_PATH${TESTNET:+/test}
-Environment="GOMAXPROCS=$(getProcessorCount)${IPFS_DEBUGGING:+ IPFS_LOGGING=debug}"
+Environment="GOMAXPROCS=$WORKERS${IPFS_DEBUGGING:+ IPFS_LOGGING=debug}"
 ExecStart=${LINKED_NODE_BINARY}${TESTNET:+ --network=1}${DEBUG_MODE:+ --debug}${SKIP_SIGNATURE_CHECK:+ --signature-check=false}
 ExecStop=/bin/kill -s SIGINT \$MAINPID
 ExecReload=/bin/kill -s SIGINT \$MAINPID && ${LINKED_NODE_BINARY}${TESTNET:+ --network=1}${DEBUG_MODE:+ --debug}${SKIP_SIGNATURE_CHECK:+ --signature-check=false}
