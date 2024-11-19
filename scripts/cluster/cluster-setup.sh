@@ -237,9 +237,6 @@ if [ "$MASTER" == "true" ]; then
     servers=$(yq eval '.service.clustering.servers' $QTOOLS_CONFIG_FILE)
     server_count=$(echo "$servers" | yq eval '. | length' -)
 
-    echo "Setting main_ip to $LOCAL_IP"
-    yq eval -i ".service.clustering.main_ip = \"$LOCAL_IP\"" $QTOOLS_CONFIG_FILE
-
     for ((i=0; i<$server_count; i++)); do
         server=$(yq eval ".service.clustering.servers[$i]" $QTOOLS_CONFIG_FILE)
         ip=$(echo "$server" | yq eval '.ip' -)
