@@ -70,6 +70,7 @@ display_stats() {
     total_duration=0
     total_started=0
     total_completed=0
+    total_evaluation_time=0
     count=0
     
     for frame_num in $(printf '%s\n' "${frame_numbers[@]}" | sort -n); do
@@ -90,6 +91,8 @@ display_stats() {
             total_duration=$(echo "$total_duration + $duration" | bc)
             total_started=$(echo "$total_started + $proof_started" | bc)
             total_completed=$(echo "$total_completed + $proof_completed" | bc)
+            evaluation_time=$(echo "$proof_started - $received" | bc)
+            total_evaluation_time=$(echo "$total_evaluation_time + $evaluation_time" | bc)
             ((count++))
         fi
     done
@@ -98,13 +101,16 @@ display_stats() {
         avg_duration=$(echo "scale=2; $total_duration / $count" | bc)
         avg_started=$(echo "scale=2; $total_started / $count" | bc)
         avg_completed=$(echo "scale=2; $total_completed / $count" | bc)
+        avg_evaluation_time=$(echo "scale=2; $total_evaluation_time / $count" | bc)
         echo ""
+        echo "Average received timestamp: $avg_started seconds"
         echo "Average proof duration: $avg_duration seconds"
-        echo "Average started: $avg_started seconds"
-        echo "Average completed: $avg_completed seconds"
-
+        echo "Average completed timestamp: $avg_completed seconds"
+        echo "Average evaluation time: $avg_evaluation_time seconds"
+        echo ""
         echo "Total frames processed: $count (limit shown: $LIMIT)"
-
+    else
+        echo "No frames processed"
     fi
     echo "======================="
 }
