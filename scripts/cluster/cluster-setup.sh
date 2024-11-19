@@ -104,8 +104,16 @@ else
 fi
 
 if [ "$DRY_RUN" == "false" ]; then
-    echo "Enabling $QUIL_SERVICE_NAME"
-    sudo systemctl enable $QUIL_SERVICE_NAME
+    if [ "$(is_master)" == "true" ]; then
+        echo "Enabling $QUIL_SERVICE_NAME on master node"
+        sudo systemctl enable $QUIL_SERVICE_NAME
+    else
+        echo "Disabling $QUIL_SERVICE_NAME on non-master node"
+        sudo systemctl disable $QUIL_SERVICE_NAME
+    fi
+    echo "Resetting any existing dataworker services"
+    disable_local_data_worker_services
+
     echo "Enabling $QUIL_DATA_WORKER_SERVICE_NAME@{1..$DATA_WORKER_COUNT}"
     enable_local_data_worker_services 1 $DATA_WORKER_COUNT
     sudo systemctl daemon-reload
@@ -215,9 +223,10 @@ if [ "$MASTER" == "true" ]; then
     update_quil_config $DRY_RUN
 
     servers=$(yq eval '.service.clustering.servers' $QTOOLS_CONFIG_FILE)
-    yq eval -i ".service.clustering.main_ip = \"$LOCAL_IP\"" $QTOOLS_CONFIG_FILE
     server_count=$(echo "$servers" | yq eval '. | length' -)
 
+    echo "Setting main_ip to $LOCAL_IP"
+    yq eval -i ".service.clustering.main_ip = \"$LOCAL_IP\"" $QTOOLS_CONFIG_FILE
 
     for ((i=0; i<$server_count; i++)); do
         server=$(yq eval ".service.clustering.servers[$i]" $QTOOLS_CONFIG_FILE)

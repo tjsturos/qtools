@@ -321,6 +321,10 @@ check_yq() {
     return 0
 }
 
+get_public_ip() {
+    wget -qO- https://ipecho.net/plain ; echo
+}
+
 # Source the hardware utils
 source $QTOOLS_PATH/utils/hardware.sh
 

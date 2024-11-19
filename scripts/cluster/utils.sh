@@ -148,9 +148,6 @@ enable_local_data_worker_services() {
 }
 
 disable_local_data_worker_services() {
-    local START_CORE_INDEX=$1
-    local END_CORE_INDEX=$2
-    # start the master node
     bash -c "sudo systemctl disable $QUIL_DATA_WORKER_SERVICE_NAME@.service"
 }
 
