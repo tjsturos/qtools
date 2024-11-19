@@ -55,6 +55,9 @@ display_stats() {
                 echo "Processing metadata line: $line"
             fi
             if [[ $line =~ Frame[[:space:]]+([0-9]+) ]]; then
+                if $DEBUG; then
+                    echo "Found frame number: ${BASH_REMATCH[1]}"
+                fi
                 frame_num="${BASH_REMATCH[1]}"
                 reward=$(echo "$line" | grep -o '[0-9.]\+')
                 frame_data[$frame_num,reward]="$reward"
