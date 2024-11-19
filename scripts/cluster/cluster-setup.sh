@@ -59,6 +59,18 @@ if [ "$DRY_RUN" == "true" ]; then
     echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ LOCAL ] [ $LOCAL_IP ] Running in dry run mode, no changes will be made${RESET}"
 fi
 
+# Check if data worker service file exists
+
+if [ ! -f "$DATA_WORKER_SERVICE_FILE" ]; then
+    echo -e "${BLUE}${INFO_ICON} Creating data worker service file${RESET}"
+    if [ "$DRY_RUN" == "false" ]; then
+        create_data_worker_service_file
+        echo -e "${GREEN}${CHECK_ICON} Created data worker service file at $DATA_WORKER_SERVICE_FILE${RESET}"
+    else
+        echo -e "${BLUE}${INFO_ICON} [DRY RUN] Would create data worker service file at $DATA_WORKER_SERVICE_FILE${RESET}"
+    fi
+fi
+
 # Adjust COUNT if master is specified, but only if not all cores are used for workers
 if [ "$MASTER" == "true" ] && [ "$TOTAL_CORES" -eq "$DATA_WORKER_COUNT" ]; then
     DATA_WORKER_COUNT=$((TOTAL_CORES - 1))
@@ -92,8 +104,9 @@ update_local_quil_config() {
             echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ LOCAL ] [ $LOCAL_IP ] Would add /ip4/$LOCAL_IP/tcp/$(($BASE_PORT + $i)) to $QUIL_CONFIG_FILE's engine.dataWorkerMultiaddrs${RESET}"
         fi
     done
-   
 }
+
+if [ ""]
 
 if [ "$DRY_RUN" == "false" ]; then  
     yq eval -i ".service.clustering.local_data_worker_count = $DATA_WORKER_COUNT" $QTOOLS_CONFIG_FILE
