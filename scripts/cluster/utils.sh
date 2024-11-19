@@ -154,17 +154,13 @@ disable_local_data_worker_services() {
 start_local_data_worker_services() {
     local START_CORE_INDEX=$1
     local END_CORE_INDEX=$2
-    # start the master node
     enable_local_data_worker_services $START_CORE_INDEX $END_CORE_INDEX
     bash -c "sudo systemctl start $QUIL_DATA_WORKER_SERVICE_NAME\@{$START_CORE_INDEX..$END_CORE_INDEX}"
 }
 
 stop_local_data_worker_services() {
-    local START_CORE_INDEX=$1
-    local END_CORE_INDEX=$2
-    # stop the master node
-    disable_local_data_worker_services $START_CORE_INDEX $END_CORE_INDEX
-    bash -c "sudo systemctl stop $QUIL_DATA_WORKER_SERVICE_NAME\@{$START_CORE_INDEX..$END_CORE_INDEX}"
+    disable_local_data_worker_services
+    bash -c "sudo systemctl stop $QUIL_DATA_WORKER_SERVICE_NAME@*.service"
 }
 
 get_cluster_ips() {
