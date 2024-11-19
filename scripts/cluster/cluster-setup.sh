@@ -248,7 +248,7 @@ if [ "$MASTER" == "true" ]; then
             available_cores=$(ssh_to_remote $ip $remote_user $ssh_port "nproc")
         fi
 
-        if [ "$data_worker_count" == "false" ] || [ "$data_worker_count" -gt "$available_cores" ]; then
+        if [ "$data_worker_count" == "false" ]; then
             data_worker_count=$available_cores
             echo "Setting data_worker_count to available cores: $data_worker_count"
         fi
