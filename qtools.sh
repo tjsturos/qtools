@@ -186,8 +186,8 @@ esac
 
 # Find the script and set SERVICE_PATH
 if ! find_script "$1"; then
-  echo "Invalid option: $1"
-  usage
+  echo "Invalid option: $1, use 'qtools --help' for usage information"
+  exit 1
 fi
 
 # Clear screen if flag is set
