@@ -1,6 +1,9 @@
 
 DRY_RUN=false
 DATA_WORKER_COUNT=$(yq eval ".service.clustering.local_data_worker_count" $QTOOLS_CONFIG_FILE)
+LOCAL_ONLY=$(yq eval ".service.clustering.local_only" $QTOOLS_CONFIG_FILE)
+
+
 LOCAL_IP=$(get_local_ip)
 
 if [ "$DATA_WORKER_COUNT" == "null" ]; then
@@ -35,15 +38,18 @@ echo -e "${BLUE}${INFO_ICON} Found configuration for $DATA_WORKER_COUNT data wor
 
 
 if [ "$(is_master)" == "true" ]; then
-    if [ -f "$SSH_CLUSTER_KEY" ]; then
-        echo -e "${GREEN}${CHECK_ICON} SSH key found: $SSH_CLUSTER_KEY${RESET}"
+    if [ "$LOCAL_ONLY" == "true" ]; then
+        echo -e "${BLUE}${INFO_ICON} Local only mode enabled, skipping remote server checks${RESET}"
     else
-        echo -e "${RED}${WARNING_ICON} SSH file: $SSH_CLUSTER_KEY not found!${RESET}"
+        if [ -f "$SSH_CLUSTER_KEY" ]; then
+            echo -e "${GREEN}${CHECK_ICON} SSH key found: $SSH_CLUSTER_KEY${RESET}"
+        else
+            echo -e "${RED}${WARNING_ICON} SSH file: $SSH_CLUSTER_KEY not found!${RESET}"
+        fi
+        check_ssh_connections
+        ssh_command_to_each_server "qtools cluster-start"
     fi
 
-    check_ssh_connections
-
-    ssh_command_to_each_server "qtools cluster-start"
     sudo systemctl start $MASTER_SERVICE_NAME
 else
     echo -e "${BLUE}${INFO_ICON} Not master node, skipping${RESET}"

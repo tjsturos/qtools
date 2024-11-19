@@ -4,7 +4,7 @@ release_version: 1.4.19.1
 current_node_version: 1.4.19.1
 current_qclient_version: 1.4.19.1
 os_arch: linux-amd64
-qtools_version: 10
+qtools_version: 11
 qclient_cli_name: qclient
 ssh:
     allow_from_ip: false
@@ -22,6 +22,7 @@ service:
     clustering:
         enabled: false
         master_service_name: ceremonyclient
+        local_only: false
         data_worker_service_name: dataworker
         base_port: 40000
         default_ssh_port: 22
