@@ -324,6 +324,7 @@ update_quil_config() {
             if [ "$DRY_RUN" == "false" ]; then
                 yq eval -i ".service.clustering.main_ip = \"$ip\"" $QTOOLS_CONFIG_FILE
                 echo "Set main IP to $ip in clustering configuration"
+                ip="127.0.0.1"
             else
                 echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would set main IP to $ip in clustering configuration${RESET}"
             fi

@@ -45,7 +45,6 @@ if [ "$DATA_WORKER_COUNT" -gt "$MAX_CORES" ]; then
     echo "DATA_WORKER_COUNT adjusted down to maximum: $DATA_WORKER_COUNT"
 fi
 
-start_local_data_worker_services 1 $DATA_WORKER_COUNT $LOCAL_IP
 
 if [ "$(is_master)" == "true" ]; then
     if [ -f "$SSH_CLUSTER_KEY" ]; then
@@ -61,3 +60,5 @@ if [ "$(is_master)" == "true" ]; then
 else
     echo -e "${BLUE}${INFO_ICON} Not master node, skipping${RESET}"
 fi
+
+start_local_data_worker_services 1 $DATA_WORKER_COUNT $LOCAL_IP
