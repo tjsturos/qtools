@@ -53,7 +53,7 @@ display_stats() {
         while IFS= read -r line; do
             if [[ $line =~ Frame[[:space:]]+([0-9]+) ]]; then
                 frame_num="${BASH_REMATCH[1]}"
-                reward=$(echo "$line" | grep -o '[0-9.]\+ QUIL')
+                reward=$(echo "$line" | grep -o '[0-9.]\+')
                 frame_data[$frame_num,reward]="$reward"
             fi
         done < <(qclient token coins metadata 2>/dev/null)
@@ -73,6 +73,9 @@ display_stats() {
             local proof_started=$(printf "%.4f" ${frame_data[$frame_num,proof_started]})
             local proof_completed=$(printf "%.4f" ${frame_data[$frame_num,proof_completed]})
             local reward=$(printf "%.4f" ${frame_data[$frame_num,reward]})
+            if [ "$reward" = "0.0000" ]; then
+                reward=""
+            fi
 
             echo "Frame $frame_num ($workers workers, ring $ring, ${reward:+:$reward QUIL}): $received -> $proof_started -> $proof_completed ($duration seconds)"
             
