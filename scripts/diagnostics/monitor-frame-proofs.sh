@@ -51,6 +51,9 @@ display_stats() {
     if command -v qclient &> /dev/null; then
         # Get coin metadata and store in associative array
         while IFS= read -r line; do
+            if $DEBUG; then
+                echo "Processing metadata line: $line"
+            fi
             if [[ $line =~ Frame[[:space:]]+([0-9]+) ]]; then
                 frame_num="${BASH_REMATCH[1]}"
                 reward=$(echo "$line" | grep -o '[0-9.]\+')
