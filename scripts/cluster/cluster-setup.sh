@@ -271,5 +271,4 @@ if [ "$MASTER" == "true" ]; then
 fi
 
 wait
-qtools toggle-cluster-mode --on
 echo -e "${GREEN}${CHECK_ICON} Cluster setup completed. Run 'qtools cluster-start' or 'qtools start' to start the cluster.${RESET}"
