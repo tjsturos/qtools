@@ -11,11 +11,13 @@ IS_BACKUP_ENABLED="$(yq '.scheduled_tasks.backup.enabled // false' $QTOOLS_CONFI
 PEER_ID=""
 FORCE_BACKUP=false
 CONFIG="$QUIL_NODE_PATH/.config"
+RESTART_NODE=false
+
 # Parse command-line arguments
 while [[ $# -gt 0 ]]; do
   case $1 in
-    --force)
-      FORCE_BACKUP=true
+    --restart)
+      RESTART_NODE=true
       shift
       ;;
     --config)
@@ -38,6 +40,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+
 IS_CLUSTERING_ENABLED="$(yq '.service.clustering.enabled // false' $QTOOLS_CONFIG_FILE)"
 
 if [ "$IS_CLUSTERING_ENABLED" == "true" ] && [ "$(is_master)" == "false" ]; then
@@ -45,36 +48,40 @@ if [ "$IS_CLUSTERING_ENABLED" == "true" ] && [ "$(is_master)" == "false" ]; then
   exit 0
 fi
 
-if [ "$IS_BACKUP_ENABLED" == "true" ] || [ "$FORCE_BACKUP" == "true" ]; then
-  REMOTE_DIR="$(yq '.scheduled_tasks.backup.remote_backup_dir' $QTOOLS_CONFIG_FILE)/store"
-  REMOTE_URL="$(yq '.scheduled_tasks.backup.backup_url' $QTOOLS_CONFIG_FILE)"
-  REMOTE_USER="$(yq '.scheduled_tasks.backup.remote_user' $QTOOLS_CONFIG_FILE)"
-  SSH_KEY_PATH="$(yq '.scheduled_tasks.backup.ssh_key_path' $QTOOLS_CONFIG_FILE)"
+echo "Stopping node"
+qtools stop
 
-  # Check if any required variable is empty
-  if [ "$REMOTE_DIR" == "/$NODE_BACKUP_NAME/" ] || [ -z "$REMOTE_URL" ] || [ -z "$REMOTE_USER" ] || [ -z "$SSH_KEY_PATH" ]; then
-    echo "Error: One or more required backup settings are missing in the configuration."
-    exit 1
-  fi
+REMOTE_DIR="$(yq '.scheduled_tasks.backup.remote_backup_dir' $QTOOLS_CONFIG_FILE)/store"
+REMOTE_URL="$(yq '.scheduled_tasks.backup.backup_url' $QTOOLS_CONFIG_FILE)"
+REMOTE_USER="$(yq '.scheduled_tasks.backup.remote_user' $QTOOLS_CONFIG_FILE)"
+SSH_KEY_PATH="$(yq '.scheduled_tasks.backup.ssh_key_path' $QTOOLS_CONFIG_FILE)"
 
-  # Attempt to create the remote directory (if it doesn't exist)
-  ssh -i "$SSH_KEY_PATH" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "$REMOTE_USER@$REMOTE_URL" "mkdir -p $REMOTE_DIR" > /dev/null 2>&1 || {
-    echo "Warning: Failed to create remote directory. It may already exist or there might be permission issues." >&2
-  }
+# Check if any required variable is empty
+if [ "$REMOTE_DIR" == "/$NODE_BACKUP_NAME/" ] || [ -z "$REMOTE_URL" ] || [ -z "$REMOTE_USER" ] || [ -z "$SSH_KEY_PATH" ]; then
+  echo "Error: One or more required backup settings are missing in the configuration."
+  exit 1
+fi
 
-  # Perform the rsync backup for .config directory
-  if rsync -avzrP --delete-after \
-    --exclude="keys.yml" \
-    --exclude="config.yml" \
-    -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
-    "$CONFIG/" "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR"; then
-    echo "Backup of store directory completed successfully."
-  else
-    echo "Error: Backup of .config directory failed. Please check your rsync command and try again."
-    exit 1
-  fi
+# Attempt to create the remote directory (if it doesn't exist)
+ssh -i "$SSH_KEY_PATH" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "$REMOTE_USER@$REMOTE_URL" "mkdir -p $REMOTE_DIR" > /dev/null 2>&1 || {
+  echo "Warning: Failed to create remote directory. It may already exist or there might be permission issues." >&2
+}
 
-  echo "All backups completed successfully."
+# Perform the rsync backup for .config directory
+if rsync -avzrP --delete-after \
+  --exclude="keys.yml" \
+  --exclude="config.yml" \
+  -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
+  "$CONFIG/" "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR"; then
+  echo "Backup of store directory completed successfully."
 else
-  log "Backup for $LOCAL_HOSTNAME is not enabled. Modify the qtools config (qtools edit-qtools-config) to enable."
+  echo "Error: Backup of .config directory failed. Please check your rsync command and try again."
+  exit 1
+fi
+
+echo "All backups completed successfully."
+
+if [ "$RESTART_NODE" == "true" ]; then
+  echo "Restarting node"
+  qtools start
 fi
