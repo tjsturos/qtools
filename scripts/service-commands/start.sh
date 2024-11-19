@@ -22,10 +22,10 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-IS_CLUSTERING_ENABLED=$(yq '.service.clustering.enabled // false' $QTOOLS_CONFIG_FILE)
+IS_CLUSTERING_ENABLED=$(yq '.service.clustering.enabled' $QTOOLS_CONFIG_FILE)
 
 if [ "$IS_CLUSTERING_ENABLED" == "true" ]; then
-   qtools cluster-start
+    qtools cluster-start
 else
     sudo systemctl start $QUIL_SERVICE_NAME.service
 fi

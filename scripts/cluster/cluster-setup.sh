@@ -105,13 +105,13 @@ fi
 
 if [ "$DRY_RUN" == "false" ]; then
     if [ "$(is_master)" == "true" ]; then
-        echo "Enabling $QUIL_SERVICE_NAME on master node"
+        echo -e "${BLUE}${INFO_ICON} Enabling $QUIL_SERVICE_NAME on master node${RESET}"
         sudo systemctl enable $QUIL_SERVICE_NAME
     else
-        echo "Disabling $QUIL_SERVICE_NAME on non-master node"
+        echo -e "${BLUE}${INFO_ICON} Disabling $QUIL_SERVICE_NAME on non-master node${RESET}"
         sudo systemctl disable $QUIL_SERVICE_NAME
     fi
-    echo "Resetting any existing dataworker services"
+    echo -e "${BLUE}${INFO_ICON} Resetting any existing dataworker services${RESET}"
     disable_local_data_worker_services
 
     echo "Enabling $QUIL_DATA_WORKER_SERVICE_NAME@{1..$DATA_WORKER_COUNT}"
@@ -262,3 +262,5 @@ if [ "$MASTER" == "true" ]; then
 fi
 
 wait
+qtools toggle-cluster-mode --on
+echo -e "${GREEN}${CHECK_ICON} Cluster setup completed. Run 'qtools cluster-start' or 'qtools start' to start the cluster.${RESET}"
