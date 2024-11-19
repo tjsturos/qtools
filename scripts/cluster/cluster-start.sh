@@ -2,12 +2,11 @@
 DRY_RUN=false
 MAX_CORES=$(nproc)
 DATA_WORKER_COUNT=$(yq eval ".service.clustering.local_data_worker_count" $QTOOLS_CONFIG_FILE)
+LOCAL_IP=$(get_local_ip)
 
 if [ "$DATA_WORKER_COUNT" == "null" ]; then
     DATA_WORKER_COUNT=$MAX_CORES
 fi
-
-echo -e "${BLUE}${INFO_ICON} Found configuration for $DATA_WORKER_COUNT data workers${RESET}"
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -37,7 +36,6 @@ echo -e "${BLUE}${INFO_ICON} Found configuration for $DATA_WORKER_COUNT data wor
 
 if [ "$(is_master)" == "true" ]; then
     # Adjust MAX_CORES if START_CORE_INDEX is 1
-    echo "Adjusting max cores available to $((MAX_CORES - 1)) (from $MAX_CORES) due to starting the master node on core 0"
     MAX_CORES=$((MAX_CORES - 1))
 fi
 
@@ -47,8 +45,7 @@ if [ "$DATA_WORKER_COUNT" -gt "$MAX_CORES" ]; then
     echo "DATA_WORKER_COUNT adjusted down to maximum: $DATA_WORKER_COUNT"
 fi
 
-echo -e "${BLUE}${INFO_ICON} Starting local data worker services on core 1 with count $DATA_WORKER_COUNT${RESET}"
-start_local_data_worker_services 1 $DATA_WORKER_COUNT
+start_local_data_worker_services 1 $DATA_WORKER_COUNT $LOCAL_IP
 
 if [ "$(is_master)" == "true" ]; then
     if [ -f "$SSH_CLUSTER_KEY" ]; then

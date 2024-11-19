@@ -154,6 +154,8 @@ disable_local_data_worker_services() {
 start_local_data_worker_services() {
     local START_CORE_INDEX=$1
     local END_CORE_INDEX=$2
+    local LOCAL_IP=$3
+    echo -e "${BLUE}${INFO_ICON} [ LOCAL ] [ $LOCAL_IP ] Starting local data worker services on core $START_CORE_INDEX and ending with $END_CORE_INDEX${RESET}"
     enable_local_data_worker_services $START_CORE_INDEX $END_CORE_INDEX
     bash -c "sudo systemctl start $QUIL_DATA_WORKER_SERVICE_NAME\@{$START_CORE_INDEX..$END_CORE_INDEX}"
 }
