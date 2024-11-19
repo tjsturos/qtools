@@ -106,8 +106,6 @@ update_local_quil_config() {
     done
 }
 
-if [ ""]
-
 if [ "$DRY_RUN" == "false" ]; then  
     yq eval -i ".service.clustering.local_data_worker_count = $DATA_WORKER_COUNT" $QTOOLS_CONFIG_FILE
     echo -e "${BLUE}${INFO_ICON} [ LOCAL ] [ $LOCAL_IP ] Setting this server's data_worker_count to $DATA_WORKER_COUNT${RESET}"
