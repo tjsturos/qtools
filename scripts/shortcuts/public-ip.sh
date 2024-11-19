@@ -1,0 +1,1 @@
+echo "$(get_public_ip)"
