@@ -340,8 +340,6 @@ update_quil_config() {
         fi
         # Convert data_worker_count to integer and ensure it's not greater than available cores
         data_worker_count=$(echo "$data_worker_count" | tr -cd '0-9')
-        data_worker_count=$((data_worker_count > 0 ? data_worker_count : available_cores))
-        data_worker_count=$((data_worker_count < available_cores ? data_worker_count : available_cores))
 
         echo "Data worker count for $ip: $data_worker_count"
         
