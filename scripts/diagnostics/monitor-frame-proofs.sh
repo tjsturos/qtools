@@ -83,7 +83,7 @@ display_stats() {
                 reward=""
             fi
 
-            echo "Frame $frame_num ($workers workers, ring $ring, ${reward:+:$reward QUIL}): $received -> $proof_started -> $proof_completed ($duration seconds)"
+            echo "Frame $frame_num ($workers workers, ring $ring${reward:+:, $reward QUIL received}): $received -> $proof_started -> $proof_completed ($duration seconds)"
             
             total_duration=$(echo "$total_duration + $duration" | bc)
             ((count++))
