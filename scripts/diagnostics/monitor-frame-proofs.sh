@@ -68,6 +68,8 @@ display_stats() {
     echo "=== Frame Statistics === ($(date '+%Y-%m-%d %H:%M:%S'))"
     
     total_duration=0
+    total_started=0
+    total_completed=0
     count=0
     
     for frame_num in $(printf '%s\n' "${frame_numbers[@]}" | sort -n); do
@@ -83,18 +85,26 @@ display_stats() {
                 reward=""
             fi
 
-            echo "Frame $frame_num ($workers workers, ring $ring${reward:+:, $reward QUIL received}): $received -> $proof_started -> $proof_completed ($duration seconds)"
+            echo "Frame $frame_num ($workers workers, ring $ring): $received -> $proof_started -> $proof_completed ($duration seconds${reward:+:, $reward QUIL received})"
             
             total_duration=$(echo "$total_duration + $duration" | bc)
+            total_started=$(echo "$total_started + $proof_started" | bc)
+            total_completed=$(echo "$total_completed + $proof_completed" | bc)
             ((count++))
         fi
     done
     
     if [ $count -gt 0 ]; then
         avg_duration=$(echo "scale=2; $total_duration / $count" | bc)
+        avg_started=$(echo "scale=2; $total_started / $count" | bc)
+        avg_completed=$(echo "scale=2; $total_completed / $count" | bc)
         echo ""
         echo "Average proof duration: $avg_duration seconds"
-        echo "Total frames processed: $count"
+        echo "Average started: $avg_started seconds"
+        echo "Average completed: $avg_completed seconds"
+
+        echo "Total frames processed: $count (limit shown: $LIMIT)"
+
     fi
     echo "======================="
 }
