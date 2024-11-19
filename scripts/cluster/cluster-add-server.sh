@@ -47,4 +47,4 @@ for arg in "$@"; do
 done
 
 echo -e "${GREEN}${CHECK_ICON} All provided servers have been processed.${RESET}"
-echo -e "${BLUE}${INFO_ICON} Please run 'qtools setup-cluster' to configure the newly added servers.${RESET}"
+echo -e "${BLUE}${INFO_ICON} Please run 'qtools cluster-setup --master' to configure the newly added servers.${RESET}"

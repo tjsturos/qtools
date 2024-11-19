@@ -199,8 +199,8 @@ copy_cluster_config_to_server() {
     local SSH_PORT=$3
     if [ "$DRY_RUN" == "false" ]; then  
         echo -e "${BLUE}${INFO_ICON} Copying $QTOOLS_CONFIG_FILE to $IP ($REMOTE_USER)${RESET}"
-        ssh_to_remote $IP $REMOTE_USER $SSH_PORT "mkdir -p /home/$REMOTE_USER/qtools"
-        scp_to_remote "$QTOOLS_CONFIG_FILE $REMOTE_USER@$IP:/home/$REMOTE_USER/qtools/config.yml" $SSH_PORT
+        ssh_to_remote $IP $REMOTE_USER $SSH_PORT "mkdir -p ~/qtools"
+        scp_to_remote "$QTOOLS_CONFIG_FILE $REMOTE_USER@$IP:~/qtools/config.yml" $SSH_PORT
     else
         echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would copy $QTOOLS_CONFIG_FILE to $IP ($REMOTE_USER)${RESET}"
     fi
@@ -215,6 +215,7 @@ if [ "$MASTER" == "true" ]; then
     update_quil_config $DRY_RUN
 
     servers=$(yq eval '.service.clustering.servers' $QTOOLS_CONFIG_FILE)
+    yq eval -i ".service.clustering.main_ip = \"$LOCAL_IP\"" $QTOOLS_CONFIG_FILE
     server_count=$(echo "$servers" | yq eval '. | length' -)
 
 
