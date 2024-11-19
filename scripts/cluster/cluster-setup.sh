@@ -7,7 +7,7 @@ TOTAL_CORES=$(nproc)
 MASTER=false
 DRY_RUN=false
 LOCAL_IP=$(get_local_ip)
-
+LOCAL_ONLY=$(yq eval ".service.clustering.local_only" $QTOOLS_CONFIG_FILE)
 DATA_WORKER_COUNT=$(get_cluster_worker_count "$LOCAL_IP")
 if [ "$DATA_WORKER_COUNT" == "0" ]; then
     DATA_WORKER_COUNT=$TOTAL_CORES
@@ -224,9 +224,11 @@ copy_cluster_config_to_server() {
 
 # Start the master and update the config
 if [ "$MASTER" == "true" ]; then
-    check_ssh_key_pair
 
-    check_ssh_connections
+    if [ "$LOCAL_ONLY" != "true" ]; then
+        check_ssh_key_pair
+        check_ssh_connections
+    fi
 
     update_quil_config $DRY_RUN
 
