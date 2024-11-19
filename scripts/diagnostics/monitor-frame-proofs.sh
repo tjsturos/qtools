@@ -47,6 +47,18 @@ display_stats() {
         echo "Frame numbers: ${frame_numbers[@]}"
     fi
 
+    # Check if qclient exists and get coin metadata
+    if command -v qclient &> /dev/null; then
+        # Get coin metadata and store in associative array
+        while IFS= read -r line; do
+            if [[ $line =~ Frame[[:space:]]+([0-9]+) ]]; then
+                frame_num="${BASH_REMATCH[1]}"
+                reward=$(echo "$line" | grep -o '[0-9.]\+ QUIL')
+                frame_data[$frame_num,reward]="$reward"
+            fi
+        done < <(qclient token coins metadata 2>/dev/null)
+    fi
+
     echo "=== Frame Statistics === ($(date '+%Y-%m-%d %H:%M:%S'))"
     
     total_duration=0
@@ -60,8 +72,9 @@ display_stats() {
             local received=$(printf "%.4f" ${frame_data[$frame_num,received]})
             local proof_started=$(printf "%.4f" ${frame_data[$frame_num,proof_started]})
             local proof_completed=$(printf "%.4f" ${frame_data[$frame_num,proof_completed]})
+            local reward=$(printf "%.4f" ${frame_data[$frame_num,reward]})
 
-            echo "Frame $frame_num ($workers workers, ring $ring): $received -> $proof_started -> $proof_completed ($duration seconds)"
+            echo "Frame $frame_num ($workers workers, ring $ring, ${reward:+:$reward QUIL}): $received -> $proof_started -> $proof_completed ($duration seconds)"
             
             total_duration=$(echo "$total_duration + $duration" | bc)
             ((count++))
