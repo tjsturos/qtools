@@ -27,7 +27,7 @@ WORKERS="$(getProcessorCount)"
 if [ "$IS_CLUSTER_MODE" == "true" ] && [ "$(is_master)" == "false" ]; then
     if [ "$(is_master)" == "true" ]; then
         qtools stop
-        qtools setup-cluster --master
+        qtools cluster-setup --master
         qtools start
     fi
     # do not update normally on clustered nodes
