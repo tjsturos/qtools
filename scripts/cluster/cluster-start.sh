@@ -61,4 +61,6 @@ if [ "$(is_master)" == "true" ]; then
 
     ssh_command_to_each_server "qtools cluster-start"
     sudo systemctl start $MASTER_SERVICE_NAME
+else
+    echo -e "${BLUE}${INFO_ICON} Not master node, skipping${RESET}"
 fi

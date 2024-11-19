@@ -159,7 +159,6 @@ start_local_data_worker_services() {
 }
 
 stop_local_data_worker_services() {
-    disable_local_data_worker_services
     bash -c "sudo systemctl stop $QUIL_DATA_WORKER_SERVICE_NAME@*.service"
 }
 

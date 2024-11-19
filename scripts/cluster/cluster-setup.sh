@@ -125,7 +125,7 @@ if [ "$DRY_RUN" == "false" ]; then
     echo -e "${BLUE}${INFO_ICON} Resetting any existing dataworker services${RESET}"
     
     stop_local_data_worker_services
-
+    disable_local_data_worker_services
     echo "Enabling $QUIL_DATA_WORKER_SERVICE_NAME@{1..$DATA_WORKER_COUNT}"
     enable_local_data_worker_services 1 $DATA_WORKER_COUNT
     sudo systemctl daemon-reload
