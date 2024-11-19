@@ -2,11 +2,11 @@
 
 IS_MASTER=false
 DRY_RUN=false
-MAX_CORES=$(nproc)
+CORES=$(nproc)
 DATA_WORKER_COUNT=$(yq eval ".service.clustering.local_data_worker_count" $QTOOLS_CONFIG_FILE)
 
 if [ "$DATA_WORKER_COUNT" == "null" ]; then
-    DATA_WORKER_COUNT=$MAX_CORES
+    DATA_WORKER_COUNT=$CORES
 fi
 
 echo -e "${BLUE}${INFO_ICON} Found configuration for $DATA_WORKER_COUNT data workers${RESET}"

@@ -26,6 +26,7 @@ usage() {
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
+
         --help)
             usage
             ;;
@@ -71,11 +72,6 @@ if [ ! -f "$DATA_WORKER_SERVICE_FILE" ]; then
     fi
 fi
 
-# Adjust COUNT if master is specified, but only if not all cores are used for workers
-if [ "$MASTER" == "true" ] && [ "$TOTAL_CORES" -eq "$DATA_WORKER_COUNT" ]; then
-    DATA_WORKER_COUNT=$((TOTAL_CORES - 1))
-    echo -e "${BLUE}${INFO_ICON} Adjusting master's data worker count to $DATA_WORKER_COUNT${RESET}"
-fi
 
 # Check if there are any servers configured
 server_count=$(yq eval '.service.clustering.servers | length' $QTOOLS_CONFIG_FILE)
