@@ -38,16 +38,16 @@ fi
 clean_up_process() {
     if [ "$IS_QUICK_MODE" != "true" ]; then
         # Backup store
-        qtools backup-store
+        # qtools backup-store
 
         # Disable backups
-        qtools toggle-backups --off
+        # qtools toggle-backups --off
         
         # Disable diagnostics
-        qtools toggle-diagnostics --off
+        # qtools toggle-diagnostics --off
 
         # Disable statistics
-        qtools toggle-statistics --off
+        # qtools toggle-statistics --off
 
         qtools update-cron
     else
