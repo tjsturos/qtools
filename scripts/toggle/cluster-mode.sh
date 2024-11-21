@@ -33,6 +33,7 @@ yq -i '.service.clustering.enabled = '$NEW_MODE'' $QTOOLS_CONFIG_FILE
 
 if [ "$NEW_MODE" == "false" ]; then
     qtools cluster-stop
+    yq -i '.engine.dataWorkerMultiaddrs = []' $QUIL_CONFIG_FILE
 else 
     qtools cluster-setup --master
 fi
