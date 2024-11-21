@@ -4,9 +4,14 @@ QCLIENT_VERSION=""
 
 SIGNER_COUNT=17
 BINARY_ONLY=false
+LINKED_QCLIENT_BINARY=""
 while [[ $# -gt 0 ]]; do
     key="$1"
     case $key in
+        --link|-l)
+        LINKED_QCLIENT_BINARY="true"
+        shift
+        ;;
         --signer-count)
         SIGNER_COUNT="$2"
         shift # past argument
@@ -26,6 +31,12 @@ while [[ $# -gt 0 ]]; do
         ;;
     esac
 done
+
+link_qclient() {
+    local BINARY_NAME=$1
+    echo "Linking $LINKED_QCLIENT_BINARY to $QUIL_CLIENT_PATH/$BINARY_NAME"
+    sudo ln -sf "$QUIL_CLIENT_PATH/$BINARY_NAME" "$LINKED_QCLIENT_BINARY"
+}
 
 download_file() {
     local FILE_NAME=$1
@@ -80,6 +91,10 @@ for file in $QCLIENT_RELEASE_FILES; do
             log "Successfully made $file executable"
         else
             log "Failed to make $file executable"
+        fi
+
+        if [ -n "$LINKED_QCLIENT_BINARY" ];then
+            link_qclient $file
         fi
     fi
     

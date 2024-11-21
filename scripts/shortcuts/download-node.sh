@@ -5,9 +5,15 @@ NODE_VERSION=""
 
 SIGNER_COUNT=17
 BINARY_ONLY=""
+LINK=""
+
 while [[ $# -gt 0 ]]; do
     key="$1"
     case $key in
+        --link|-l)
+        LINK="true"
+        shift
+        ;;
         --version)
         NODE_VERSION="$2"
         shift # past argument
@@ -47,6 +53,12 @@ fi
 mkdir -p $QUIL_NODE_PATH
 cd $QUIL_NODE_PATH
 
+link_node() {
+    local BINARY_NAME=$1
+    echo "Linking $LINK to $QUIL_NODE_PATH/$BINARY_NAME"
+    sudo ln -sf "$QUIL_NODE_PATH/$BINARY_NAME" "$LINKED_NODE_BINARY"
+}
+
 download_file() {
     local FILE_NAME=$1
     # Check if the file already exists
@@ -71,7 +83,6 @@ download_file() {
     else
         echo "Failed to download $file"
     fi
-
 }
 
 # Download each file
@@ -85,6 +96,10 @@ for file in $NODE_RELEASE_FILES; do
             echo "Successfully made $file executable"
         else
             echo "Failed to make $file executable"
+        fi
+
+        if [ -n "$LINK" ];then
+            link_node $file
         fi
     fi
     
