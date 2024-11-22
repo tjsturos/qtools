@@ -15,6 +15,8 @@ TO_ADDRESS=""
 DRY_RUN="false"
 CONFIG_PATH="$QUIL_NODE_PATH/.config"
 PUBLIC_RPC=""
+DELAY="false"
+NO_CONFIRM="false"
 
 while [[ $# -gt 0 ]]; do
     key="$1"
@@ -29,6 +31,15 @@ while [[ $# -gt 0 ]]; do
         ;;
         --skip-sig-check)
         SKIP_SIG_CHECK=true
+        shift
+        ;;
+        --delay)
+        DELAY="$2"
+        shift
+        shift
+        ;;
+        --no-confirm)
+        NO_CONFIRM="true"
         shift
         ;;
         --to)
@@ -106,19 +117,31 @@ fi
 
 echo "Transferring $AMOUNT QUIL from token $TOKEN to address $TO_ADDRESS"
 
-# Confirm with user before proceeding
-while true; do
+if [[ $NO_CONFIRM == "false" ]]; then
+    # Confirm with user before proceeding
+    while true; do
     read -p "Is this correct? Do you want to proceed? (y/n): " CONFIRM
     if [[ $CONFIRM == "y" || $CONFIRM == "n" ]]; then
         break
     else
         echo "Error: Invalid input. Please enter 'y' or 'n'."
-    fi
-done
+        fi
+    done
 
-if [[ $CONFIRM == "n" ]]; then
-    echo "Operation cancelled by user."
-    exit 0
+    if [[ $CONFIRM == "n" ]]; then
+        echo "Operation cancelled by user."
+        exit 0
+    fi
+else 
+    if [[ $DELAY != "false" ]]; then
+        echo "Delaying transfer by $DELAY seconds..."
+        # Validate that DELAY is an integer
+        if ! [[ "$DELAY" =~ ^[0-9]+$ ]]; then
+            echo "Error: Delay must be a positive integer"
+            exit 1
+        fi
+        sleep $DELAY
+    fi
 fi
 
 # Construct the command
