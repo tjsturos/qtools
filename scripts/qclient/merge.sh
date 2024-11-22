@@ -73,7 +73,7 @@ merge_batch() {
         
         if [ ${#batch[@]} -gt 1 ]; then
             echo "Merging batch of ${#batch[@]} coins..."
-            CMD="qclient token merge ${batch[@]} ${SKIP_SIG_CHECK:+--signature-check=false}${PUBLIC_RPC:+ --public-rpc}"
+            CMD="qclient token merge ${batch[@]}${SKIP_SIG_CHECK:+ --signature-check=false}${PUBLIC_RPC:+ --public-rpc}"
             echo "Executing: $CMD"
             $CMD
             
