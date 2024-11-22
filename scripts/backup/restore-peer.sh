@@ -7,7 +7,6 @@
 
 IS_BACKUP_ENABLED="$(yq '.scheduled_tasks.backup.enabled // false' $QTOOLS_CONFIG_FILE)"
 
-PEER_ID=""
 FORCE_BACKUP=false
 AUTO=false
 
@@ -22,17 +21,13 @@ while [[ $# -gt 0 ]]; do
       FORCE_BACKUP=true
       shift
       ;;
-    --peer-id)
-      shift
-      PEER_ID="$1"
-      shift
-      ;;
     *)
       shift
       ;;
   esac
 done
 
+PEER_ID="$1"
 
 if [ -z "$PEER_ID" ]; then
     NODE_BACKUP_NAME="$(yq '.scheduled_tasks.backup.node_backup_name' $QTOOLS_CONFIG_FILE)"
@@ -64,6 +59,12 @@ SSH_KEY_PATH="$(yq '.scheduled_tasks.backup.ssh_key_path' $QTOOLS_CONFIG_FILE)"
 if [ "$REMOTE_DIR" == "/$NODE_BACKUP_NAME/" ] || [ -z "$REMOTE_URL" ] || [ -z "$REMOTE_USER" ] || [ -z "$SSH_KEY_PATH" ]; then
     echo "Error: One or more required restore settings are missing in the configuration."
     exit 1
+fi
+
+# Test SSH connection before proceeding
+if ! ssh -i "$SSH_KEY_PATH" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=5 "$REMOTE_USER@$REMOTE_URL" exit 2>/dev/null; then
+  echo "Error: Cannot connect to remote host. Please check your SSH configuration and network connection."
+  exit 1
 fi
 
 # Create .config directory if it doesn't exist

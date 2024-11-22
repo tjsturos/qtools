@@ -56,6 +56,12 @@ if [ "$IS_BACKUP_ENABLED" == "true" ] || [ "$FORCE_BACKUP" == "true" ]; then
     exit 1
   fi
 
+  # Test SSH connection before proceeding
+  if ! ssh -i "$SSH_KEY_PATH" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=5 "$REMOTE_USER@$REMOTE_URL" exit 2>/dev/null; then
+    echo "Error: Cannot connect to remote host. Please check your SSH configuration and network connection."
+    exit 1
+  fi
+
   # Check if remote directory exists
   if ! ssh -i "$SSH_KEY_PATH" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "$REMOTE_USER@$REMOTE_URL" "[ -d $REMOTE_DIR ]"; then
     echo "Error: Remote backup directory does not exist"

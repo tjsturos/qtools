@@ -9,7 +9,6 @@
 IS_BACKUP_ENABLED="$(yq '.scheduled_tasks.backup.enabled // false' $QTOOLS_CONFIG_FILE)"
 
 PEER_ID=""
-FORCE_BACKUP=false
 CONFIG="$QUIL_NODE_PATH/.config"
 RESTART_NODE=false
 
@@ -59,6 +58,12 @@ SSH_KEY_PATH="$(yq '.scheduled_tasks.backup.ssh_key_path' $QTOOLS_CONFIG_FILE)"
 # Check if any required variable is empty
 if [ "$REMOTE_DIR" == "/$NODE_BACKUP_NAME/" ] || [ -z "$REMOTE_URL" ] || [ -z "$REMOTE_USER" ] || [ -z "$SSH_KEY_PATH" ]; then
   echo "Error: One or more required backup settings are missing in the configuration."
+  exit 1
+fi
+
+# Test SSH connection before proceeding
+if ! ssh -i "$SSH_KEY_PATH" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=5 "$REMOTE_USER@$REMOTE_URL" exit 2>/dev/null; then
+  echo "Error: Cannot connect to remote host. Please check your SSH configuration and network connection."
   exit 1
 fi
 
