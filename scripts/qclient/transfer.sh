@@ -14,10 +14,15 @@ TOKEN_BALANCE=""
 TO_ADDRESS=""
 DRY_RUN="false"
 CONFIG_PATH="$QUIL_NODE_PATH/.config"
+PUBLIC_RPC=""
 
 while [[ $# -gt 0 ]]; do
     key="$1"
     case $key in
+       --public-rpc|-p)
+        PUBLIC_RPC="true"
+        shift
+        ;;
         --dry-run)
         DRY_RUN=true
         shift
@@ -118,6 +123,10 @@ fi
 
 # Construct the command
 CMD="$LINKED_QCLIENT_BINARY${SKIP_SIG_CHECK:+ --signature-check=false} token transfer $TO_ADDRESS $TOKEN --config $CONFIG_PATH"
+
+if [[ $PUBLIC_RPC == "true" ]]; then
+    CMD="$CMD --public-rpc"
+fi
 
 if [[ $DRY_RUN == "false" ]]; then
     echo "Submitting transfer..."
