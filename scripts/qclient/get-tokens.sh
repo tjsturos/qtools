@@ -10,9 +10,15 @@ SKIP_SIG_CHECK=false
 CONFIG_PATH="$QUIL_NODE_PATH/.config"
 SORTED=false
 SORT_ORDER="asc"
+HEX_ONLY=""
+
 while [[ $# -gt 0 ]]; do
     key="$1"
     case $key in
+        --hex-only)
+        HEX_ONLY="true"
+        shift
+        ;;
         --config)
         if [[ $(detect_config_path "$2") ]]; then
             CONFIG_PATH="$2"
@@ -48,15 +54,19 @@ if [ "$SKIP_SIG_CHECK" == true ]; then
     CMD="$CMD --signature-check=false"
 fi
 
-# Execute the command
-TOKEN_OUTPUT=$($CMD | grep "Coin 0x")
-
-if [ "$SORTED" == true ]; then
-    if [ "$SORT_ORDER" == "desc" ]; then
-        TOKEN_OUTPUT=$(echo "$TOKEN_OUTPUT" | sort -k1,1 -r)
-    else
-        TOKEN_OUTPUT=$(echo "$TOKEN_OUTPUT" | sort -k1,1)
+# Execute the command and process output
+if [ "$HEX_ONLY" == "true" ]; then
+    TOKEN_OUTPUT=$($CMD | grep "Coin 0x" | awk '{print $NF}' | sed 's/^(Coin //' | sed 's/)$//')
+else
+    TOKEN_OUTPUT=$($CMD | grep "Coin 0x")
+    if [ "$SORTED" == "true" ]; then
+        if [ "$SORT_ORDER" == "desc" ]; then
+            TOKEN_OUTPUT=$(echo "$TOKEN_OUTPUT" | sort -k1,1 -r)
+        else
+            TOKEN_OUTPUT=$(echo "$TOKEN_OUTPUT" | sort -k1,1)
+        fi
     fi
+
 fi
 
 if [ ! -z "$TOKEN_OUTPUT" ]; then
