@@ -7,7 +7,6 @@
 
 IS_BACKUP_ENABLED="$(yq '.scheduled_tasks.backup.enabled // false' $QTOOLS_CONFIG_FILE)"
 
-FORCE_BACKUP=false
 AUTO=false
 
 # Parse command-line arguments
@@ -15,10 +14,6 @@ while [[ $# -gt 0 ]]; do
   case $1 in
     --auto)
       AUTO=true
-      shift
-      ;;
-    --force)
-      FORCE_BACKUP=true
       shift
       ;;
     *)

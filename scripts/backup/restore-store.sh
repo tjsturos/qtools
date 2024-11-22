@@ -8,15 +8,10 @@
 IS_BACKUP_ENABLED="$(yq '.scheduled_tasks.backup.enabled // false' $QTOOLS_CONFIG_FILE)"
 
 PEER_ID=""
-FORCE_BACKUP=false
 CONFIG="$QUIL_NODE_PATH/.config"
 # Parse command-line arguments
 while [[ $# -gt 0 ]]; do
   case $1 in
-    --force)
-      FORCE_BACKUP=true
-      shift
-      ;;
     --config)
       shift
       CONFIG="$1"
@@ -44,46 +39,42 @@ if [ "$IS_CLUSTERING_ENABLED" == "true" ] && [ "$(is_master)" == "false" ]; then
   exit 0
 fi
 
-if [ "$IS_BACKUP_ENABLED" == "true" ] || [ "$FORCE_BACKUP" == "true" ]; then
-  REMOTE_DIR="$(yq '.scheduled_tasks.backup.remote_backup_dir' $QTOOLS_CONFIG_FILE)/store"
-  REMOTE_URL="$(yq '.scheduled_tasks.backup.backup_url' $QTOOLS_CONFIG_FILE)"
-  REMOTE_USER="$(yq '.scheduled_tasks.backup.remote_user' $QTOOLS_CONFIG_FILE)"
-  SSH_KEY_PATH="$(yq '.scheduled_tasks.backup.ssh_key_path' $QTOOLS_CONFIG_FILE)"
+REMOTE_DIR="$(yq '.scheduled_tasks.backup.remote_backup_dir' $QTOOLS_CONFIG_FILE)/store"
+REMOTE_URL="$(yq '.scheduled_tasks.backup.backup_url' $QTOOLS_CONFIG_FILE)"
+REMOTE_USER="$(yq '.scheduled_tasks.backup.remote_user' $QTOOLS_CONFIG_FILE)"
+SSH_KEY_PATH="$(yq '.scheduled_tasks.backup.ssh_key_path' $QTOOLS_CONFIG_FILE)"
 
-  # Check if any required variable is empty
-  if [ "$REMOTE_DIR" == "/store" ] || [ -z "$REMOTE_URL" ] || [ -z "$REMOTE_USER" ] || [ -z "$SSH_KEY_PATH" ]; then
-    echo "Error: One or more required backup settings are missing in the configuration."
-    exit 1
-  fi
-
-  # Test SSH connection before proceeding
-  if ! ssh -i "$SSH_KEY_PATH" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=5 "$REMOTE_USER@$REMOTE_URL" exit 2>/dev/null; then
-    echo "Error: Cannot connect to remote host. Please check your SSH configuration and network connection."
-    exit 1
-  fi
-
-  # Check if remote directory exists
-  if ! ssh -i "$SSH_KEY_PATH" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "$REMOTE_USER@$REMOTE_URL" "[ -d $REMOTE_DIR ]"; then
-    echo "Error: Remote backup directory does not exist"
-    exit 1
-  fi
-
-  # Create local store directory if it doesn't exist
-  mkdir -p "$CONFIG"
-
-  # Perform the rsync restore for store directory
-  if rsync -avzrP \
-    --exclude="keys.yml" \
-    --exclude="config.yml" \
-    -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
-    "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR/" "$CONFIG/"; then
-    echo "Restore of store files completed successfully."
-  else
-    echo "Error: Restore of store files failed. Please check your rsync command and try again."
-    exit 1
-  fi
-
-  echo "All restores completed successfully."
-else
-  log "Backup for $LOCAL_HOSTNAME is not enabled. Modify the qtools config (qtools edit-qtools-config) to enable."
+# Check if any required variable is empty
+if [ "$REMOTE_DIR" == "/store" ] || [ -z "$REMOTE_URL" ] || [ -z "$REMOTE_USER" ] || [ -z "$SSH_KEY_PATH" ]; then
+  echo "Error: One or more required backup settings are missing in the configuration."
+  exit 1
 fi
+
+# Test SSH connection before proceeding
+if ! ssh -i "$SSH_KEY_PATH" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=5 "$REMOTE_USER@$REMOTE_URL" exit 2>/dev/null; then
+  echo "Error: Cannot connect to remote host. Please check your SSH configuration and network connection."
+  exit 1
+fi
+
+# Check if remote directory exists
+if ! ssh -i "$SSH_KEY_PATH" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "$REMOTE_USER@$REMOTE_URL" "[ -d $REMOTE_DIR ]"; then
+  echo "Error: Remote backup directory does not exist"
+  exit 1
+fi
+
+# Create local store directory if it doesn't exist
+mkdir -p "$CONFIG"
+
+# Perform the rsync restore for store directory
+if rsync -avzrP \
+  --exclude="keys.yml" \
+  --exclude="config.yml" \
+  -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
+  "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR/" "$CONFIG/"; then
+  echo "Restore of store files completed successfully."
+else
+  echo "Error: Restore of store files failed. Please check your rsync command and try again."
+  exit 1
+fi
+
+echo "All restores completed successfully."
