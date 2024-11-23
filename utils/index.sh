@@ -132,7 +132,7 @@ run_node_command() {
     TESTNET=""
     DEBUG=""
 
-    if [ "$(yq '.service.signature_check // "true"' $QTOOLS_CONFIG_FILE)" == "false" ]; then
+    if [ "$(yq '.service.signature_check' $QTOOLS_CONFIG_FILE)" == "false" ]; then
         SIGNATURE_CHECK=" --signature-check=false"
     fi
 
@@ -140,7 +140,7 @@ run_node_command() {
         TESTNET=" --network=1"
     fi
 
-    if [ "$DEBUG_MODE" == "true" ]; then
+    if [ "$(yq '.service.debug // "false"' $QTOOLS_CONFIG_FILE)" == "true" ]; then
         DEBUG=" --debug"
     fi
 
