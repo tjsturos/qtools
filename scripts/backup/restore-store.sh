@@ -12,9 +12,15 @@ install_package "zip" "zip" false
 
 PEER_ID=""
 CONFIG_DIR="$QUIL_NODE_PATH/.config"
+RESTART_NODE=false
+
 # Parse command-line arguments
 while [[ $# -gt 0 ]]; do
   case $1 in
+    --restart)
+      RESTART_NODE=true
+      shift
+      ;;
     --config)
       shift
       CONFIG="$1"
@@ -77,6 +83,10 @@ if scp -i "$SSH_KEY_PATH" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev
   if unzip -o "/tmp/store_backup.zip" -d "$CONFIG_DIR"; then
     rm "/tmp/store_backup.zip"
     echo "Restore of store files completed successfully."
+    if [ "$RESTART_NODE" == "true" ]; then
+      echo "Restarting node"
+      qtools start
+    fi
   else
     rm "/tmp/store_backup.zip"
     echo "Error: Failed to unzip backup file"
