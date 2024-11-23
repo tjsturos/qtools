@@ -12,9 +12,14 @@ SORTED=false
 SORT_ORDER="asc"
 HEX_ONLY=""
 METADATA=""
+PUBLIC_RPC=""
 while [[ $# -gt 0 ]]; do
     key="$1"
     case $key in
+        --public-rpc)
+        PUBLIC_RPC="true"
+        shift
+        ;;
         --hex-only)
         HEX_ONLY="true"
         shift
@@ -51,7 +56,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Construct the command
-CMD="$LINKED_QCLIENT_BINARY token coins ${METADATA:+metadata} --config $CONFIG_PATH"
+CMD="$LINKED_QCLIENT_BINARY token coins${METADATA:+ metadata}${PUBLIC_RPC:+ --public-rpc} --config $CONFIG_PATH"
 
 # Add signature check flag if needed
 if [ "$SKIP_SIG_CHECK" == true ]; then
