@@ -125,7 +125,6 @@ remove_file() {
 }
 
 run_node_command() {
-    echo "Running command: $@"
     cd $QUIL_NODE_PATH
 
     SIGNATURE_CHECK=""

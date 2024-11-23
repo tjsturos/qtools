@@ -4,8 +4,6 @@
 
 OUTPUT="$(run_node_command --peer-id "$@")"
 
-echo "Output: $OUTPUT"
-
 PEER_ID="$(echo "$OUTPUT" | grep -oP 'Peer ID: \K.*')"
 
 if [ -n "$PEER_ID" ]; then
