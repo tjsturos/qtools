@@ -143,11 +143,19 @@ run_node_command() {
         DEBUG=" --debug"
     fi
 
-    if [[ "$@" == *"--print-cmd"* ]]; then
-        echo "Signature Check:$SIGNATURE_CHECK"
-        echo "Testnet:$TESTNET" 
-        echo "Debug:$DEBUG"
-    fi
+    # Filter out --print-cmd from arguments
+    FILTERED_ARGS=()
+    while [[ $# -gt 0 ]]; do
+        if [[ "$1" != "--print-cmd" ]]; then
+            FILTERED_ARGS+=("$1")
+            echo "Command: $LINKED_NODE_BINARY$SIGNATURE_CHECK$TESTNET$DEBUG $@"
+            echo "Signature Check:$SIGNATURE_CHECK"
+            echo "Testnet:$TESTNET" 
+            echo "Debug:$DEBUG"
+        fi
+        shift
+    done
+    set -- "${FILTERED_ARGS[@]}"
 
     $LINKED_NODE_BINARY$SIGNATURE_CHECK$TESTNET$DEBUG "$@"
 }
