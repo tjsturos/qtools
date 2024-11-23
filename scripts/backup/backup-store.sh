@@ -71,22 +71,26 @@ fi
 ssh -i "$SSH_KEY_PATH" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "$REMOTE_USER@$REMOTE_URL" "mkdir -p $REMOTE_DIR" > /dev/null 2>&1 || {
   echo "Warning: Failed to create remote directory. It may already exist or there might be permission issues." >&2
 }
-
-# Perform the rsync backup for .config directory
-if rsync -avzrP --delete-after \
-  --exclude="keys.yml" \
-  --exclude="config.yml" \
-  -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
-  "$CONFIG/" "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR"; then
-  echo "Backup of store directory completed successfully."
-else
-  echo "Error: Backup of .config directory failed. Please check your rsync command and try again."
-  exit 1
-fi
-
-echo "All backups completed successfully."
+# Create zip file of store directory
+ZIP_FILE="/tmp/store_backup.zip"
+cd "$CONFIG" && zip -r "$ZIP_FILE" . -x "keys.yml" "config.yml"
 
 if [ "$RESTART_NODE" == "true" ]; then
   echo "Restarting node"
   qtools start
+fi
+
+
+echo "Uploading backup zip file to remote server"
+# Upload zip file to remote server
+if scp -i "$SSH_KEY_PATH" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+  "$ZIP_FILE" "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR/store_backup.zip"; then
+  echo "Backup zip file uploaded successfully."
+  
+  # Remove local zip file
+  rm "$ZIP_FILE"
+else
+  echo "Error: Failed to upload backup zip file. Please check your connection and try again."
+  rm "$ZIP_FILE"
+  exit 1
 fi

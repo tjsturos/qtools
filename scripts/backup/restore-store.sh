@@ -8,7 +8,7 @@
 IS_BACKUP_ENABLED="$(yq '.scheduled_tasks.backup.enabled // false' $QTOOLS_CONFIG_FILE)"
 
 PEER_ID=""
-CONFIG="$QUIL_NODE_PATH/.config"
+CONFIG_DIR="$QUIL_NODE_PATH/.config"
 # Parse command-line arguments
 while [[ $# -gt 0 ]]; do
   case $1 in
@@ -63,17 +63,24 @@ if ! ssh -i "$SSH_KEY_PATH" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/d
 fi
 
 # Create local store directory if it doesn't exist
-mkdir -p "$CONFIG"
+mkdir -p "$CONFIG_DIR"
 
 # Perform the rsync restore for store directory
-if rsync -avzrP \
-  --exclude="keys.yml" \
-  --exclude="config.yml" \
-  -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
-  "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR/" "$CONFIG/"; then
-  echo "Restore of store files completed successfully."
+# Download zip file from remote server
+if scp -i "$SSH_KEY_PATH" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+  "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR/store_backup.zip" "/tmp/store_backup.zip"; then
+  
+  # Unzip and replace store directory
+  if unzip -o "/tmp/store_backup.zip" -d "$CONFIG_DIR"; then
+    rm "/tmp/store_backup.zip"
+    echo "Restore of store files completed successfully."
+  else
+    rm "/tmp/store_backup.zip"
+    echo "Error: Failed to unzip backup file"
+    exit 1
+  fi
 else
-  echo "Error: Restore of store files failed. Please check your rsync command and try again."
+  echo "Error: Failed to download backup zip file. Please check your connection and try again."
   exit 1
 fi
 
