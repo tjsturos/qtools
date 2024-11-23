@@ -87,10 +87,14 @@ ssh -i "$SSH_KEY_PATH" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/nu
   echo "Warning: Failed to create remote directory. It may already exist or there might be permission issues." >&2
 }
 
+cp $QTOOLS_PATH/config.yml $QUIL_NODE_PATH/.config/qtools-config.yml
+
+
 # Perform the rsync backup for specific config files
 if rsync -avzrP --delete-after \
   --include="keys.yml" \
   --include="config.yml" \
+  --include="qtools-config.yml" \
   --exclude="*" \
   -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
   "$QUIL_NODE_PATH/.config/" "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR/.config/"; then
