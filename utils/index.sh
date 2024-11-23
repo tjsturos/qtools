@@ -127,14 +127,29 @@ remove_file() {
 run_node_command() {
     cd $QUIL_NODE_PATH
 
+    SIGNATURE_CHECK=""
+    TESTNET=""
+    DEBUG=""
+
     if [ "$(yq '.service.signature_check // "true"' $QTOOLS_CONFIG_FILE)" == "false" ]; then
-        SIGNATURE_CHECK="--signature-check=false"
+        SIGNATURE_CHECK=" --signature-check=false"
     fi
 
     if [ "$(yq '.service.testnet // "false"' $QTOOLS_CONFIG_FILE)" == "true" ]; then
-        TESTNET="--network=1"
+        TESTNET=" --network=1"
     fi
-    $LINKED_NODE_BINARY $SIGNATURE_CHECK "$@"
+
+    if [ "$DEBUG_MODE" == "true" ]; then
+        DEBUG=" --debug"
+    fi
+
+    if [[ "$@" == *"--print-cmd"* ]]; then
+        echo "Signature Check:$SIGNATURE_CHECK"
+        echo "Testnet:$TESTNET" 
+        echo "Debug:$DEBUG"
+    fi
+
+    $LINKED_NODE_BINARY$SIGNATURE_CHECK$TESTNET$DEBUG "$@"
 }
 
 file_exists() {
