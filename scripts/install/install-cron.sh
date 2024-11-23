@@ -43,29 +43,6 @@ if [ "$AUTO_UPDATE_QTOOLS" == "true" ]; then
   append_to_file $FILE_CRON "$QTOOLS_UPDATE_CRON_EXPRESSION qtools self-update --auto" false
 fi
 
-FRESH_FRAME_CHECK_ENABLED=$(yq eval '.scheduled_tasks.check_if_fresh_frames.enabled' $QTOOLS_CONFIG_FILE)
-
-if [ "$FRESH_FRAME_CHECK_ENABLED" == "true" ]; then
-  FRESH_FRAME_CHECK_CRON_EXPRESSION=$(yq eval '.scheduled_tasks.check_if_fresh_frames.cron_expression // ""' $QTOOLS_CONFIG_FILE)
-  if [ -z "$FRESH_FRAME_CHECK_CRON_EXPRESSION" ]; then
-    FRESH_FRAME_CHECK_CRON_EXPRESSION="*/10 * * * *"
-  fi
-
-  log "Adding fresh frame check cron expression: $FRESH_FRAME_CHECK_CRON_EXPRESSION"
-  append_to_file $FILE_CRON "$FRESH_FRAME_CHECK_CRON_EXPRESSION qtools check-if-fresh-frames" false
-fi
-
-FRESH_PROOF_CHECK_ENABLED=$(yq eval '.scheduled_tasks.check_if_fresh_proof_batches.enabled' $QTOOLS_CONFIG_FILE)
-
-if [ "$FRESH_PROOF_CHECK_ENABLED" == "true" ]; then
-  FRESH_PROOF_CHECK_CRON_EXPRESSION=$(yq eval '.scheduled_tasks.check_if_fresh_proof_batches.cron_expression // ""' $QTOOLS_CONFIG_FILE)
-  if [ -z "$FRESH_PROOF_CHECK_CRON_EXPRESSION" ]; then
-    FRESH_PROOF_CHECK_CRON_EXPRESSION="*/30 * * * *"
-  fi
-
-  log "Adding fresh proof check cron expression: $FRESH_PROOF_CHECK_CRON_EXPRESSION"
-  append_to_file $FILE_CRON "$FRESH_PROOF_CHECK_CRON_EXPRESSION qtools check-if-fresh-proofs" false
-fi
 
 if [ "$IS_CLUSTERING_ENABLED" == "true" ] && [ "$IS_MASTER" == "true" ] || [ "$IS_CLUSTERING_ENABLED" == "false" ]; then
   AUTO_RUN_DIAGNOSTICS=$(yq eval '.scheduled_tasks.diagnostics.enabled' $QTOOLS_CONFIG_FILE)
@@ -94,16 +71,6 @@ if [ "$IS_CLUSTERING_ENABLED" == "true" ] && [ "$IS_MASTER" == "true" ] || [ "$I
     
     log "Adding backup store cron expression: $BACKUP_STORE_CRON_EXPRESSION"
     append_to_file $FILE_CRON "$BACKUP_STORE_CRON_EXPRESSION qtools backup-store" false
-  fi
-
-  STATS_ENABLED=$(yq eval '.scheduled_tasks.statistics.enabled // "false"' $QTOOLS_CONFIG_FILE)
-
-  if [ "$STATS_ENABLED" == "true" ]; then
-    log "Stats enabled, adding scheduled rewards recording (hourly, daily, weekly, monthly)"
-    append_to_file $FILE_CRON '0 * * * * qtools record-unclaimed-rewards hourly' false
-    append_to_file $FILE_CRON '0 0 * * * qtools record-unclaimed-rewards daily' false
-    append_to_file $FILE_CRON '0 0 * * 0 qtools record-unclaimed-rewards weekly' false
-    append_to_file $FILE_CRON '0 0 1 * * qtools record-unclaimed-rewards monthly' false
   fi
 
 fi

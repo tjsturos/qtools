@@ -4,7 +4,7 @@ release_version: 1.4.19.1
 current_node_version: 1.4.19.1
 current_qclient_version: 1.4.19.1
 os_arch: linux-amd64
-qtools_version: 11
+qtools_version: 12
 qclient_cli_name: qclient
 ssh:
     allow_from_ip: false
@@ -35,14 +35,6 @@ service:
     args: "" # args to be passed into the main process: e.g. node-1.4.19.1-linux-amd64 --debug
     max_threads: false
 scheduled_tasks:
-    check_if_fresh_proof_batches:
-        enabled: false
-        cron_expression: ""
-        default_diff: 1800
-    check_if_fresh_frames:
-        enabled: false
-        cron_expression: ""
-        default_diff: 600
     backup:
         enabled: true
         cron_expression: ""
@@ -66,7 +58,7 @@ scheduled_tasks:
         enabled: false
         cron_expression: ""
     statistics:
-        enabled: true
+        enabled: false
         service_name: quil_statistics
         prometheus:
             endpoint: https://stats.qcommander.sh:9090/api/v1/write

@@ -2,7 +2,7 @@
 
 check_and_add_keys() {
     yq eval-all '
-        select(fileIndex == 0) * select(fileIndex == 1)
+        select(fileIndex == 0) * select(fileIndex == 1) * select(fileIndex == 0)
     ' "$QTOOLS_PATH/config.yml" "$QTOOLS_PATH/config.sample.yml" > "$QTOOLS_PATH/config_merged.yml"
 
     mv "$QTOOLS_PATH/config_merged.yml" "$QTOOLS_PATH/config.yml"
@@ -86,9 +86,14 @@ VERSION_5() {
     fi
 }
 
+get_latest_qtools_version() {
+    yq eval '.qtools_version // "0"' "$QTOOLS_PATH/config.sample.yml"
+}
+
 # run the version migration
 VERSION_2
 VERSION_3
 VERSION_5
 
+yq eval -i ".qtools_version = \"$(get_latest_qtools_version)\"" "$QTOOLS_PATH/config.yml"
 
