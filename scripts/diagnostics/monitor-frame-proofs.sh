@@ -86,7 +86,7 @@ display_stats() {
                 reward=""
             fi
 
-            echo "Frame $frame_num ($workers workers, ring $ring): $received -> $proof_started -> $proof_completed ($duration seconds${reward:+:, $reward QUIL received})"
+            echo "Frame $frame_num ($workers workers, ring $ring): $received -> $proof_started -> $proof_completed ($duration seconds${reward:+, $reward QUIL received})"
             
             total_duration=$(echo "$total_duration + $duration" | bc)
             total_started=$(echo "$total_started + $proof_started" | bc)
@@ -108,7 +108,7 @@ display_stats() {
         echo "Average completed timestamp: $avg_completed seconds"
         echo "Average evaluation time: $avg_evaluation_time seconds"
         echo ""
-        echo "Total frames processed: $count (limit shown: $LIMIT)"
+        echo "Total frames processed: $count (limit: $LIMIT)"
     else
         echo "No frames processed"
     fi
