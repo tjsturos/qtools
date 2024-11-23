@@ -4,7 +4,7 @@ release_version: 1.4.19.1
 current_node_version: 1.4.19.1
 current_qclient_version: 1.4.19.1
 os_arch: linux-amd64
-qtools_version: 12
+qtools_version: 13
 qclient_cli_name: qclient
 ssh:
     allow_from_ip: false
@@ -12,6 +12,7 @@ ssh:
 service:
     file_name: ceremonyclient
     debug: false
+    signature_check: ""
     working_dir: /home/ubuntu/ceremonyclient/node
     link_directory: /usr/local/bin
     link_name: node

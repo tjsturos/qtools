@@ -76,6 +76,7 @@ while [[ $# -gt 0 ]]; do
             ;;
         --skip-sig-check)
             SKIP_SIGNATURE_CHECK=true
+            
             shift
             ;;
         --ipfs-debug)
@@ -88,6 +89,12 @@ while [[ $# -gt 0 ]]; do
             ;;
     esac
 done
+
+if [ "$SKIP_SIGNATURE_CHECK" == "true" ]; then
+    yq -i '.service.signature_check = false' $QTOOLS_CONFIG_FILE
+else
+    yq -i '.service.signature_check = ""' $QTOOLS_CONFIG_FILE
+fi
 
 # Define the initial service file content as a variable
 SERVICE_CONTENT="[Unit]

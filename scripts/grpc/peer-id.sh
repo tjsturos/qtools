@@ -4,7 +4,7 @@
 cd $QUIL_NODE_PATH
 
 # If gRPC fails, check if signature check is disabled
-SIGNATURE_CHECK=$(systemctl cat quilibriumd.service 2>/dev/null | grep -oP '\-\-signature\-check\s+false')
+SIGNATURE_CHECK=$(yq '.service.signature_check // ""' $QTOOLS_CONFIG_FILE)
 
 OUTPUT="$($LINKED_NODE_BINARY ${SIGNATURE_CHECK:+--signature-check=false} --peer-id)"
 
