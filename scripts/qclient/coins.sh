@@ -11,7 +11,7 @@ CONFIG_PATH="$QUIL_NODE_PATH/.config"
 SORTED=false
 SORT_ORDER="asc"
 HEX_ONLY=""
-METADATA=false
+METADATA=""
 while [[ $# -gt 0 ]]; do
     key="$1"
     case $key in
