@@ -269,4 +269,7 @@ if [ "$MASTER" == "true" ]; then
 fi
 
 wait
-echo -e "${GREEN}${CHECK_ICON} Cluster setup completed. Run 'qtools cluster-start' or 'qtools start' to start the cluster.${RESET}"
+
+if [ "$DRY_RUN" == "false" ] && [ "$(is_master)" == "true" ]; then
+    echo -e "${GREEN}${CHECK_ICON} Cluster setup completed. Run 'qtools cluster-start' or 'qtools start' to start the cluster.${RESET}"
+fi
