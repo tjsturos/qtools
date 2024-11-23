@@ -29,12 +29,12 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Validate DATA_WORKER_COUNT
-if ! [[ "$DATA_WORKER_COUNT" =~ ^[1-9][0-9]*$ ]]; then
-    echo "Error: --data-worker-count must be a positive integer ($DATA_WORKER_COUNT)"
+if ! [[ "$DATA_WORKER_COUNT" =~ ^[1-9][0-9]*$ ]] && [ "$(is_master)" == "false" ]; then
+    echo "Error: --data-worker-count must be a positive integer ($DATA_WORKER_COUNT) on non-master nodes"
     exit 1
 fi
 
-echo -e "${BLUE}${INFO_ICON} Found configuration for $DATA_WORKER_COUNT data workers${RESET}"
+echo -e "${BLUE}${INFO_ICON} [ $(if [ "$(is_master)" == "true" ]; then echo "MASTER"; else echo "SLAVE"; fi) ] [ $LOCAL_IP ] Found configuration for $DATA_WORKER_COUNT data workers${RESET}"
 
 
 if [ "$(is_master)" == "true" ]; then
@@ -55,4 +55,6 @@ else
     echo -e "${BLUE}${INFO_ICON} Not master node, skipping${RESET}"
 fi
 
-start_local_data_worker_services 1 $DATA_WORKER_COUNT $LOCAL_IP
+if [ "$DATA_WORKER_COUNT" -gt 0 ]; then
+    start_local_data_worker_services 1 $DATA_WORKER_COUNT $LOCAL_IP
+fi

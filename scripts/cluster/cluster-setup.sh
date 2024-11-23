@@ -9,9 +9,7 @@ DRY_RUN=false
 LOCAL_IP=$(get_local_ip)
 LOCAL_ONLY=$(yq eval ".service.clustering.local_only" $QTOOLS_CONFIG_FILE)
 DATA_WORKER_COUNT=$(get_cluster_worker_count "$LOCAL_IP")
-if [ "$DATA_WORKER_COUNT" == "0" ]; then
-    DATA_WORKER_COUNT=$TOTAL_CORES
-fi
+
 
 # Function to display usage information
 usage() {
@@ -51,9 +49,13 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Validate COUNT
-if ! [[ "$DATA_WORKER_COUNT" =~ ^[1-9][0-9]*$ ]]; then
-    echo "Error: --data-worker-count must be a non-zero unsigned integer"
+if ! [[ "$DATA_WORKER_COUNT" =~ ^[1-9][0-9]*$ ]] && [ "$(is_master)" == "false" ]; then
+    echo "Error: --data-worker-count must be a non-zero unsigned integer on non-master nodes"
     exit 1
+fi
+
+if [ "$DATA_WORKER_COUNT" == "0" ] && [ "$(is_master)" == "false" ]; then
+    DATA_WORKER_COUNT=$TOTAL_CORES
 fi
 
 if [ "$DRY_RUN" == "true" ]; then
@@ -62,7 +64,7 @@ fi
 
 # Check if data worker service file exists
 
-if [ ! -f "$DATA_WORKER_SERVICE_FILE" ]; then
+if [ ! -f "$DATA_WORKER_SERVICE_FILE" ] && [ "$DATA_WORKER_COUNT" -gt 0 ]; then
     echo -e "${BLUE}${INFO_ICON} Creating data worker service file${RESET}"
     if [ "$DRY_RUN" == "false" ]; then
         create_data_worker_service_file
@@ -122,8 +124,11 @@ if [ "$DRY_RUN" == "false" ]; then
     
     stop_local_data_worker_services
     disable_local_data_worker_services
-    echo "Enabling $QUIL_DATA_WORKER_SERVICE_NAME@{1..$DATA_WORKER_COUNT}"
-    enable_local_data_worker_services 1 $DATA_WORKER_COUNT
+
+    if [ "$DATA_WORKER_COUNT" -gt 0 ]; then
+        echo "Enabling $QUIL_DATA_WORKER_SERVICE_NAME@{1..$DATA_WORKER_COUNT}"
+        enable_local_data_worker_services 1 $DATA_WORKER_COUNT
+    fi
     sudo systemctl daemon-reload
 else
     echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ LOCAL ] [ $LOCAL_IP ] Would enable local $QUIL_DATA_WORKER_SERVICE_NAME@{1..$DATA_WORKER_COUNT}${RESET}"
