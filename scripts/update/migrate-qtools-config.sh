@@ -1,11 +1,13 @@
 #!/bin/bash
+QTOOLS_CONFIG_FILE_SAMPLE="$QTOOLS_PATH/config.sample.yml"
+QTOOLS_CONFIG_FILE_MERGED="$QTOOLS_PATH/config_merged.yml"
 
 check_and_add_keys() {
     yq eval-all '
         select(fileIndex == 0) * select(fileIndex == 1) * select(fileIndex == 0)
-    ' "$QTOOLS_PATH/config.yml" "$QTOOLS_PATH/config.sample.yml" > "$QTOOLS_PATH/config_merged.yml"
+    ' "$QTOOLS_CONFIG_FILE" "$QTOOLS_CONFIG_FILE_SAMPLE" > "$QTOOLS_CONFIG_FILE_MERGED"
 
-    mv "$QTOOLS_PATH/config_merged.yml" "$QTOOLS_PATH/config.yml"
+    mv "$QTOOLS_CONFIG_FILE_MERGED" "$QTOOLS_CONFIG_FILE"
 
     echo "Config migration completed. All missing keys have been added."
 }   
@@ -19,10 +21,10 @@ migrate_base_config() {
 
 
 # Check if config.yml exists
-if [ -f "$QTOOLS_PATH/config.yml" ]; then
+if [ -f "$QTOOLS_CONFIG_FILE" ]; then
     migrate_base_config
 else
-    echo "Error: $QTOOLS_PATH/config.yml not found."
+    echo "Error: $QTOOLS_CONFIG_FILE not found."
     exit 1
 fi
 
@@ -31,7 +33,7 @@ map_values_to_new_field() {
     local new_field="$2"
     local default_value="$3"
 
-    yq eval -i "$new_field = $old_field // \"$default_value\"" $QTOOLS_PATH/config.yml
+    yq eval -i "$new_field = $old_field // \"$default_value\"" $QTOOLS_CONFIG_FILE
 }
 
 update_backup_settings() {
@@ -47,7 +49,7 @@ update_backup_settings() {
 
 VERSION_2() {
     local VERSION=2
-    current_version=$(yq eval '.qtools_version // "0"' "$QTOOLS_PATH/config.yml")
+    current_version=$(yq eval '.qtools_version // "0"' "$QTOOLS_CONFIG_FILE")
     echo "Current version: $current_version vs $VERSION"
     if [ "$current_version" -lt "$VERSION" ]; then
         echo "Migrating config.yml to version 2"
@@ -55,7 +57,7 @@ VERSION_2() {
         update_backup_settings
         
         # Update qtools_version to 2
-        yq eval -i '.qtools_version = 2' "$QTOOLS_PATH/config.yml"
+        yq eval -i '.qtools_version = 2' "$QTOOLS_CONFIG_FILE"
         echo "Updated qtools_version to 2"
     fi
 }
@@ -63,23 +65,23 @@ VERSION_2() {
 
 VERSION_3() {
     local VERSION=3
-    current_version=$(yq eval '.qtools_version // "0"' "$QTOOLS_PATH/config.yml")
+    current_version=$(yq eval '.qtools_version // "0"' "$QTOOLS_CONFIG_FILE")
     echo "Current version: $current_version vs $VERSION"
     if [ "$current_version" -lt "$VERSION" ]; then
         echo "Migrating config.yml to version 3"
-        yq eval -i '.qtools_version = 3' "$QTOOLS_PATH/config.yml"
+        yq eval -i '.qtools_version = 3' "$QTOOLS_CONFIG_FILE"
         echo "Updated qtools_version to 3"
     fi
 }
 
 VERSION_5() {
     local VERSION=5
-    current_version=$(yq eval '.qtools_version // "0"' "$QTOOLS_PATH/config.yml")
+    current_version=$(yq eval '.qtools_version // "0"' "$QTOOLS_CONFIG_FILE")
     
     echo "Current version: $current_version vs $VERSION"
     if [ "$current_version" -lt "$VERSION" ]; then
         echo "Migrating config.yml to version 5"
-        yq eval -i '.qtools_version = 5' "$QTOOLS_PATH/config.yml"
+        yq eval -i '.qtools_version = 5' "$QTOOLS_CONFIG_FILE"
         get_current_node_version
         get_current_qclient_version
         echo "Updated qtools_version to 5"
@@ -87,7 +89,7 @@ VERSION_5() {
 }
 
 get_latest_qtools_version() {
-    yq eval '.qtools_version // "0"' "$QTOOLS_PATH/config.sample.yml"
+    yq eval '.qtools_version // "0"' "$QTOOLS_CONFIG_FILE_SAMPLE"
 }
 
 # run the version migration
@@ -95,5 +97,5 @@ VERSION_2
 VERSION_3
 VERSION_5
 
-yq eval -i ".qtools_version = \"$(get_latest_qtools_version)\"" "$QTOOLS_PATH/config.yml"
+yq eval -i ".qtools_version = \"$(get_latest_qtools_version)\"" "$QTOOLS_CONFIG_FILE"
 
