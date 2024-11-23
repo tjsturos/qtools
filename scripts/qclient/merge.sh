@@ -8,10 +8,23 @@ SKIP_SIG_CHECK=""
 PUBLIC_RPC=""
 COINS=()
 MERGE_ALL=false
+CONFIG="$QUIL_NODE_PATH/.config"
+
+cd $QUIL_NODE_PATH
 
 while [[ $# -gt 0 ]]; do
     key="$1"
     case $key in
+        --config)
+        if [ -d "$2" ]; then
+            CONFIG="$2"
+        else
+            echo "Error: $2 is not a directory"
+            exit 1
+        fi
+        CONFIG="$2"
+        shift 2
+        ;;
         --skip-sig-check)
         SKIP_SIG_CHECK=true
         shift
@@ -73,7 +86,7 @@ merge_batch() {
         
         if [ ${#batch[@]} -gt 1 ]; then
             echo "Merging batch of ${#batch[@]} coins..."
-            CMD="qclient token merge ${batch[@]}${SKIP_SIG_CHECK:+ --signature-check=false}${PUBLIC_RPC:+ --public-rpc}"
+            CMD="qclient token merge ${batch[@]}${SKIP_SIG_CHECK:+ --signature-check=false}${PUBLIC_RPC:+ --public-rpc} --config $CONFIG"
             echo "Executing: $CMD"
             $CMD
             
