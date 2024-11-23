@@ -1,5 +1,5 @@
 
-OUTPUT="$(run_node_command --node-info)"
+OUTPUT="$(run_node_command --node-info "$@")"
 
 BALANCE="$(echo "$OUTPUT" | grep -oP 'Owned balance: \K.*')"
 

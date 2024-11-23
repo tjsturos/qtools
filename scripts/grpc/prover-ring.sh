@@ -1,4 +1,4 @@
-OUTPUT="$(run_node_command --prover-ring)"
+OUTPUT="$(run_node_command --node-info "$@")"
 
 PROVER_RING="$(echo "$OUTPUT" | grep -oP 'Prover Ring: \K.*')"
 

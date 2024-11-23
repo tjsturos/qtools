@@ -1,4 +1,4 @@
-OUTPUT="$(run_node_command --node-info)"
+OUTPUT="$(run_node_command --node-info "$@")"
 
 SENIORITY="$(echo "$OUTPUT" | grep -oP 'Seniority: \K.*')"
 
