@@ -4,13 +4,14 @@
 # PARAM: --peer-id <string>: the peer-id to use when backing up the config directory.
 # PARAM: --force: bypass the backup enabled check and force the backup operation.
 # Usage: qtools backup-store [--confirm]
-
-
 IS_BACKUP_ENABLED="$(yq '.scheduled_tasks.backup.enabled // false' $QTOOLS_CONFIG_FILE)"
 
 PEER_ID=""
 CONFIG="$QUIL_NODE_PATH/.config"
 RESTART_NODE=false
+
+# Install zip package
+install_package "zip" "zip" false
 
 # Parse command-line arguments
 while [[ $# -gt 0 ]]; do
@@ -71,6 +72,8 @@ fi
 ssh -i "$SSH_KEY_PATH" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "$REMOTE_USER@$REMOTE_URL" "mkdir -p $REMOTE_DIR" > /dev/null 2>&1 || {
   echo "Warning: Failed to create remote directory. It may already exist or there might be permission issues." >&2
 }
+
+echo "Creating zip file of store directory"
 # Create zip file of store directory
 ZIP_FILE="/tmp/store_backup.zip"
 cd "$CONFIG" && zip -r "$ZIP_FILE" . -x "keys.yml" "config.yml"

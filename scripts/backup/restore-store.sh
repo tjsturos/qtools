@@ -7,6 +7,9 @@
 
 IS_BACKUP_ENABLED="$(yq '.scheduled_tasks.backup.enabled // false' $QTOOLS_CONFIG_FILE)"
 
+# Install zip package
+install_package "zip" "zip" false
+
 PEER_ID=""
 CONFIG_DIR="$QUIL_NODE_PATH/.config"
 # Parse command-line arguments
