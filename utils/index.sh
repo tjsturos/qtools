@@ -124,6 +124,19 @@ remove_file() {
     fi
 }
 
+run_node_command() {
+    cd $QUIL_NODE_PATH
+
+    if [ "$(yq '.service.signature_check // "true"' $QTOOLS_CONFIG_FILE)" == "false" ]; then
+        SIGNATURE_CHECK="--signature-check=false"
+    fi
+
+    if [ "$(yq '.service.testnet // "false"' $QTOOLS_CONFIG_FILE)" == "true" ]; then
+        TESTNET="--network=1"
+    fi
+    $LINKED_NODE_BINARY $SIGNATURE_CHECK "$@"
+}
+
 file_exists() {
     FILE="$1"
     if [ ! -f $FILE ]; then

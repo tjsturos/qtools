@@ -1,8 +1,4 @@
-cd $QUIL_NODE_PATH
-
-SIGNATURE_CHECK=$(yq '.service.signature_check // ""' $QTOOLS_CONFIG_FILE)
-
-OUTPUT="$($LINKED_NODE_BINARY ${SIGNATURE_CHECK:+--signature-check=false} --node-info)"
+OUTPUT="$(run_node_command --prover-ring)"
 
 PROVER_RING="$(echo "$OUTPUT" | grep -oP 'Prover Ring: \K.*')"
 

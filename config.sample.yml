@@ -12,7 +12,8 @@ ssh:
 service:
     file_name: ceremonyclient
     debug: false
-    signature_check: ""
+    signature_check: false
+    testnet: false
     working_dir: /home/ubuntu/ceremonyclient/node
     link_directory: /usr/local/bin
     link_name: node

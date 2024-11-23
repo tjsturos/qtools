@@ -1,8 +1,5 @@
-cd $QUIL_NODE_PATH
 
-SIGNATURE_CHECK=$(yq '.service.signature_check // ""' $QTOOLS_CONFIG_FILE)
-
-OUTPUT="$($LINKED_NODE_BINARY ${SIGNATURE_CHECK:+--signature-check=false} --node-info)"
+OUTPUT="$(run_node_command --node-info)"
 
 BALANCE="$(echo "$OUTPUT" | grep -oP 'Owned balance: \K.*')"
 
