@@ -152,6 +152,8 @@ setup_remote_firewall() {
             echo -e "${YELLOW}${WARNING_ICON} Warning: UFW is not enabled on $IP. Skipping firewall setup.${RESET}"
             echo -e "${BLUE}${INFO_ICON} If you enable UFW on the remote server, run this script again.${RESET}"
         else
+            # Remove any existing rules for these ports
+            ssh_to_remote $IP $REMOTE_USER $SSH_PORT "sudo ufw status numbered | grep '$BASE_PORT' | cut -d']' -f1 | tac | xargs -I {} sudo ufw --force delete {}"
             ssh_to_remote $IP $REMOTE_USER $SSH_PORT "sudo ufw allow proto tcp from $MASTER_IP to any port $BASE_PORT:$END_PORT" 
             
             # Reload ufw to apply changes
