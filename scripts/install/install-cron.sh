@@ -70,7 +70,7 @@ if [ "$IS_CLUSTERING_ENABLED" == "true" ] && [ "$IS_MASTER" == "true" ] || [ "$I
     fi
     
     log "Adding backup store cron expression: $BACKUP_STORE_CRON_EXPRESSION"
-    append_to_file $FILE_CRON "$BACKUP_STORE_CRON_EXPRESSION qtools backup-store" false
+    append_to_file $FILE_CRON "$BACKUP_STORE_CRON_EXPRESSION qtools backup-store --restart" false
   fi
 
 fi
