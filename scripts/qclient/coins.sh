@@ -11,7 +11,7 @@ CONFIG_PATH="$QUIL_NODE_PATH/.config"
 SORTED=false
 SORT_ORDER="asc"
 HEX_ONLY=""
-
+METADATA=false
 while [[ $# -gt 0 ]]; do
     key="$1"
     case $key in
@@ -38,6 +38,10 @@ while [[ $# -gt 0 ]]; do
         shift
         shift
         ;;
+        metadata)
+        METADATA=true
+        shift
+        ;;
         *)
         # Unknown option
         echo "Unknown option: $1"
@@ -47,7 +51,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Construct the command
-CMD="$LINKED_QCLIENT_BINARY token coins --config $CONFIG_PATH"
+CMD="$LINKED_QCLIENT_BINARY token coins ${METADATA:+metadata} --config $CONFIG_PATH"
 
 # Add signature check flag if needed
 if [ "$SKIP_SIG_CHECK" == true ]; then
