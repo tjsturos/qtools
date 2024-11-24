@@ -75,7 +75,7 @@ fi
 echo "Found ${#COINS[@]} coins to merge"
 
 # Function to merge coins in batches
-merge_batch() {
+merge_all_by_batch() {
     local coins=("$@")
     local batch_size=100
     local start=0
@@ -116,7 +116,7 @@ merge_all() {
 }
 
 if [ "$BATCH" == "true" ]; then
-    merge_batch "${COINS[@]}"
+    merge_all_by_batch "${COINS[@]}"
 else
     merge_all "${COINS[@]}"
 fi
