@@ -109,7 +109,7 @@ restart_service() {
     sudo systemctl daemon-reload
 
     local IS_CLUSTERING_ENABLED=$(yq '.service.clustering.enabled' $QTOOLS_CONFIG_FILE)
-    if [ "$IS_CLUSTERING_ENABLED" == "true" ] && [ "$(is_master)" == "true" ] || [ "$IS_CLUSTERING_ENABLED" == "false" ]; then
+    if [ "$IS_CLUSTERING_ENABLED" == "true" -a "$(is_master)" == "true" ] || [ "$IS_CLUSTERING_ENABLED" == "false" ]; then
         # restart the main service
         sudo systemctl restart $QUIL_SERVICE_NAME
     fi
