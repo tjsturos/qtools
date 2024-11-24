@@ -9,12 +9,19 @@ PUBLIC_RPC=""
 COINS=()
 MERGE_ALL=false
 CONFIG="$QUIL_NODE_PATH/.config"
+BATCH_SIZE=100
+BATCH=""
 
 cd $QUIL_NODE_PATH
 
 while [[ $# -gt 0 ]]; do
     key="$1"
     case $key in
+        --batch)
+        BATCH="true"
+        BATCH_SIZE="$2"
+        shift 2
+        ;;
         --config)
         if [ -d "$2" ]; then
             CONFIG="$2"
@@ -97,7 +104,21 @@ merge_batch() {
     done
 }
 
-# Start merging
-merge_batch "${COINS[@]}"
+merge_all() {
+    local coins=("$@")
+
+    if [ ${#coins[@]} -gt 1 ]; then
+        echo "Merging ${#coins[@]} coins..."
+        CMD="qclient token merge ${coins[@]}${SKIP_SIG_CHECK:+ --signature-check=false}${PUBLIC_RPC:+ --public-rpc} --config $CONFIG"
+        echo "Executing: $CMD"
+        $CMD
+    fi
+}
+
+if [ "$BATCH" == "true" ]; then
+    merge_batch "${COINS[@]}"
+else
+    merge_all "${COINS[@]}"
+fi
 
 echo "Merge operations submitted. Please wait for network processing..."
