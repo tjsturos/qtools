@@ -37,7 +37,6 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-
 if [ -z "$NODE_VERSION" ]; then
     echo "Node version not specified. Using latest version..."
     NODE_VERSION=$(fetch_node_release_version)
@@ -108,7 +107,18 @@ update_node_link() {
 
 restart_service() {
     sudo systemctl daemon-reload
-    sudo systemctl restart $QUIL_SERVICE_NAME
+
+    local IS_CLUSTERING_ENABLED=$(yq '.service.clustering.enabled' $QTOOLS_CONFIG_FILE)
+    if [ "$IS_CLUSTERING_ENABLED" == "true" ] && [ "$(is_master)" == "true" ] || [ "$IS_CLUSTERING_ENABLED" == "false" ]; then
+        # restart the main service
+        sudo systemctl restart $QUIL_SERVICE_NAME
+    fi
+
+    # Restart any running dataworker instances
+    if systemctl list-unit-files | grep -q 'dataworker@.service'; then
+        log "Restarting all dataworker instances"
+        sudo systemctl restart dataworker@*
+    fi
 }
 
 # Check if the current symlink target matches the desired version
@@ -121,5 +131,3 @@ if [ "$CURRENT_NODE_LINK" != "$DESIRED_NODE_LINK" ]; then
     log "Restarting service"
     restart_service
 fi
-
-
