@@ -17,12 +17,13 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     *)
+      if [[ "$1" =~ ^Qm ]]; then
+        PEER_ID="$1"
+      fi
       shift
       ;;
   esac
 done
-
-PEER_ID="$1"
 
 if [ -z "$PEER_ID" ]; then
     NODE_BACKUP_NAME="$(yq '.scheduled_tasks.backup.node_backup_name' $QTOOLS_CONFIG_FILE)"
