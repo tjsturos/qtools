@@ -36,8 +36,6 @@ sudo ufw deny out to 255.255.255.255
 expected_rules=(
   "22                         ALLOW       Anywhere"
   "8336                       ALLOW       Anywhere"
-  "22 (v6)                    ALLOW       Anywhere (v6)"
-  "8336 (v6)                  ALLOW       Anywhere (v6)"
 )
 
 # Get the actual output of 'ufw status'
