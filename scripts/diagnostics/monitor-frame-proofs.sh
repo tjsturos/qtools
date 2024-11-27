@@ -67,9 +67,7 @@ display_stats() {
         done < <(qclient token coins metadata 2>/dev/null)
     fi
 
-    
-
-    figlet -f small "=== Frame Statistics ==="
+    figlet -f small "Frame Statistics"
     figlet -f small "$(date '+%Y-%m-%d %H:%M:%S')"
     
     total_duration=0
@@ -105,7 +103,7 @@ display_stats() {
             ((count++))
         fi
     done
-    output+=("$(figlet -f standard -c "${last_frame_num}")")
+    output+=("$(figlet -f standard -c "Frame ${last_frame_num}")")
 
     output+=("")
     output+=("${frame_outputs[@]}")
