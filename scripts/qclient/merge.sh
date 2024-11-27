@@ -11,12 +11,16 @@ MERGE_ALL=false
 CONFIG="$QUIL_NODE_PATH/.config"
 BATCH_SIZE=100
 BATCH=""
-
+DEBUG=""
 cd $QUIL_NODE_PATH
 
 while [[ $# -gt 0 ]]; do
     key="$1"
     case $key in
+        --debug)
+        DEBUG="true"
+        shift
+        ;;
         --batch)
         BATCH="true"
         BATCH_SIZE="$2"
@@ -93,7 +97,9 @@ merge_all_by_batch() {
         if [ ${#batch[@]} -gt 1 ]; then
             echo "Merging batch of ${#batch[@]} coins..."
             CMD="qclient token merge ${batch[@]}${SKIP_SIG_CHECK:+ --signature-check=false}${PUBLIC_RPC:+ --public-rpc} --config $CONFIG"
-            echo "Executing: $CMD"
+            if [ "$DEBUG" == "true" ]; then
+                echo "Executing: $CMD"
+            fi
             $CMD
             
             # Wait briefly between batches
@@ -110,7 +116,9 @@ merge_all() {
     if [ ${#coins[@]} -gt 1 ]; then
         echo "Merging ${#coins[@]} coins..."
         CMD="qclient token merge ${coins[@]}${SKIP_SIG_CHECK:+ --signature-check=false}${PUBLIC_RPC:+ --public-rpc} --config $CONFIG"
-        echo "Executing: $CMD"
+        if [ "$DEBUG" == "true" ]; then
+            echo "Executing: $CMD"
+        fi
         $CMD
     fi
 }
