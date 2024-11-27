@@ -95,7 +95,9 @@ display_stats() {
             local reward=$(printf "%.4f" ${frame_data[$frame_num,reward]})
             if [ "$reward" = "0.0000" ]; then
                 reward=""
-            else
+            fi
+
+            if [ "$reward" != "" ]; then
                 reward_total_count=$(echo "$reward_total_count + 1" | bc)
             fi
 
@@ -111,7 +113,7 @@ display_stats() {
             total_completed=$(echo "$total_completed + $proof_completed" | bc)
             evaluation_time=$(echo "$proof_started - $received" | bc)
             total_evaluation_time=$(echo "$total_evaluation_time + $evaluation_time" | bc)
-            reward_landing_rate=$(echo "$reward_total_count / $count" | bc)
+            
             ((count++))
         fi
     done
@@ -130,7 +132,7 @@ display_stats() {
         avg_started=$(echo "scale=2; $total_started / $count" | bc)
         avg_completed=$(echo "scale=2; $total_completed / $count" | bc)
         avg_evaluation_time=$(echo "scale=2; $total_evaluation_time / $count" | bc)
-        
+        reward_landing_rate=$(echo "scale=2; $reward_total_count / $count" | bc)
         output+=("")
         output+=("$(figlet -f banner "Frame ${last_frame_num}")")
         output+=("Average received timestamp: $avg_started seconds")
