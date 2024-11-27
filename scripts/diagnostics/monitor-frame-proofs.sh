@@ -75,9 +75,7 @@ display_stats() {
     figlet -f small "Frame Statistics"
     figlet -f small "$(date '+%Y-%m-%d %H:%M:%S')"
     echo ""
-    if $PRINT_QUIL; then
-        echo "Account Balance: $(qtools balance)"
-    fi
+    
     
     total_duration=0
     total_started=0
@@ -117,6 +115,10 @@ display_stats() {
         fi
     done
     output+=("$(figlet -f standard "Frame ${last_frame_num}")")
+
+    if $PRINT_QUIL; then
+        output+=("Account Balance: $(qtools balance)")
+    fi
 
     output+=("")
     output+=("${frame_outputs[@]}")
