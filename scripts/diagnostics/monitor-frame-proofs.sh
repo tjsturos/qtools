@@ -103,7 +103,7 @@ display_stats() {
             ((count++))
         fi
     done
-    output+=("$(figlet -f standard -c "Frame ${last_frame_num}")")
+    output+=("$(figlet -f standard "Frame ${last_frame_num}")")
 
     output+=("")
     output+=("${frame_outputs[@]}")
