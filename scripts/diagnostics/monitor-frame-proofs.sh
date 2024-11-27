@@ -4,6 +4,8 @@
 declare -A frame_data
 frame_numbers=()
 
+install_package figlet figlet false
+
 # Start monitoring logs
 # Default number of lines to process
 LINES=1000
@@ -65,13 +67,18 @@ display_stats() {
         done < <(qclient token coins metadata 2>/dev/null)
     fi
 
+    
+
     echo "=== Frame Statistics === ($(date '+%Y-%m-%d %H:%M:%S'))"
     
     total_duration=0
     total_started=0
     total_completed=0
     total_evaluation_time=0
+    last_frame_num=0
     count=0
+    output=()
+    frame_outputs=()
     
     for frame_num in $(printf '%s\n' "${frame_numbers[@]}" | sort -n); do
         if [[ -n "${frame_data[$frame_num,received]}" && -n "${frame_data[$frame_num,proof_started]}" && -n "${frame_data[$frame_num,proof_completed]}" ]]; then
@@ -86,7 +93,8 @@ display_stats() {
                 reward=""
             fi
 
-            echo "Frame $frame_num ($workers workers, ring $ring): $received -> $proof_started -> $proof_completed ($duration seconds${reward:+, $reward QUIL received})"
+            last_frame_num=$frame_num
+            frame_outputs+=("Frame $frame_num ($workers workers, ring $ring): $received -> $proof_started -> $proof_completed ($duration seconds${reward:+, $reward QUIL received})")
             
             total_duration=$(echo "$total_duration + $duration" | bc)
             total_started=$(echo "$total_started + $proof_started" | bc)
@@ -96,23 +104,30 @@ display_stats() {
             ((count++))
         fi
     done
+    output+=("$(figlet -f small -c "${last_frame_num}")")
+
+    output+=("")
+    output+=("${frame_outputs[@]}")
     
     if [ $count -gt 0 ]; then
         avg_duration=$(echo "scale=2; $total_duration / $count" | bc)
         avg_started=$(echo "scale=2; $total_started / $count" | bc)
         avg_completed=$(echo "scale=2; $total_completed / $count" | bc)
         avg_evaluation_time=$(echo "scale=2; $total_evaluation_time / $count" | bc)
-        echo ""
-        echo "Average received timestamp: $avg_started seconds"
-        echo "Average proof duration: $avg_duration seconds"
-        echo "Average completed timestamp: $avg_completed seconds"
-        echo "Average evaluation time: $avg_evaluation_time seconds"
-        echo ""
-        echo "Total frames processed: $count (limit: $LIMIT)"
+        
+        output+=("")
+        output+=("Average received timestamp: $avg_started seconds")
+        output+=("Average proof duration: $avg_duration seconds") 
+        output+=("Average completed timestamp: $avg_completed seconds")
+        output+=("Average evaluation time: $avg_evaluation_time seconds")
+        output+=("")
+        output+=("Total frames processed: $count (limit: $LIMIT)")
     else
-        echo "No frames processed"
+        output+=("No frames processed")
     fi
-    echo "======================="
+    output+=("=======================")
+
+    printf '%s\n' "${output[@]}"
 }
 
 # Function to process a single log line and record stats
