@@ -69,6 +69,8 @@ display_stats() {
 
     figlet -f small "Frame Statistics"
     figlet -f small "$(date '+%Y-%m-%d %H:%M:%S')"
+    echo ""
+    echo "Account Balance: $(qtools balance)"
     
     total_duration=0
     total_started=0
