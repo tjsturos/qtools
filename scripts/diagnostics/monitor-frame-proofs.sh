@@ -118,8 +118,7 @@ display_stats() {
         output+=("Account Balance: $(qtools balance)")
     fi
     output+=("")
-    output+=("$(figlet -f banner "Frame ${last_frame_num}")")
-    output+=("")
+    output+=("=======================")
     output+=("${frame_outputs[@]}")
     
     if [ $count -gt 0 ]; then
@@ -129,6 +128,7 @@ display_stats() {
         avg_evaluation_time=$(echo "scale=2; $total_evaluation_time / $count" | bc)
         
         output+=("")
+        output+=("$(figlet -f banner "Frame ${last_frame_num}")")
         output+=("Average received timestamp: $avg_started seconds")
         output+=("Average proof duration: $avg_duration seconds") 
         output+=("Average completed timestamp: $avg_completed seconds")
