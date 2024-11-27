@@ -115,7 +115,8 @@ display_stats() {
         fi
     done
     output+=("$(figlet -f standard "Frame ${last_frame_num}")")
-    output+=("Peer ID: $(qtools peer-id) (Account:$(qtools account))")
+    output+=("Peer ID: $(qtools peer-id)")
+    output+=("Account: $(qtools account)")
     if $PRINT_QUIL; then
         output+=("Account Balance: $(qtools balance)")
     fi
