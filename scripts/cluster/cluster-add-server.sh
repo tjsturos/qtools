@@ -9,8 +9,13 @@ add_server_to_config() {
 
     # Check if the server already exists in the config
     if yq eval ".service.clustering.servers[] | select(.ip == \"$ip\")" "$QTOOLS_CONFIG_FILE" | grep -q .; then
-        echo -e "${YELLOW}${WARNING_ICON} Server $ip already exists in the configuration. Skipping.${RESET}"
-        return
+        echo -e "${YELLOW}${WARNING_ICON} Server $ip already exists in the configuration. Removing existing entry.${RESET}"
+        # Remove that entry from the config
+        yq eval -i "del(.service.clustering.servers[] | select(.ip == \"$ip\"))" "$QTOOLS_CONFIG_FILE"
+        if yq eval ".service.clustering.servers[] | select(.ip == \"$ip\")" "$QTOOLS_CONFIG_FILE" | grep -q .; then
+            echo -e "${RED}${ERROR_ICON} Failed to remove existing server $ip from the configuration.${RESET}"
+            exit 1
+        fi
     fi
 
     # Add the new server to the configuration
@@ -25,24 +30,29 @@ add_server_to_config() {
 # Main script execution
 if [ $# -eq 0 ]; then
     echo -e "${RED}${ERROR_ICON} Error: No IP addresses provided.${RESET}"
-    echo "Usage: $0 <ip1> [ip2] [ip3] ..."
+    echo "Usage: $0 <ip>[:<ssh-port>][/worker-count] [ip2[:<ssh-port>][/worker-count]] ..."
     exit 1
 fi
 
 # Loop through all provided IP addresses
 for arg in "$@"; do
-    # Check if argument contains a colon
-    if [[ $arg == *:* ]]; then
-        # Split on colon - IP is before, worker count after
-        ip=${arg%:*}
-        worker_count=${arg#*:}
-        echo -e "${BLUE}${INFO_ICON} Processing server: $ip (workers: $worker_count)${RESET}"
-        add_server_to_config "$ip" "$DEFAULT_SSH_PORT" "$DEFAULT_USER" "$worker_count"
+    # Parse the argument into components
+    if [[ $arg =~ ^([^:/]+)(:([0-9]+))?(/([0-9]+))?$ ]]; then
+        ip="${BASH_REMATCH[1]}"
+        ssh_port="${BASH_REMATCH[3]:-$DEFAULT_SSH_PORT}"
+        worker_count="${BASH_REMATCH[5]}"
+        
+        if [ -n "$worker_count" ]; then
+            echo -e "${BLUE}${INFO_ICON} Processing server: $ip (port: $ssh_port, workers: $worker_count)${RESET}"
+            add_server_to_config "$ip" "$ssh_port" "$DEFAULT_USER" "$worker_count"
+        else
+            echo -e "${BLUE}${INFO_ICON} Processing server: $ip (port: $ssh_port)${RESET}"
+            add_server_to_config "$ip" "$ssh_port" "$DEFAULT_USER"
+        fi
     else
-        # No colon - treat entire arg as IP
-        ip=$arg
-        echo -e "${BLUE}${INFO_ICON} Processing server: $ip${RESET}"
-        add_server_to_config "$ip"
+        echo -e "${RED}${ERROR_ICON} Invalid format for argument: $arg${RESET}"
+        echo "Expected format: <ip>[:<ssh-port>][/worker-count]"
+        continue
     fi
 done
 
