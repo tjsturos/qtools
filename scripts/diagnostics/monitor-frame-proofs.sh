@@ -12,6 +12,7 @@ LINES=1000
 ONE_SHOT=false
 DEBUG=false
 LIMIT=25
+PRINT_QUIL=true
 
 # Parse command line args
 while [[ $# -gt 0 ]]; do
@@ -30,6 +31,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     -d|--debug)
       DEBUG=true
+      shift
+      ;;
+    --no-quil)
+      PRINT_QUIL=false
       shift
       ;;
     *)
@@ -70,7 +75,9 @@ display_stats() {
     figlet -f small "Frame Statistics"
     figlet -f small "$(date '+%Y-%m-%d %H:%M:%S')"
     echo ""
-    echo "Account Balance: $(qtools balance)"
+    if $PRINT_QUIL; then
+        echo "Account Balance: $(qtools balance)"
+    fi
     
     total_duration=0
     total_started=0
@@ -95,7 +102,11 @@ display_stats() {
             fi
 
             last_frame_num=$frame_num
-            frame_outputs+=("Frame $frame_num ($workers workers, ring $ring): $received -> $proof_started -> $proof_completed ($duration seconds${reward:+, $reward QUIL received})")
+            if $PRINT_QUIL; then
+                frame_outputs+=("Frame $frame_num ($workers workers, ring $ring): $received -> $proof_started -> $proof_completed ($duration seconds${reward:+, $reward QUIL received})")
+            else
+                frame_outputs+=("Frame $frame_num ($workers workers, ring $ring): $received -> $proof_started -> $proof_completed ($duration seconds)")
+            fi
             
             total_duration=$(echo "$total_duration + $duration" | bc)
             total_started=$(echo "$total_started + $proof_started" | bc)
