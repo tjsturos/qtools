@@ -73,7 +73,6 @@ display_stats() {
     fi
 
     figlet -f small "Frame Statistics"
-    echo ""
     
     total_duration=0
     total_started=0
@@ -112,14 +111,14 @@ display_stats() {
             ((count++))
         fi
     done
-    output+=("$(figlet -f standard "Frame ${last_frame_num}")")
     output+=("Last Updated: $(date '+%Y-%m-%d %H:%M:%S')")
     output+=("Peer ID: $(qtools peer-id)")
     output+=("Account: $(qtools account)")
     if $PRINT_QUIL; then
         output+=("Account Balance: $(qtools balance)")
     fi
-
+    output+=("")
+    output+=("$(figlet -f banner "Frame ${last_frame_num}")")
     output+=("")
     output+=("${frame_outputs[@]}")
     
