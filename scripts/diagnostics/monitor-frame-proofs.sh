@@ -69,7 +69,7 @@ display_stats() {
 
     
 
-    echo "=== Frame Statistics === ($(date '+%Y-%m-%d %H:%M:%S'))"
+    figlet -f small "=== Frame Statistics === ($(date '+%Y-%m-%d %H:%M:%S'))"
     
     total_duration=0
     total_started=0
@@ -104,7 +104,7 @@ display_stats() {
             ((count++))
         fi
     done
-    output+=("$(figlet -f small -c "${last_frame_num}")")
+    output+=("$(figlet -f epic -c "${last_frame_num}")")
 
     output+=("")
     output+=("${frame_outputs[@]}")
