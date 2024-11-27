@@ -11,6 +11,27 @@ ONE_SHOT=false
 DEBUG=false
 LIMIT=25
 
+# Function to handle keyboard input
+handle_keyboard() {
+    read -rsn1 key
+    if [[ $key = $'\x1b' ]]; then  # Check if ESC sequence
+        read -rsn2 key
+        case $key in
+            '[A') # Up arrow
+                ((LIMIT++))
+                display_stats
+                ;;
+            '[B') # Down arrow
+                if [ $LIMIT -gt 1 ]; then
+                    ((LIMIT--))
+                    truncate_frame_records
+                    display_stats
+                fi
+                ;;
+        esac
+    fi
+}
+
 # Parse command line args
 while [[ $# -gt 0 ]]; do
   case $1 in
@@ -109,6 +130,7 @@ display_stats() {
         echo "Average evaluation time: $avg_evaluation_time seconds"
         echo ""
         echo "Total frames processed: $count (limit: $LIMIT)"
+        echo "Use UP/DOWN arrows to adjust limit"
     else
         echo "No frames processed"
     fi
@@ -200,6 +222,14 @@ truncate_frame_records() {
     fi
 }
 
+# Set up non-blocking keyboard input
+if ! $ONE_SHOT; then
+    # Save current terminal settings
+    saved_stty=$(stty -g)
+    # Set terminal to raw mode
+    stty raw -echo
+fi
+
 echo "Processing historical logs (last $LINES lines)..."
 # Process historical logs first
 while read -r line; do
@@ -216,8 +246,19 @@ if $ONE_SHOT; then
     exit 0
 fi
 
-# Now follow new logs
-while read -r line; do
-    process_log_line "$line" "new"
-    truncate_frame_records
+# Now follow new logs with keyboard input handling
+while true; do
+    # Check for keyboard input (non-blocking)
+    if read -t 0; then
+        handle_keyboard
+    fi
+    
+    # Process any new log lines
+    if read -t 0.1 line; then
+        process_log_line "$line" "new"
+        truncate_frame_records
+    fi
 done < <(journalctl -f -u $QUIL_SERVICE_NAME -o cat)
+
+# Restore terminal settings on exit
+trap 'stty "$saved_stty"' EXIT
