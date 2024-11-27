@@ -38,21 +38,23 @@ fi
 # Loop through all provided IP addresses
 for arg in "$@"; do
     # Parse the argument into components
-    if [[ $arg =~ ^([^:/]+)(:([0-9]+))?(/([0-9]+))?$ ]]; then
-        ip="${BASH_REMATCH[1]}"
-        ssh_port="${BASH_REMATCH[3]:-$DEFAULT_SSH_PORT}"
-        worker_count="${BASH_REMATCH[5]}"
+    if [[ $arg =~ ^([^@]+@)?([^:/]+)(:([0-9]+))?(/([0-9]+))?$ ]]; then
+        user="${BASH_REMATCH[1]%@}"
+        [ -z "$user" ] && user="$DEFAULT_USER"
+        ip="${BASH_REMATCH[2]}"
+        ssh_port="${BASH_REMATCH[4]:-$DEFAULT_SSH_PORT}"
+        worker_count="${BASH_REMATCH[6]}"
         
         if [ -n "$worker_count" ]; then
-            echo -e "${BLUE}${INFO_ICON} Processing server: $ip (port: $ssh_port, workers: $worker_count)${RESET}"
-            add_server_to_config "$ip" "$ssh_port" "$DEFAULT_USER" "$worker_count"
+            echo -e "${BLUE}${INFO_ICON} Processing server: $user@$ip (port: $ssh_port, workers: $worker_count)${RESET}"
+            add_server_to_config "$ip" "$ssh_port" "$user" "$worker_count"
         else
-            echo -e "${BLUE}${INFO_ICON} Processing server: $ip (port: $ssh_port)${RESET}"
-            add_server_to_config "$ip" "$ssh_port" "$DEFAULT_USER"
+            echo -e "${BLUE}${INFO_ICON} Processing server: $user@$ip (port: $ssh_port)${RESET}"
+            add_server_to_config "$ip" "$ssh_port" "$user"
         fi
     else
         echo -e "${RED}${ERROR_ICON} Invalid format for argument: $arg${RESET}"
-        echo "Expected format: <ip>[:<ssh-port>][/worker-count]"
+        echo "Expected format: [user@]<ip>[:<ssh-port>][/worker-count]"
         continue
     fi
 done
