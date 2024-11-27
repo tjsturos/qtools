@@ -73,9 +73,7 @@ display_stats() {
     fi
 
     figlet -f small "Frame Statistics"
-    figlet -f small "$(date '+%Y-%m-%d %H:%M:%S')"
     echo ""
-    
     
     total_duration=0
     total_started=0
@@ -115,6 +113,7 @@ display_stats() {
         fi
     done
     output+=("$(figlet -f standard "Frame ${last_frame_num}")")
+    output+=("Last Updated: $(date '+%Y-%m-%d %H:%M:%S')")
     output+=("Peer ID: $(qtools peer-id)")
     output+=("Account: $(qtools account)")
     if $PRINT_QUIL; then
