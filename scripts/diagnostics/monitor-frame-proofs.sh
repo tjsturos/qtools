@@ -79,6 +79,7 @@ display_stats() {
     total_completed=0
     total_evaluation_time=0
     last_frame_num=0
+    reward_total_count=0
     count=0
     output=()
     frame_outputs=()
@@ -94,6 +95,8 @@ display_stats() {
             local reward=$(printf "%.4f" ${frame_data[$frame_num,reward]})
             if [ "$reward" = "0.0000" ]; then
                 reward=""
+            else
+                reward_total_count=$(echo "$reward_total_count + 1" | bc)
             fi
 
             last_frame_num=$frame_num
@@ -108,6 +111,7 @@ display_stats() {
             total_completed=$(echo "$total_completed + $proof_completed" | bc)
             evaluation_time=$(echo "$proof_started - $received" | bc)
             total_evaluation_time=$(echo "$total_evaluation_time + $evaluation_time" | bc)
+            reward_landing_rate=$(echo "$reward_total_count / $count" | bc)
             ((count++))
         fi
     done
@@ -135,6 +139,7 @@ display_stats() {
         output+=("Average evaluation time: $avg_evaluation_time seconds")
         output+=("")
         output+=("Total frames processed: $count (limit: $LIMIT)")
+        output+=("Reward landing rate: $reward_landing_rate (landed proofs/frame count)")
     else
         output+=("No frames processed")
     fi
