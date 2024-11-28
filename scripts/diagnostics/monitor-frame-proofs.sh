@@ -46,6 +46,7 @@ done
 
 # Function to calculate and display statistics
 display_stats() {
+    cd $QUIL_NODE_PATH
     if ! $ONE_SHOT; then
         clear
     fi
