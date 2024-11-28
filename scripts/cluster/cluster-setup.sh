@@ -48,11 +48,6 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Validate COUNT
-if ! [[ "$DATA_WORKER_COUNT" =~ ^[1-9][0-9]*$ ]] && [ "$(is_master)" == "false" ]; then
-    echo "Error: --data-worker-count must be a non-zero unsigned integer on non-master nodes"
-    exit 1
-fi
 
 if [ "$DATA_WORKER_COUNT" == "0" ] && [ "$(is_master)" == "false" ]; then
     DATA_WORKER_COUNT=$TOTAL_CORES
