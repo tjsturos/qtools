@@ -27,7 +27,7 @@ if [ "$IS_MASTER" == "true" ] || [ "$(is_master)" == "true" ]; then
         ssh_command_to_each_server "qtools self-update"
     fi
 
-    ssh_command_to_each_server "qtools update-node"
+    ssh_command_to_each_server "qtools download-node --link"
 fi
 
 
