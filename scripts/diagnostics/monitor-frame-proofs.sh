@@ -181,7 +181,7 @@ display_stats() {
         output+=("Reward landing rate: $reward_landing_rate (landed proofs/frame count)")
 
         if $PRINT_QUIL; then
-            avg_reward=$(echo "scale=2; $reward_total / $count" | bc)
+            avg_reward=$(echo "scale=6; $reward_total / $count" | bc)
             hourly_reward=$(get_hourly_reward $avg_reward $avg_started)
             monthly_reward=$(get_monthly_reward $avg_reward $avg_started)
             output+=("")
