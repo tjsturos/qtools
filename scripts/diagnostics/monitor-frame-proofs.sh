@@ -46,6 +46,9 @@ done
 get_hourly_reward() {
     local frame_reward=$1
     local frame_age=$2
+    if $DEBUG; then
+        echo "Calculating hourly reward: $frame_reward / $frame_age"
+    fi
     local reward=$(echo "scale=6; $frame_reward * 3600 / $frame_age" | bc)
     echo $reward
 }
@@ -53,6 +56,9 @@ get_hourly_reward() {
 get_monthly_reward() {
     local frame_reward=$1
     local frame_age=$2
+    if $DEBUG; then
+        echo "Calculating monthly reward: $frame_reward * 3600 * 24 * 30 / $frame_age"
+    fi
     local reward=$(echo "scale=6; $frame_reward * 3600 * 24 * 30 / $frame_age" | bc)
     echo $reward
 }
