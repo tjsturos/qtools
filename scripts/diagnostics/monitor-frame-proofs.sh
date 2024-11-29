@@ -13,6 +13,7 @@ ONE_SHOT=false
 DEBUG=false
 LIMIT=25
 PRINT_QUIL=true
+UPDATE_INTERVAL=25 # Default update interval in seconds
 
 # Parse command line args
 while [[ $# -gt 0 ]]; do
@@ -36,6 +37,10 @@ while [[ $# -gt 0 ]]; do
     --no-quil)
       PRINT_QUIL=false
       shift
+      ;;
+    -u|--update)
+      UPDATE_INTERVAL="$2"
+      shift 2
       ;;
     *)
       shift
@@ -138,6 +143,12 @@ display_stats() {
             total_evaluation_time=$(echo "$total_evaluation_time + $evaluation_time" | bc)
             
             ((count++))
+        else
+            if [[ -n "${frame_data[$frame_num,received]}" ]]; then
+                local received=$(printf "%.4f" ${frame_data[$frame_num,received]})
+                frame_outputs+=("Frame $frame_num: $received (no proof started)")
+                ((count++))
+            fi
         fi
     done
     output+=("Last Updated: $(date '+%Y-%m-%d %H:%M:%S')")
@@ -181,6 +192,7 @@ display_stats() {
         output+=("No frames processed")
     fi
     output+=("=======================")
+    output+=("Update interval: ${UPDATE_INTERVAL}s (use -u or --update to change)")
 
     printf '%s\n' "${output[@]}"
 }
@@ -233,10 +245,6 @@ process_log_line() {
         fi
         frame_data[$frame_num,proof_completed]=$frame_age
         frame_data[$frame_num,proof_completed,ring]=$ring_size
-
-        if [[ "$log_type" != "historical" ]]; then
-            display_stats
-        fi
     fi
 }
 
@@ -270,11 +278,11 @@ truncate_frame_records() {
     fi
 }
 
-echo "Processing historical logs (last $LINES lines)..."
-# Process historical logs first
-while read -r line; do
+echo "Processing historical logs..."
+# Process historical logs first until we reach LIMIT frames
+while read -r line && [ ${#frame_numbers[@]} -lt $LIMIT ]; do
     process_log_line "$line" "historical"
-done < <(journalctl -u $QUIL_SERVICE_NAME -r -n "$LINES" -o cat)
+done < <(journalctl -u $QUIL_SERVICE_NAME -r -o cat)
 
 if $DEBUG; then
     echo "Frame numbers after processing historical logs: ${frame_numbers[@]}"
@@ -286,8 +294,15 @@ if $ONE_SHOT; then
     exit 0
 fi
 
-# Now follow new logs
+# Now follow new logs with periodic updates
+last_update=$(date +%s)
 while read -r line; do
     process_log_line "$line" "new"
     truncate_frame_records
+    
+    current_time=$(date +%s)
+    if ((current_time - last_update >= UPDATE_INTERVAL)); then
+        display_stats
+        last_update=$current_time
+    fi
 done < <(journalctl -f -u $QUIL_SERVICE_NAME -o cat)
