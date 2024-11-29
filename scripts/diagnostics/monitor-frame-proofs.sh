@@ -54,7 +54,7 @@ get_hourly_reward() {
     if $DEBUG; then
         echo "Calculating hourly reward: $frame_reward / $frame_age"
     fi
-    local reward=$(echo "scale=6; $frame_reward * 3600 / $frame_age" | bc)
+    local reward=$(echo "scale=10; $frame_reward * 3600 / $frame_age" | bc)
     echo $reward
 }
 
@@ -64,7 +64,7 @@ get_monthly_reward() {
     if $DEBUG; then
         echo "Calculating monthly reward: $frame_reward * 3600 * 24 * 30 / $frame_age"
     fi
-    local reward=$(echo "scale=6; $frame_reward * 3600 * 24 * 30 / $frame_age" | bc)
+    local reward=$(echo "scale=10; $frame_reward * 3600 * 24 * 30 / $frame_age" | bc)
     echo $reward
 }
 
@@ -73,7 +73,6 @@ get_monthly_reward() {
 display_stats() {
     cd $QUIL_NODE_PATH
     
-
     if $DEBUG; then
         echo "Frame numbers: ${frame_numbers[@]}"
     fi
