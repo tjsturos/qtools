@@ -43,6 +43,20 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+get_hourly_reward() {
+    local frame_reward=$1
+    local frame_age=$2
+    local reward=$(echo "$frame_reward / $frame_age * 3600" | bc)
+    echo $reward
+}
+
+get_monthly_reward() {
+    local frame_reward=$1
+    local frame_age=$2
+    local reward=$(echo "$frame_reward / $frame_age * 3600 * 24 * 30" | bc)
+    echo $reward
+}
+
 
 # Function to calculate and display statistics
 display_stats() {
@@ -81,6 +95,7 @@ display_stats() {
     total_evaluation_time=0
     last_frame_num=0
     reward_total_count=0
+    reward_total=0
     count=0
     output=()
     frame_outputs=()
@@ -100,6 +115,7 @@ display_stats() {
 
             if [ "$reward" != "" ]; then
                 reward_total_count=$(echo "$reward_total_count + 1" | bc)
+                reward_total=$(echo "$reward_total + $reward" | bc)
             fi
 
             last_frame_num=$frame_num
@@ -129,6 +145,7 @@ display_stats() {
     output+=("${frame_outputs[@]}")
     
     if [ $count -gt 0 ]; then
+        
         avg_duration=$(echo "scale=2; $total_duration / $count" | bc)
         avg_started=$(echo "scale=2; $total_started / $count" | bc)
         avg_completed=$(echo "scale=2; $total_completed / $count" | bc)
@@ -142,7 +159,18 @@ display_stats() {
         output+=("Average evaluation time: $avg_evaluation_time seconds")
         output+=("")
         output+=("Total frames processed: $count (limit: $LIMIT)")
+        output+=("Total reward received: $reward_total QUIL")
         output+=("Reward landing rate: $reward_landing_rate (landed proofs/frame count)")
+
+        if $PRINT_QUIL; then
+            avg_reward=$(echo "scale=2; $reward_total / $count" | bc)
+            hourly_reward=$(get_hourly_reward $reward_total $avg_duration)
+            monthly_reward=$(get_monthly_reward $reward_total $avg_duration)
+            output+=("")
+            output+=("Average reward per frame: $avg_reward QUIL")
+            output+=("Hourly reward: $hourly_reward QUIL")
+            output+=("Monthly reward: $monthly_reward QUIL")
+        fi
     else
         output+=("No frames processed")
     fi
