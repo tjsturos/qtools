@@ -95,7 +95,7 @@ display_stats() {
         done < <(qclient token coins metadata 2>/dev/null)
     fi
 
-    figlet -f small "Frame Statistics"
+    
     
     total_duration=0
     total_started=0
@@ -197,6 +197,7 @@ display_stats() {
     if ! $ONE_SHOT; then
         clear
     fi
+    figlet -f small "Frame Statistics"
     printf '%s\n' "${output[@]}"
 }
 
