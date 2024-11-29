@@ -150,7 +150,7 @@ display_stats() {
                 ((count++))
             elif [[ -n "${frame_data[$frame_num,proof_started]}" && -z "${frame_data[$frame_num,proof_completed]}" ]]; then
                 local proof_started=$(printf "%.4f" ${frame_data[$frame_num,proof_started]})
-                frame_outputs+=("Frame $frame_num: $proof_started (no proof completed)")
+                frame_outputs+=("Frame $frame_num: $proof_started (proof started, in progress)")
                 ((count++))
             fi
         fi
