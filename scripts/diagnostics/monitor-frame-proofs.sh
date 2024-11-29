@@ -72,9 +72,7 @@ get_monthly_reward() {
 # Function to calculate and display statistics
 display_stats() {
     cd $QUIL_NODE_PATH
-    if ! $ONE_SHOT; then
-        clear
-    fi
+    
 
     if $DEBUG; then
         echo "Frame numbers: ${frame_numbers[@]}"
@@ -197,7 +195,9 @@ display_stats() {
     fi
     output+=("=======================")
     output+=("Update interval: ${UPDATE_INTERVAL}s (use -u or --update to change)")
-
+    if ! $ONE_SHOT; then
+        clear
+    fi
     printf '%s\n' "${output[@]}"
 }
 
