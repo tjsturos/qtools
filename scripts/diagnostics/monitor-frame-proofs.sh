@@ -46,7 +46,6 @@ done
 get_hourly_reward() {
     local frame_reward=$1
     local frame_age=$2
-    echo "
     local reward=$(echo "scale=6; $frame_reward * 3600 / $frame_age" | bc)
     echo $reward
 }
