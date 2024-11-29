@@ -164,8 +164,8 @@ display_stats() {
 
         if $PRINT_QUIL; then
             avg_reward=$(echo "scale=2; $reward_total / $count" | bc)
-            hourly_reward=$(get_hourly_reward $reward_total $avg_duration)
-            monthly_reward=$(get_monthly_reward $reward_total $avg_duration)
+            hourly_reward=$(get_hourly_reward $avg_reward $avg_duration)
+            monthly_reward=$(get_monthly_reward $avg_reward $avg_duration)
             output+=("")
             output+=("Average reward per frame: $avg_reward QUIL")
             output+=("Hourly reward: $hourly_reward QUIL")
