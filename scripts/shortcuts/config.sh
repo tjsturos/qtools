@@ -38,6 +38,7 @@ config() {
     # Validate config type
     if [[ "$config_type" != "qtools" && "$config_type" != "quil" ]]; then
         echo "Error: First argument must be either 'qtools' or 'quil'"
+        echo "Usage: config <qtools|quil> <get|set> <path> [--value <value>]"
         return 1
     fi
     
@@ -51,6 +52,7 @@ config() {
     # Validate operation
     if [[ "$operation" != "get" && "$operation" != "set" ]]; then
         echo "Error: Second argument must be either 'get' or 'set'"
+        echo "Usage: config <qtools|quil> <get|set> <path> [--value <value>]"
         return 1
     fi
     
@@ -87,6 +89,8 @@ config() {
                 return 1
             fi
             yq -i "$path = \"$value\"" "$config_file"
+            echo "Set $path to $value"
+            echo "You may need to restart the service (qtools restart) to apply the changes"
         else
             echo "Error: Set operation requires --value or -v flag with a value"
             return 1
