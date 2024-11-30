@@ -155,7 +155,7 @@ display_stats() {
         fi
     done
     output+=("Last Updated: $(date '+%Y-%m-%d %H:%M:%S')")
-    if is_app_finished_starting; then
+    if [ "$(is_app_finished_starting)" == "true" ]; then
         output+=("Peer ID: $(qtools peer-id)")
         output+=("Account: $(qtools account)")
         if $PRINT_QUIL; then
