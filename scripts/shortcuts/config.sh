@@ -3,6 +3,32 @@
 # Example: config qtools get scheduled_tasks backup backup_url
 # Example: config qtools set scheduled_tasks backup backup_url --value https://backups.example.com
 
+
+# Define shortcuts for common config paths
+declare -A CONFIG_SHORTCUTS=(
+    ["backup-url"]=".scheduled_tasks.backup.backup_url"
+    ["backup-user"]=".scheduled_tasks.backup.remote_user"
+    ["backup-key"]=".scheduled_tasks.backup.ssh_key_path"
+    ["backup-dir"]=".scheduled_tasks.backup.remote_backup_dir"
+    ["backup-enabled"]=".scheduled_tasks.backup.enabled"
+    ["backup-cron"]=".scheduled_tasks.backup.cron_expression"
+    ["node-updates"]=".scheduled_tasks.updates.node.enabled"
+    ["node-update-cron"]=".scheduled_tasks.updates.node.cron_expression" 
+    ["node-skip-version"]=".scheduled_tasks.updates.node.skip_version"
+    ["qtools-updates"]=".scheduled_tasks.updates.qtools.enabled"
+    ["qtools-update-cron"]=".scheduled_tasks.updates.qtools.cron_expression"
+    ["system-updates"]=".scheduled_tasks.updates.system.enabled"
+    ["system-update-cron"]=".scheduled_tasks.updates.system.cron_expression"
+    ["worker-count"]=".data_worker_service.worker_count"
+    ["base-port"]=".data_worker_service.base_port"
+    ["service-debug"]=".service.debug"
+    ["service-testnet"]=".service.testnet"
+    ["service-args"]=".service.args"
+    ["listen-addr"]=".settings.listenAddr"
+    ["sync-timeout"]=".engine.syncTimeout"
+    ["ping-timeout"]=".p2p.pingTimeout"
+)
+
 config() {
     local config_type="$1"
     local operation="$2"
@@ -31,16 +57,23 @@ config() {
     # Remove first two arguments to get the path
     shift 2
     local path=""
+
+    if [[ -n "${CONFIG_SHORTCUTS[$1]}" ]]; then
+        path="${CONFIG_SHORTCUTS[$1]}"
+        shift
+    else
+        while [[ $# -gt 0 && "$1" != "--value" && "$1" != "-v" ]]; do
+            if [[ -z "$path" ]]; then
+                path=".$1"
+            else
+                path="$path.$1"
+            fi
+            shift
+        done
+    fi
     
     # Build the yaml path
-    while [[ $# -gt 0 && "$1" != "--value" && "$1" != "-v" ]]; do
-        if [[ -z "$path" ]]; then
-            path=".$1"
-        else
-            path="$path.$1"
-        fi
-        shift
-    done
+  
     
     if [[ "$operation" == "get" ]]; then
         yq eval "$path" "$config_file"
