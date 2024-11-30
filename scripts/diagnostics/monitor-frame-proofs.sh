@@ -128,9 +128,9 @@ display_stats() {
 
             last_frame_num=$frame_num
             if $PRINT_QUIL; then
-                frame_outputs+=("Frame $frame_num ($workers workers, ring $ring): $received -> $proof_started -> $proof_completed ($duration seconds${reward:+, $reward QUIL received})")
+                frame_outputs+=("Frame $frame_num (w:$workers, ring:$ring): $received->$proof_started->$proof_completed ($duration s${reward:+, $reward QUIL})")
             else
-                frame_outputs+=("Frame $frame_num ($workers workers, ring $ring): $received -> $proof_started -> $proof_completed ($duration seconds)")
+                frame_outputs+=("Frame $frame_num (w:$workers, ring:$ring): $received->$proof_started->$proof_completed ($duration s)")
             fi
             
             total_duration=$(echo "$total_duration + $duration" | bc)
