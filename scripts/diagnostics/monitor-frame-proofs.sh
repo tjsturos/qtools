@@ -155,10 +155,12 @@ display_stats() {
         fi
     done
     output+=("Last Updated: $(date '+%Y-%m-%d %H:%M:%S')")
-    output+=("Peer ID: $(qtools peer-id)")
-    output+=("Account: $(qtools account)")
-    if $PRINT_QUIL; then
-        output+=("Account Balance: $(qtools balance)")
+    if is_app_finished_starting; then
+        output+=("Peer ID: $(qtools peer-id)")
+        output+=("Account: $(qtools account)")
+        if $PRINT_QUIL; then
+            output+=("Account Balance: $(qtools balance)")
+        fi
     fi
     output+=("")
     if $PRINT_QUIL; then
