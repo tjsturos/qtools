@@ -186,10 +186,14 @@ display_stats() {
         output+=("Average evaluation time: $avg_evaluation_time seconds")
         output+=("")
         output+=("Total frames processed: $count (limit: $LIMIT)")
-        output+=("Total reward received: $reward_total QUIL")
-        output+=("Reward landing rate: $reward_landing_rate (landed proofs/frame count)")
+        
+        
+        if [ "$(is_app_finished_starting)" == "true" ]; then
+            output+=("Total reward received: $reward_total QUIL")
+            output+=("Reward landing rate: $reward_landing_rate (landed proofs/frame count)")
+        fi
 
-        if $PRINT_QUIL; then
+        if $PRINT_QUIL && [ "$(is_app_finished_starting)" == "true" ]; then
             avg_reward=$(echo "scale=6; $reward_total / $count" | bc)
             hourly_reward=$(get_hourly_reward $avg_reward $avg_started)
             monthly_reward=$(get_monthly_reward $avg_reward $avg_started)
