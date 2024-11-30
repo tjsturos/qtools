@@ -47,7 +47,7 @@ while [[ $# -gt 0 ]]; do
         shift
         shift
         ;;
-        --token)
+        --token|--coin|-t|-c)
         TOKEN="$2"
         shift
         shift
