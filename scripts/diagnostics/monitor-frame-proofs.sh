@@ -105,6 +105,7 @@ display_stats() {
     reward_total_count=0
     reward_total=0
     count=0
+    no_proof_count=0
     output=()
     frame_outputs=()
     
@@ -141,6 +142,7 @@ display_stats() {
             
             ((count++))
         else
+            ((no_proof_count++))
             if [[ -n "${frame_data[$frame_num,received]}" && -z "${frame_data[$frame_num,proof_started]}" ]]; then
                 local received=$(printf "%.4f" ${frame_data[$frame_num,received]})
                 frame_outputs+=("Frame $frame_num: Recieved at $received (no proof started)")
@@ -168,11 +170,11 @@ display_stats() {
     output+=("${frame_outputs[@]}")
     
     if [ $count -gt 0 ]; then
-        
-        avg_duration=$(echo "scale=2; $total_duration / $count" | bc)
-        avg_started=$(echo "scale=2; $total_started / $count" | bc)
-        avg_completed=$(echo "scale=2; $total_completed / $count" | bc)
-        avg_evaluation_time=$(echo "scale=2; $total_evaluation_time / $count" | bc)
+        proof_count=$(echo "$count - $no_proof_count" | bc)
+        avg_duration=$(echo "scale=2; $total_duration / $proof_count" | bc)
+        avg_started=$(echo "scale=2; $total_started / $proof_count" | bc)
+        avg_completed=$(echo "scale=2; $total_completed / $proof_count" | bc)
+        avg_evaluation_time=$(echo "scale=2; $total_evaluation_time / $proof_count" | bc)
         reward_landing_rate=$(echo "scale=2; $reward_total_count / $count" | bc)
         output+=("")
         output+=("$(figlet -f banner "Frame ${last_frame_num}")")
