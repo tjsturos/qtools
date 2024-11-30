@@ -143,11 +143,11 @@ display_stats() {
         else
             if [[ -n "${frame_data[$frame_num,received]}" && -z "${frame_data[$frame_num,proof_started]}" ]]; then
                 local received=$(printf "%.4f" ${frame_data[$frame_num,received]})
-                frame_outputs+=("Frame $frame_num: $received (no proof started)")
+                frame_outputs+=("Frame $frame_num: Recieved at $received (no proof started)")
                 ((count++))
             elif [[ -n "${frame_data[$frame_num,proof_started]}" && -z "${frame_data[$frame_num,proof_completed]}" ]]; then
                 local proof_started=$(printf "%.4f" ${frame_data[$frame_num,proof_started]})
-                frame_outputs+=("Frame $frame_num: $proof_started (proof started, in progress)")
+                frame_outputs+=("Frame $frame_num: Started data shard proof at $proof_started (proof in progress)")
                 ((count++))
             fi
         fi
