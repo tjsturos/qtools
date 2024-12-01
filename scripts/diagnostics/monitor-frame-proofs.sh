@@ -58,6 +58,13 @@ get_hourly_reward() {
     echo $reward
 }
 
+get_daily_reward() {
+    local frame_reward=$1
+    local frame_age=$2
+    local reward=$(echo "scale=10; $frame_reward * 3600 * 24 / $frame_age" | bc)
+    echo $reward
+}
+
 get_monthly_reward() {
     local frame_reward=$1
     local frame_age=$2
@@ -196,10 +203,12 @@ display_stats() {
         if $PRINT_QUIL && [ "$(is_app_finished_starting)" == "true" ]; then
             avg_reward=$(echo "scale=6; $reward_total / $count" | bc)
             hourly_reward=$(get_hourly_reward $avg_reward $avg_started)
+            daily_reward=$(get_daily_reward $avg_reward $avg_started)
             monthly_reward=$(get_monthly_reward $avg_reward $avg_started)
             output+=("")
             output+=("Average reward per frame: $avg_reward QUIL")
             output+=("Hourly reward: $hourly_reward QUIL")
+            output+=("Daily reward: $daily_reward QUIL")
             output+=("Monthly reward: $monthly_reward QUIL")
         fi
     else
