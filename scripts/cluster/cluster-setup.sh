@@ -224,6 +224,37 @@ copy_cluster_config_to_server() {
     fi
 }
 
+handle_server() {
+    local IP=$1
+    local REMOTE_USER=$2
+    local SSH_PORT=$3
+    local CORE_COUNT=$4
+
+    if echo "$(hostname -I)" | grep -q "$IP"; then
+        available_cores=$(($(nproc) - 1))
+    else
+        echo "Getting available cores for $IP (user: $REMOTE_USER)"
+        # Get the number of available cores
+        available_cores=$(ssh_to_remote $IP $REMOTE_USER $SSH_PORT "nproc")
+    fi
+
+    if [ "$CORE_COUNT" == "false" ]; then
+        CORE_COUNT=$available_cores
+        echo "Setting data_worker_count to available cores: $CORE_COUNT"
+    fi
+
+    echo -e "${BLUE}${INFO_ICON} Configuring server $REMOTE_USER@$IP with $CORE_COUNT data workers${RESET}"
+
+    if ! echo "$(hostname -I)" | grep -q "$IP"; then
+        copy_quil_config_to_server "$IP" "$REMOTE_USER" "$SSH_PORT" &
+        copy_quil_keys_to_server "$IP" "$REMOTE_USER" "$SSH_PORT" &
+        copy_cluster_config_to_server "$IP" "$REMOTE_USER" "$SSH_PORT" &
+        setup_remote_data_workers "$IP" "$REMOTE_USER" "$SSH_PORT" "$CORE_COUNT" &
+        # Call the function to set up the remote firewall
+        setup_remote_firewall "$IP" "$REMOTE_USER" "$SSH_PORT" "$CORE_COUNT" &
+    fi
+}
+
 # Start the master and update the config
 if [ "$MASTER" == "true" ]; then
 
@@ -244,33 +275,9 @@ if [ "$MASTER" == "true" ]; then
         remote_user=$(echo "$server" | yq eval ".user // \"$DEFAULT_USER\"" -)
         data_worker_count=$(echo "$server" | yq eval '.data_worker_count // "false"' -)
 
-        if echo "$(hostname -I)" | grep -q "$ip"; then
-            available_cores=$(($(nproc) - 1))
-        else
-            echo "Getting available cores for $ip (user: $remote_user)"
-            # Get the number of available cores
-            available_cores=$(ssh_to_remote $ip $remote_user $ssh_port "nproc")
-        fi
-
-        if [ "$data_worker_count" == "false" ]; then
-            data_worker_count=$available_cores
-            echo "Setting data_worker_count to available cores: $data_worker_count"
-        fi
-
-        echo -e "${BLUE}${INFO_ICON} Configuring server $remote_user@$ip with $data_worker_count data workers${RESET}"
-
-        if ! echo "$(hostname -I)" | grep -q "$ip"; then
-            copy_quil_config_to_server "$ip" "$remote_user" "$ssh_port"
-            copy_quil_keys_to_server "$ip" "$remote_user" "$ssh_port"
-            copy_cluster_config_to_server "$ip" "$remote_user" "$ssh_port"
-            setup_remote_data_workers "$ip" "$remote_user" "$ssh_port" "$data_worker_count" &
-            # Call the function to set up the remote firewall
-            setup_remote_firewall "$ip" "$remote_user" "$ssh_port" "$data_worker_count"
-        fi
+        handle_server "$ip" "$remote_user" "$ssh_port" "$data_worker_count" &
     done
 fi
-
-wait
 
 if [ "$DRY_RUN" == "false" ] && [ "$(is_master)" == "true" ]; then
     echo -e "${GREEN}${CHECK_ICON} Cluster setup completed. Run 'qtools cluster-start' or 'qtools start' to start the cluster.${RESET}"
