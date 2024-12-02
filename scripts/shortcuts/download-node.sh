@@ -75,12 +75,17 @@ download_file() {
     fi
     
     echo "Downloading $FILE_NAME..."
+
+    if [ "$DEV_BUILD" != "true" ]; then
     # Check if the remote file exists
     if ! wget --spider "https://releases.quilibrium.com/$FILE_NAME" 2>/dev/null; then
         echo "Remote file $FILE_NAME does not exist. Skipping download."
         return
+        fi
+        wget "https://releases.quilibrium.com/$FILE_NAME"
+    else
+        wget --no-check-certificate "https://dev.qcommander.sh/$FILE_NAME" -O "$QUIL_NODE_PATH/$FILE_NAME"
     fi
-    wget "https://releases.quilibrium.com/$FILE_NAME"
 
     # Check if the download was successful
     if [ $? -eq 0 ]; then
@@ -89,44 +94,6 @@ download_file() {
        
     else
         echo "Failed to download $file"
-    fi
-}
-
-download_dev_build() {
-    # Get backup settings from config
-    SSH_KEY_PATH=$(yq eval '.scheduled_tasks.backup.ssh_key_path' $QTOOLS_CONFIG_FILE)
-    REMOTE_USER=$(yq eval '.scheduled_tasks.backup.remote_user' $QTOOLS_CONFIG_FILE)
-    REMOTE_URL=$(yq eval '.scheduled_tasks.backup.backup_url' $QTOOLS_CONFIG_FILE)
-    
-
-    # Test SSH connection before proceeding
-    if ! ssh -i "$SSH_KEY_PATH" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=5 "$REMOTE_USER@$REMOTE_URL" exit 2>/dev/null; then
-        echo "Error: Cannot connect to remote host. Please check your SSH configuration and network connection."
-        return 1
-    fi
-
-    echo "Downloading development build from backup location..."
-
-    # Check if development build exists on remote server
-    if ! ssh -i "$SSH_KEY_PATH" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "$REMOTE_USER@$REMOTE_URL" "test -f $HOME/dev-builds/$NODE_VERSION"; then
-        echo "Error: Development build $NODE_VERSION not found on remote server"
-        return 1
-    fi
-
-    rsync -avzP \
-        -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
-        "$REMOTE_USER@$REMOTE_URL:~/dev-builds/$NODE_VERSION" \
-        "$QUIL_NODE_PATH/"
-
-    if [ $? -eq 0 ]; then
-        echo "Successfully downloaded development build"
-        chmod +x "$QUIL_NODE_PATH/$NODE_VERSION"
-        if [ -n "$LINK" ]; then
-            link_node "$NODE_VERSION"
-        fi
-    else
-        echo "Failed to download development build"
-        return 1
     fi
 }
 
@@ -145,6 +112,10 @@ for file in $NODE_RELEASE_FILES; do
 
         if [ -n "$LINK" ];then
             link_node $file
+        fi
+
+        if [ "$DEV_BUILD" == "true" ] || [ "$BINARY_ONLY" == "true" ]; then
+            qtools update-service --skip-sig-check
         fi
     fi
     
