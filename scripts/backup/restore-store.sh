@@ -48,7 +48,12 @@ if [ "$IS_CLUSTERING_ENABLED" == "true" ] && [ "$(is_master)" == "false" ]; then
   exit 0
 fi
 
-REMOTE_DIR="$(yq '.scheduled_tasks.backup.remote_backup_dir' $QTOOLS_CONFIG_FILE)/store"
+if [ -z "$PEER_ID" ]; then
+  echo "Error: Peer ID is required, use --peer-id <peer-id> to specify the peer-id"
+  exit 1
+fi  
+
+REMOTE_DIR="$(yq '.scheduled_tasks.backup.remote_backup_dir' $QTOOLS_CONFIG_FILE)/store/$PEER_ID"
 REMOTE_URL="$(yq '.scheduled_tasks.backup.backup_url' $QTOOLS_CONFIG_FILE)"
 REMOTE_USER="$(yq '.scheduled_tasks.backup.remote_user' $QTOOLS_CONFIG_FILE)"
 SSH_KEY_PATH="$(yq '.scheduled_tasks.backup.ssh_key_path' $QTOOLS_CONFIG_FILE)"
@@ -71,30 +76,17 @@ if ! ssh -i "$SSH_KEY_PATH" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/d
   exit 1
 fi
 
-# Create local store directory if it doesn't exist
-mkdir -p "$CONFIG_DIR"
-
-# Perform the rsync restore for store directory
-# Download zip file from remote server
-if scp -i "$SSH_KEY_PATH" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
-  "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR/store_backup.zip" "/tmp/store_backup.zip"; then
   
-  # Unzip and replace store directory
-  if unzip -o "/tmp/store_backup.zip" -d "$CONFIG_DIR"; then
-    rm "/tmp/store_backup.zip"
-    echo "Restore of store files completed successfully."
-    if [ "$RESTART_NODE" == "true" ]; then
-      echo "Restarting node"
-      qtools start
-    fi
-  else
-    rm "/tmp/store_backup.zip"
-    echo "Error: Failed to unzip backup file"
-    exit 1
-  fi
+if rsync -avzrP \
+  --exclude="keys.yml" \
+  --exclude="config.yml" \
+  -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
+  "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR/" "$CONFIG/"; then
+  echo "Restore of store files completed successfully."
 else
-  echo "Error: Failed to download backup zip file. Please check your connection and try again."
+  echo "Error: Restore of store files failed. Please check your rsync command and try again."
   exit 1
 fi
+
 
 echo "All restores completed successfully."
