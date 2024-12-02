@@ -5,10 +5,10 @@ SSH_KEY_PATH=$(yq eval '.settings.publish_multiaddr.ssh_key_path' $QTOOLS_CONFIG
 REMOTE_USER=$(yq eval '.settings.publish_multiaddr.remote_user' $QTOOLS_CONFIG_FILE)
 REMOTE_HOST=$(yq eval '.settings.publish_multiaddr.remote_host' $QTOOLS_CONFIG_FILE)
 REMOTE_FILE=$(yq eval '.settings.publish_multiaddr.remote_file' $QTOOLS_CONFIG_FILE)
-PEER_ID=$(qtools peer-id)
+PEER_ID=$(qtools peer-id "$@")
 
 # Get the multiaddr
-MULTIADDR=$(qtools get-multiaddr)
+MULTIADDR=$(qtools get-multiaddr "$@")
 
 # Create or update the remote YAML file
 ssh -i "$SSH_KEY_PATH" "${REMOTE_USER}@${REMOTE_HOST}" "
