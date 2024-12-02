@@ -20,6 +20,9 @@ NEW_SERVERS=$(echo "$SERVERS" | yq eval 'map(select(.ip != "'"$IP_TO_REMOVE"'"))
 # Update the configuration file
 yq eval -i '.service.clustering.servers = '"$NEW_SERVERS"'' $QTOOLS_CONFIG_FILE
 
+# Remove any data worker multiaddrs containing this IP from the engine config
+yq eval -i '.engine.dataWorkerMultiaddrs = (.engine.dataWorkerMultiaddrs // [] | map(select(contains("'"$IP_TO_REMOVE"'") | not)))' $QUIL_CONFIG_FILE
+
 # Check if the server was actually removed
 if [ "$(echo "$NEW_SERVERS" | yq eval '. | length' -)" -lt "$(echo "$SERVERS" | yq eval '. | length' -)" ]; then
     echo "Server with IP $IP_TO_REMOVE has been removed from the configuration."
@@ -30,5 +33,5 @@ fi
 # If this is the master node, update the configuration on all remaining servers
 if [ "$(is_master)" == "true" ]; then
     echo "Updating configuration on remaining servers..."
-    ssh_command_to_each_server "qtools update-config"
+    qtools restart
 fi
