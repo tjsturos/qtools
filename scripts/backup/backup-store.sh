@@ -83,7 +83,7 @@ if rsync -avzrP --delete-after \
   --exclude="keys.yml" \
   --exclude="config.yml" \
   --exclude="**/snapshot" \
-  --info=progress2
+  --info=progress2 \
   -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
   "$CONFIG/" "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR"; then
   echo "Backup of store directory completed successfully."
