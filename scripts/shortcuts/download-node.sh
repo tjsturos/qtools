@@ -115,7 +115,7 @@ download_dev_build() {
 
     rsync -avzP \
         -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
-        "$REMOTE_USER@$REMOTE_URL:$HOME/dev-builds/$NODE_VERSION" \
+        "$REMOTE_USER@$REMOTE_URL:~/dev-builds/$NODE_VERSION" \
         "$QUIL_NODE_PATH/"
 
     if [ $? -eq 0 ]; then
