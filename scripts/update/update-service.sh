@@ -96,6 +96,30 @@ TimeoutStopSec=30
 [Install]
 WantedBy=multi-user.target"
 
+DATA_WORKER_SERVICE_CONTENT="[Unit]
+Description=Quilibrium Worker Service %i
+After=network.target
+Wants=network-online.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+WorkingDirectory=$QUIL_NODE_PATH
+Restart=on-failure
+RestartSec=5s
+StartLimitBurst=5
+User=$USER
+ExecStart=${LINKED_NODE_BINARY}${TESTNET:+ --network=1}${DEBUG_MODE:+ --debug}${SKIP_SIGNATURE_CHECK:+ --signature-check=false} --core %i
+ExecStop=/bin/kill -s SIGINT \$MAINPID
+ExecReload=/bin/kill -s SIGINT \$MAINPID && ${LINKED_NODE_BINARY}${TESTNET:+ --network=1}${DEBUG_MODE:+ --debug}${SKIP_SIGNATURE_CHECK:+ --signature-check=false} --core %i
+KillSignal=SIGINT
+RestartKillSignal=SIGINT
+FinalKillSignal=SIGINT
+
+[Install]
+WantedBy=multi-user.target"
+
+
 updateOrAddLine() {
     local KEY=$1
     local VALUE=$2
@@ -107,7 +131,10 @@ updateOrAddLine() {
 
 updateServiceBinary() {
     echo "$SERVICE_CONTENT" | sudo tee "$SERVICE_FILE" > /dev/null
-    sudo systemctl daemon-reload
+}
+
+updateDataWorkerServiceBinary() {
+    echo "$DATA_WORKER_SERVICE_CONTENT" | sudo tee "$QUIL_DATA_WORKER_SERVICE_FILE" > /dev/null
 }
 
 createServiceIfNone() {
@@ -123,7 +150,8 @@ createServiceIfNone() {
 # update normal service
 createServiceIfNone 
 updateServiceBinary
-
+updateDataWorkerServiceBinary
+sudo systemctl daemon-reload
 
 if [ "$ENABLE_SERVICE" == "true" ]; then
     log "Enabling service..."

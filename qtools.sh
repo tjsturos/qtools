@@ -115,6 +115,8 @@ source $QTOOLS_PATH/utils/index.sh
 
 export QUIL_SERVICE_NAME="$(yq '.service.file_name // "ceremonyclient"' $QTOOLS_CONFIG_FILE)"
 export QUIL_SERVICE_FILE="$SYSTEMD_SERVICE_PATH/$QUIL_SERVICE_NAME.service"
+export QUIL_DATA_WORKER_SERVICE_NAME="$(yq '.service.clustering.data_worker_service_name // "dataworker"' $QTOOLS_CONFIG_FILE)"
+export QUIL_DATA_WORKER_SERVICE_FILE="$SYSTEMD_SERVICE_PATH/$QUIL_DATA_WORKER_SERVICE_NAME@.service"
 
 export LINKED_BINARY_PATH="$(yq '.service.link_directory // "/usr/local/bin"' $QTOOLS_CONFIG_FILE)"
 export LINKED_BINARY_NAME="$(yq '.service.link_name // "node"' $QTOOLS_CONFIG_FILE)"
