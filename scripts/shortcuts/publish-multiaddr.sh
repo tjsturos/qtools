@@ -10,6 +10,19 @@ PEER_ID=$(qtools peer-id "$@")
 # Get the multiaddr
 MULTIADDR=$(qtools get-multiaddr "$@")
 
+# Validate peer ID format
+if [[ ! "$PEER_ID" =~ ^Qm ]]; then
+    echo "Error: Peer ID must start with 'Qm'. Current peer ID: $PEER_ID"
+    exit 1
+fi
+
+# Validate multiaddr format
+if [[ ! "$MULTIADDR" =~ ^/ip4/ ]] || [[ ! "$MULTIADDR" =~ /p2p/Qm ]]; then
+    echo "Error: Multiaddr must start with '/ip4/' and contain '/p2p/Qm'. Current multiaddr: $MULTIADDR"
+    exit 1
+fi
+
+
 # Create or update the remote YAML file
 ssh -i "$SSH_KEY_PATH" "${REMOTE_USER}@${REMOTE_HOST}" "
 if [ ! -f $REMOTE_FILE ]; then
