@@ -78,14 +78,18 @@ ssh -i "$SSH_KEY_PATH" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/nu
 
 echo "Saving store to $REMOTE_DIR"
 
+install_package "tmux" "tmux" false
+
+
 # Perform the rsync backup for .config directory
-if rsync -avzrP --delete-after \
-  --exclude="keys.yml" \
-  --exclude="config.yml" \
-  --exclude="**/snapshot" \
-  --info=progress2 \
-  -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
-  "$CONFIG/" "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR"; then
+if tmux new-session -d "rsync -avzrP --delete-after \
+  --exclude=\"keys.yml\" \
+  --exclude=\"config.yml\" \
+  --exclude=\"**/snapshot\" \
+  --info=\"progress2\" \
+  -e \"ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null\" \
+  \"$CONFIG/\" \"$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR\" && tmux wait-for -S backup"; then
+  tmux wait-for backup
   echo "Backup of store directory completed successfully."
 else
   echo "Error: Backup of .config directory failed. Please check your rsync command and try again."
