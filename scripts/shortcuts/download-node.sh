@@ -32,6 +32,7 @@ while [[ $# -gt 0 ]]; do
         --dev-build)
         DEV_BUILD="true"
         BINARY_ONLY="true"
+        echo "Fetching Dev Build"
         shift # past argument
         ;;
         *)    # unknown option
@@ -62,7 +63,7 @@ cd $QUIL_NODE_PATH
 
 link_node() {
     local BINARY_NAME=$1
-    echo "Linking $LINK to $QUIL_NODE_PATH/$BINARY_NAME"
+    echo "Linking $LINKED_NODE_BINARY to $QUIL_NODE_PATH/$BINARY_NAME"
     sudo ln -sf "$QUIL_NODE_PATH/$BINARY_NAME" "$LINKED_NODE_BINARY"
 }
 
@@ -77,10 +78,10 @@ download_file() {
     echo "Downloading $FILE_NAME..."
 
     if [ "$DEV_BUILD" != "true" ]; then
-    # Check if the remote file exists
-    if ! wget --spider "https://releases.quilibrium.com/$FILE_NAME" 2>/dev/null; then
-        echo "Remote file $FILE_NAME does not exist. Skipping download."
-        return
+        # Check if the remote file exists
+        if ! wget --spider "https://releases.quilibrium.com/$FILE_NAME" 2>/dev/null; then
+            echo "Remote file $FILE_NAME does not exist. Skipping download."
+            return
         fi
         wget "https://releases.quilibrium.com/$FILE_NAME"
     else
