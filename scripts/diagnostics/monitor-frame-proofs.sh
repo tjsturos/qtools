@@ -234,6 +234,8 @@ display_stats() {
 process_log_line() {
     local line="$1"
     local log_type="$2"
+    
+    
 
     # Skip if line doesn't contain frame_number
     if ! [[ "$line" =~ "frame_number" ]]; then
@@ -283,16 +285,21 @@ process_log_line() {
     fi
 
     local CURRENT_LOG_TIMESTAMP=$(echo "$line" | jq -r '.ts')
-    # Check if we haven't received a proof in over 400 seconds
-    local TIME_DIFF=$(echo "$CURRENT_LOG_TIMESTAMP - $LAST_PROOF_RECEIVED" | bc -l)
-    echo "Time diff: $TIME_DIFF"
-    if [ $(echo "$TIME_DIFF > 400" | bc -l) -eq 1 ] && [ "$AUTO_RESTART" == "true" ]; then
-        
-        echo "No proof received in over 400 seconds, restarting node..."
-        echo "Current timestamp: $CURRENT_LOG_TIMESTAMP"
-        echo "Last proof received: $LAST_PROOF_RECEIVED" 
-        
-        qtools restart
+
+    if [ "$LAST_PROOF_RECEIVED" != "0" ]; then
+        # Check if we haven't received a proof in over 400 seconds
+        local TIME_DIFF=$(echo "$CURRENT_LOG_TIMESTAMP - $LAST_PROOF_RECEIVED" | bc -l)
+        echo "Time diff: $TIME_DIFF"
+        if [ $(echo "$TIME_DIFF > 400" | bc -l) -eq 1 ] && [ "$AUTO_RESTART" == "true" ]; then
+            
+            echo "No proof received in over 400 seconds, restarting node..."
+            echo "Current timestamp: $CURRENT_LOG_TIMESTAMP"
+            echo "Last proof received: $LAST_PROOF_RECEIVED" 
+            
+            qtools restart
+        fi
+    else
+        LAST_PROOF_RECEIVED=$CURRENT_LOG_TIMESTAMP
     fi
 }
 
