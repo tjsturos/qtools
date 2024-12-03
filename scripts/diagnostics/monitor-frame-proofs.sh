@@ -79,7 +79,7 @@ get_monthly_reward() {
     echo $reward
 }
 
-
+CURRENT_TIMESTAMP=0
 LAST_PROOF_RECEIVED_TIMESTAMP=0
 LAST_RESTART_TIMESTAMP=0
 
@@ -205,7 +205,14 @@ display_stats() {
         if [ "$(is_app_finished_starting)" == "true" ]; then
             output+=("Total reward received: $reward_total QUIL")
             output+=("Reward landing rate: $reward_landing_rate (landed proofs/frame count)")
+
+            output+=("")
+            output+=("Last restart: $LAST_RESTART_TIMESTAMP")
+            output+=("Current timestamp: $CURRENT_TIMESTAMP")
             output+=("Last proof received: $LAST_PROOF_RECEIVED_TIMESTAMP")
+            # Calculate time differences
+            proof_age=$((CURRENT_TIMESTAMP - LAST_PROOF_RECEIVED_TIMESTAMP))
+            output+=("Time since last proof: ${proof_age}s")
         fi
 
         if $PRINT_QUIL && [ "$(is_app_finished_starting)" == "true" ]; then
@@ -236,6 +243,8 @@ process_log_line() {
     local line="$1"
     local log_type="$2"
     
+    timestamp=$(echo "$line" | jq -r '.ts' | awk '{printf "%.0f", $1}')
+    CURRENT_TIMESTAMP=$timestamp
     # Skip if line doesn't contain frame_number
     if ! [[ "$line" =~ "frame_number" ]]; then
         return
@@ -248,7 +257,6 @@ process_log_line() {
     fi
 
     if [[ $line =~ "evaluating next frame" ]]; then
-        timestamp=$(echo "$line" | jq -r '.ts' | awk '{printf "%.0f", $1}')
         LAST_PROOF_RECEIVED_TIMESTAMP=$timestamp
         frame_age=$(echo "$line" | jq -r '.frame_age')
         if [[ "$log_type" != "historical" ]]; then
