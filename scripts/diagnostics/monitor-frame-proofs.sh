@@ -215,8 +215,9 @@ display_stats() {
         output+=("")
         # Calculate time differences
         frame_age=$(echo "$CURRENT_TIMESTAMP - $LAST_FRAME_RECEIVED_TIMESTAMP" | bc)
-        echo "Current timestamp: $CURRENT_TIMESTAMP"
-        echo "Last frame received: $LAST_FRAME_RECEIVED_TIMESTAMP"
+
+        output+=("Current timestamp: $CURRENT_TIMESTAMP")
+        output+=("Last Frame Received: $LAST_FRAME_RECEIVED_TIMESTAMP")
         output+=("Time since last frame: ${frame_age}s")
 
         if [ "$LAST_RESTART_TIMESTAMP" != "0" ]; then
