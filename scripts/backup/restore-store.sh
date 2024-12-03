@@ -81,7 +81,7 @@ if rsync -avzrP \
   --exclude="keys.yml" \
   --exclude="config.yml" \
   -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
-  "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR/" "$CONFIG/"; then
+  "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR/" "$QUIL_NODE_PATH/.config"; then
   echo "Restore of store files completed successfully."
 else
   echo "Error: Restore of store files failed. Please check your rsync command and try again."
