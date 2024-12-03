@@ -278,7 +278,10 @@ process_log_line() {
     fi
 
     if [[ $line =~ "evaluating next frame" ]]; then
-        LAST_FRAME_RECEIVED_TIMESTAMP=$LOG_TIMESTAMP
+        # Only update if this is a newer timestamp
+        if [[ "$LAST_FRAME_RECEIVED_TIMESTAMP" == "0" ]] || [[ "$LOG_TIMESTAMP" -gt "$LAST_FRAME_RECEIVED_TIMESTAMP" ]]; then
+            LAST_FRAME_RECEIVED_TIMESTAMP=$LOG_TIMESTAMP
+        fi
         frame_age=$(echo "$line" | jq -r '.frame_age')
         if [[ "$log_type" != "historical" ]]; then
             echo "Received frame $frame_num (frame age $frame_age):"
@@ -374,7 +377,7 @@ echo "Processing historical logs..."
 # Process historical logs first until we reach LIMIT frames
 while read -r line && [ ${#frame_numbers[@]} -lt $LIMIT ]; do
     process_log_line "$line" "historical"
-done < <(journalctl -u $QUIL_SERVICE_NAME -o cat)
+done < <(journalctl -u $QUIL_SERVICE_NAME -r -o cat)
 
 if $DEBUG; then
     echo "Frame numbers after processing historical logs: ${frame_numbers[@]}"
