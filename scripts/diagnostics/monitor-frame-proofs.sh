@@ -205,16 +205,18 @@ display_stats() {
             output+=("Total reward received: $reward_total QUIL")
             output+=("Reward landing rate: $reward_landing_rate (landed proofs/frame count)")
 
-            output+=("")
-            output+=("Last restart: $LAST_RESTART_TIMESTAMP")
-            output+=("Current timestamp: $CURRENT_TIMESTAMP")
-            output+=("Last proof received: $LAST_PROOF_RECEIVED_TIMESTAMP")
-            output+=("")
-            # Calculate time differences
-            proof_age=$(echo "$CURRENT_TIMESTAMP - $LAST_PROOF_RECEIVED_TIMESTAMP" | bc)
-            output+=("Time since last proof: ${proof_age}s")
-            output+=("Restart count: $RESTART_COUNT")
+           
         fi
+
+        output+=("")
+        output+=("Last restart: $LAST_RESTART_TIMESTAMP")
+        output+=("Current timestamp: $CURRENT_TIMESTAMP")
+        output+=("Last proof received: $LAST_PROOF_RECEIVED_TIMESTAMP")
+        output+=("")
+        # Calculate time differences
+        proof_age=$(echo "$CURRENT_TIMESTAMP - $LAST_PROOF_RECEIVED_TIMESTAMP" | bc)
+        output+=("Time since last proof: ${proof_age}s")
+        output+=("Restart count: $RESTART_COUNT")
 
         if $PRINT_QUIL && [ "$(is_app_finished_starting)" == "true" ]; then
             avg_reward=$(echo "scale=6; $reward_total / $count" | bc)
