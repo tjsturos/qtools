@@ -204,6 +204,7 @@ display_stats() {
         if [ "$(is_app_finished_starting)" == "true" ]; then
             output+=("Total reward received: $reward_total QUIL")
             output+=("Reward landing rate: $reward_landing_rate (landed proofs/frame count)")
+            output+=("Last proof received: $LAST_PROOF_RECEIVED_TIMESTAMP")
         fi
 
         if $PRINT_QUIL && [ "$(is_app_finished_starting)" == "true" ]; then
