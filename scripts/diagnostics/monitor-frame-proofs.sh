@@ -211,7 +211,7 @@ display_stats() {
             output+=("Current timestamp: $CURRENT_TIMESTAMP")
             output+=("Last proof received: $LAST_PROOF_RECEIVED_TIMESTAMP")
             # Calculate time differences
-            proof_age=$((CURRENT_TIMESTAMP - LAST_PROOF_RECEIVED_TIMESTAMP))
+            proof_age=$(echo "$CURRENT_TIMESTAMP - $LAST_PROOF_RECEIVED_TIMESTAMP" | bc)
             output+=("Time since last proof: ${proof_age}s")
         fi
 
