@@ -249,7 +249,7 @@ process_log_line() {
 
     if [[ $line =~ "evaluating next frame" ]]; then
         timestamp=$(echo "$line" | jq -r '.ts' | awk '{printf "%.0f", $1}')
-        LAST_PROOF_RECEIVED=$timestamp
+        LAST_PROOF_RECEIVED_TIMESTAMP=$timestamp
         frame_age=$(echo "$line" | jq -r '.frame_age')
         if [[ "$log_type" != "historical" ]]; then
             echo "Received frame $frame_num (frame age $frame_age):"
@@ -318,22 +318,19 @@ check_for_auto_restart() {
     local log_type="$2"
     local CURRENT_LOG_TIMESTAMP=$(echo "$line" | jq -r '.ts' | awk '{printf "%.0f", $1}')
 
-    if [ "$LAST_PROOF_RECEIVED" != "0" ]; then
+    if [ "$LAST_PROOF_RECEIVED_TIMESTAMP" != "0" ]; then
         # Check if we haven't received a proof in over 400 seconds
-        local TIME_DIFF=$(echo "$CURRENT_LOG_TIMESTAMP - $LAST_PROOF_RECEIVED" | bc -l)
+        local TIME_DIFF=$(echo "$CURRENT_LOG_TIMESTAMP - $LAST_PROOF_RECEIVED_TIMESTAMP" | bc -l)
         echo "Time diff: $TIME_DIFF"
         if [ $(echo "$TIME_DIFF > 400" | bc -l) -eq 1 ] && [ "$AUTO_RESTART" == "true" ] && [ "$log_type" != "historical" ]; then
             
             echo "No proof received in over 400 seconds, restarting node..."
             echo "Current timestamp: $CURRENT_LOG_TIMESTAMP"
-            echo "Last proof received: $LAST_PROOF_RECEIVED" 
+            echo "Last proof received: $LAST_PROOF_RECEIVED_TIMESTAMP" 
             
             qtools restart
             LAST_RESTART_TIMESTAMP=$CURRENT_LOG_TIMESTAMP
         fi
-    else
-        echo "Setting last proof received to $CURRENT_LOG_TIMESTAMP"
-        LAST_PROOF_RECEIVED=$CURRENT_LOG_TIMESTAMP
     fi
 }
 
