@@ -299,6 +299,7 @@ process_log_line() {
             qtools restart
         fi
     else
+        echo "Setting last proof received to $CURRENT_LOG_TIMESTAMP"
         LAST_PROOF_RECEIVED=$CURRENT_LOG_TIMESTAMP
     fi
 }
