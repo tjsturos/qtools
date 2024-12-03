@@ -209,7 +209,6 @@ display_stats() {
         fi
 
         output+=("")
-        output+=("Last restart: $LAST_RESTART_TIMESTAMP")
         output+=("Current timestamp: $CURRENT_TIMESTAMP")
         output+=("Last frame received: $LAST_FRAME_RECEIVED_TIMESTAMP")
         output+=("")
