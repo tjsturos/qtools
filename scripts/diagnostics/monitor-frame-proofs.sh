@@ -340,7 +340,7 @@ check_for_auto_restart() {
         # Check if we haven't received a proof in over 400 seconds
         local TIME_DIFF=$(echo "$CURRENT_LOG_TIMESTAMP - $LAST_PROOF_RECEIVED_TIMESTAMP" | bc -l)
         local RESTART_THRESHOLD=$(echo "250 * ($RESTART_COUNT + 1)" | bc -l)
-        if [ $(echo "$TIME_DIFF > $RESTART_THRESHOLD" | bc -l) -eq 1 ] && [ "$AUTO_RESTART" == "true" ] then
+        if [ $(echo "$TIME_DIFF > $RESTART_THRESHOLD" | bc -l) -eq 1 ] && [ "$AUTO_RESTART" == "true" ]; then
             
             echo "No proof received in over 400 seconds, restarting node..."
             echo "Current timestamp: $CURRENT_LOG_TIMESTAMP"
