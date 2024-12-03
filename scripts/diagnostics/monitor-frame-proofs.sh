@@ -261,9 +261,9 @@ process_log_line() {
 
     LOG_TIMESTAMP=$(echo "$line" | jq -r '.ts' | awk '{printf "%.0f", $1}')
 
-    if $DEBUG; then
         echo "LOG_TIMESTAMP: $LOG_TIMESTAMP"
-    fi
+    # if $DEBUG; then
+    # fi
 
     CURRENT_TIMESTAMP=$LOG_TIMESTAMP
     # Skip if line doesn't contain frame_number
@@ -375,7 +375,7 @@ echo "Processing historical logs..."
 # Process historical logs first until we reach LIMIT frames
 while read -r line && [ ${#frame_numbers[@]} -lt $LIMIT ]; do
     process_log_line "$line" "historical"
-done < <(journalctl -u $QUIL_SERVICE_NAME -r -o cat)
+done < <(journalctl -u $QUIL_SERVICE_NAME -o cat)
 
 if $DEBUG; then
     echo "Frame numbers after processing historical logs: ${frame_numbers[@]}"
