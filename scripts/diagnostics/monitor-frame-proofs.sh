@@ -80,7 +80,7 @@ get_monthly_reward() {
 }
 
 CURRENT_TIMESTAMP=0
-LAST_PROOF_RECEIVED_TIMESTAMP=0
+LAST_FRAME_RECEIVED_TIMESTAMP=0
 LAST_RESTART_TIMESTAMP=0
 RESTART_COUNT=0
 
@@ -211,11 +211,11 @@ display_stats() {
         output+=("")
         output+=("Last restart: $LAST_RESTART_TIMESTAMP")
         output+=("Current timestamp: $CURRENT_TIMESTAMP")
-        output+=("Last proof received: $LAST_PROOF_RECEIVED_TIMESTAMP")
+        output+=("Last frame received: $LAST_FRAME_RECEIVED_TIMESTAMP")
         output+=("")
         # Calculate time differences
-        proof_age=$(echo "$CURRENT_TIMESTAMP - $LAST_PROOF_RECEIVED_TIMESTAMP" | bc)
-        output+=("Time since last proof: ${proof_age}s")
+        frame_age=$(echo "$CURRENT_TIMESTAMP - $LAST_FRAME_RECEIVED_TIMESTAMP" | bc)
+        output+=("Time since last frame: ${frame_age}s")
 
         if [ "$LAST_RESTART_TIMESTAMP" != "0" ]; then
             restart_age=$(echo "$CURRENT_TIMESTAMP - $LAST_RESTART_TIMESTAMP" | bc)
@@ -275,7 +275,7 @@ process_log_line() {
     fi
 
     if [[ $line =~ "evaluating next frame" ]]; then
-        LAST_PROOF_RECEIVED_TIMESTAMP=$LOG_TIMESTAMP
+        LAST_FRAME_RECEIVED_TIMESTAMP=$LOG_TIMESTAMP
         frame_age=$(echo "$line" | jq -r '.frame_age')
         if [[ "$log_type" != "historical" ]]; then
             echo "Received frame $frame_num (frame age $frame_age):"
@@ -343,20 +343,26 @@ check_for_auto_restart() {
     local line="$1"
     local CURRENT_LOG_TIMESTAMP=$(echo "$line" | jq -r '.ts' | awk '{printf "%.0f", $1}')
 
-    if [ "$LAST_PROOF_RECEIVED_TIMESTAMP" != "0" ]; then
+    if [ "$LAST_FRAME_RECEIVED_TIMESTAMP" != "0" ]; then
         # Check if we haven't received a proof in over 400 seconds
-        local TIME_DIFF=$(echo "$CURRENT_LOG_TIMESTAMP - $LAST_PROOF_RECEIVED_TIMESTAMP" | bc -l)
-        local RESTART_THRESHOLD=250
-        local LAST_RESTART_THRESHOLD=$((250 * ($RESTART_COUNT + 1)))
-        if [ $(echo "$TIME_DIFF > $RESTART_THRESHOLD" | bc -l) -eq 1 ] && [ "$AUTO_RESTART" == "true" ] && [ $(echo "$CURRENT_LOG_TIMESTAMP - $LAST_RESTART_TIMESTAMP" | bc -l) -gt $LAST_RESTART_THRESHOLD ]; then
+        local TIME_DIFF=$(echo "$CURRENT_LOG_TIMESTAMP - $LAST_FRAME_RECEIVED_TIMESTAMP" | bc -l)
+        local RESTART_THRESHOLD=275
+        local LAST_RESTART_THRESHOLD=$(($RESTART_THRESHOLD * ($RESTART_COUNT + 1)))
+        
+        local RESTART_AGE=$(echo "$CURRENT_LOG_TIMESTAMP - $LAST_RESTART_TIMESTAMP" | bc -l)
+
+        if [ $(echo "$TIME_DIFF > $RESTART_THRESHOLD" | bc -l) -eq 1 ] && [ $RESTART_AGE -gt $LAST_RESTART_THRESHOLD ]; then
             
             echo "No proof received in over 250 seconds, restarting node..."
             echo "Current timestamp: $CURRENT_LOG_TIMESTAMP"
-            echo "Last proof received: $LAST_PROOF_RECEIVED_TIMESTAMP"
+            echo "Last proof received: $LAST_FRAME_RECEIVED_TIMESTAMP"
             
             qtools restart
             LAST_RESTART_TIMESTAMP=$CURRENT_LOG_TIMESTAMP
             RESTART_COUNT=$(($RESTART_COUNT + 1))
+        elif [ $RESTART_AGE -gt $LAST_RESTART_THRESHOLD ]; then
+           RESTART_COUNT=0
+           LAST_RESTART_TIMESTAMP=0
         fi
     fi
 }
@@ -384,7 +390,9 @@ while read -r line; do
     truncate_frame_records
     current_time=$(date +%s)
     if ((current_time - last_update >= UPDATE_INTERVAL)); then
-        check_for_auto_restart "$line"
+        if [ "$AUTO_RESTART" == "true" ]; then
+            check_for_auto_restart "$line"
+        fi
         display_stats
         last_update=$current_time
     fi
