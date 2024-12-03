@@ -209,9 +209,11 @@ display_stats() {
             output+=("Last restart: $LAST_RESTART_TIMESTAMP")
             output+=("Current timestamp: $CURRENT_TIMESTAMP")
             output+=("Last proof received: $LAST_PROOF_RECEIVED_TIMESTAMP")
+            output+=("")
             # Calculate time differences
             proof_age=$(echo "$CURRENT_TIMESTAMP - $LAST_PROOF_RECEIVED_TIMESTAMP" | bc)
             output+=("Time since last proof: ${proof_age}s")
+            output+=("Restart count: $RESTART_COUNT")
         fi
 
         if $PRINT_QUIL && [ "$(is_app_finished_starting)" == "true" ]; then
