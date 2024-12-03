@@ -339,12 +339,12 @@ check_for_auto_restart() {
     if [ "$LAST_PROOF_RECEIVED_TIMESTAMP" != "0" ]; then
         # Check if we haven't received a proof in over 400 seconds
         local TIME_DIFF=$(echo "$CURRENT_LOG_TIMESTAMP - $LAST_PROOF_RECEIVED_TIMESTAMP" | bc -l)
-        local RESTART_THRESHOLD=$(echo "250 * ($RESTART_COUNT + 1)" | bc -l)
-        if [ $(echo "$TIME_DIFF > $RESTART_THRESHOLD" | bc -l) -eq 1 ] && [ "$AUTO_RESTART" == "true" ]; then
+        local RESTART_THRESHOLD=250
+        if [ $(echo "$TIME_DIFF > $RESTART_THRESHOLD" | bc -l) -eq 1 ] && [ "$AUTO_RESTART" == "true" ] && [ $(echo "$CURRENT_LOG_TIMESTAMP - $LAST_RESTART_TIMESTAMP" | bc -l) -gt 250 ]; then
             
-            echo "No proof received in over 400 seconds, restarting node..."
+            echo "No proof received in over 250 seconds, restarting node..."
             echo "Current timestamp: $CURRENT_LOG_TIMESTAMP"
-            echo "Last proof received: $LAST_PROOF_RECEIVED_TIMESTAMP" 
+            echo "Last proof received: $LAST_PROOF_RECEIVED_TIMESTAMP"
             
             qtools restart
             LAST_RESTART_TIMESTAMP=$CURRENT_LOG_TIMESTAMP
