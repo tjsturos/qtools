@@ -261,9 +261,9 @@ process_log_line() {
 
     LOG_TIMESTAMP=$(echo "$line" | jq -r '.ts' | awk '{printf "%.0f", $1}')
 
+    if $DEBUG; then
         echo "LOG_TIMESTAMP: $LOG_TIMESTAMP"
-    # if $DEBUG; then
-    # fi
+    fi
 
     CURRENT_TIMESTAMP=$LOG_TIMESTAMP
     # Skip if line doesn't contain frame_number
@@ -302,7 +302,6 @@ process_log_line() {
         frame_data[$frame_num,proof_started,workers]=$workers
         
     elif [[ $line =~ "submitting data proof" ]]; then
-        LAST_FRAME_RECEIVED_TIMESTAMP=$LOG_TIMESTAMP
         frame_age=$(echo "$line" | jq -r '.frame_age')
         ring_size=$(echo "$line" | jq -r '.ring')
         if [[ "$log_type" != "historical" ]]; then
