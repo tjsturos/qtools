@@ -265,7 +265,9 @@ process_log_line() {
         echo "LOG_TIMESTAMP: $LOG_TIMESTAMP"
     fi
 
-    CURRENT_TIMESTAMP=$LOG_TIMESTAMP
+    if [ "$LOG_TIMESTAMP" -gt "$CURRENT_TIMESTAMP" ]; then
+        CURRENT_TIMESTAMP=$LOG_TIMESTAMP
+    fi
     # Skip if line doesn't contain frame_number
     if ! [[ "$line" =~ "frame_number" ]]; then
         return
