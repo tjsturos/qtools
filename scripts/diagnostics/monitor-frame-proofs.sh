@@ -243,8 +243,9 @@ process_log_line() {
     local line="$1"
     local log_type="$2"
     
-    timestamp=$(echo "$line" | jq -r '.ts' | awk '{printf "%.0f", $1}')
-    CURRENT_TIMESTAMP=$timestamp
+    LOG_TIMESTAMP=$(echo "$line" | jq -r '.ts' | awk '{printf "%.0f", $1}')
+    echo "LOG_TIMESTAMP: $LOG_TIMESTAMP"
+    CURRENT_TIMESTAMP=$LOG_TIMESTAMP
     # Skip if line doesn't contain frame_number
     if ! [[ "$line" =~ "frame_number" ]]; then
         return
@@ -257,7 +258,7 @@ process_log_line() {
     fi
 
     if [[ $line =~ "evaluating next frame" ]]; then
-        LAST_PROOF_RECEIVED_TIMESTAMP=$timestamp
+        LAST_PROOF_RECEIVED_TIMESTAMP=$LOG_TIMESTAMP
         frame_age=$(echo "$line" | jq -r '.frame_age')
         if [[ "$log_type" != "historical" ]]; then
             echo "Received frame $frame_num (frame age $frame_age):"
