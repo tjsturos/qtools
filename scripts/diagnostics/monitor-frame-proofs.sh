@@ -243,6 +243,11 @@ process_log_line() {
     local line="$1"
     local log_type="$2"
     
+    # Skip if line doesn't have ts property
+    if ! echo "$line" | jq -e '.ts' >/dev/null 2>&1; then
+        return
+    fi
+    
     LOG_TIMESTAMP=$(echo "$line" | jq -r '.ts' | awk '{printf "%.0f", $1}')
     echo "LOG_TIMESTAMP: $LOG_TIMESTAMP"
     CURRENT_TIMESTAMP=$LOG_TIMESTAMP
