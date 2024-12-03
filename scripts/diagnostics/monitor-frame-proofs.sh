@@ -249,7 +249,7 @@ process_log_line() {
     fi
 
     LOG_TIMESTAMP=$(echo "$line" | jq -r '.ts' | awk '{printf "%.0f", $1}')
-    
+
     if $DEBUG; then
         echo "LOG_TIMESTAMP: $LOG_TIMESTAMP"
     fi
@@ -340,7 +340,7 @@ check_for_auto_restart() {
         # Check if we haven't received a proof in over 400 seconds
         local TIME_DIFF=$(echo "$CURRENT_LOG_TIMESTAMP - $LAST_PROOF_RECEIVED_TIMESTAMP" | bc -l)
         echo "Time diff: $TIME_DIFF"
-        if [ $(echo "$TIME_DIFF > 400" | bc -l) -eq 1 ] && [ "$AUTO_RESTART" == "true" ] && [ "$log_type" != "historical" ]; then
+        if [ $(echo "$TIME_DIFF > 250" | bc -l) -eq 1 ] && [ "$AUTO_RESTART" == "true" ] && [ "$log_type" != "historical" ]; then
             
             echo "No proof received in over 400 seconds, restarting node..."
             echo "Current timestamp: $CURRENT_LOG_TIMESTAMP"
