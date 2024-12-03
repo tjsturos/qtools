@@ -82,6 +82,7 @@ get_monthly_reward() {
 CURRENT_TIMESTAMP=0
 LAST_PROOF_RECEIVED_TIMESTAMP=0
 LAST_RESTART_TIMESTAMP=0
+RESTART_COUNT=0
 
 # Function to calculate and display statistics
 display_stats() {
@@ -109,8 +110,6 @@ display_stats() {
         done < <(qclient token coins metadata 2>/dev/null)
     fi
 
-    
-    
     total_duration=0
     total_started=0
     total_completed=0
@@ -333,14 +332,13 @@ truncate_frame_records() {
 
 check_for_auto_restart() {
     local line="$1"
-    local log_type="$2"
     local CURRENT_LOG_TIMESTAMP=$(echo "$line" | jq -r '.ts' | awk '{printf "%.0f", $1}')
 
     if [ "$LAST_PROOF_RECEIVED_TIMESTAMP" != "0" ]; then
         # Check if we haven't received a proof in over 400 seconds
         local TIME_DIFF=$(echo "$CURRENT_LOG_TIMESTAMP - $LAST_PROOF_RECEIVED_TIMESTAMP" | bc -l)
         echo "Time diff: $TIME_DIFF"
-        if [ $(echo "$TIME_DIFF > 250" | bc -l) -eq 1 ] && [ "$AUTO_RESTART" == "true" ] && [ "$log_type" != "historical" ]; then
+        if [ $(echo "$TIME_DIFF > 250 * ($RESTART_COUNT + 1)" | bc -l) -eq 1 ] && [ "$AUTO_RESTART" == "true" ] then
             
             echo "No proof received in over 400 seconds, restarting node..."
             echo "Current timestamp: $CURRENT_LOG_TIMESTAMP"
@@ -348,6 +346,7 @@ check_for_auto_restart() {
             
             qtools restart
             LAST_RESTART_TIMESTAMP=$CURRENT_LOG_TIMESTAMP
+            RESTART_COUNT=$(($RESTART_COUNT + 1))
         fi
     fi
 }
