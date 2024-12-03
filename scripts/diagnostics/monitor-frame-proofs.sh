@@ -302,6 +302,7 @@ process_log_line() {
         frame_data[$frame_num,proof_started,workers]=$workers
         
     elif [[ $line =~ "submitting data proof" ]]; then
+        LAST_FRAME_RECEIVED_TIMESTAMP=$LOG_TIMESTAMP
         frame_age=$(echo "$line" | jq -r '.frame_age')
         ring_size=$(echo "$line" | jq -r '.ring')
         if [[ "$log_type" != "historical" ]]; then
