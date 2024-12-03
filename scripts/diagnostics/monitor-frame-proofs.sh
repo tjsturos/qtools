@@ -14,7 +14,7 @@ DEBUG=false
 LIMIT=25
 PRINT_QUIL=true
 UPDATE_INTERVAL=25 # Default update interval in seconds
-
+AUTO_RESTART=false
 # Parse command line args
 while [[ $# -gt 0 ]]; do
   case $1 in
@@ -41,6 +41,10 @@ while [[ $# -gt 0 ]]; do
     -u|--update)
       UPDATE_INTERVAL="$2"
       shift 2
+      ;;
+    --auto-restart)
+      AUTO_RESTART=true
+      shift
       ;;
     *)
       shift
@@ -75,6 +79,8 @@ get_monthly_reward() {
     echo $reward
 }
 
+
+LAST_PROOF_RECEIVED_TIMESTAMP=0
 
 # Function to calculate and display statistics
 display_stats() {
@@ -240,6 +246,8 @@ process_log_line() {
     fi
 
     if [[ $line =~ "evaluating next frame" ]]; then
+        timestamp=$(echo "$line" | jq -r '.ts')
+        LAST_PROOF_RECEIVED=$timestamp
         frame_age=$(echo "$line" | jq -r '.frame_age')
         if [[ "$log_type" != "historical" ]]; then
             echo "Received frame $frame_num (frame age $frame_age):"
@@ -271,6 +279,17 @@ process_log_line() {
         fi
         frame_data[$frame_num,proof_completed]=$frame_age
         frame_data[$frame_num,proof_completed,ring]=$ring_size
+    fi
+
+    local CURRENT_LOG_TIMESTAMP=$(echo "$line" | jq -r '.ts')
+    # Check if we haven't received a proof in over 400 seconds
+    if [ $(echo "$CURRENT_LOG_TIMESTAMP - $LAST_PROOF_RECEIVED > 400" | bc -l) -eq 1 ] && [ "$AUTO_RESTART" == "true" ]; then
+        
+        echo "No proof received in over 400 seconds, restarting node..."
+        echo "Current timestamp: $CURRENT_LOG_TIMESTAMP"
+        echo "Last proof received: $LAST_PROOF_RECEIVED" 
+        
+        qtools restart
     fi
 }
 
