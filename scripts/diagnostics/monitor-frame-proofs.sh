@@ -247,9 +247,13 @@ process_log_line() {
     if ! echo "$line" | jq -e '.ts' >/dev/null 2>&1; then
         return
     fi
-    
+
     LOG_TIMESTAMP=$(echo "$line" | jq -r '.ts' | awk '{printf "%.0f", $1}')
-    echo "LOG_TIMESTAMP: $LOG_TIMESTAMP"
+    
+    if $DEBUG; then
+        echo "LOG_TIMESTAMP: $LOG_TIMESTAMP"
+    fi
+
     CURRENT_TIMESTAMP=$LOG_TIMESTAMP
     # Skip if line doesn't contain frame_number
     if ! [[ "$line" =~ "frame_number" ]]; then
