@@ -91,7 +91,7 @@ KillSignal=SIGINT
 RestartKillSignal=SIGINT
 FinalKillSignal=SIGINT
 KillSignal=SIGINT
-TimeoutStopSec=30
+TimeoutStopSec=60
 
 [Install]
 WantedBy=multi-user.target"
@@ -115,7 +115,7 @@ ExecReload=/bin/kill -s SIGINT \$MAINPID && ${LINKED_NODE_BINARY}${TESTNET:+ --n
 KillSignal=SIGINT
 RestartKillSignal=SIGINT
 FinalKillSignal=SIGINT
-
+TimeoutStopSec=60
 [Install]
 WantedBy=multi-user.target"
 
