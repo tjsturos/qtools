@@ -75,14 +75,15 @@ clean_old_node_files() {
     done
 }
 
+if [ "$restart_required" == "true" ]; then
+  qtools update-service
+  qtools restart
+fi
+
 if [ "$skip_clean" == "true" ]; then
   log "Skipping clean of old node files."
 else
   clean_old_node_files
 fi
 
-if [ "$restart_required" == "true" ]; then
-  qtools update-service
-  qtools restart
-fi
 
