@@ -89,9 +89,9 @@ ExecStop=/bin/kill -s SIGINT \$MAINPID
 ExecReload=/bin/kill -s SIGINT \$MAINPID && ${LINKED_NODE_BINARY}${TESTNET:+ --network=1}${DEBUG_MODE:+ --debug}${SKIP_SIGNATURE_CHECK:+ --signature-check=false}
 KillSignal=SIGINT
 RestartKillSignal=SIGINT
-FinalKillSignal=SIGINT
+FinalKillSignal=SIGKILL
 KillSignal=SIGINT
-TimeoutStopSec=60
+TimeoutStopSec=240
 
 [Install]
 WantedBy=multi-user.target"
@@ -114,8 +114,8 @@ ExecStop=/bin/kill -s SIGINT \$MAINPID
 ExecReload=/bin/kill -s SIGINT \$MAINPID && ${LINKED_NODE_BINARY}${TESTNET:+ --network=1}${DEBUG_MODE:+ --debug}${SKIP_SIGNATURE_CHECK:+ --signature-check=false} --core %i
 KillSignal=SIGINT
 RestartKillSignal=SIGINT
-FinalKillSignal=SIGINT
-TimeoutStopSec=60
+FinalKillSignal=SIGKILL
+TimeoutStopSec=240
 [Install]
 WantedBy=multi-user.target"
 
