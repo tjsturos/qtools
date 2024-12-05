@@ -195,6 +195,7 @@ display_stats() {
         output+=("=======================")
         output+=("${frame_outputs[@]}")
     else 
+        output+=("Hint: to see individual frame details, use --display to enable")
         output+=("=======================")
     fi
     
