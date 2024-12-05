@@ -4,6 +4,7 @@
 BASE_PORT=$(yq eval ".service.clustering.base_port // \"$BASE_PORT\"" $QTOOLS_CONFIG_FILE)
 DRY_RUN=false
 
+SERVERS=()
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
     echo "Processing argument: $1"
@@ -17,7 +18,8 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         *)
-            break
+            SERVERS+=("$1")
+            shift
             ;;
     esac
 done
@@ -68,7 +70,7 @@ fi
 
 
 # Loop through all provided IP addresses
-for arg in "$@"; do
+for arg in "${SERVERS[@]}"; do
     # Parse the argument into components
     if [[ $arg =~ ^([^@]+@)?([^:/]+)(:([0-9]+))?(/([0-9]+))?$ ]]; then
         user="${BASH_REMATCH[1]%@}"
