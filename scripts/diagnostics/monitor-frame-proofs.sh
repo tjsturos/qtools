@@ -210,7 +210,7 @@ display_stats() {
         output+=("$(figlet -f banner "Frame ${last_frame_num}")")
         output+=("Total frames processed:           $count")
         output+=("")
-        output+=("Average (received / evaluation / proof duration / completed) timestamps:")
+        output+=("Averages frame age (received / evaluation / proof duration / completed):")
         output+=("$avg_started / $avg_evaluation_time / $avg_duration / $avg_completed seconds")
         output+=("")
 
