@@ -78,7 +78,7 @@ for arg in "$@"; do
             echo -e "${BLUE}${INFO_ICON} Processing server: $user@$ip (port: $ssh_port, workers: $worker_count)${RESET}"
             add_server_to_config "$ip" "$ssh_port" "$user" "$worker_count"
             for ((i=0; i<$worker_count; i++)); do
-                yq eval -i ".engine.dataWorkerMultiaddrs += \"/ip4/$ip/tcp/$((BASE_PORT + i))/\"" $QUIL_CONFIG_FILE
+                yq eval -i ".engine.dataWorkerMultiaddrs += \"/ip4/$ip/tcp/$((BASE_PORT + i))\"" $QUIL_CONFIG_FILE
             done
         else
             echo -e "${BLUE}${INFO_ICON} Processing server: $user@$ip (port: $ssh_port)${RESET}"
