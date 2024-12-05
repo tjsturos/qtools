@@ -207,49 +207,48 @@ display_stats() {
         reward_landing_rate=$(echo "scale=2; $reward_total_count / $count" | bc)
         output+=("")
         output+=("$(figlet -f banner "Frame ${last_frame_num}")")
-        output+=("Average received timestamp: $avg_started seconds")
-        output+=("Average proof duration: $avg_duration seconds") 
-        output+=("Average completed timestamp: $avg_completed seconds")
-        output+=("Average evaluation time: $avg_evaluation_time seconds")
+        output+=("Average received timestamp:   $avg_started seconds")
+        output+=("Average proof duration:       $avg_duration seconds")
+        output+=("Average completed timestamp:  $avg_completed seconds") 
+        output+=("Average evaluation time:      $avg_evaluation_time seconds")
         output+=("")
-        output+=("Total frames processed: $count (limit: $LIMIT)")
-        
-        
+        output+=("Total frames processed:       $count (limit: $LIMIT)")
+
         if [ "$(is_app_finished_starting)" == "true" ]; then
-            output+=("Total reward received: $reward_total QUIL")
-            output+=("Reward landing rate: $reward_landing_rate (landed proofs/frame count)")
+            output+=("Total reward received:         $(printf "%.8f" $reward_total) QUIL")
+            output+=("Reward landing rate:           $(printf "%.8f" $reward_landing_rate) (landed proofs/frame count)")
         fi
 
         # Calculate time differences
         frame_age=$(echo "$CURRENT_TIMESTAMP - $LAST_FRAME_RECEIVED_TIMESTAMP" | bc)
 
-        output+=("Current timestamp: $CURRENT_TIMESTAMP")
-        output+=("First frame received: $FIRST_FRAME_RECEIVED_TIMESTAMP")
-        output+=("Last Frame Received: $LAST_FRAME_RECEIVED_TIMESTAMP")
-        output+=("Time since last frame: ${frame_age}s")
+        output+=("Current timestamp:           $CURRENT_TIMESTAMP")
+        output+=("First frame received:         $FIRST_FRAME_RECEIVED_TIMESTAMP") 
+        output+=("Last frame received:          $LAST_FRAME_RECEIVED_TIMESTAMP")
+        output+=("Time since last frame:        ${frame_age}s")
         output+=("")
         local total_time=$(echo "$LAST_FRAME_RECEIVED_TIMESTAMP - $FIRST_FRAME_RECEIVED_TIMESTAMP" | bc)
         output+=("Total time between first and last frame: ${total_time}s")
-        output+=("Total rewards for this period: $reward_total QUIL")
+        output+=("Total rewards for this period:         $(printf "%.8f" $reward_total) QUIL")
 
         if [ "$LAST_RESTART_TIMESTAMP" != "0" ]; then
             restart_age=$(echo "$CURRENT_TIMESTAMP - $LAST_RESTART_TIMESTAMP" | bc)
-            output+=("Time since last restart: ${restart_age}s")
-            output+=("Restart count: $RESTART_COUNT")
+            output+=("Time since last restart:         ${restart_age}s")
+            output+=("Restart count:                   $RESTART_COUNT")
         fi
 
         if $PRINT_QUIL && [ "$(is_app_finished_starting)" == "true" ]; then
-            avg_reward=$(echo "scale=6; $reward_total / $count" | bc)
-            avg_reward_per_second=$(echo "scale=6; $reward_total / $total_time" | bc)
+            avg_reward=$(echo "scale=10; $reward_total / $count" | bc)
+            avg_reward_per_second=$(echo "scale=10; $reward_total / $total_time" | bc)
             hourly_reward=$(get_hourly_reward $avg_reward_per_second)
             daily_reward=$(get_daily_reward $avg_reward_per_second)
             monthly_reward=$(get_monthly_reward $avg_reward_per_second)
             output+=("")
-            output+=("Average reward per frame: $avg_reward QUIL")
-            output+=("Average reward per second: $avg_reward_per_second QUIL")
-            output+=("Hourly reward: $hourly_reward QUIL")
-            output+=("Daily reward: $daily_reward QUIL")
-            output+=("Monthly reward: $monthly_reward QUIL")
+            output+=("Average reward per frame: $(printf "%.10f" $avg_reward) QUIL")
+            output+=("Average reward per second: $(printf "%.10f" $avg_reward_per_second) QUIL")
+            output+=("Hourly reward:            $(printf "%.8f" $hourly_reward) QUIL")
+            output+=("Daily reward:             $(printf "%.8f" $daily_reward) QUIL")
+            output+=("Monthly reward:           $(printf "%.8f" $monthly_reward) QUIL")
         fi
     else
         output+=("No frames processed")
