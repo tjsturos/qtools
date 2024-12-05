@@ -207,10 +207,6 @@ display_stats() {
             output+=("Reward landing rate: $reward_landing_rate (landed proofs/frame count)")
         fi
 
-        output+=("")
-        output+=("Current timestamp: $CURRENT_TIMESTAMP")
-        output+=("Last frame received: $LAST_FRAME_RECEIVED_TIMESTAMP")
-        output+=("")
         # Calculate time differences
         frame_age=$(echo "$CURRENT_TIMESTAMP - $LAST_FRAME_RECEIVED_TIMESTAMP" | bc)
 
@@ -221,6 +217,7 @@ display_stats() {
         local total_time=$(echo "$LAST_FRAME_RECEIVED_TIMESTAMP - $FIRST_FRAME_RECEIVED_TIMESTAMP" | bc)
         output+=("Total time between first and last frame: ${total_time}s")
         output+=("Time since last frame: ${frame_age}s")
+        output+=("Total rewards for this period: $reward_total QUIL")
 
         if [ "$LAST_RESTART_TIMESTAMP" != "0" ]; then
             restart_age=$(echo "$CURRENT_TIMESTAMP - $LAST_RESTART_TIMESTAMP" | bc)
