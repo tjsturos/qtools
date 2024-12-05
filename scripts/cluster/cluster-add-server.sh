@@ -6,6 +6,7 @@ DRY_RUN=false
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
+    echo "Processing argument: $1"
     case $1 in
         --base-port)
             BASE_PORT="$2"
@@ -16,7 +17,7 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         *)
-            continue
+            break
             ;;
     esac
 done
@@ -24,6 +25,8 @@ done
 if [ -z "$BASE_PORT" ]; then
     echo -e "${RED}${ERROR_ICON} Error: Base port not specified in config or via --base-port parameter${RESET}"
     exit 1
+else 
+    echo -e "${GREEN}${CHECK_ICON} Base port set to $BASE_PORT${RESET}"
 fi
 
 
