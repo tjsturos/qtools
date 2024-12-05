@@ -244,8 +244,8 @@ display_stats() {
             daily_reward=$(get_daily_reward $avg_reward_per_second)
             monthly_reward=$(get_monthly_reward $avg_reward_per_second)
 
-            output+=("Note: Average reward per frame is calculated only for frames with rewards ($reward_total_count frames)")
-            output+=("      while average reward per second shows the overall rate including all frames ($count total frames)")
+            output+=("Note: Average reward per frame is calculated only for frames with rewards ($reward_total_count frames) that have been received in a single frame")
+            output+=("      while average reward per second is calculated by taking the total rewards over the entire time period divided by the total time ($total_time seconds) and extrapolated to an hour, day, and month")
             output+=("")
             output+=("Average reward per frame:         $(printf "%.8f" $avg_reward) QUIL")
             output+=("Average reward per second:        $(printf "%.8f" $avg_reward_per_second) QUIL")
