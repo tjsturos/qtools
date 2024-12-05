@@ -38,7 +38,7 @@ add_server_to_config() {
     local ssh_port=${2:-$DEFAULT_SSH_PORT}  # Default SSH port is 22 if not specified
     local user=${3:-$DEFAULT_USER}   # Default user is the current user if not specified
     local worker_count=${4:-null}
-
+    local base_port=${5:-$BASE_PORT}
     # Check if the server already exists in the config
     if yq eval ".service.clustering.servers[] | select(.ip == \"$ip\")" "$QTOOLS_CONFIG_FILE" | grep -q .; then
         echo -e "${YELLOW}${WARNING_ICON} Server $ip already exists in the configuration. Removing existing entry.${RESET}"
@@ -61,7 +61,7 @@ add_server_to_config() {
 }
 
 # Main script execution
-if [ $# -eq 0 ]; then
+if [ ${#SERVERS[@]} -eq 0 ]; then
     echo -e "${RED}${ERROR_ICON} Error: No IP addresses provided.${RESET}"
     echo "Usage: $0 <ip>[:<ssh-port>][/worker-count] [ip2[:<ssh-port>][/worker-count]] ..."
     exit 1
@@ -81,13 +81,13 @@ for arg in "${SERVERS[@]}"; do
         
         if [ -n "$worker_count" ]; then
             echo -e "${BLUE}${INFO_ICON} Processing server: $user@$ip (port: $ssh_port, workers: $worker_count)${RESET}"
-            add_server_to_config "$ip" "$ssh_port" "$user" "$worker_count"
+            add_server_to_config "$ip" "$ssh_port" "$user" "$worker_count" "$BASE_PORT"
             for ((i=0; i<$worker_count; i++)); do
                 yq eval -i ".engine.dataWorkerMultiaddrs += \"/ip4/$ip/tcp/$((BASE_PORT + i))\"" $QUIL_CONFIG_FILE
             done
         else
             echo -e "${BLUE}${INFO_ICON} Processing server: $user@$ip (port: $ssh_port)${RESET}"
-            add_server_to_config "$ip" "$ssh_port" "$user"
+            add_server_to_config "$ip" "$ssh_port" "$user" null "$BASE_PORT"
         fi
     else
         echo -e "${RED}${ERROR_ICON} Invalid format for argument: $arg${RESET}"
