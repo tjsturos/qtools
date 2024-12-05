@@ -15,6 +15,7 @@ LIMIT=25
 PRINT_QUIL=true
 UPDATE_INTERVAL=25 # Default update interval in seconds
 AUTO_RESTART=false
+SHOW_FRAME_LINES=false
 # Parse command line args
 while [[ $# -gt 0 ]]; do
   case $1 in
@@ -44,6 +45,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --auto-restart)
       AUTO_RESTART=true
+      shift
+      ;;
+    --display)
+      SHOW_FRAME_LINES=true
       shift
       ;;
     *)
@@ -142,10 +147,12 @@ display_stats() {
             fi
 
             last_frame_num=$frame_num
-            if $PRINT_QUIL; then
-                frame_outputs+=("Frame $frame_num (workers:$workers, ring:$ring): $received -> $proof_started -> $proof_completed (${duration}s${reward:+, $reward QUIL})")
-            else
-                frame_outputs+=("Frame $frame_num (workers:$workers, ring:$ring): $received -> $proof_started -> $proof_completed (${duration}s)")
+            if $SHOW_FRAME_LINES; then
+                if $PRINT_QUIL; then
+                    frame_outputs+=("Frame $frame_num (workers:$workers, ring:$ring): $received -> $proof_started -> $proof_completed (${duration}s${reward:+, $reward QUIL})")
+                else
+                    frame_outputs+=("Frame $frame_num (workers:$workers, ring:$ring): $received -> $proof_started -> $proof_completed (${duration}s)")
+                fi
             fi
             
             total_duration=$(echo "$total_duration + $duration" | bc)
@@ -213,10 +220,10 @@ display_stats() {
         output+=("Current timestamp: $CURRENT_TIMESTAMP")
         output+=("First frame received: $FIRST_FRAME_RECEIVED_TIMESTAMP")
         output+=("Last Frame Received: $LAST_FRAME_RECEIVED_TIMESTAMP")
+        output+=("Time since last frame: ${frame_age}s")
         output+=("")
         local total_time=$(echo "$LAST_FRAME_RECEIVED_TIMESTAMP - $FIRST_FRAME_RECEIVED_TIMESTAMP" | bc)
         output+=("Total time between first and last frame: ${total_time}s")
-        output+=("Time since last frame: ${frame_age}s")
         output+=("Total rewards for this period: $reward_total QUIL")
 
         if [ "$LAST_RESTART_TIMESTAMP" != "0" ]; then
