@@ -208,12 +208,10 @@ display_stats() {
         reward_landing_rate=$(echo "scale=2; $reward_total_count / $count" | bc)
         output+=("")
         output+=("$(figlet -f banner "Frame ${last_frame_num}")")
-        output+=("Average received timestamp:           $avg_started seconds")
-        output+=("Average proof duration:               $avg_duration seconds")
-        output+=("Average completed timestamp:          $avg_completed seconds") 
-        output+=("Average evaluation time:              $avg_evaluation_time seconds")
+        output+=("Total frames processed:           $count")
+        output+=("Average (received / evaluation / proof duration / completed) timestamps:")
+        output+=("$avg_started / $avg_evaluation_time / $avg_duration / $avg_completed seconds")
         output+=("")
-        output+=("Total frames processed:               $count")
 
         if [ "$(is_app_finished_starting)" == "true" ]; then
             output+=("Total reward received:            $(printf "%.8f" $reward_total) QUIL")
