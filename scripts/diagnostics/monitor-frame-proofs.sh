@@ -178,6 +178,8 @@ display_stats() {
         fi
     done
     output+=("Last Updated: $(date '+%Y-%m-%d %H:%M:%S')")
+    output+=("Update interval: ${UPDATE_INTERVAL}s (use -u or --update to change)")
+    output+=("")
     if [ "$(is_app_finished_starting)" == "true" ]; then
         output+=("Peer ID: $(qtools peer-id)")
         output+=("Account: $(qtools account)")
@@ -257,7 +259,7 @@ display_stats() {
         output+=("No frames processed")
     fi
     output+=("=======================")
-    output+=("Update interval: ${UPDATE_INTERVAL}s (use -u or --update to change)")
+    
     if ! $ONE_SHOT; then
         clear
     fi
