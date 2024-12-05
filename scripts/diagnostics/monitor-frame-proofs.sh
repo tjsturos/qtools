@@ -238,14 +238,14 @@ display_stats() {
         fi
 
         if $PRINT_QUIL && [ "$(is_app_finished_starting)" == "true" ]; then
-            avg_reward=$(echo "scale=10; $reward_total / $count" | bc)
+            avg_reward=$(echo "scale=10; $reward_total / ($count - $no_proof_count)" | bc)
             avg_reward_per_second=$(echo "scale=10; $reward_total / $total_time" | bc)
             hourly_reward=$(get_hourly_reward $avg_reward_per_second)
             daily_reward=$(get_daily_reward $avg_reward_per_second)
             monthly_reward=$(get_monthly_reward $avg_reward_per_second)
             output+=("")
-            output+=("Average reward per frame:         $(printf "%.10f" $avg_reward) QUIL")
-            output+=("Average reward per second:        $(printf "%.10f" $avg_reward_per_second) QUIL")
+            output+=("Average reward per frame:         $(printf "%.8f" $avg_reward) QUIL")
+            output+=("Average reward per second:        $(printf "%.8f" $avg_reward_per_second) QUIL")
             output+=("Hourly reward:                    $(printf "%.8f" $hourly_reward) QUIL")
             output+=("Daily reward:                     $(printf "%.8f" $daily_reward) QUIL")
             output+=("Monthly reward:                   $(printf "%.8f" $monthly_reward) QUIL")
