@@ -184,13 +184,17 @@ display_stats() {
         fi
     fi
     output+=("")
+    if $SHOW_FRAME_LINES; then
     if $PRINT_QUIL; then
         output+=("Legend: received->proof_started->proof_completed (total_duration, QUIL received in frame)")
-    else
-        output+=("Legend: received->proof_started->proof_completed (total_duration)")
+        else
+            output+=("Legend: received->proof_started->proof_completed (total_duration)")
+        fi
+        output+=("=======================")
+        output+=("${frame_outputs[@]}")
+    else 
+        output+=("=======================")
     fi
-    output+=("=======================")
-    output+=("${frame_outputs[@]}")
     
     if [ $count -gt 0 ]; then
         proof_count=$(echo "$count - $no_proof_count" | bc)
