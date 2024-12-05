@@ -53,29 +53,29 @@ while [[ $# -gt 0 ]]; do
 done
 
 get_hourly_reward() {
-    local frame_reward=$1
-    local frame_age=$2
+    local avg_reward_per_second=$1
     if $DEBUG; then
-        echo "Calculating hourly reward: $frame_reward / $frame_age"
+        echo "Calculating hourly reward: $avg_reward_per_second * 3600"
     fi
-    local reward=$(echo "scale=10; $frame_reward * 3600 / $frame_age" | bc)
+    local reward=$(echo "scale=10; $avg_reward_per_second * 3600" | bc)
     echo $reward
 }
 
 get_daily_reward() {
-    local frame_reward=$1
-    local frame_age=$2
-    local reward=$(echo "scale=10; $frame_reward * 3600 * 24 / $frame_age" | bc)
+    local avg_reward_per_second=$1
+    if $DEBUG; then
+        echo "Calculating daily reward: $avg_reward_per_second * 3600 * 24"
+    fi
+    local reward=$(echo "scale=10; $avg_reward_per_second * 3600 * 24" | bc)
     echo $reward
 }
 
 get_monthly_reward() {
-    local frame_reward=$1
-    local frame_age=$2
+    local avg_reward_per_second=$1
     if $DEBUG; then
-        echo "Calculating monthly reward: $frame_reward * 3600 * 24 * 30 / $frame_age"
+        echo "Calculating monthly reward: $avg_reward_per_second * 3600 * 24 * 30"
     fi
-    local reward=$(echo "scale=10; $frame_reward * 3600 * 24 * 30 / $frame_age" | bc)
+    local reward=$(echo "scale=10; $avg_reward_per_second * 3600 * 24 * 30" | bc)
     echo $reward
 }
 
@@ -83,6 +83,7 @@ CURRENT_TIMESTAMP=0
 LAST_FRAME_RECEIVED_TIMESTAMP=0
 LAST_RESTART_TIMESTAMP=0
 RESTART_COUNT=0
+FIRST_FRAME_RECEIVED_TIMESTAMP=0
 
 # Function to calculate and display statistics
 display_stats() {
@@ -204,8 +205,6 @@ display_stats() {
         if [ "$(is_app_finished_starting)" == "true" ]; then
             output+=("Total reward received: $reward_total QUIL")
             output+=("Reward landing rate: $reward_landing_rate (landed proofs/frame count)")
-
-           
         fi
 
         output+=("")
@@ -216,7 +215,11 @@ display_stats() {
         frame_age=$(echo "$CURRENT_TIMESTAMP - $LAST_FRAME_RECEIVED_TIMESTAMP" | bc)
 
         output+=("Current timestamp: $CURRENT_TIMESTAMP")
+        output+=("First frame received: $FIRST_FRAME_RECEIVED_TIMESTAMP")
         output+=("Last Frame Received: $LAST_FRAME_RECEIVED_TIMESTAMP")
+        output+=("")
+        local total_time=$(echo "$LAST_FRAME_RECEIVED_TIMESTAMP - $FIRST_FRAME_RECEIVED_TIMESTAMP" | bc)
+        output+=("Total time between first and last frame: ${total_time}s")
         output+=("Time since last frame: ${frame_age}s")
 
         if [ "$LAST_RESTART_TIMESTAMP" != "0" ]; then
@@ -227,11 +230,13 @@ display_stats() {
 
         if $PRINT_QUIL && [ "$(is_app_finished_starting)" == "true" ]; then
             avg_reward=$(echo "scale=6; $reward_total / $count" | bc)
-            hourly_reward=$(get_hourly_reward $avg_reward $avg_started)
-            daily_reward=$(get_daily_reward $avg_reward $avg_started)
-            monthly_reward=$(get_monthly_reward $avg_reward $avg_started)
+            avg_reward_per_second=$(echo "scale=6; $reward_total / $total_time" | bc)
+            hourly_reward=$(get_hourly_reward $avg_reward_per_second)
+            daily_reward=$(get_daily_reward $avg_reward_per_second)
+            monthly_reward=$(get_monthly_reward $avg_reward_per_second)
             output+=("")
             output+=("Average reward per frame: $avg_reward QUIL")
+            output+=("Average reward per second: $avg_reward_per_second QUIL")
             output+=("Hourly reward: $hourly_reward QUIL")
             output+=("Daily reward: $daily_reward QUIL")
             output+=("Monthly reward: $monthly_reward QUIL")
@@ -267,6 +272,11 @@ process_log_line() {
     if [[ "$CURRENT_TIMESTAMP" == "0" ]] || [[ "$LOG_TIMESTAMP" -gt "$CURRENT_TIMESTAMP" ]]; then
         CURRENT_TIMESTAMP=$LOG_TIMESTAMP
     fi
+
+    if [[ "$FIRST_FRAME_RECEIVED_TIMESTAMP" == "0" ]] || [[ "$LOG_TIMESTAMP" -lt "$FIRST_FRAME_RECEIVED_TIMESTAMP" ]]; then
+        FIRST_FRAME_RECEIVED_TIMESTAMP=$LOG_TIMESTAMP
+    fi
+
     # Skip if line doesn't contain frame_number
     if ! [[ "$line" =~ "frame_number" ]]; then
         return
