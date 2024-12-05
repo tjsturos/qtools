@@ -1,4 +1,13 @@
 #!/bin/bash
+# HELP: Monitors frame proofs and displays statistics.
+# USAGE: ./monitor-frame-proofs.sh [OPTIONS]
+# PARAM: --limit <number>: Limit the number of frames to process (optional) (default: 25)
+# PARAM: --one-shot: Only process the last N lines of the log and exit (optional)
+# PARAM: --debug: Print debug information (optional)
+# PARAM: --no-quil: Don't display QUIL in the output (optional)
+# PARAM: --update: Update interval in seconds (optional)
+# PARAM: --auto-restart: Automatically restart the node if no frame is received in 275s * (N+1) where N is number of restarts in the last period (optional)
+# PARAM: --display: Display individual frame lines in the output (optional)
 
 # Array to store frame data
 declare -A frame_data
@@ -6,9 +15,6 @@ frame_numbers=()
 
 install_package figlet figlet false
 
-# Start monitoring logs
-# Default number of lines to process
-LINES=1000
 ONE_SHOT=false
 DEBUG=false
 LIMIT=25
@@ -21,10 +27,6 @@ while [[ $# -gt 0 ]]; do
   case $1 in
     -l|--limit)
       LIMIT="$2"
-      shift 2
-      ;;
-    -n|--lines)
-      LINES="$2"
       shift 2
       ;;
     -o|--one-shot)
