@@ -216,7 +216,7 @@ display_stats() {
 
         if [ "$(is_app_finished_starting)" == "true" ]; then
             output+=("Total reward received:            $(printf "%.8f" $reward_total) QUIL")
-            output+=("Reward landing rate:              $(printf "%.8f" $reward_landing_rate) (landed proofs/frame count)")
+            output+=("Reward landing rate:              $(printf "%.2f" $reward_landing_rate) (landed proofs/frame count)")
         fi
 
         output+=("")
