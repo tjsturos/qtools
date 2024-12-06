@@ -374,6 +374,11 @@ truncate_frame_records() {
 
         # Clean up frame_numbers array (remove empty elements)
         frame_numbers=("${frame_numbers[@]}")
+        # Set first frame timestamp to FIRST_FRAME_RECEIVED_TIMESTAMP
+        if [ ${#sorted_frames[@]} -gt 0 ]; then
+            first_frame=${sorted_frames[0]} 
+            FIRST_FRAME_RECEIVED_TIMESTAMP=${frame_data[$first_frame,received,timestamp]}
+        fi
     fi
 }
 
