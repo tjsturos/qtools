@@ -135,6 +135,7 @@ display_stats() {
             local duration=$(printf "%.4f" $(echo "${frame_data[$frame_num,proof_completed]} - ${frame_data[$frame_num,received]}" | bc))
             local workers=${frame_data[$frame_num,proof_started,workers]}
             local ring=${frame_data[$frame_num,proof_completed,ring]}
+            local received_timestamp=${frame_data[$frame_num,received,timestamp]}
             local received=$(printf "%.4f" ${frame_data[$frame_num,received]})
             local proof_started=$(printf "%.4f" ${frame_data[$frame_num,proof_started]})
             local proof_completed=$(printf "%.4f" ${frame_data[$frame_num,proof_completed]})
@@ -151,9 +152,9 @@ display_stats() {
             last_frame_num=$frame_num
             if $SHOW_FRAME_LINES; then
                 if $PRINT_QUIL; then
-                    frame_outputs+=("Frame $frame_num (workers:$workers, ring:$ring): $received -> $proof_started -> $proof_completed (${duration}s${reward:+, $reward QUIL})")
+                    frame_outputs+=("$received_timestamp: Frame $frame_num (workers:$workers, ring:$ring): $received -> $proof_started -> $proof_completed (${duration}s${reward:+, $reward QUIL})")
                 else
-                    frame_outputs+=("Frame $frame_num (workers:$workers, ring:$ring): $received -> $proof_started -> $proof_completed (${duration}s)")
+                    frame_outputs+=("$received_timestamp: Frame $frame_num (workers:$workers, ring:$ring): $received -> $proof_started -> $proof_completed (${duration}s)")
                 fi
             fi
             
@@ -317,6 +318,7 @@ process_log_line() {
             echo "Received frame $frame_num (frame age $frame_age):"
         fi
         frame_data[$frame_num,received]=$frame_age
+        frame_data[$frame_num,received,timestamp]=$LOG_TIMESTAMP
         # Add to frame numbers array if not already present
         if [[ ! " ${frame_numbers[@]} " =~ " ${frame_num} " ]]; then
             frame_numbers+=($frame_num)
