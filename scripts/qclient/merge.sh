@@ -17,16 +17,16 @@ cd $QUIL_NODE_PATH
 while [[ $# -gt 0 ]]; do
     key="$1"
     case $key in
-        --debug)
+        --debug|-d)
         DEBUG="true"
         shift
         ;;
-        --batch)
+        --batch|-b)
         BATCH="true"
         BATCH_SIZE="$2"
         shift 2
         ;;
-        --config)
+        --config|-c)
         if [ -d "$2" ]; then
             CONFIG="$2"
         else
@@ -35,7 +35,7 @@ while [[ $# -gt 0 ]]; do
         fi
         shift 2
         ;;
-        --skip-sig-check)
+        --skip-sig-check|-s)
         SKIP_SIG_CHECK=true
         shift
         ;;

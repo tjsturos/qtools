@@ -16,26 +16,26 @@ PUBLIC_RPC=""
 while [[ $# -gt 0 ]]; do
     key="$1"
     case $key in
-        --public-rpc)
+        --public-rpc|-p)
         PUBLIC_RPC="true"
         shift
         ;;
-        --hex-only)
+        --hex-only|-h)
         HEX_ONLY="true"
         shift
         ;;
-        --config)
+        --config|-c)
         if [[ $(detect_config_path "$2") ]]; then
             CONFIG_PATH="$2"
         fi
         shift
         shift
         ;;
-        --skip-sig-check)
+        --skip-sig-check|-s)
         SKIP_SIG_CHECK=true
         shift
         ;;
-        --sort)
+        --sort|-o)
         SORTED=true
         if [ "$2" == "desc" ]; then
             SORT_ORDER="desc"
@@ -43,7 +43,7 @@ while [[ $# -gt 0 ]]; do
         shift
         shift
         ;;
-        metadata)
+        metadata|-m)
         METADATA=true
         shift
         ;;
