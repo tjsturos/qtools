@@ -10,7 +10,7 @@ fi
 PEER_ADDRESS="$1"
 
 # Extract peer ID from the address (everything after the last /p2p/)
-PEER_ID=$(echo "$PEER_ADDRESS" | grep -o '/p2p/[^/]*$' | sed 's/p2p\///')
+PEER_ID=$(echo "$PEER_ADDRESS" | grep -o '/p2p/[^/]*$' | sed 's/\/p2p\///')
 
 echo "adding direct peer for PEER_ID: $PEER_ID"
 
