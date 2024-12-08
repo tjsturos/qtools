@@ -9,6 +9,7 @@ fi
 
 PEER_ADDRESS="$1"
 
+echo "Peer address inputted PEER_ADDRESS: $PEER_ADDRESS"
 # Extract peer ID from the address (everything after the last /p2p/)
 PEER_ID=$(echo "$PEER_ADDRESS" | grep -o '/p2p/[^/]*$' | sed 's/\/p2p\///')
 
