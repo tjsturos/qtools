@@ -236,7 +236,7 @@ handle_server() {
 
     local IS_LOCAL_SERVER=$(echo "$(hostname -I)" | grep -q "$SERVER_IP")
 
-    if $IS_LOCAL_SERVER; then
+    if ! $IS_LOCAL_SERVER; then
         if ! check_server_ssh_connection $SERVER_IP $REMOTE_USER $SSH_PORT; then
             echo -e "${RED}${WARNING_ICON} Failed to connect to $SERVER_IP ($REMOTE_USER) on port $SSH_PORT${RESET}"
             echo -e "${BLUE}${INFO_ICON} Skipping server setup for $SERVER_IP ($REMOTE_USER)${RESET}"
@@ -263,7 +263,7 @@ handle_server() {
 
     echo -e "${BLUE}${INFO_ICON} Configuring server $REMOTE_USER@$IP with $CORE_COUNT data workers${RESET}"
 
-    if $IS_LOCAL_SERVER; then
+    if ! $IS_LOCAL_SERVER; then
         copy_quil_config_to_server "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" 
         copy_quil_keys_to_server "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" 
         copy_cluster_config_to_server "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" 
