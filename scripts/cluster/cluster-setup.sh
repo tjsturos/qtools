@@ -234,7 +234,10 @@ handle_server() {
     local SSH_PORT=$(echo "$SERVER" | yq eval ".ssh_port // \"$DEFAULT_SSH_PORT\"" -)
     local CORE_COUNT=$(echo "$SERVER" | yq eval '.data_worker_count // "false"' -)
 
-    if  [[ $LOCAL_ONLY != "true" ]] && [[ ! echo "$(hostname -I)" | grep -q "$SERVER_IP" ]]; then
+    local IS_LOCAL_SERVER=$(echo "$(hostname -I)" | grep -q "$SERVER_IP")
+    echo "IS_LOCAL_SERVER: $IS_LOCAL_SERVER"
+
+    if  [[ $LOCAL_ONLY != "true" ]] && [ "$IS_LOCAL_SERVER" == "false" ]; then
         if ! check_server_ssh_connection $SERVER_IP $REMOTE_USER $SSH_PORT; then
             echo -e "${RED}${WARNING_ICON} Failed to connect to $SERVER_IP ($REMOTE_USER) on port $SSH_PORT${RESET}"
             echo -e "${BLUE}${INFO_ICON} Skipping server setup for $SERVER_IP ($REMOTE_USER)${RESET}"
@@ -242,8 +245,7 @@ handle_server() {
         fi
     fi
 
-
-    if echo "$(hostname -I)" | grep -q "$IP"; then
+    if [ "$IS_LOCAL_SERVER" == "true" ]; then
         available_cores=$(($(nproc) - 1))
     else
         echo "Getting available cores for $SERVER_IP (user: $REMOTE_USER)"
@@ -260,7 +262,7 @@ handle_server() {
 
     echo -e "${BLUE}${INFO_ICON} Configuring server $REMOTE_USER@$IP with $CORE_COUNT data workers${RESET}"
 
-    if ! echo "$(hostname -I)" | grep -q "$SERVER_IP"; then
+    if [ "$IS_LOCAL_SERVER" == "false" ]; then
         copy_quil_config_to_server "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" 
         copy_quil_keys_to_server "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" 
         copy_cluster_config_to_server "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" 
