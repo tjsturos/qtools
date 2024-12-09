@@ -225,10 +225,12 @@ copy_cluster_config_to_server() {
 }
 
 handle_server() {
-    local IP=$1
-    local REMOTE_USER=$2
-    local SSH_PORT=$3
-    local CORE_COUNT=$4
+    local index=$5
+    local server=$(yq eval ".service.clustering.servers[$index]" $QTOOLS_CONFIG_FILE)
+    local IP=$(echo "$server" | yq eval '.ip' -)
+    local REMOTE_USER=$(echo "$server" | yq eval ".user // \"$DEFAULT_USER\"" -)
+    local SSH_PORT=$(echo "$server" | yq eval ".ssh_port // \"$DEFAULT_SSH_PORT\"" -)
+    local CORE_COUNT=$(echo "$server" | yq eval '.data_worker_count // "false"' -)
 
     if echo "$(hostname -I)" | grep -q "$IP"; then
         available_cores=$(($(nproc) - 1))
@@ -246,12 +248,12 @@ handle_server() {
     echo -e "${BLUE}${INFO_ICON} Configuring server $REMOTE_USER@$IP with $CORE_COUNT data workers${RESET}"
 
     if ! echo "$(hostname -I)" | grep -q "$IP"; then
-        copy_quil_config_to_server "$IP" "$REMOTE_USER" "$SSH_PORT" &
-        copy_quil_keys_to_server "$IP" "$REMOTE_USER" "$SSH_PORT" &
-        copy_cluster_config_to_server "$IP" "$REMOTE_USER" "$SSH_PORT" &
-        setup_remote_data_workers "$IP" "$REMOTE_USER" "$SSH_PORT" "$CORE_COUNT" &
+        copy_quil_config_to_server "$IP" "$REMOTE_USER" "$SSH_PORT" 
+        copy_quil_keys_to_server "$IP" "$REMOTE_USER" "$SSH_PORT" 
+        copy_cluster_config_to_server "$IP" "$REMOTE_USER" "$SSH_PORT" 
+        setup_remote_data_workers "$IP" "$REMOTE_USER" "$SSH_PORT" "$CORE_COUNT" 
         # Call the function to set up the remote firewall
-        setup_remote_firewall "$IP" "$REMOTE_USER" "$SSH_PORT" "$CORE_COUNT" &
+        setup_remote_firewall "$IP" "$REMOTE_USER" "$SSH_PORT" "$CORE_COUNT" 
     fi
 }
 
@@ -269,15 +271,11 @@ if [ "$MASTER" == "true" ]; then
     server_count=$(echo "$servers" | yq eval '. | length' -)
 
     for ((i=0; i<$server_count; i++)); do
-        server=$(yq eval ".service.clustering.servers[$i]" $QTOOLS_CONFIG_FILE)
-        ip=$(echo "$server" | yq eval '.ip' -)
-        ssh_port=$(echo "$server" | yq eval ".ssh_port // \"$DEFAULT_SSH_PORT\"" -)
-        remote_user=$(echo "$server" | yq eval ".user // \"$DEFAULT_USER\"" -)
-        data_worker_count=$(echo "$server" | yq eval '.data_worker_count // "false"' -)
-
-        handle_server "$ip" "$remote_user" "$ssh_port" "$data_worker_count" &
+        handle_server "$i" &
     done
 fi
+
+wait
 
 if [ "$DRY_RUN" == "false" ] && [ "$(is_master)" == "true" ]; then
     echo -e "${GREEN}${CHECK_ICON} Cluster setup completed. Run 'qtools cluster-start' or 'qtools start' to start the cluster.${RESET}"
