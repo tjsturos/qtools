@@ -235,7 +235,6 @@ handle_server() {
     local CORE_COUNT=$(echo "$SERVER" | yq eval '.data_worker_count // "false"' -)
 
     local IS_LOCAL_SERVER=$(echo "$(hostname -I)" | grep "$SERVER_IP")
-    echo "IS_LOCAL_SERVER: $IS_LOCAL_SERVER"
 
     if [[ $LOCAL_ONLY != "true" ]] && [ -n "$IS_LOCAL_SERVER" ]; then
         if ! check_server_ssh_connection $SERVER_IP $REMOTE_USER $SSH_PORT; then
@@ -243,6 +242,8 @@ handle_server() {
             echo -e "${BLUE}${INFO_ICON} Skipping server setup for $SERVER_IP ($REMOTE_USER)${RESET}"
             return
         fi
+    else
+        echo "Skipping server setup for $SERVER_IP ($REMOTE_USER) because it is local"
     fi
 
     if [ -z "$IS_LOCAL_SERVER" ]; then
