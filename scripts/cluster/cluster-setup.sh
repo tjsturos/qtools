@@ -279,7 +279,7 @@ if [ "$MASTER" == "true" ]; then
 
     yq eval -i ".engine.dataWorkerMultiaddrs = []" $QUIL_CONFIG_FILE
 
-    
+    servers=$(yq eval '.service.clustering.servers' $QTOOLS_CONFIG_FILE)
     server_count=$(echo "$servers" | yq eval '. | length' -)
 
     for ((i=0; i<$server_count; i++)); do
