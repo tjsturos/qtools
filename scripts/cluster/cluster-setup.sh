@@ -226,6 +226,7 @@ copy_cluster_config_to_server() {
 
 handle_server() {
     local index=$5
+    echo "INDEX: $index"
     local SERVER=$(yq eval ".service.clustering.servers[$index]" $QTOOLS_CONFIG_FILE)
     echo "SERVER: $SERVER"
     local SERVER_IP=$(echo "$SERVER" | yq eval '.ip' -)
@@ -254,7 +255,7 @@ handle_server() {
         CORE_COUNT=$available_cores
         echo "Setting data_worker_count to available cores: $CORE_COUNT"
     fi
-    
+
     qtools cluster-add-server $REMOTE_USER@$SERVER_IP:$SSH_PORT/$CORE_COUNT
 
     echo -e "${BLUE}${INFO_ICON} Configuring server $REMOTE_USER@$IP with $CORE_COUNT data workers${RESET}"
@@ -278,7 +279,7 @@ if [ "$MASTER" == "true" ]; then
 
     yq eval -i ".engine.dataWorkerMultiaddrs = []" $QUIL_CONFIG_FILE
 
-    servers=$(yq eval '.service.clustering.servers' $QTOOLS_CONFIG_FILE)
+    
     server_count=$(echo "$servers" | yq eval '. | length' -)
 
     for ((i=0; i<$server_count; i++)); do
