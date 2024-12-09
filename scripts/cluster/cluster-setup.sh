@@ -234,7 +234,7 @@ handle_server() {
     local SSH_PORT=$(echo "$SERVER" | yq eval ".ssh_port // \"$DEFAULT_SSH_PORT\"" -)
     local CORE_COUNT=$(echo "$SERVER" | yq eval '.data_worker_count // "false"' -)
 
-    if  [[ $LOCAL_ONLY != "true" ]]; then
+    if  [[ $LOCAL_ONLY != "true" ]] && [[ ! echo "$(hostname -I)" | grep -q "$SERVER_IP" ]]; then
         if ! check_server_ssh_connection $SERVER_IP $REMOTE_USER $SSH_PORT; then
             echo -e "${RED}${WARNING_ICON} Failed to connect to $SERVER_IP ($REMOTE_USER) on port $SSH_PORT${RESET}"
             echo -e "${BLUE}${INFO_ICON} Skipping server setup for $SERVER_IP ($REMOTE_USER)${RESET}"
