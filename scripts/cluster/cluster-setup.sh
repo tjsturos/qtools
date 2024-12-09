@@ -234,7 +234,7 @@ handle_server() {
     local SSH_PORT=$(echo "$SERVER" | yq eval ".ssh_port // \"$DEFAULT_SSH_PORT\"" -)
     local CORE_COUNT=$(echo "$SERVER" | yq eval '.data_worker_count // "false"' -)
 
-    local IS_LOCAL_SERVER=$(echo "$(hostname -I)" | grep -q "$SERVER_IP")
+    local IS_LOCAL_SERVER=$(! echo "$(hostname -I)" | grep -q "$SERVER_IP")
 
     if ! $IS_LOCAL_SERVER; then
         if ! check_server_ssh_connection $SERVER_IP $REMOTE_USER $SSH_PORT; then
