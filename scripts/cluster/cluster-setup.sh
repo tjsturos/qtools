@@ -237,7 +237,7 @@ handle_server() {
     local IS_LOCAL_SERVER=$(echo "$(hostname -I)" | grep "$SERVER_IP")
     echo "IS_LOCAL_SERVER: $IS_LOCAL_SERVER"
 
-    if  [[ $LOCAL_ONLY != "true" ]] && [ -z "$IS_LOCAL_SERVER" ]; then
+    if [[ $LOCAL_ONLY != "true" ]] && [ -n "$IS_LOCAL_SERVER" ]; then
         if ! check_server_ssh_connection $SERVER_IP $REMOTE_USER $SSH_PORT; then
             echo -e "${RED}${WARNING_ICON} Failed to connect to $SERVER_IP ($REMOTE_USER) on port $SSH_PORT${RESET}"
             echo -e "${BLUE}${INFO_ICON} Skipping server setup for $SERVER_IP ($REMOTE_USER)${RESET}"
