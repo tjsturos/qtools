@@ -24,6 +24,7 @@ ssh_to_remote() {
     local SSH_PORT=$3
     local COMMAND=$4
 
+
     ssh -i $SSH_CLUSTER_KEY -q -p $SSH_PORT -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "$USER@$IP" $COMMAND
 }
 
@@ -36,6 +37,9 @@ scp_to_remote() {
 create_master_service_file() {
     USER=$(whoami)
     GROUP=$(id -gn)
+    SIGNATURE_CHECK=$(yq eval '.service.signature_check // ""' $QTOOLS_CONFIG_FILE)
+    DEBUG=$(yq eval '.service.debug // ""' $QTOOLS_CONFIG_FILE)
+    TESTNET=$(yq eval '.service.testnet // ""' $QTOOLS_CONFIG_FILE)
     if [ -z "$USER" ] || [ -z "$GROUP" ]; then
         echo "Error: Failed to get user or group information"
         exit 1
@@ -56,10 +60,10 @@ Restart=always
 RestartSec=5
 StartLimitBurst=5
 User=$USER
-WorkingDirectory=$QUIL_NODE_PATH
-ExecStart=$LINKED_NODE_BINARY
+WorkingDirectory=$QUIL_NODE_PATH 
+ExecStart=$LINKED_NODE_BINARY ${SIGNATURE_CHECK:+"--signature-check=false"} ${DEBUG:+"--debug"} ${TESTNET:+"--network=1"}
 ExecStop=/bin/kill -s SIGINT $MAINPID
-ExecReload=/bin/kill -s SIGINT $MAINPID && $LINKED_NODE_BINARY
+ExecReload=/bin/kill -s SIGINT $MAINPID && $LINKED_NODE_BINARY ${SIGNATURE_CHECK:+"--signature-check=false"} ${DEBUG:+"--debug"} ${TESTNET:+"--network=1"}
 KillSignal=SIGINT
 RestartKillSignal=SIGINT
 FinalKillSignal=SIGINT
@@ -87,6 +91,9 @@ create_data_worker_service_file() {
         echo "Error: Failed to get user information"
         exit 1
     fi
+    SIGNATURE_CHECK=$(yq eval '.service.signature_check // ""' $QTOOLS_CONFIG_FILE)
+    DEBUG=$(yq eval '.service.debug // ""' $QTOOLS_CONFIG_FILE)
+    TESTNET=$(yq eval '.service.testnet // ""' $QTOOLS_CONFIG_FILE) 
     echo -e "${BLUE}${INFO_ICON} Updating $DATA_WORKER_SERVICE_FILE file...${RESET}"
     local temp_file=$(mktemp)
     
@@ -104,9 +111,9 @@ Restart=on-failure
 RestartSec=5
 StartLimitBurst=5
 User=$USER
-ExecStart=$LINKED_NODE_BINARY --core %i
+ExecStart=$LINKED_NODE_BINARY --core %i ${SIGNATURE_CHECK:+"--signature-check=false"} ${DEBUG:+"--debug"} ${TESTNET:+"--network=1"}
 ExecStop=/bin/kill -s SIGINT $MAINPID
-ExecReload=/bin/kill -s SIGINT $MAINPID && $LINKED_NODE_BINARY --core %i
+ExecReload=/bin/kill -s SIGINT $MAINPID && $LINKED_NODE_BINARY --core %i ${SIGNATURE_CHECK:+"--signature-check=false"} ${DEBUG:+"--debug"} ${TESTNET:+"--network=1"}
 KillSignal=SIGINT
 RestartKillSignal=SIGINT
 FinalKillSignal=SIGINT
@@ -310,6 +317,7 @@ update_quil_config() {
         ip=$(echo "$server" | yq eval '.ip' -)
         remote_user=$(echo "$server" | yq eval ".user // \"$DEFAULT_USER\"" -)
         ssh_port=$(echo "$server" | yq eval ".ssh_port // \"$DEFAULT_SSH_PORT\"" -)
+        base_port=$(echo "$server" | yq eval ".base_port // \"$BASE_PORT\"" -)
         data_worker_count=$(echo "$server" | yq eval '.data_worker_count // "false"' -)
         available_cores=$(nproc)
         
@@ -349,7 +357,7 @@ update_quil_config() {
        
        
         for ((j=0; j<data_worker_count; j++)); do
-            port=$((BASE_PORT + j))
+            port=$((base_port + j))
             addr="/ip4/$ip/tcp/$port"
             if [ "$DRY_RUN" == "false" ]; then
                 yq eval -i ".engine.dataWorkerMultiaddrs += \"$addr\"" "$QUIL_CONFIG_FILE"
@@ -425,6 +433,13 @@ generate_ssh_key_pair() {
     return 0
 }
 
+check_server_ssh_connection() {
+    local ip=$1
+    local user=$2
+    local ssh_port=$3
+    ssh -i $SSH_CLUSTER_KEY -p $ssh_port -o ConnectTimeout=5 -o BatchMode=yes -o StrictHostKeyChecking=no "$user@$ip" exit &>/dev/null
+}
+
 check_ssh_connections() {
     local servers=$(yq eval '.service.clustering.servers' $QTOOLS_CONFIG_FILE)
     local server_count=$(echo "$servers" | yq eval '. | length' -)
@@ -444,7 +459,7 @@ check_ssh_connections() {
         if echo "$(hostname -I)" | grep -q "$ip"; then
             echo -e "${GREEN}✓ Local server $ip is reachable${RESET}"
         else
-            if ssh -i $SSH_CLUSTER_KEY -p $ssh_port -o ConnectTimeout=5 -o BatchMode=yes -o StrictHostKeyChecking=no "$user@$ip" exit &>/dev/null; then
+            if check_server_ssh_connection $ip $user $ssh_port; then
                 echo -e "${GREEN}✓ Remote server $ip is reachable${RESET}"
             else
                 echo -e "${RED}✗ Failed to connect to remote server $ip${RESET}"

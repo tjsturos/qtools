@@ -241,6 +241,7 @@ handle_server() {
         fi
     fi
 
+
     if echo "$(hostname -I)" | grep -q "$IP"; then
         available_cores=$(($(nproc) - 1))
     else
@@ -253,6 +254,8 @@ handle_server() {
         CORE_COUNT=$available_cores
         echo "Setting data_worker_count to available cores: $CORE_COUNT"
     fi
+    
+    qtools cluster-add-server $REMOTE_USER@$SERVER_IP:$SSH_PORT/$CORE_COUNT
 
     echo -e "${BLUE}${INFO_ICON} Configuring server $REMOTE_USER@$IP with $CORE_COUNT data workers${RESET}"
 
@@ -273,7 +276,7 @@ if [ "$MASTER" == "true" ]; then
         check_ssh_key_pair
     fi
 
-    update_quil_config $DRY_RUN
+    yq eval -i ".engine.dataWorkerMultiaddrs = []" $QUIL_CONFIG_FILE
 
     servers=$(yq eval '.service.clustering.servers' $QTOOLS_CONFIG_FILE)
     server_count=$(echo "$servers" | yq eval '. | length' -)
