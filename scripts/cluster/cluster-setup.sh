@@ -226,18 +226,18 @@ copy_cluster_config_to_server() {
 
 handle_server() {
     local index=$5
-    local server=$(yq eval ".service.clustering.servers[$index]" $QTOOLS_CONFIG_FILE)
-    local IP=$(echo "$server" | yq eval '.ip' -)
-    local REMOTE_USER=$(echo "$server" | yq eval ".user // \"$DEFAULT_USER\"" -)
-    local SSH_PORT=$(echo "$server" | yq eval ".ssh_port // \"$DEFAULT_SSH_PORT\"" -)
-    local CORE_COUNT=$(echo "$server" | yq eval '.data_worker_count // "false"' -)
+    local SERVER=$(yq eval ".service.clustering.servers[$index]" $QTOOLS_CONFIG_FILE)
+    local SERVER_IP=$(echo "$SERVER" | yq eval '.ip' -)
+    local REMOTE_USER=$(echo "$SERVER" | yq eval ".user // \"$DEFAULT_USER\"" -)
+    local SSH_PORT=$(echo "$SERVER" | yq eval ".ssh_port // \"$DEFAULT_SSH_PORT\"" -)
+    local CORE_COUNT=$(echo "$SERVER" | yq eval '.data_worker_count // "false"' -)
 
     if echo "$(hostname -I)" | grep -q "$IP"; then
         available_cores=$(($(nproc) - 1))
     else
-        echo "Getting available cores for $IP (user: $REMOTE_USER)"
+        echo "Getting available cores for $SERVER_IP (user: $REMOTE_USER)"
         # Get the number of available cores
-        available_cores=$(ssh_to_remote $IP $REMOTE_USER $SSH_PORT "nproc")
+        available_cores=$(ssh_to_remote $SERVER_IP $REMOTE_USER $SSH_PORT "nproc")
     fi
 
     if [ "$CORE_COUNT" == "false" ]; then
@@ -247,13 +247,13 @@ handle_server() {
 
     echo -e "${BLUE}${INFO_ICON} Configuring server $REMOTE_USER@$IP with $CORE_COUNT data workers${RESET}"
 
-    if ! echo "$(hostname -I)" | grep -q "$IP"; then
-        copy_quil_config_to_server "$IP" "$REMOTE_USER" "$SSH_PORT" 
-        copy_quil_keys_to_server "$IP" "$REMOTE_USER" "$SSH_PORT" 
-        copy_cluster_config_to_server "$IP" "$REMOTE_USER" "$SSH_PORT" 
-        setup_remote_data_workers "$IP" "$REMOTE_USER" "$SSH_PORT" "$CORE_COUNT" 
+    if ! echo "$(hostname -I)" | grep -q "$SERVER_IP"; then
+        copy_quil_config_to_server "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" 
+        copy_quil_keys_to_server "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" 
+        copy_cluster_config_to_server "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" 
+        setup_remote_data_workers "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" "$CORE_COUNT" 
         # Call the function to set up the remote firewall
-        setup_remote_firewall "$IP" "$REMOTE_USER" "$SSH_PORT" "$CORE_COUNT" 
+        setup_remote_firewall "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" "$CORE_COUNT" 
     fi
 }
 
