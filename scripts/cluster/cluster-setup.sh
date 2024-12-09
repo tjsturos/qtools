@@ -227,10 +227,19 @@ copy_cluster_config_to_server() {
 handle_server() {
     local index=$5
     local SERVER=$(yq eval ".service.clustering.servers[$index]" $QTOOLS_CONFIG_FILE)
+    echo "SERVER: $SERVER"
     local SERVER_IP=$(echo "$SERVER" | yq eval '.ip' -)
     local REMOTE_USER=$(echo "$SERVER" | yq eval ".user // \"$DEFAULT_USER\"" -)
     local SSH_PORT=$(echo "$SERVER" | yq eval ".ssh_port // \"$DEFAULT_SSH_PORT\"" -)
     local CORE_COUNT=$(echo "$SERVER" | yq eval '.data_worker_count // "false"' -)
+
+    if  [[ $LOCAL_ONLY != "true" ]]; then
+        if ! check_server_ssh_connection $SERVER_IP $REMOTE_USER $SSH_PORT; then
+            echo -e "${RED}${WARNING_ICON} Failed to connect to $SERVER_IP ($REMOTE_USER) on port $SSH_PORT${RESET}"
+            echo -e "${BLUE}${INFO_ICON} Skipping server setup for $SERVER_IP ($REMOTE_USER)${RESET}"
+            return
+        fi
+    fi
 
     if echo "$(hostname -I)" | grep -q "$IP"; then
         available_cores=$(($(nproc) - 1))
@@ -262,7 +271,6 @@ if [ "$MASTER" == "true" ]; then
 
     if [ "$LOCAL_ONLY" != "true" ]; then
         check_ssh_key_pair
-        check_ssh_connections
     fi
 
     update_quil_config $DRY_RUN
