@@ -282,8 +282,8 @@ if [ "$MASTER" == "true" ]; then
     servers=$(yq eval '.service.clustering.servers' $QTOOLS_CONFIG_FILE)
     server_count=$(echo "$servers" | yq eval '. | length' -)
 
-    for ((i=0; i<$server_count; i++)); do
-        handle_server "$i" &
+    for ((server_index=0; server_index<$server_count; server_index++)); do
+        handle_server "$server_index" &
     done
 fi
 
