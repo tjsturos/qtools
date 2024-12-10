@@ -291,6 +291,9 @@ ssh_command_to_server() {
     done
 }
 
+restart_cluster_data_workers() {
+    ssh_command_to_each_server "qtools refresh-data-workers -m"
+}
 
 update_quil_config() {
     config=$(yq eval . $QTOOLS_CONFIG_FILE)
