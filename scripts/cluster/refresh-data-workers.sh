@@ -14,6 +14,10 @@ THRESHOLD=80
 while [[ $# -gt 0 ]]; do
     case $1 in
         -t|--threshold)
+            if ! [[ "$2" =~ ^[0-9]+$ ]] || [ "$2" -lt 1 ] || [ "$2" -gt 100 ]; then
+                echo "Error: Threshold must be a number between 1 and 100"
+                exit 1
+            fi
             THRESHOLD=$2
             shift
             shift
@@ -46,11 +50,11 @@ get_memory_percentage() {
 }
 
 restart_data_workers() {
-    LOCAL_IP=$(get_local_ip)
+    local LOCAL_IP=$(get_local_ip)
 
-    WORKER_COUNT=$(get_cluster_worker_count "$LOCAL_IP")
+    local WORKER_COUNT=$(get_cluster_worker_count "$LOCAL_IP")
 
-    echo "Found $WORKER_COUNT data workers for $LOCAL_IP"
+    echo "Found $WORKER_COUNT data workers for $LOCAL_IP, restarting..."
 
     sudo systemctl stop ${QUIL_DATA_WORKER_SERVICE_NAME}@{1..$WORKER_COUNT}
     sudo systemctl start ${QUIL_DATA_WORKER_SERVICE_NAME}@{1..$WORKER_COUNT}
@@ -58,9 +62,9 @@ restart_data_workers() {
 
 
 if $MEMORY_CHECK; then
-    local memory_percentage=$(get_memory_percentage)
+    memory_percentage=$(get_memory_percentage)
     echo "Current memory usage: ${memory_percentage}%"
-    if [ $memory_percentage -gt $THRESHOLD ]; then
+    if (( $(echo "$memory_percentage > $THRESHOLD" | bc -l) )); then
         echo "Memory usage is greater than $THRESHOLD%, restarting data workers"
         restart_data_workers
     fi
