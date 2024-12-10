@@ -55,8 +55,8 @@ if [ "$(is_master)" == "true" ]; then
         # Wait for proof submission before restarting
         echo -e "${BLUE}${INFO_ICON} Waiting for current proof to complete...${RESET}"
         while read -r line; do
-            if [[ $line =~ "submitting data proof" ]]; then
-                echo -e "${GREEN}${CHECK_ICON} Proof submission detected, proceeding with restart${RESET}"
+            if [[ $line =~ "submitting data proof" ]] || [[ $line =~ "workers not yet available for proving" ]]; then
+                echo -e "${GREEN}${CHECK_ICON} Proof submission detected or workers not available, proceeding with restart${RESET}"
                 break
             fi
         done < <(journalctl -u $MASTER_SERVICE_NAME -f -n 0)
