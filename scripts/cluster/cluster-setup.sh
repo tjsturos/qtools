@@ -273,7 +273,7 @@ if [ "$MASTER" == "true" ]; then
         check_ssh_key_pair
     fi
 
-    update_local_quil_config 
+    update_quil_config 
 
     servers=$(yq eval '.service.clustering.servers' $QTOOLS_CONFIG_FILE)
     server_count=$(echo "$servers" | yq eval '. | length' -)

@@ -49,8 +49,22 @@ if [ "$(is_master)" == "true" ]; then
         check_ssh_connections
         ssh_command_to_each_server "qtools cluster-start"
     fi
-
-    sudo systemctl start $MASTER_SERVICE_NAME
+    # Check if master service is running
+    if systemctl is-active $MASTER_SERVICE_NAME >/dev/null 2>&1; then
+        echo -e "${BLUE}${INFO_ICON} Master service is running, restarting...${RESET}"
+        # Wait for proof submission before restarting
+        echo -e "${BLUE}${INFO_ICON} Waiting for current proof to complete...${RESET}"
+        while read -r line; do
+            if [[ $line =~ "submitting data proof" ]]; then
+                echo -e "${GREEN}${CHECK_ICON} Proof submission detected, proceeding with restart${RESET}"
+                break
+            fi
+        done < <(journalctl -u $MASTER_SERVICE_NAME -f -n 0)
+        sudo systemctl restart $MASTER_SERVICE_NAME
+    else
+        echo -e "${BLUE}${INFO_ICON} Starting master service...${RESET}"
+        sudo systemctl start $MASTER_SERVICE_NAME
+    fi
 else
     echo -e "${BLUE}${INFO_ICON} Not master node, skipping${RESET}"
 fi
