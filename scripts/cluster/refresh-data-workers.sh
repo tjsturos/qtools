@@ -43,12 +43,6 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-get_memory_percentage() {
-    local total_memory=$(free | grep Mem | awk '{print $2}')
-    local used_memory=$(free | grep Mem | awk '{print $3}')
-    echo "scale=2; ($used_memory / $total_memory) * 100" | bc
-}
-
 restart_data_workers() {
     local LOCAL_IP=$(get_local_ip)
 

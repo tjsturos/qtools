@@ -33,3 +33,9 @@ get_ram() {
 get_hdd_space() {
     df -h / | awk 'NR==2 {print $2}'
 }
+
+get_memory_percentage() {
+    local total_memory=$(free | grep Mem | awk '{print $2}')
+    local used_memory=$(free | grep Mem | awk '{print $3}')
+    echo "($used_memory * 100) / $total_memory" | bc
+}
