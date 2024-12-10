@@ -262,26 +262,7 @@ handle_server() {
         echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would remove data worker addresses for $SERVER_IP from $QUIL_CONFIG_FILE${RESET}"
     fi
 
-    # Update the quil config with data worker addresses for this server
-    if [ "$DRY_RUN" == "false" ]; then
-        if [ "$CORE_COUNT" -gt 0 ]; then
-            echo "Adding $CORE_COUNT data worker addresses for $SERVER_IP to $QUIL_CONFIG_FILE"
-            for ((i=0; i<$CORE_COUNT; i++)); do
-                local addr="/ip4/$SERVER_IP/tcp/$((BASE_PORT + $i))"
-                yq eval -i ".engine.dataWorkerMultiaddrs += \"$addr\"" "$QUIL_CONFIG_FILE"
-            done
-            ADDRESS_COUNT=$(cat $QUIL_CONFIG_FILE | grep "$SERVER_IP" | wc -l)
-            if [ "$ADDRESS_COUNT" -eq "$CORE_COUNT" ]; then
-                echo -e "${GREEN}${CHECK_ICON} [ MASTER ] [ $LOCAL_IP ] Added $ADDRESS_COUNT data worker addresses for $SERVER_IP to $QUIL_CONFIG_FILE${RESET}"
-            else
-                echo -e "${RED}${WARNING_ICON} [ MASTER ] [ $LOCAL_IP ] Failed to add $CORE_COUNT data worker addresses for $SERVER_IP to $QUIL_CONFIG_FILE ($ADDRESS_COUNT found) ${RESET}"
-            fi
-        else
-            echo -e "${BLUE}${INFO_ICON} [ MASTER ] [ $LOCAL_IP ] No data worker addresses to add for $SERVER_IP${RESET}"
-        fi
-    else
-        echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would add $CORE_COUNT data worker addresses for $SERVER_IP to $QUIL_CONFIG_FILE${RESET}"
-    fi
+    
 
     echo -e "${BLUE}${INFO_ICON} Configuring server $REMOTE_USER@$IP with $CORE_COUNT data workers${RESET}"
 
@@ -302,13 +283,13 @@ if [ "$MASTER" == "true" ]; then
         check_ssh_key_pair
     fi
 
-    yq eval -i ".engine.dataWorkerMultiaddrs = []" $QUIL_CONFIG_FILE
+    update_local_quil_config 
 
     servers=$(yq eval '.service.clustering.servers' $QTOOLS_CONFIG_FILE)
     server_count=$(echo "$servers" | yq eval '. | length' -)
 
     for ((server_index=0; server_index<$server_count; server_index++)); do
-        handle_server "$server_index" 
+        handle_server "$server_index" &
     done
 fi
 
