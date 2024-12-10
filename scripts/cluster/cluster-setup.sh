@@ -113,6 +113,7 @@ if [ "$DRY_RUN" == "false" ]; then
         sudo systemctl enable $QUIL_SERVICE_NAME &> /dev/null
     else
         echo -e "${BLUE}${INFO_ICON} Disabling $QUIL_SERVICE_NAME on non-master node${RESET}"
+        sudo systemctl stop $QUIL_SERVICE_NAME &> /dev/null
         sudo systemctl disable $QUIL_SERVICE_NAME &> /dev/null
     fi
     echo -e "${BLUE}${INFO_ICON} Resetting any existing dataworker services${RESET}"
@@ -282,10 +283,8 @@ if [ "$MASTER" == "true" ]; then
         handle_server "$server_index" &
     done
 fi
-
+wait
 
 if [ "$DRY_RUN" == "false" ] && [ "$(is_master)" == "true" ]; then
     echo -e "${GREEN}${CHECK_ICON} Cluster setup completed. Run 'qtools cluster-start' or 'qtools start' to start the cluster.${RESET}"
 fi
-
-wait
