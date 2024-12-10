@@ -254,11 +254,6 @@ handle_server() {
         fi
     fi
 
-    if [ "$CORE_COUNT" == "false" ]; then
-        CORE_COUNT=$available_cores
-        echo "Setting data_worker_count to available cores: $CORE_COUNT"
-    fi
-
     # Remove this server's data worker addresses from the quil config
     if [ "$DRY_RUN" == "false" ]; then
         yq eval -i "del(.engine.dataWorkerMultiaddrs[] | select(. | contains(\"/ip4/$SERVER_IP/\")))" "$QUIL_CONFIG_FILE"
@@ -269,15 +264,20 @@ handle_server() {
 
     # Update the quil config with data worker addresses for this server
     if [ "$DRY_RUN" == "false" ]; then
-        for ((i=0; i<$CORE_COUNT; i++)); do
-            local addr="/ip4/$SERVER_IP/tcp/$((BASE_PORT + $i))"
-            yq eval -i ".engine.dataWorkerMultiaddrs += \"$addr\"" "$QUIL_CONFIG_FILE"
-        done
-        ADDRESS_COUNT=$(cat $QUIL_CONFIG_FILE | grep "$SERVER_IP" | wc -l)
-        if [ "$ADDRESS_COUNT" -eq "$CORE_COUNT" ]; then
-            echo -e "${GREEN}${CHECK_ICON} [ MASTER ] [ $LOCAL_IP ] Added $ADDRESS_COUNT data worker addresses for $SERVER_IP to $QUIL_CONFIG_FILE${RESET}"
+        if [ "$CORE_COUNT" -gt 0 ]; then
+            echo "Adding $CORE_COUNT data worker addresses for $SERVER_IP to $QUIL_CONFIG_FILE"
+            for ((i=0; i<$CORE_COUNT; i++)); do
+                local addr="/ip4/$SERVER_IP/tcp/$((BASE_PORT + $i))"
+                yq eval -i ".engine.dataWorkerMultiaddrs += \"$addr\"" "$QUIL_CONFIG_FILE"
+            done
+            ADDRESS_COUNT=$(cat $QUIL_CONFIG_FILE | grep "$SERVER_IP" | wc -l)
+            if [ "$ADDRESS_COUNT" -eq "$CORE_COUNT" ]; then
+                echo -e "${GREEN}${CHECK_ICON} [ MASTER ] [ $LOCAL_IP ] Added $ADDRESS_COUNT data worker addresses for $SERVER_IP to $QUIL_CONFIG_FILE${RESET}"
+            else
+                echo -e "${RED}${WARNING_ICON} [ MASTER ] [ $LOCAL_IP ] Failed to add $CORE_COUNT data worker addresses for $SERVER_IP to $QUIL_CONFIG_FILE${RESET}"
+            fi
         else
-            echo -e "${RED}${WARNING_ICON} [ MASTER ] [ $LOCAL_IP ] Failed to add $CORE_COUNT data worker addresses for $SERVER_IP to $QUIL_CONFIG_FILE${RESET}"
+            echo -e "${BLUE}${INFO_ICON} [ MASTER ] [ $LOCAL_IP ] No data worker addresses to add for $SERVER_IP${RESET}"
         fi
     else
         echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would add $CORE_COUNT data worker addresses for $SERVER_IP to $QUIL_CONFIG_FILE${RESET}"
