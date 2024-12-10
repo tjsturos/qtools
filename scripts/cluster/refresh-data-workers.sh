@@ -8,6 +8,8 @@
 # PARAM: -m, --memory    Check memory usage and restart data workers if memory usage is greater than the threshold
 # PARAM: -t, --threshold Check memory usage and restart data workers if memory usage is greater than the threshold
 
+source $QTOOLS_PATH/scripts/cluster/utils.sh
+
 MEMORY_CHECK=false
 THRESHOLD=80
 # Parse command line arguments
