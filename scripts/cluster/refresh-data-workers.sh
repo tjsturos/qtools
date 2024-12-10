@@ -57,8 +57,8 @@ restart_data_workers() {
 
     echo "Found $WORKER_COUNT data workers for $LOCAL_IP, restarting..."
 
-    sudo systemctl stop ${QUIL_DATA_WORKER_SERVICE_NAME}@{1..$WORKER_COUNT}
-    sudo systemctl start ${QUIL_DATA_WORKER_SERVICE_NAME}@{1..$WORKER_COUNT}
+    bash -c "sudo systemctl stop ${QUIL_DATA_WORKER_SERVICE_NAME}@{1..$WORKER_COUNT}"
+    bash -c "sudo systemctl start ${QUIL_DATA_WORKER_SERVICE_NAME}@{1..$WORKER_COUNT}"
 }
 
 
