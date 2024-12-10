@@ -178,7 +178,7 @@ setup_remote_data_workers() {
         echo -e "${BLUE}${INFO_ICON} Configuring cluster's data workers on $IP ($USER)${RESET}"
         # Log the core count
         echo "Setting up remote server with core count: $CORE_COUNT"
-        ssh_to_remote $IP $USER $SSH_PORT "qtools cluster-setup --data-worker-count $CORE_COUNT" 
+        ssh_to_remote $IP $USER $SSH_PORT "qtools cluster-setup --data-worker-count $CORE_COUNT" &> /dev/null
     else
         echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would configure cluster's data workers on $IP ($USER)${RESET}"
         echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would run setup-cluster.sh on $IP ($USER) with data worker count of $CORE_COUNT${RESET}"
@@ -259,7 +259,26 @@ handle_server() {
         echo "Setting data_worker_count to available cores: $CORE_COUNT"
     fi
 
-    qtools cluster-add-server $REMOTE_USER@$SERVER_IP:$SSH_PORT/$CORE_COUNT
+    # Remove this server's data worker addresses from the quil config
+    if [ "$DRY_RUN" == "false" ]; then
+        for ((i=0; i<$CORE_COUNT; i++)); do
+            local addr="/ip4/$SERVER_IP/tcp/$((BASE_PORT + $i))"
+            yq eval -i "del(.engine.dataWorkerMultiaddrs[] | select(. == \"$addr\"))" "$QUIL_CONFIG_FILE"
+        done
+        echo -e "${GREEN}${CHECK_ICON} Removed data worker addresses for $SERVER_IP from $QUIL_CONFIG_FILE${RESET}"
+    else
+        echo -e "${BLUE}${INFO_ICON} [DRY RUN] Would remove data worker addresses for $SERVER_IP from $QUIL_CONFIG_FILE${RESET}"
+    fi
+
+    # Update the quil config with data worker addresses for this server
+    if [ "$DRY_RUN" == "false" ]; then
+        for ((i=0; i<$CORE_COUNT; i++)); do
+            local addr="/ip4/$SERVER_IP/tcp/$((BASE_PORT + $i))"
+            yq eval -i ".engine.dataWorkerMultiaddrs += \"$addr\"" "$QUIL_CONFIG_FILE"
+        done
+    else
+        echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would add $CORE_COUNT data worker addresses for $SERVER_IP to $QUIL_CONFIG_FILE${RESET}"
+    fi
 
     echo -e "${BLUE}${INFO_ICON} Configuring server $REMOTE_USER@$IP with $CORE_COUNT data workers${RESET}"
 
