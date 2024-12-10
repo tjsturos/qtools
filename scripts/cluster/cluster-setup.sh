@@ -244,12 +244,14 @@ handle_server() {
         echo "Skipping SSH check for $SERVER_IP ($REMOTE_USER) because it is local"
     fi
 
-    if [ "$IS_LOCAL_SERVER" == "true" ]; then
-        available_cores=$(($(nproc) - 1))
-    else
-        echo "Getting available cores for $SERVER_IP (user: $REMOTE_USER)"
-        # Get the number of available cores
-        available_cores=$(ssh_to_remote $SERVER_IP $REMOTE_USER $SSH_PORT "nproc")
+    if [[ "$CORE_COUNT" == "false" ]]; then
+        if [ "$IS_LOCAL_SERVER" == "true" ] ; then
+            available_cores=$(($(nproc) - 1))
+        else
+            echo "Getting available cores for $SERVER_IP (user: $REMOTE_USER)"
+            # Get the number of available cores
+            available_cores=$(ssh_to_remote $SERVER_IP $REMOTE_USER $SSH_PORT "nproc")
+        fi
     fi
 
     if [ "$CORE_COUNT" == "false" ]; then
