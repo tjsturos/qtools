@@ -6,7 +6,7 @@ TOTAL_CORES=$(nproc)
 # Set default values
 MASTER=false
 DRY_RUN=false
-LOCAL_IP=$(qtools public-ip)
+LOCAL_IP=$(get_local_ip)
 LOCAL_ONLY=$(yq eval ".service.clustering.local_only" $QTOOLS_CONFIG_FILE)
 DATA_WORKER_COUNT=$(get_cluster_worker_count "$LOCAL_IP")
 
