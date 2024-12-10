@@ -468,3 +468,38 @@ check_ssh_connections() {
     done
 }
 
+check_data_worker_services() {
+    local ip=$1
+    local user=$2
+    local ssh_port=$3
+    local data_worker_count=$4
+    local base_port=$5
+    local end_port=$((base_port + data_worker_count - 1))
+    # Check if ports are listening using netstat
+    local netstat_cmd="netstat -tuln | grep LISTEN"
+    local ports_status=""
+    
+    if echo "$(hostname -I)" | grep -q "$ip"; then
+        # Check locally
+        ports_status=$(eval $netstat_cmd)
+    else
+        # Check remotely via SSH
+        ports_status=$(ssh -i $SSH_CLUSTER_KEY -p $ssh_port -o ConnectTimeout=5 -o BatchMode=yes -o StrictHostKeyChecking=no "$user@$ip" "$netstat_cmd")
+    fi
+
+    local missing_ports=()
+    for ((port=base_port; port<=end_port; port++)); do
+        if ! echo "$ports_status" | grep -q ":$port"; then
+            missing_ports+=($port)
+        fi
+    done
+
+    if [ ${#missing_ports[@]} -eq 0 ]; then
+        echo -e "${GREEN}✓ All data worker ports ($base_port-$end_port) are listening on $ip${RESET}"
+        return 0
+    else
+        echo -e "${RED}✗ Missing data worker ports on $ip: ${missing_ports[*]}${RESET}"
+        return 1
+    fi
+}
+
