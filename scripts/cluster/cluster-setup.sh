@@ -154,10 +154,10 @@ setup_remote_firewall() {
         else
             # Remove any existing rules for these ports
             # ssh_to_remote $IP $REMOTE_USER $SSH_PORT "sudo ufw status numbered | grep '$BASE_PORT' | cut -d']' -f1 | tac | xargs -I {} sudo ufw --force delete {}"
-            ssh_to_remote $IP $REMOTE_USER $SSH_PORT "sudo ufw allow proto tcp from $MASTER_IP to any port $BASE_PORT:$END_PORT" 
+            ssh_to_remote $IP $REMOTE_USER $SSH_PORT "sudo ufw allow proto tcp from $MASTER_IP to any port $BASE_PORT:$END_PORT" &> /dev/null
             
             # Reload ufw to apply changes
-            ssh_to_remote $IP $REMOTE_USER $SSH_PORT "sudo ufw reload"
+            ssh_to_remote $IP $REMOTE_USER $SSH_PORT "sudo ufw reload" &> /dev/null
             
             echo -e "${GREEN}${CHECK_ICON} Remote firewall setup completed on $IP${RESET}"
         fi
@@ -283,8 +283,9 @@ if [ "$MASTER" == "true" ]; then
     done
 fi
 
-wait
 
 if [ "$DRY_RUN" == "false" ] && [ "$(is_master)" == "true" ]; then
     echo -e "${GREEN}${CHECK_ICON} Cluster setup completed. Run 'qtools cluster-start' or 'qtools start' to start the cluster.${RESET}"
 fi
+
+wait
