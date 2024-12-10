@@ -12,69 +12,36 @@
 # Get the total number of CPU threads
 total_threads=$(nproc)
 
-# Get the current max_threads setting from the config file
-current_setting=$(yq '.service.max_threads' "$QTOOLS_CONFIG_FILE")
 
-# Function to compare current setting with input
-compare_setting() {
-    local input=$1
-    if [[ $input == "auto" || $input == "0" ]]; then
-        [[ $current_setting == "false" ]] && echo "same" || echo "different"
-    elif [[ $input =~ ^[0-9]+$ ]]; then
-        [[ $current_setting == "$input" ]] && echo "same" || echo "different"
-    else
-        echo "different"
-    fi
-}
-
-# Check if input is provided as an argument
-if [ $# -eq 0 ]; then
-    read -p "Enter the number of workers (4-$total_threads), 'auto', or '0': " input
-else
-    input="$1"
-fi
-
-# Compare the input with the current setting
-comparison=$(compare_setting "$input")
-
-if [[ $comparison == "same" ]]; then
-    echo "The requested setting is already in place. No changes needed."
-    exit 0
-fi
-
-# Function to validate input
-validate_input() {
-    local input=$1
-    if [[ $input == "auto" || $input == "0" ]]; then
-        echo "false"
-    elif [[ $input =~ ^[0-9]+$ && $input -ge 4 && $input -le $total_threads ]]; then
-        echo "$input"
-    else
-        echo "invalid"
-    fi
-}
-
-# Prompt for input
-if [ $# -eq 0 ]; then
-    read -p "Enter the number of workers (4-$total_threads), 'auto', or '0': " input
-else
-    input="$1"
-fi
-
-# Validate and process the input
-result=$(validate_input "$input")
-
-if [[ $result == "invalid" ]]; then
-    echo "Invalid input. Please enter a number between 4 and $total_threads, 'auto', or '0'."
+if [ $# -ne 1 ]; then
+    echo "Usage: qtools set-worker-count <number>"
+    echo "       qtools set-worker-count auto"
+    echo "       qtools set-worker-count 0"
     exit 1
-elif [[ $result == "false" ]] || [[ $result == "0" ]]; then
-    yq -i '.service.max_threads = false' "$QTOOLS_CONFIG_FILE"
-    echo "Max workers set to auto."
-else
-    yq -i ".service.max_threads = $result" "$QTOOLS_CONFIG_FILE"
-    echo "Max workers set to $result."
 fi
 
-qtools update-service
+if [ "$1" == "auto" ] || [ "$1" == "0" ]; then
+    yq -i 'del(.data_worker_service.worker_count)' $QUIL_CONFIG_FILE
+    echo "Worker count reset to automatic"
+else
+    if ! [[ "$1" =~ ^[0-9]+$ ]]; then
+        echo "Error: Worker count must be a positive integer"
+        exit 1
+    fi
+
+    if [ "$1" -lt 4 ]; then
+        echo "Error: Worker count must be at least 4"
+        exit 1
+    fi
+
+    if [ "$1" -gt "$total_threads" ]; then
+        echo "Error: Worker count cannot exceed number of CPU threads ($total_threads)"
+        exit 1
+    fi
+
+    yq -i ".data_worker_service.worker_count = $1" $QTOOLS_CONFIG_FILE
+    echo "Worker count set to $1"
+fi
+
 
 qtools restart

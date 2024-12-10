@@ -110,10 +110,10 @@ fi
 if [ "$DRY_RUN" == "false" ]; then
     if [ "$(is_master)" == "true" ]; then
         echo -e "${BLUE}${INFO_ICON} Enabling $QUIL_SERVICE_NAME on master node${RESET}"
-        sudo systemctl enable $QUIL_SERVICE_NAME
+        sudo systemctl enable $QUIL_SERVICE_NAME &> /dev/null
     else
         echo -e "${BLUE}${INFO_ICON} Disabling $QUIL_SERVICE_NAME on non-master node${RESET}"
-        sudo systemctl disable $QUIL_SERVICE_NAME
+        sudo systemctl disable $QUIL_SERVICE_NAME &> /dev/null
     fi
     echo -e "${BLUE}${INFO_ICON} Resetting any existing dataworker services${RESET}"
     
@@ -178,7 +178,7 @@ setup_remote_data_workers() {
         echo -e "${BLUE}${INFO_ICON} Configuring cluster's data workers on $IP ($USER)${RESET}"
         # Log the core count
         echo "Setting up remote server with core count: $CORE_COUNT"
-        ssh_to_remote $IP $USER $SSH_PORT "qtools cluster-setup --data-worker-count $CORE_COUNT" &> /dev/null
+        ssh_to_remote $IP $USER $SSH_PORT "qtools cluster-setup --data-worker-count $CORE_COUNT"
     else
         echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would configure cluster's data workers on $IP ($USER)${RESET}"
         echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would run setup-cluster.sh on $IP ($USER) with data worker count of $CORE_COUNT${RESET}"
@@ -191,7 +191,7 @@ copy_quil_config_to_server() {
     local SSH_PORT=$3
     if [ "$DRY_RUN" == "false" ]; then  
         echo -e "${BLUE}${INFO_ICON} Copying $QUIL_CONFIG_FILE to $IP ($REMOTE_USER)${RESET}"
-        ssh_to_remote $IP $REMOTE_USER $SSH_PORT "mkdir -p ~/ceremonyclient/node/.config" &> /dev/null
+        ssh_to_remote $IP $REMOTE_USER $SSH_PORT "mkdir -p ~/ceremonyclient/node/.config"
         scp_to_remote "$QUIL_CONFIG_FILE $REMOTE_USER@$IP:~/ceremonyclient/node/.config/config.yml" $SSH_PORT &> /dev/null
     else
         echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would copy $QUIL_CONFIG_FILE to $IP ($REMOTE_USER)${RESET}"
@@ -217,7 +217,7 @@ copy_cluster_config_to_server() {
     local SSH_PORT=$3
     if [ "$DRY_RUN" == "false" ]; then  
         echo -e "${BLUE}${INFO_ICON} Copying $QTOOLS_CONFIG_FILE to $IP ($REMOTE_USER)${RESET}"
-        ssh_to_remote $IP $REMOTE_USER $SSH_PORT "mkdir -p ~/qtools" &> /dev/null
+        ssh_to_remote $IP $REMOTE_USER $SSH_PORT "mkdir -p ~/qtools" 
         scp_to_remote "$QTOOLS_CONFIG_FILE $REMOTE_USER@$IP:~/qtools/config.yml" $SSH_PORT &> /dev/null
     else
         echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would copy $QTOOLS_CONFIG_FILE to $IP ($REMOTE_USER)${RESET}"
@@ -254,17 +254,7 @@ handle_server() {
         fi
     fi
 
-    # Remove this server's data worker addresses from the quil config
-    if [ "$DRY_RUN" == "false" ]; then
-        yq eval -i "del(.engine.dataWorkerMultiaddrs[] | select(. | contains(\"$SERVER_IP\")))" "$QUIL_CONFIG_FILE"
-        echo -e "${GREEN}${CHECK_ICON} [ MASTER ] [ $LOCAL_IP ] Removed data worker addresses for $SERVER_IP from $QUIL_CONFIG_FILE${RESET}"
-    else
-        echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would remove data worker addresses for $SERVER_IP from $QUIL_CONFIG_FILE${RESET}"
-    fi
-
-    
-
-    echo -e "${BLUE}${INFO_ICON} Configuring server $REMOTE_USER@$IP with $CORE_COUNT data workers${RESET}"
+    echo -e "${BLUE}${INFO_ICON} Configuring server $REMOTE_USER@$SERVER_IP with $CORE_COUNT data workers${RESET}"
 
     if [ "$IS_LOCAL_SERVER" == "false" ]; then
         copy_quil_config_to_server "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" 

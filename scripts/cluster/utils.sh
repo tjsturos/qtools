@@ -151,11 +151,11 @@ enable_local_data_worker_services() {
     local START_CORE_INDEX=$1
     local END_CORE_INDEX=$2
     # start the master node
-    bash -c "sudo systemctl enable $QUIL_DATA_WORKER_SERVICE_NAME\@{$START_CORE_INDEX..$END_CORE_INDEX}"
+    bash -c "sudo systemctl enable $QUIL_DATA_WORKER_SERVICE_NAME\@{$START_CORE_INDEX..$END_CORE_INDEX}" &> /dev/null
 }
 
 disable_local_data_worker_services() {
-    bash -c "sudo systemctl disable $QUIL_DATA_WORKER_SERVICE_NAME@.service"
+    bash -c "sudo systemctl disable $QUIL_DATA_WORKER_SERVICE_NAME@.service" &> /dev/null
 }
 
 start_local_data_worker_services() {
