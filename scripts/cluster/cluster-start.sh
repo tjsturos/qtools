@@ -2,7 +2,7 @@
 DRY_RUN=false
 DATA_WORKER_COUNT=$(yq eval ".service.clustering.local_data_worker_count" $QTOOLS_CONFIG_FILE)
 LOCAL_ONLY=$(yq eval ".service.clustering.local_only" $QTOOLS_CONFIG_FILE)
-
+IMMEDIATE_RESTART=true
 
 LOCAL_IP=$(get_local_ip)
 
@@ -19,6 +19,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --dry-run)
             DRY_RUN=true
+            shift
+            ;;
+        --wait)
+            IMMEDIATE_RESTART=false
             shift
             ;;
         *)
@@ -53,13 +57,15 @@ if [ "$(is_master)" == "true" ]; then
     if systemctl is-active $MASTER_SERVICE_NAME >/dev/null 2>&1; then
         echo -e "${BLUE}${INFO_ICON} Master service is running, restarting...${RESET}"
         # Wait for proof submission before restarting
-        echo -e "${BLUE}${INFO_ICON} Waiting for current proof to complete...${RESET}"
-        while read -r line; do
-            if [[ $line =~ "submitting data proof" ]] || [[ $line =~ "workers not yet available for proving" ]]; then
-                echo -e "${GREEN}${CHECK_ICON} Proof submission detected or workers not available, proceeding with restart${RESET}"
-                break
-            fi
-        done < <(journalctl -u $MASTER_SERVICE_NAME -f -n 0)
+        if [ "$IMMEDIATE_RESTART" == "false" ]; then
+            echo -e "${BLUE}${INFO_ICON} Waiting for current proof to complete...${RESET}"
+            while read -r line; do
+                if [[ $line =~ "submitting data proof" ]] || [[ $line =~ "workers not yet available for proving" ]]; then
+                    echo -e "${GREEN}${CHECK_ICON} Proof submission detected or workers not available, proceeding with restart${RESET}"
+                    break
+                fi
+            done < <(journalctl -u $MASTER_SERVICE_NAME -f -n 0)
+        fi
         sudo systemctl restart $MASTER_SERVICE_NAME
     else
         echo -e "${BLUE}${INFO_ICON} Starting master service...${RESET}"
