@@ -226,9 +226,7 @@ copy_cluster_config_to_server() {
 
 handle_server() {
     local index=$1
-    echo "INDEX: $index"
     local SERVER=$(yq eval ".service.clustering.servers[$index]" $QTOOLS_CONFIG_FILE)
-    echo "SERVER: $SERVER"
     local SERVER_IP=$(echo "$SERVER" | yq eval '.ip' -)
     local REMOTE_USER=$(echo "$SERVER" | yq eval ".user // \"$DEFAULT_USER\"" -)
     local SSH_PORT=$(echo "$SERVER" | yq eval ".ssh_port // \"$DEFAULT_SSH_PORT\"" -)
