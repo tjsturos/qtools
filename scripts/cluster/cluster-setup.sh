@@ -261,13 +261,10 @@ handle_server() {
 
     # Remove this server's data worker addresses from the quil config
     if [ "$DRY_RUN" == "false" ]; then
-        for ((i=0; i<$CORE_COUNT; i++)); do
-            local addr="/ip4/$SERVER_IP/tcp/$((BASE_PORT + $i))"
-            yq eval -i "del(.engine.dataWorkerMultiaddrs[] | select(. == \"$addr\"))" "$QUIL_CONFIG_FILE"
-        done
-        echo -e "${GREEN}${CHECK_ICON} Removed data worker addresses for $SERVER_IP from $QUIL_CONFIG_FILE${RESET}"
+        yq eval -i "del(.engine.dataWorkerMultiaddrs[] | select(. | contains(\"/ip4/$SERVER_IP/\")))" "$QUIL_CONFIG_FILE"
+        echo -e "${GREEN}${CHECK_ICON} [ MASTER ] [ $LOCAL_IP ] Removed data worker addresses for $SERVER_IP from $QUIL_CONFIG_FILE${RESET}"
     else
-        echo -e "${BLUE}${INFO_ICON} [DRY RUN] Would remove data worker addresses for $SERVER_IP from $QUIL_CONFIG_FILE${RESET}"
+        echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would remove data worker addresses for $SERVER_IP from $QUIL_CONFIG_FILE${RESET}"
     fi
 
     # Update the quil config with data worker addresses for this server
@@ -276,6 +273,12 @@ handle_server() {
             local addr="/ip4/$SERVER_IP/tcp/$((BASE_PORT + $i))"
             yq eval -i ".engine.dataWorkerMultiaddrs += \"$addr\"" "$QUIL_CONFIG_FILE"
         done
+        ADDRESS_COUNT=$(cat $QUIL_CONFIG_FILE | grep "$SERVER_IP" | wc -l)
+        if [ "$ADDRESS_COUNT" -eq "$CORE_COUNT" ]; then
+            echo -e "${GREEN}${CHECK_ICON} [ MASTER ] [ $LOCAL_IP ] Added $ADDRESS_COUNT data worker addresses for $SERVER_IP to $QUIL_CONFIG_FILE${RESET}"
+        else
+            echo -e "${RED}${WARNING_ICON} [ MASTER ] [ $LOCAL_IP ] Failed to add $CORE_COUNT data worker addresses for $SERVER_IP to $QUIL_CONFIG_FILE${RESET}"
+        fi
     else
         echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would add $CORE_COUNT data worker addresses for $SERVER_IP to $QUIL_CONFIG_FILE${RESET}"
     fi
