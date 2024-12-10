@@ -2,7 +2,7 @@
 
 # HELP: Stops and then starts the node application service, effectively a restart.
 # Usage: qtools restart
-
+CLUSTERING_IS_ENABLED=$(yq eval ".service.clustering.enabled" $QTOOLS_CONFIG_FILE)
 WAIT=false
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -11,6 +11,7 @@ while [[ $# -gt 0 ]]; do
             WAIT=true
             shift
             ;;
+        
         *)
             echo "Unknown option: $1"
             exit 1
@@ -28,6 +29,9 @@ if [ "$WAIT" == "true" ]; then
         fi
     done < <(journalctl -u $QUIL_SERVICE_NAME -f -n 0)
     sudo systemctl restart $QUIL_SERVICE_NAME
+    if [ "$CLUSTERING_IS_ENABLED" == "true" ]; then
+        restart_cluster_data_workers
+    fi
 else
     sudo systemctl restart $QUIL_SERVICE_NAME
 fi
