@@ -256,7 +256,7 @@ handle_server() {
 
     # Remove this server's data worker addresses from the quil config
     if [ "$DRY_RUN" == "false" ]; then
-        yq eval -i "del(.engine.dataWorkerMultiaddrs[] | select(. | contains(\"/ip4/$SERVER_IP/\")))" "$QUIL_CONFIG_FILE"
+        yq eval -i "del(.engine.dataWorkerMultiaddrs[] | select(. | contains(\"$SERVER_IP\")))" "$QUIL_CONFIG_FILE"
         echo -e "${GREEN}${CHECK_ICON} [ MASTER ] [ $LOCAL_IP ] Removed data worker addresses for $SERVER_IP from $QUIL_CONFIG_FILE${RESET}"
     else
         echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would remove data worker addresses for $SERVER_IP from $QUIL_CONFIG_FILE${RESET}"
@@ -308,7 +308,7 @@ if [ "$MASTER" == "true" ]; then
     server_count=$(echo "$servers" | yq eval '. | length' -)
 
     for ((server_index=0; server_index<$server_count; server_index++)); do
-        handle_server "$server_index" &
+        handle_server "$server_index" 
     done
 fi
 
