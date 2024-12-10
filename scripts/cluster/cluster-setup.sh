@@ -274,7 +274,7 @@ handle_server() {
             if [ "$ADDRESS_COUNT" -eq "$CORE_COUNT" ]; then
                 echo -e "${GREEN}${CHECK_ICON} [ MASTER ] [ $LOCAL_IP ] Added $ADDRESS_COUNT data worker addresses for $SERVER_IP to $QUIL_CONFIG_FILE${RESET}"
             else
-                echo -e "${RED}${WARNING_ICON} [ MASTER ] [ $LOCAL_IP ] Failed to add $CORE_COUNT data worker addresses for $SERVER_IP to $QUIL_CONFIG_FILE${RESET}"
+                echo -e "${RED}${WARNING_ICON} [ MASTER ] [ $LOCAL_IP ] Failed to add $CORE_COUNT data worker addresses for $SERVER_IP to $QUIL_CONFIG_FILE ($ADDRESS_COUNT found) ${RESET}"
             fi
         else
             echo -e "${BLUE}${INFO_ICON} [ MASTER ] [ $LOCAL_IP ] No data worker addresses to add for $SERVER_IP${RESET}"
