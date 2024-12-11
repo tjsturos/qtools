@@ -29,13 +29,15 @@ if [ "$WAIT" == "true" ]; then
             break
         fi
     done < <(journalctl -u $QUIL_SERVICE_NAME -f -n 0)
-    sudo systemctl restart $QUIL_SERVICE_NAME
     if [ "$CLUSTERING_IS_ENABLED" == "true" ]; then
         restart_cluster_data_workers
+        wait
     fi
+    sudo systemctl restart $QUIL_SERVICE_NAME
 else
-    sudo systemctl restart $QUIL_SERVICE_NAME
     if [ "$CLUSTERING_IS_ENABLED" == "true" ]; then
         restart_cluster_data_workers
+        wait
     fi
+    sudo systemctl restart $QUIL_SERVICE_NAME
 fi
