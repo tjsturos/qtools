@@ -4,6 +4,7 @@
 # Usage: qtools restart
 CLUSTERING_IS_ENABLED=$(yq eval ".service.clustering.enabled" $QTOOLS_CONFIG_FILE)
 WAIT=false
+DRY_RUN=false
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
