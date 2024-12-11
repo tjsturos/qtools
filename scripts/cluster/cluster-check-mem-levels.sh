@@ -29,22 +29,20 @@ check_mem_levels() {
     for ((i=0; i<server_count; i++)); do
         local server=$(echo "$servers" | yq eval ".[$i]" -)
         local server_ip=$(echo "$server" | yq eval '.ip' -)
-        
-        if [ "$server_ip" == "$ip" ]; then
-            local remote_user=$(echo "$server" | yq eval ".user // \"$DEFAULT_USER\"" -)
-            local ssh_port=$(echo "$server" | yq eval ".ssh_port // \"$DEFAULT_SSH_PORT\"" -)
-            if ! echo "$(hostname -I)" | grep -q "$ip"; then
-                echo "Running $command on $ip ($remote_user)"
+        local remote_user=$(echo "$server" | yq eval ".user // \"$DEFAULT_USER\"" -)
+        local ssh_port=$(echo "$server" | yq eval ".ssh_port // \"$DEFAULT_SSH_PORT\"" -)
 
-                local mem_usage=$(ssh_to_remote $ip $remote_user $ssh_port "qtools memory-usage")
-                echo "Memory usage for $ip: $mem_usage%"
-                if [ "$mem_usage" -gt $THRESHOLD ]; then
-                    echo "Memory usage is too high, restarting data workers for $ip"
+        if ! echo "$(hostname -I)" | grep -q "$server_ip"; then
+            echo "Running $command on $ip ($remote_user)"
 
-                    restart_server_data_workers $ip $remote_user $ssh_port &
-                else
-                    echo "Memory usage is too low (< $THRESHOLD%), skipping restart for $ip"
-                fi
+            local mem_usage=$(ssh_to_remote $ip $remote_user $ssh_port "qtools memory-usage")
+            echo "Memory usage for $ip: $mem_usage%"
+            if [ "$mem_usage" -gt $THRESHOLD ]; then
+                echo "Memory usage is too high, restarting data workers for $ip"
+
+                restart_server_data_workers $server_ip $remote_user $ssh_port &
+            else
+                echo "Memory usage is too low (< $THRESHOLD%), skipping restart for $server_ip"
             fi
         fi
     done
