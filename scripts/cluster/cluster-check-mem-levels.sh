@@ -3,12 +3,15 @@
 
 source $QTOOLS_PATH/scripts/cluster/utils.sh
 
+THRESHOLD=$(yq eval '.scheduled_tasks.cluster.memory_check.threshold // 90' $QTOOLS_CONFIG_FILE)
+SERVERS_RESTARTED=()
 
 restart_server_data_workers() {
     local ip=$1
     local remote_user=$2
     local ssh_port=$3
-    
+    SERVERS_RESTARTED+=($ip)
+    echo "Waiting for proof submission or workers not available to restart data workers for $ip"
     while read -r line; do
         if [[ $line =~ "submitting data proof" ]] || [[ $line =~ "workers not yet available for proving" ]]; then
             echo -e "${GREEN}${CHECK_ICON} Proof submission detected or workers not available, proceeding with restart${RESET}"
@@ -34,11 +37,13 @@ check_mem_levels() {
                 echo "Running $command on $ip ($remote_user)"
 
                 local mem_usage=$(ssh_to_remote $ip $remote_user $ssh_port "qtools memory-usage")
-
-                if [ "$mem_usage" -gt 90 ]; then
+                echo "Memory usage for $ip: $mem_usage%"
+                if [ "$mem_usage" -gt $THRESHOLD ]; then
                     echo "Memory usage is too high, restarting data workers for $ip"
 
                     restart_server_data_workers $ip $remote_user $ssh_port &
+                else
+                    echo "Memory usage is too low (< $THRESHOLD%), skipping restart for $ip"
                 fi
             fi
         fi
@@ -46,3 +51,12 @@ check_mem_levels() {
 }
 
 check_mem_levels
+
+wait
+if [ ${#SERVERS_RESTARTED[@]} -gt 0 ]; then
+    echo "Restarted ${#SERVERS_RESTARTED[@]} servers: ${SERVERS_RESTARTED[@]}"
+else
+    echo "No servers restarted"
+fi
+
+
