@@ -4,7 +4,7 @@ release_version: 1.4.19.1
 current_node_version: 1.4.19.1
 current_qclient_version: 1.4.19.1
 os_arch: linux-amd64
-qtools_version: 14
+qtools_version: 15
 qclient_cli_name: qclient
 ssh:
     allow_from_ip: false
@@ -42,6 +42,7 @@ scheduled_tasks:
             enabled: false
             cron_expression: ""
             memory_threshold: 80
+            restart_master: false
     backup:
         enabled: true
         cron_expression: ""

@@ -4,6 +4,7 @@
 source $QTOOLS_PATH/scripts/cluster/utils.sh
 
 THRESHOLD=$(yq eval '.scheduled_tasks.cluster.memory_check.threshold // 90' $QTOOLS_CONFIG_FILE)
+RESTART_MASTER=$(yq eval '.scheduled_tasks.cluster.memory_check.restart_master // false' $QTOOLS_CONFIG_FILE)
 SERVERS_RESTARTED=()
 
 restart_server_data_workers() {
@@ -50,11 +51,13 @@ check_mem_levels() {
 
 check_mem_levels
 
-wait
 if [ ${#SERVERS_RESTARTED[@]} -gt 0 ]; then
     echo "Restarted ${#SERVERS_RESTARTED[@]} servers: ${SERVERS_RESTARTED[@]}"
+    if [ "$RESTART_MASTER" == "true" ] && [ "$(is_master)" == "true" ]; then
+        echo "Restarting master node"
+        sudo systemctl restart $MASTER_SERVICE_NAME
+    fi
+    
 else
     echo "No servers restarted"
 fi
-
-
