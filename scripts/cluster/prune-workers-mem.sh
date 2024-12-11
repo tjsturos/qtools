@@ -9,7 +9,7 @@ MEM_THRESHOLD=200
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
-        --threshold)
+        --threshold|-t)
             if [[ $2 =~ ^[0-9]+$ ]]; then
                 MEM_THRESHOLD=$2
                 shift 2
