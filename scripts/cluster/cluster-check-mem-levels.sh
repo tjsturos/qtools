@@ -34,15 +34,13 @@ check_mem_levels() {
         local ssh_port=$(echo "$server" | yq eval ".ssh_port // \"$DEFAULT_SSH_PORT\"" -)
 
         if ! echo "$(hostname -I)" | grep -q "$server_ip"; then
-            echo "Running 'qtools memory-usage' on $server_ip ($remote_user)"
-
             local mem_usage=$(ssh_to_remote $server_ip $remote_user $ssh_port "qtools memory-usage")
-
+            
             if (( $(echo "$mem_usage > $THRESHOLD" | bc -l) )); then
                 echo "Memory usage is greater than $THRESHOLD%, restarting data workers"
                 restart_server_data_workers $server_ip $remote_user $ssh_port &
             else
-                echo "Memory usage ($mem_usage) is too low (< $THRESHOLD%), skipping restart for $server_ip"
+                echo "Memory usage is acceptable ($mem_usage%<$THRESHOLD%), skipping restart for $server_ip"
             fi
         fi
     done
