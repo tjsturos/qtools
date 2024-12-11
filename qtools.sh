@@ -135,10 +135,11 @@ export OS_ARCH="$(get_os_arch)"
 
 # Check if the service file exists, if not, run "qtools update-service"
 if [ ! -f "$QUIL_SERVICE_FILE" ] && [ "$1" != "update-service" ]; then
-  if [ "$IS_CLUSTERING_ENABLED" == "true" ] && [ "$IS_MASTER" == "true" ]; then
-    log "Service file not found. Running 'qtools update-service'..."
-    log "Copying service file to $SYSTEMD_SERVICE_PATH..."
-    qtools update-service
+  if [ "$IS_CLUSTERING_ENABLED" == "true" ]; then
+    if [ "$IS_MASTER" == "true" ] || [ ! -f $QUIL_DATA_WORKER_SERVICE_FILE ]; then
+      log "Service file not found. Running 'qtools update-service'..."
+      log "Copying service file to $SYSTEMD_SERVICE_PATH..."
+      qtools update-service
   fi
 fi
 
