@@ -34,4 +34,7 @@ if [ "$WAIT" == "true" ]; then
     fi
 else
     sudo systemctl restart $QUIL_SERVICE_NAME
+    if [ "$CLUSTERING_IS_ENABLED" == "true" ]; then
+        restart_cluster_data_workers
+    fi
 fi
