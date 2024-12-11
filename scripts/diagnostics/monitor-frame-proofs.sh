@@ -22,9 +22,14 @@ PRINT_QUIL=true
 UPDATE_INTERVAL=25 # Default update interval in seconds
 AUTO_RESTART=false
 SHOW_FRAME_LINES=false
+PUBLIC_RPC=""
 # Parse command line args
 while [[ $# -gt 0 ]]; do
   case $1 in
+    -p|--public-rpc)
+      PUBLIC_RPC="true"
+      shift
+      ;;
     -l|--limit)
       LIMIT="$2"
       shift 2
@@ -115,7 +120,7 @@ display_stats() {
                 reward=$(echo "$line" | grep -o '[0-9.]\+[[:space:]]*QUIL' | grep -o '[0-9.]\+')
                 frame_data[$frame_num,reward]="$reward"
             fi
-        done < <(qclient token coins metadata 2>/dev/null)
+        done < <(qclient token coins metadata ${PUBLIC_RPC:+--public-rpc} 2>/dev/null)
     fi
 
     total_duration=0
