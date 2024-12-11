@@ -28,19 +28,28 @@ done
 
 
 # Initialize counter for workers above threshold
-
 workers_to_restart=()
+count=0
 
 for worker in $active_workers; do
     # Get memory usage in KB for the service
     mem_usage=$(ps -o rss= -p $(systemctl show -p MainPID --value "$worker") | tr -d ' ')
     
     if [ -n "$mem_usage" ] && [ "$mem_usage" -gt "$((MEM_THRESHOLD * 1024))" ]; then
-        echo -e "${BLUE}${INFO_ICON} Restarting $worker due to high memory usage (${mem_usage}KB)${RESET}"
         workers_to_restart+=("$worker")
+        
+        # Once we hit 10 workers, restart them and clear the array
+        if [ ${#workers_to_restart[@]} -eq 10 ]; then
+            echo -e "${BLUE}${INFO_ICON} Restarting ${#workers_to_restart[@]} workers due to high memory usage${RESET}"
+            count=$((count + ${#workers_to_restart[@]}))
+            sudo systemctl restart "${workers_to_restart[@]}"
+            workers_to_restart=()
+        fi
     fi
 done
 
-sudo systemctl restart "${workers_to_restart[@]}"
+
 
 echo -e "${BLUE}${INFO_ICON} Total workers restarted due to high memory usage: ${#workers_to_restart}${RESET}"
+
+unset workers_to_restart
