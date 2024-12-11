@@ -3,8 +3,8 @@
 # Get list of active dataworker services
 active_workers=$(systemctl list-units --type=service --state=active | grep "dataworker@" | awk '{print $1}')
 
-# Memory threshold in KB (200MB = 204800KB)
-MEM_THRESHOLD=204800
+# Memory threshold in MB (default 200MB)
+MEM_THRESHOLD=200
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -14,13 +14,13 @@ while [[ $# -gt 0 ]]; do
                 MEM_THRESHOLD=$2
                 shift 2
             else
-                echo "Error: Threshold must be a number in KB"
+                echo "Error: Threshold must be a number in MB"
                 exit 1
             fi
             ;;
         *)
             echo "Unknown option: $1"
-            echo "Usage: $0 [--threshold <memory_in_kb>]"
+            echo "Usage: $0 [--threshold <memory_in_mb>]"
             exit 1
             ;;
     esac
@@ -35,7 +35,7 @@ for worker in $active_workers; do
     # Get memory usage in KB for the service
     mem_usage=$(ps -o rss= -p $(systemctl show -p MainPID --value "$worker") | tr -d ' ')
     
-    if [ -n "$mem_usage" ] && [ "$mem_usage" -gt "$MEM_THRESHOLD" ]; then
+    if [ -n "$mem_usage" ] && [ "$mem_usage" -gt "$((MEM_THRESHOLD * 1024))" ]; then
         echo -e "${BLUE}${INFO_ICON} Restarting $worker due to high memory usage (${mem_usage}KB)${RESET}"
         workers_to_restart+=("$worker")
     fi
