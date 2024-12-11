@@ -140,6 +140,7 @@ if [ ! -f "$QUIL_SERVICE_FILE" ] && [ "$1" != "update-service" ]; then
       log "Service file not found. Running 'qtools update-service'..."
       log "Copying service file to $SYSTEMD_SERVICE_PATH..."
       qtools update-service
+    fi
   fi
 fi
 
