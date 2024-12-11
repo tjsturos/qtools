@@ -146,13 +146,13 @@ createServiceIfNone() {
         echo "$SERVICE_CONTENT" | sudo tee "$SERVICE_FILE" > /dev/null
     fi
 }
-
+echo "Clustering: $IS_CLUSTER_ENABLED, IS MASTER: $IS_MASTER"
 # update normal service
 if [ "$IS_CLUSTERING_ENABLED" == "true" ]; then
     if [ "$IS_MASTER" == "true" ]; then
         createServiceIfNone 
         updateServiceBinary
-    else
+    elif [ -f $SERVICE_FILE ]; then
         sudo rm $SERVICE_FILE
     fi
 else
