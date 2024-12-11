@@ -17,9 +17,6 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-
-
-
 if [ "$IS_CLUSTERING_ENABLED" == "true" ]; then
     if [ "$IS_MASTER" == "true" ]; then
         sudo systemctl status $QUIL_SERVICE_NAME.service --no-pager
