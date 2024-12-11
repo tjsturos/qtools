@@ -4,7 +4,7 @@ release_version: 1.4.19.1
 current_node_version: 1.4.19.1
 current_qclient_version: 1.4.19.1
 os_arch: linux-amd64
-qtools_version: 15
+qtools_version: 16
 qclient_cli_name: qclient
 ssh:
     allow_from_ip: false
@@ -36,11 +36,16 @@ service:
         servers: []
     args: "" # args to be passed into the main process: e.g. node-1.4.19.1-linux-amd64 --debug
     max_threads: false
+data_worker_service:
+    worker_count: 0
+    base_port: 40000
+    base_index: 1
 scheduled_tasks:
     cluster:
         memory_check:
             enabled: false
             cron_expression: ""
+            restart_workers: true
             memory_threshold: 80
             restart_master: false
     backup:

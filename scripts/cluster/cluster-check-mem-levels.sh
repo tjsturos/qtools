@@ -5,6 +5,7 @@ source $QTOOLS_PATH/scripts/cluster/utils.sh
 
 THRESHOLD=$(yq eval '.scheduled_tasks.cluster.memory_check.threshold // 90' $QTOOLS_CONFIG_FILE)
 RESTART_MASTER=$(yq eval '.scheduled_tasks.cluster.memory_check.restart_master // false' $QTOOLS_CONFIG_FILE)
+RESTART_WORKERS=$(yq eval '.scheduled_tasks.cluster.memory_check.restart_workers // true' $QTOOLS_CONFIG_FILE)
 SERVERS_RESTARTED=()
 
 restart_server_data_workers() {
@@ -12,14 +13,17 @@ restart_server_data_workers() {
     local remote_user=$2
     local ssh_port=$3
     SERVERS_RESTARTED+=($ip)
-    echo "Waiting for proof submission or workers not available to restart data workers for $ip"
-    while read -r line; do
-        if [[ $line =~ "submitting data proof" ]] || [[ $line =~ "workers not yet available for proving" ]]; then
-            echo -e "${GREEN}${CHECK_ICON} Proof submission detected or workers not available, proceeding with restart${RESET}"
-            break
-        fi
-    done < <(journalctl -u $QUIL_SERVICE_NAME -f -n 0)
-    ssh_to_remote $ip $remote_user $ssh_port "qtools refresh-data-workers" &
+
+    if [ "$RESTART_WORKERS" == "true" ]; then
+        echo "Waiting for proof submission or workers not available to restart data workers for $ip"
+        while read -r line; do
+            if [[ $line =~ "submitting data proof" ]] || [[ $line =~ "workers not yet available for proving" ]]; then
+                echo -e "${GREEN}${CHECK_ICON} Proof submission detected or workers not available, proceeding with restart${RESET}"
+                break
+            fi
+        done < <(journalctl -u $QUIL_SERVICE_NAME -f -n 0)
+        ssh_to_remote $ip $remote_user $ssh_port "qtools refresh-data-workers" &
+    fi
 }
 
 check_mem_levels() {
@@ -35,7 +39,7 @@ check_mem_levels() {
 
         if ! echo "$(hostname -I)" | grep -q "$server_ip"; then
             local mem_usage=$(ssh_to_remote $server_ip $remote_user $ssh_port "qtools memory-usage")
-            
+
             if (( $(echo "$mem_usage > $THRESHOLD" | bc -l) )); then
                 echo "Memory usage is greater than $THRESHOLD%, restarting data workers"
                 restart_server_data_workers $server_ip $remote_user $ssh_port &
