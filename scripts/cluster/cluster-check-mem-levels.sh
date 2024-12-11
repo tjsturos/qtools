@@ -38,8 +38,12 @@ check_mem_levels() {
 
             local mem_usage=$(ssh_to_remote $server_ip $remote_user $ssh_port "qtools memory-usage")
             echo "Memory usage for $server_ip: $mem_usage%"
-            if [ "$mem_usage" -gt $THRESHOLD ]; then
-                echo "Memory usage is too high, restarting data workers for $server_ip"
+
+            if (( $(echo "$mem_usage > $THRESHOLD" | bc -l) )); then
+                echo "Memory usage is greater than $THRESHOLD%, restarting data workers"
+                restart_server_data_workers $server_ip $remote_user $ssh_port &
+            fi
+        fi
 
                 restart_server_data_workers $server_ip $remote_user $ssh_port &
             else
