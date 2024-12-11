@@ -42,4 +42,6 @@ fi
 # Update the config file
 yq -i '.scheduled_tasks.cluster.memory_check.enabled = '$NEW_MODE'' $QTOOLS_CONFIG_FILE
 
+qtools update-cron
+
 log "Cluster memory check has been set to: $NEW_MODE"
