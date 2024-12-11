@@ -115,7 +115,7 @@ source $QTOOLS_PATH/utils/index.sh
 
 export QUIL_SERVICE_NAME="$(yq '.service.file_name // "ceremonyclient"' $QTOOLS_CONFIG_FILE)"
 export QUIL_SERVICE_FILE="$SYSTEMD_SERVICE_PATH/$QUIL_SERVICE_NAME.service"
-export IS_CLUSTERING_ENABLED="$(yq '.service.clustering.enabled // \"false\"' $QTOOLS_CONFIG_FILE)" 
+export IS_CLUSTERING_ENABLED="$(yq '.service.clustering.enabled // "false"' $QTOOLS_CONFIG_FILE)" 
 export IS_MASTER="$(is_master)"
 export QUIL_DATA_WORKER_SERVICE_NAME="$(yq '.service.clustering.data_worker_service_name // "dataworker"' $QTOOLS_CONFIG_FILE)"
 export QUIL_DATA_WORKER_SERVICE_FILE="$SYSTEMD_SERVICE_PATH/$QUIL_DATA_WORKER_SERVICE_NAME@.service"
