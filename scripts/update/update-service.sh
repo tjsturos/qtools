@@ -148,8 +148,18 @@ createServiceIfNone() {
 }
 
 # update normal service
-createServiceIfNone 
-updateServiceBinary
+if [ "$IS_CLUSTERING_ENABLED" == "true" ]; then
+    if [ "$IS_MASTER" == "true" ]; then
+        createServiceIfNone 
+        updateServiceBinary
+    else
+        sudo rm $SERVICE_FILE
+    fi
+else
+    createServiceIfNone 
+    updateServiceBinary
+fi
+
 updateDataWorkerServiceBinary
 sudo systemctl daemon-reload
 
