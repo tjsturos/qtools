@@ -2,19 +2,21 @@
 
 # Read the current configuration
 CONFIG=$(yq eval . $QTOOLS_CONFIG_FILE)
-
 # Get current state of connection checks
 CURRENT_STATE=$(echo "$CONFIG" | yq eval '.scheduled_tasks.cluster.auto_reconnect.enabled // "false"' -)
+
+# Initialize NEW_STATE to handle direct setting rather than toggling
+NEW_STATE="$CURRENT_STATE"
 
 # Check for --on or --off flags
 while [[ $# -gt 0 ]]; do
     case $1 in
         --on)
-            CURRENT_STATE="false" # Setting to false so it will be toggled to true
+            NEW_STATE="true"
             shift
             ;;
         --off)
-            CURRENT_STATE="true" # Setting to true so it will be toggled to false
+            NEW_STATE="false"
             shift
             ;;
         *)
@@ -25,18 +27,16 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-
+# Check if clustering is enabled
 if [ "$IS_CLUSTERING_ENABLED" != "true" ]; then
     echo "Clustering is not enabled. This feature is for clusters only."
-    CURRENT_STATE="true"
+    NEW_STATE="false"
 fi
 
-# Toggle the state
-if [ "$CURRENT_STATE" = "true" ]; then
-    NEW_STATE="false"
+# Output status message based on the new state
+if [ "$NEW_STATE" = "true" ]; then
     echo "Enabling cluster connection checks..."
 else
-    NEW_STATE="true" 
     echo "Disabling cluster connection checks..."
 fi
 
