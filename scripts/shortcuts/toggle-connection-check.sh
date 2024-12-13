@@ -43,6 +43,6 @@ fi
 # Update the configuration
 yq eval -i ".scheduled_tasks.cluster.auto_reconnect.enabled = $NEW_STATE" $QTOOLS_CONFIG_FILE
 
-echo "Cluster connection checks are now $([ "$NEW_STATE" = "true" ] && echo "disabled" || echo "enabled")"
+echo "Cluster connection checks are now $([ "$NEW_STATE" = "true" ] && echo "enabled" || echo "disabled")"
 qtools update-cron
 
