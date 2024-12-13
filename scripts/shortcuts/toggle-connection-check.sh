@@ -14,10 +14,18 @@ NEW_STATE=$([ "$CURRENT_STATE" = "true" ] && echo "false" || echo "true")
 while [[ $# -gt 0 ]]; do
     case $1 in
         --on)
+            if [ "$CURRENT_STATE" = "true" ]; then
+                echo "Connection checks are already enabled"
+                exit 0
+            fi
             NEW_STATE="true"
             shift
             ;;
         --off)
+            if [ "$CURRENT_STATE" = "false" ]; then
+                echo "Connection checks are already disabled"
+                exit 0
+            fi
             NEW_STATE="false"
             shift
             ;;
