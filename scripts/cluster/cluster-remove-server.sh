@@ -1,4 +1,5 @@
 #!/bin/bash
+source $QTOOLS_PATH/scripts/cluster/utils.sh
 
 # Check if an IP address was provided
 if [ $# -eq 0 ]; then
@@ -33,5 +34,5 @@ fi
 # If this is the master node, update the configuration on all remaining servers
 if [ "$(is_master)" == "true" ]; then
     echo "Updating configuration on remaining servers..."
-    qtools restart
+    qtools restart --wait
 fi
