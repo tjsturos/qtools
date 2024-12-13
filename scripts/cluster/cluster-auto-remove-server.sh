@@ -26,8 +26,8 @@ fi
 # Add the server to auto_removed_servers array
 yq eval -i '.service.clustering.auto_removed_servers += ['"$SERVER_TO_MOVE"']' $QTOOLS_CONFIG_FILE
 
-# Remove the server from the servers array
-qtools cluster-remove-server "$IP_TO_REMOVE"
+# Remove the server from servers array
+yq eval -i '.service.clustering.servers = (.service.clustering.servers | map(select(.ip != "'"$IP_TO_REMOVE"'")))' $QTOOLS_CONFIG_FILE
 
 echo "Server with IP $IP_TO_REMOVE has been moved to auto_removed_servers."
 

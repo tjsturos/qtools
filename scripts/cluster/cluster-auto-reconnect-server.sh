@@ -26,11 +26,8 @@ fi
 # Add the server back to servers array
 yq eval -i '.service.clustering.servers += ['"$SERVER_TO_MOVE"']' $QTOOLS_CONFIG_FILE
 
-update_quil_config
-
 # Remove the server from auto_removed_servers array
 yq eval -i '.service.clustering.auto_removed_servers = (.service.clustering.auto_removed_servers | map(select(.ip != "'"$IP_TO_RECONNECT"'")))' $QTOOLS_CONFIG_FILE
 
-qtools restart --wait
 
 echo "Server with IP $IP_TO_RECONNECT has been moved back to active servers."

@@ -59,6 +59,17 @@ if [ "$IS_CLUSTERING_ENABLED" == "true" ] && [ "$IS_MASTER" == "true" ] || [ "$I
     append_to_file $FILE_CRON "$DIAGNOSTICS_CRON_EXPRESSION qtools run-diagnostics --auto" false
   fi
 
+  AUTO_CLUSTER_CONNECTION_CHECK=$(yq eval '.scheduled_tasks.cluster.connection_check.enabled // "false"' $QTOOLS_CONFIG_FILE)
+
+  if [ "$AUTO_CLUSTER_CONNECTION_CHECK" == "true" ]; then
+    CLUSTER_CONNECTION_CHECK_CRON_EXPRESSION=$(yq eval '.scheduled_tasks.cluster.connection_check.cron_expression' $QTOOLS_CONFIG_FILE)
+    if [ -z "$CLUSTER_CONNECTION_CHECK_CRON_EXPRESSION" ]; then
+      CLUSTER_CONNECTION_CHECK_CRON_EXPRESSION="*/2 * * * *"
+    fi
+    log "Adding cluster connection check cron expression: $CLUSTER_CONNECTION_CHECK_CRON_EXPRESSION"
+    append_to_file $FILE_CRON "$CLUSTER_CONNECTION_CHECK_CRON_EXPRESSION qtools cluster-connection-check" false
+  fi
+
   AUTO_CLUSTER_MEMORY_CHECK=$(yq eval '.scheduled_tasks.cluster.memory_check.enabled // "false"' $QTOOLS_CONFIG_FILE)
 
   if [ "$AUTO_CLUSTER_MEMORY_CHECK" == "true" ]; then

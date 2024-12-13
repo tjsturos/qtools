@@ -29,6 +29,7 @@ fi
 RETRY_INTERVAL=$(yq eval '.scheduled_tasks.cluster.auto_reconnect.interval_seconds // 20' $QTOOLS_CONFIG_FILE)
 RETRY_COUNT=$(yq eval '.scheduled_tasks.cluster.auto_reconnect.retry_count // 5' $QTOOLS_CONFIG_FILE)
 
+RECONFIGURE_MASTER=false
 # Function to retry connection with exponential backoff
 retry_connection() {
     local ip=$1
@@ -54,6 +55,7 @@ retry_connection() {
     if [ "$AUTO_REMOVE" != "true" ]; then
         echo -e "${YELLOW}${INFO_ICON} Auto-removing server $ip due to failed SSH connection${RESET}"
         qtools cluster-auto-remove-server "$ip"
+        RECONFIGURE_MASTER=true
         return 1
     fi
     echo -e "${RED}✗ Failed to connect to $ip after $RETRY_COUNT attempts${RESET}"
@@ -81,10 +83,16 @@ for ((i=0; i<server_count; i++)); do
             echo -e "${GREEN}✓ Successfully connected to $ip ($user) on port $ssh_port${RESET}"
         if [ "$SERVERS" == "auto_removed_servers" ]; then
             qtools cluster-auto-reconnect-server "$ip"
+            RECONFIGURE_MASTER=true
         fi
     else
         retry_connection "$ip" "$user" "$ssh_port" &
     fi
 done
+
+if [ "$RECONFIGURE_MASTER" == "true" ]; then
+    update_quil_config
+    qtools restart --wait
+fi
 
 wait
