@@ -90,6 +90,7 @@ check_server_array_connections() {
                 RECONFIGURE_MASTER=true
             fi
         else
+            echo -e "${RED}Failed to connect to $user@$ip:$ssh_port, going to retry..."
             retry_connection "$ip" "$user" "$ssh_port" "$SERVER_ARRAY_TO_CHECK" &
         fi
     done
