@@ -5,8 +5,6 @@ CONFIG=$(yq eval . $QTOOLS_CONFIG_FILE)
 # Get current state of connection checks
 CURRENT_STATE=$(echo "$CONFIG" | yq eval '.scheduled_tasks.cluster.auto_reconnect.enabled // "false"' -)
 
-echo "Current state of connection checks: $CURRENT_STATE"
-
 # Initialize NEW_STATE to handle direct setting rather than toggling
 NEW_STATE=$([ "$CURRENT_STATE" = "true" ] && echo "false" || echo "true")
 
