@@ -23,8 +23,19 @@ if [ -z "$SERVER_TO_MOVE" ]; then
     exit 1
 fi
 
+# Extract server details
+ip=$(echo "$SERVER_TO_MOVE" | yq eval '.ip' -)
+ssh_port=$(echo "$SERVER_TO_MOVE" | yq eval '.ssh_port' -)
+user=$(echo "$SERVER_TO_MOVE" | yq eval '.user' -)
+worker_count=$(echo "$SERVER_TO_MOVE" | yq eval '.data_worker_count' -)
+base_port=$(echo "$SERVER_TO_MOVE" | yq eval '.base_port' -)
+
 # Add the server to auto_removed_servers array
-yq eval -i '.service.clustering.auto_removed_servers += ['"$SERVER_TO_MOVE"']' $QTOOLS_CONFIG_FILE
+if [ "$worker_count" != "null" ]; then
+    yq eval -i '.service.clustering.auto_removed_servers += {"ip": "'"$ip"'", "ssh_port": '"$ssh_port"', "user": "'"$user"'", "data_worker_count": '"$worker_count"', "base_port": '"$base_port"'}' "$QTOOLS_CONFIG_FILE"
+else
+    yq eval -i '.service.clustering.auto_removed_servers += {"ip": "'"$ip"'", "ssh_port": '"$ssh_port"', "user": "'"$user"'", "base_port": '"$base_port"'}' "$QTOOLS_CONFIG_FILE"
+fi
 
 # Remove the server from servers array
 yq eval -i '.service.clustering.servers = (.service.clustering.servers | map(select(.ip != "'"$IP_TO_REMOVE"'")))' $QTOOLS_CONFIG_FILE

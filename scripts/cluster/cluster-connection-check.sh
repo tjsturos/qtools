@@ -99,9 +99,10 @@ check_server_array_connections() {
 check_server_array_connections "servers"
 check_server_array_connections "auto_removed_servers"
 
+wait
+
 if [ "$RECONFIGURE_MASTER" == "true" ]; then
+    echo -e "${YELLOW}Reconfiguring config...${RESET}"
     update_quil_config
     qtools restart --wait
 fi
-
-wait
