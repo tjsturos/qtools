@@ -105,7 +105,6 @@ wait
 
 if [ "$RECONFIGURE_MASTER" == "true" ]; then
     echo -e "${YELLOW}Reconfiguring config...${RESET}"
-    
     update_quil_config
     qtools restart --wait
 fi
