@@ -7,6 +7,7 @@ AUTO=false
 RETRY_INTERVAL=$(yq eval '.scheduled_tasks.cluster.auto_reconnect.interval_seconds // 20' $QTOOLS_CONFIG_FILE)
 RETRY_COUNT=$(yq eval '.scheduled_tasks.cluster.auto_reconnect.retry_count // 5' $QTOOLS_CONFIG_FILE)
 RECONFIGURE_MASTER=false
+DRY_RUN=false
 
 for arg in "$@"; do
     if [ "$arg" = "--auto" ]; then
@@ -104,6 +105,7 @@ wait
 
 if [ "$RECONFIGURE_MASTER" == "true" ]; then
     echo -e "${YELLOW}Reconfiguring config...${RESET}"
+    
     update_quil_config
     qtools restart --wait
 fi
