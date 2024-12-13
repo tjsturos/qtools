@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source $QTOOLS_PATH/scripts/cluster/utils.sh
+
 # Get server configurations
 servers=$(yq eval '.service.clustering.servers' $QTOOLS_CONFIG_FILE)
 server_count=$(echo "$servers" | yq eval '. | length' -)
