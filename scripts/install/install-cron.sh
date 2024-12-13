@@ -67,7 +67,7 @@ if [ "$IS_CLUSTERING_ENABLED" == "true" ] && [ "$IS_MASTER" == "true" ] || [ "$I
       CLUSTER_CONNECTION_CHECK_CRON_EXPRESSION="*/5 * * * *"
     fi
     log "Adding cluster connection check cron expression: $CLUSTER_CONNECTION_CHECK_CRON_EXPRESSION"
-    append_to_file $FILE_CRON "$CLUSTER_CONNECTION_CHECK_CRON_EXPRESSION qtools cluster-connection-check" false
+    append_to_file $FILE_CRON "$CLUSTER_CONNECTION_CHECK_CRON_EXPRESSION qtools cluster-connection-check --auto" false
   fi
 
   AUTO_CLUSTER_MEMORY_CHECK=$(yq eval '.scheduled_tasks.cluster.memory_check.enabled // "false"' $QTOOLS_CONFIG_FILE)
