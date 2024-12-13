@@ -72,10 +72,10 @@ check_server_array_connections() {
     fi
     
     for ((i=0; i<server_count; i++)); do
-        server=$(yq eval ".service.clustering.$SERVER_ARRAY_TO_CHECK[$i]" $QTOOLS_CONFIG_FILE)
-        ip=$(echo "$server" | yq eval '.ip' -)
-        user=$(echo "$server" | yq eval ".user // \"$DEFAULT_USER\"" -)
-        ssh_port=$(echo "$server" | yq eval ".ssh_port // \"$DEFAULT_SSH_PORT\"" -)
+        local server=$(yq eval ".service.clustering.$SERVER_ARRAY_TO_CHECK[$i]" $QTOOLS_CONFIG_FILE)
+        local ip=$(echo "$server" | yq eval '.ip' -)
+        local user=$(echo "$server" | yq eval ".user // \"$DEFAULT_USER\"" -)
+        local ssh_port=$(echo "$server" | yq eval ".ssh_port // \"$DEFAULT_SSH_PORT\"" -)
 
         # Skip if this is the local machine
         if echo "$(hostname -I)" | grep -q "$ip"; then
