@@ -86,3 +86,5 @@ for ((i=0; i<server_count; i++)); do
         retry_connection "$ip" "$user" "$ssh_port" &
     fi
 done
+
+wait
