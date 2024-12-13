@@ -26,6 +26,11 @@ while [[ $# -gt 0 ]]; do
 done
 
 
+if [ "$IS_CLUSTERING_ENABLED" != "true" ]; then
+    echo "Clustering is not enabled. This feature is for clusters only."
+    CURRENT_STATE="true"
+fi
+
 # Toggle the state
 if [ "$CURRENT_STATE" = "true" ]; then
     NEW_STATE="false"
