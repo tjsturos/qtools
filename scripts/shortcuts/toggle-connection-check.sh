@@ -8,7 +8,7 @@ CURRENT_STATE=$(echo "$CONFIG" | yq eval '.scheduled_tasks.cluster.auto_reconnec
 echo "Current state of connection checks: $CURRENT_STATE"
 
 # Initialize NEW_STATE to handle direct setting rather than toggling
-NEW_STATE="$CURRENT_STATE"
+NEW_STATE=$([ "$CURRENT_STATE" = "true" ] && echo "false" || echo "true")
 
 # Check for --on or --off flags
 while [[ $# -gt 0 ]]; do
