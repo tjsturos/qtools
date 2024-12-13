@@ -64,7 +64,7 @@ if [ "$IS_CLUSTERING_ENABLED" == "true" ] && [ "$IS_MASTER" == "true" ] || [ "$I
   if [ "$AUTO_CLUSTER_CONNECTION_CHECK" == "true" ]; then
     CLUSTER_CONNECTION_CHECK_CRON_EXPRESSION=$(yq eval '.scheduled_tasks.cluster.connection_check.cron_expression' $QTOOLS_CONFIG_FILE)
     if [ -z "$CLUSTER_CONNECTION_CHECK_CRON_EXPRESSION" ]; then
-      CLUSTER_CONNECTION_CHECK_CRON_EXPRESSION="*/2 * * * *"
+      CLUSTER_CONNECTION_CHECK_CRON_EXPRESSION="*/5 * * * *"
     fi
     log "Adding cluster connection check cron expression: $CLUSTER_CONNECTION_CHECK_CRON_EXPRESSION"
     append_to_file $FILE_CRON "$CLUSTER_CONNECTION_CHECK_CRON_EXPRESSION qtools cluster-connection-check" false

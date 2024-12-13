@@ -5,6 +5,8 @@ source $QTOOLS_PATH/scripts/cluster/utils.sh
 # Check for auto-remove flag
 AUTO_REMOVE=false
 SERVERS="servers"
+AUTOREMOVED_SERVERS="auto_removed_servers"
+
 for arg in "$@"; do
     if [ "$arg" = "--auto-remove" ]; then
         AUTO_REMOVE=true
@@ -65,30 +67,39 @@ retry_connection() {
 
 echo -e "${BLUE}${INFO_ICON} Checking SSH connections to all servers...${RESET}"
 
-# Loop through each server
-for ((i=0; i<server_count; i++)); do
-    server=$(yq eval ".service.clustering.servers[$i]" $QTOOLS_CONFIG_FILE)
-    ip=$(echo "$server" | yq eval '.ip' -)
-    user=$(echo "$server" | yq eval ".user // \"$DEFAULT_USER\"" -)
-    ssh_port=$(echo "$server" | yq eval ".ssh_port // \"$DEFAULT_SSH_PORT\"" -)
 
-    # Skip if this is the local machine
-    if echo "$(hostname -I)" | grep -q "$ip"; then
-        echo -e "${GREEN}✓ Local server $ip - no SSH check needed${RESET}"
-        continue
-    fi
+check_server_array_connections() {
+    local SERVER_ARRAY_TO_CHECK=$1
+    echo "Checking $SERVER_ARRAY_TO_CHECK..."
+    
+    for ((i=0; i<server_count; i++)); do
+        server=$(yq eval ".service.clustering.$SERVER_ARRAY_TO_CHECK[$i]" $QTOOLS_CONFIG_FILE)
+        ip=$(echo "$server" | yq eval '.ip' -)
+        user=$(echo "$server" | yq eval ".user // \"$DEFAULT_USER\"" -)
+        ssh_port=$(echo "$server" | yq eval ".ssh_port // \"$DEFAULT_SSH_PORT\"" -)
 
-    # Check SSH connection
-    if check_server_ssh_connection "$ip" "$user" "$ssh_port"; then
-            echo -e "${GREEN}✓ Successfully connected to $ip ($user) on port $ssh_port${RESET}"
-        if [ "$SERVERS" == "auto_removed_servers" ]; then
-            qtools cluster-auto-reconnect-server "$ip"
-            RECONFIGURE_MASTER=true
+        # Skip if this is the local machine
+        if echo "$(hostname -I)" | grep -q "$ip"; then
+            echo -e "${GREEN}✓ Local server $ip - no SSH check needed${RESET}"
+            continue
         fi
-    else
-        retry_connection "$ip" "$user" "$ssh_port" &
-    fi
-done
+
+        # Check SSH connection
+        if check_server_ssh_connection "$ip" "$user" "$ssh_port"; then
+                echo -e "${GREEN}✓ Successfully connected to $ip ($user) on port $ssh_port${RESET}"
+            if [ "$SERVER_ARRAY_TO_CHECK" == "auto_removed_servers" ]; then
+                qtools cluster-auto-reconnect-server "$ip"
+                RECONFIGURE_MASTER=true
+            fi
+        else
+            retry_connection "$ip" "$user" "$ssh_port" &
+        fi
+    done
+    echo "Done checking $SERVER_ARRAY_TO_CHECK"
+}
+
+check_server_array_connections "$SERVERS"
+check_server_array_connections "$AUTO_REMOVED_SERVERS"
 
 if [ "$RECONFIGURE_MASTER" == "true" ]; then
     update_quil_config
