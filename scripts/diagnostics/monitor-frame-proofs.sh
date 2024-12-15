@@ -135,6 +135,29 @@ display_stats() {
     output=()
     frame_outputs=()
     
+    # Sort frame numbers to calculate time between frames
+    sorted_timestamps=()
+    for frame_num in $(printf '%s\n' "${frame_numbers[@]}" | sort -n); do
+        if [[ -n "${frame_data[$frame_num,received,timestamp]}" ]]; then
+            sorted_timestamps+=(${frame_data[$frame_num,received,timestamp]})
+        fi
+    done
+
+    # Calculate average time between frames
+    total_time_between_frames=0
+    frame_intervals=0
+    for ((i=1; i<${#sorted_timestamps[@]}; i++)); do
+        time_diff=$(echo "${sorted_timestamps[$i]} - ${sorted_timestamps[$i-1]}" | bc)
+        total_time_between_frames=$(echo "$total_time_between_frames + $time_diff" | bc)
+        ((frame_intervals++))
+    done
+    
+    if [ $frame_intervals -gt 0 ]; then
+        avg_time_between_frames=$(echo "scale=2; $total_time_between_frames / $frame_intervals" | bc)
+    else
+        avg_time_between_frames=0
+    fi
+    
     for frame_num in $(printf '%s\n' "${frame_numbers[@]}" | sort -n); do
         if [[ -n "${frame_data[$frame_num,received]}" && -n "${frame_data[$frame_num,proof_started]}" && -n "${frame_data[$frame_num,proof_completed]}" ]]; then
             local duration=$(printf "%.4f" $(echo "${frame_data[$frame_num,proof_completed]} - ${frame_data[$frame_num,received]}" | bc))
@@ -217,6 +240,8 @@ display_stats() {
         output+=("")
         output+=("$(figlet -f banner "Frame ${last_frame_num}")")
         output+=("Total frames processed:           $count")
+        output+=("")
+        output+=("Average time between frames:      ${avg_time_between_frames}s")
         output+=("")
         output+=("Averages frame age (received / evaluation / proof duration / completed):")
         output+=("$avg_started / $avg_evaluation_time / $avg_duration / $avg_completed seconds")
