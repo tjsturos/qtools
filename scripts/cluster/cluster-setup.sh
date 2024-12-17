@@ -9,7 +9,7 @@ DRY_RUN=false
 LOCAL_IP=$(get_local_ip)
 LOCAL_ONLY=$(yq eval ".service.clustering.local_only" $QTOOLS_CONFIG_FILE)
 DATA_WORKER_COUNT=$(get_cluster_worker_count "$LOCAL_IP")
-
+SKIP_FIREWALL=false
 
 # Function to display usage information
 usage() {
@@ -24,7 +24,10 @@ usage() {
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
-
+        --skip-firewall)
+            SKIP_FIREWALL=true
+            shift
+            ;;
         --help)
             usage
             ;;
@@ -263,7 +266,9 @@ handle_server() {
         copy_cluster_config_to_server "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" 
         setup_remote_data_workers "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" "$CORE_COUNT" 
         # Call the function to set up the remote firewall
-        setup_remote_firewall "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" "$CORE_COUNT" 
+        if [ "$SKIP_FIREWALL" == "false" ]; then
+            setup_remote_firewall "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" "$CORE_COUNT" 
+        fi
     fi
 }
 
