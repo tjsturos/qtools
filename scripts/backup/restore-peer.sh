@@ -66,16 +66,19 @@ fi
 # Create .config directory if it doesn't exist
 mkdir -p "$QUIL_NODE_PATH/.config"
 
+REMOTE_KEY_ENCRYPTION_KEY_COMMAND="yq '.key.encryption_key' $REMOTE_DIR/config.yml"
+PEER_PRIVATE_KEY_COMMAND="yq '.p2p.private_key' $REMOTE_DIR/config.yml"
+ENCRYPTION_KEY="$(ssh -i "$SSH_KEY_PATH" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=5 "$REMOTE_USER@$REMOTE_URL" "$REMOTE_KEY_ENCRYPTION_KEY_COMMAND")"
+PEER_PRIVATE_KEY="$(ssh -i "$SSH_KEY_PATH" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=5 "$REMOTE_USER@$REMOTE_URL" "$PEER_PRIVATE_KEY_COMMAND")"
 # Perform the rsync restore for specific config files
 if rsync -avz \
     --include="keys.yml" \
-    --include="config.yml" \
-    --include="qtools-config.yml" \
     --exclude="*" \
     -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
     "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR.config/" "$QUIL_NODE_PATH/.config/"; then
+    yq -i '.key.encryption_key = env(ENCRYPTION_KEY)' $QUIL_NODE_PATH/.config/config.yml
+    yq -i '.p2p.private_key = env(PEER_PRIVATE_KEY)' $QUIL_NODE_PATH/.config/config.yml
 
-    mv $QUIL_NODE_PATH/.config/qtools-config.yml $QTOOLS_PATH/config.yml
     echo "Restore of peer config files completed successfully."
 else
     echo "Error: Restore of peer config files failed. Please check your rsync command and try again."
