@@ -66,7 +66,7 @@ fi
 # Create .config directory if it doesn't exist
 mkdir -p "$QUIL_NODE_PATH/.config"
 
-REMOTE_KEY_ENCRYPTION_KEY_COMMAND="yq '.key.encryption_key' ${REMOTE_DIR}.config/config.yml"
+REMOTE_KEY_ENCRYPTION_KEY_COMMAND="yq '.key.keyManagerFile.encryption_key' ${REMOTE_DIR}.config/config.yml"
 PEER_PRIVATE_KEY_COMMAND="yq '.p2p.private_key' ${REMOTE_DIR}.config/config.yml"
 ENCRYPTION_KEY="$(ssh -i "$SSH_KEY_PATH" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=5 "$REMOTE_USER@$REMOTE_URL" "$REMOTE_KEY_ENCRYPTION_KEY_COMMAND")"
 PEER_PRIVATE_KEY="$(ssh -i "$SSH_KEY_PATH" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=5 "$REMOTE_USER@$REMOTE_URL" "$PEER_PRIVATE_KEY_COMMAND")"
@@ -76,7 +76,7 @@ if rsync -avz \
     --exclude="*" \
     -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
     "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR.config/" "$QUIL_NODE_PATH/.config/"; then
-    yq -i ".key.encryption_key = \"$ENCRYPTION_KEY\"" $QUIL_NODE_PATH/.config/config.yml
+    yq -i ".key.keyManagerFile.encryption_key = \"$ENCRYPTION_KEY\"" $QUIL_NODE_PATH/.config/config.yml
     yq -i ".p2p.private_key = \"$PEER_PRIVATE_KEY\"" $QUIL_NODE_PATH/.config/config.yml
 
     echo "Restore of peer config files completed successfully."
