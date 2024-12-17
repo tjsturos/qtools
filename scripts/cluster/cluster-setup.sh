@@ -17,6 +17,7 @@ usage() {
     echo "  --help               Display this help message"
     echo "  --data-worker-count  Number of workers to start (default: number of CPU cores)"
     echo "  --dry-run            Dry run mode (default: false)"
+    echo "  --skip-firewall      Skip firewall setup (default: false)"
     echo "  --master             Run a master node as one of this CPU's cores"
     exit 1
 }
