@@ -76,8 +76,8 @@ if rsync -avz \
     --exclude="*" \
     -e "ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
     "$REMOTE_USER@$REMOTE_URL:$REMOTE_DIR.config/" "$QUIL_NODE_PATH/.config/"; then
-    yq -i '.key.encryption_key = env(ENCRYPTION_KEY)' $QUIL_NODE_PATH/.config/config.yml
-    yq -i '.p2p.private_key = env(PEER_PRIVATE_KEY)' $QUIL_NODE_PATH/.config/config.yml
+    yq -i ".key.encryption_key = \"$ENCRYPTION_KEY\"" $QUIL_NODE_PATH/.config/config.yml
+    yq -i ".p2p.private_key = \"$PEER_PRIVATE_KEY\"" $QUIL_NODE_PATH/.config/config.yml
 
     echo "Restore of peer config files completed successfully."
 else
