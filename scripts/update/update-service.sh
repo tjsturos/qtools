@@ -19,6 +19,8 @@ TESTNET=""
 DEBUG_MODE=""
 SKIP_SIGNATURE_CHECK=""
 IPFS_DEBUGGING=""
+GOGC=""
+GOMEMLIMIT=""
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -46,6 +48,16 @@ while [[ $# -gt 0 ]]; do
             ;;
         --ipfs-debug)
             IPFS_DEBUGGING=true
+            shift
+            ;;
+        --gogc)
+            GOGC=$2
+            shift
+            shift
+            ;;
+        --gomemlimit)
+            GOMEMLIMIT=$2
+            shift
             shift
             ;;
         *)
@@ -109,6 +121,8 @@ Restart=on-failure
 RestartSec=5s
 StartLimitBurst=5
 User=$USER
+${GOGC:+Environment=GOGC=${GOGC}}
+${GOMEMLIMIT:+Environment=GOMEMLIMIT=${GOMEMLIMIT}}
 ExecStart=${LINKED_NODE_BINARY}${TESTNET:+ --network=1}${DEBUG_MODE:+ --debug}${SKIP_SIGNATURE_CHECK:+ --signature-check=false} --core %i
 ExecStop=/bin/kill -s SIGINT \$MAINPID
 ExecReload=/bin/kill -s SIGINT \$MAINPID && ${LINKED_NODE_BINARY}${TESTNET:+ --network=1}${DEBUG_MODE:+ --debug}${SKIP_SIGNATURE_CHECK:+ --signature-check=false} --core %i
