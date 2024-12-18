@@ -22,6 +22,12 @@ usage() {
     exit 1
 }
 
+if [ "$IS_CLUSTERING_ENABLED" == "false" ]; then
+    echo -e "${RED}${WARNING_ICON} Clustering is not enabled in $QTOOLS_CONFIG_FILE${RESET}"
+    echo -e "${BLUE}${INFO_ICON} Please enable clustering in $QTOOLS_CONFIG_FILE before running this script${RESET}"
+    exit 1
+fi
+
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
