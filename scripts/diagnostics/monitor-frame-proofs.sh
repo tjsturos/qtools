@@ -181,9 +181,9 @@ display_stats() {
             last_frame_num=$frame_num
             if $SHOW_FRAME_LINES; then
                 if $PRINT_QUIL; then
-                    frame_outputs+=("$received_timestamp/$proof_completed_timestamp: Frame $frame_num (workers:$workers, ring:$ring): $received -> $proof_started -> $proof_completed (${duration}s${reward:+, $reward QUIL})")
+                    frame_outputs+=("$received_timestamp/$proof_completed_timestamp: Frame $frame_num ($ring:$workers): $received/$proof_started/$proof_completed (${duration}s${reward:+, $reward QUIL})")
                 else
-                    frame_outputs+=("$received_timestamp/$proof_completed_timestamp: Frame $frame_num (workers:$workers, ring:$ring): $received -> $proof_started -> $proof_completed (${duration}s)")
+                    frame_outputs+=("$received_timestamp/$proof_completed_timestamp: Frame $frame_num ($ring:$workers): $received/$proof_started/$proof_completed (${duration}s)")
                 fi
             fi
             
