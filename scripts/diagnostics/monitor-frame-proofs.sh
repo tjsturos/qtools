@@ -160,13 +160,13 @@ display_stats() {
     
     for frame_num in $(printf '%s\n' "${frame_numbers[@]}" | sort -n); do
         if [[ -n "${frame_data[$frame_num,received]}" && -n "${frame_data[$frame_num,proof_started]}" && -n "${frame_data[$frame_num,proof_completed]}" ]]; then
-            local duration=$(printf "%.4f" $(echo "${frame_data[$frame_num,proof_completed]} - ${frame_data[$frame_num,received]}" | bc))
+            local duration=$(printf "%.2f" $(echo "${frame_data[$frame_num,proof_completed]} - ${frame_data[$frame_num,received]}" | bc))
             local workers=${frame_data[$frame_num,proof_started,workers]}
             local ring=${frame_data[$frame_num,proof_completed,ring]}
             local received_timestamp=${frame_data[$frame_num,received,timestamp]}
-            local received=$(printf "%.4f" ${frame_data[$frame_num,received]})
-            local proof_started=$(printf "%.4f" ${frame_data[$frame_num,proof_started]})
-            local proof_completed=$(printf "%.4f" ${frame_data[$frame_num,proof_completed]})
+            local received=$(printf "%.2f" ${frame_data[$frame_num,received]})
+            local proof_started=$(printf "%.2f" ${frame_data[$frame_num,proof_started]})
+            local proof_completed=$(printf "%.2f" ${frame_data[$frame_num,proof_completed]})
             local proof_completed_timestamp=${frame_data[$frame_num,proof_completed,timestamp]}
             local reward=$(printf "%.4f" ${frame_data[$frame_num,reward]})
             if [ "$reward" = "0.0000" ]; then
