@@ -196,9 +196,9 @@ display_stats() {
             ((count++))
         else
             ((no_proof_count++))
+            local received_timestamp="${frame_data[$frame_num,received,timestamp]}"
             if [[ -n "${frame_data[$frame_num,received]}" && -z "${frame_data[$frame_num,proof_started]}" ]]; then
                 local received=$(printf "%.4f" ${frame_data[$frame_num,received]})
-                local received_timestamp="${frame_data[$frame_num,received,timestamp]}"
                 frame_outputs+=("$received_timestamp: Frame $frame_num: Recieved at $received (no proof started)")
                 ((count++))
             elif [[ -n "${frame_data[$frame_num,proof_started]}" && -z "${frame_data[$frame_num,proof_completed]}" ]]; then
