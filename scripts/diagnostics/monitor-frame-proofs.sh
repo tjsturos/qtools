@@ -203,7 +203,7 @@ display_stats() {
                 ((count++))
             elif [[ -n "${frame_data[$frame_num,proof_started]}" && -z "${frame_data[$frame_num,proof_completed]}" ]]; then
                 local proof_started=$(printf "%.4f" ${frame_data[$frame_num,proof_started]})
-                frame_outputs+=("Frame $frame_num: Started data shard proof at $proof_started (proof in progress)")
+                frame_outputs+=("$received_timestamp: Frame $frame_num: Started data shard proof at $proof_started (proof in progress)")
                 ((count++))
             fi
         fi
