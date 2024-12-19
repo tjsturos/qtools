@@ -167,6 +167,7 @@ display_stats() {
             local received=$(printf "%.4f" ${frame_data[$frame_num,received]})
             local proof_started=$(printf "%.4f" ${frame_data[$frame_num,proof_started]})
             local proof_completed=$(printf "%.4f" ${frame_data[$frame_num,proof_completed]})
+            local proof_completed_timestamp=${frame_data[$frame_num,proof_completed,timestamp]}
             local reward=$(printf "%.4f" ${frame_data[$frame_num,reward]})
             if [ "$reward" = "0.0000" ]; then
                 reward=""
@@ -180,9 +181,9 @@ display_stats() {
             last_frame_num=$frame_num
             if $SHOW_FRAME_LINES; then
                 if $PRINT_QUIL; then
-                    frame_outputs+=("$received_timestamp: Frame $frame_num (workers:$workers, ring:$ring): $received -> $proof_started -> $proof_completed (${duration}s${reward:+, $reward QUIL})")
+                    frame_outputs+=("$received_timestamp/$proof_completed_timestamp: Frame $frame_num (workers:$workers, ring:$ring): $received -> $proof_started -> $proof_completed (${duration}s${reward:+, $reward QUIL})")
                 else
-                    frame_outputs+=("$received_timestamp: Frame $frame_num (workers:$workers, ring:$ring): $received -> $proof_started -> $proof_completed (${duration}s)")
+                    frame_outputs+=("$received_timestamp/$proof_completed_timestamp: Frame $frame_num (workers:$workers, ring:$ring): $received -> $proof_started -> $proof_completed (${duration}s)")
                 fi
             fi
             
@@ -197,7 +198,8 @@ display_stats() {
             ((no_proof_count++))
             if [[ -n "${frame_data[$frame_num,received]}" && -z "${frame_data[$frame_num,proof_started]}" ]]; then
                 local received=$(printf "%.4f" ${frame_data[$frame_num,received]})
-                frame_outputs+=("Frame $frame_num: Recieved at $received (no proof started)")
+                local received_timestamp="${frame_data[$frame_num,received,timestamp]}"
+                frame_outputs+=("$received_timestamp: Frame $frame_num: Recieved at $received (no proof started)")
                 ((count++))
             elif [[ -n "${frame_data[$frame_num,proof_started]}" && -z "${frame_data[$frame_num,proof_completed]}" ]]; then
                 local proof_started=$(printf "%.4f" ${frame_data[$frame_num,proof_started]})
@@ -374,6 +376,7 @@ process_log_line() {
         fi
         frame_data[$frame_num,proof_completed]=$frame_age
         frame_data[$frame_num,proof_completed,ring]=$ring_size
+        frame_data[$frame_num,proof_completed,timestamp]=$LOG_TIMESTAMP
     fi 
 }
 
