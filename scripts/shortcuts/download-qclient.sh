@@ -35,7 +35,7 @@ done
 link_qclient() {
     local BINARY_NAME=$1
     echo "Linking $LINKED_QCLIENT_BINARY to $QUIL_CLIENT_PATH/$BINARY_NAME"
-    sudo ln -sf "$QUIL_CLIENT_PATH/$BINARY_NAME" "$LINKED_QCLIENT_BINARY"
+    sudo ln -sf $QUIL_CLIENT_PATH/$BINARY_NAME $LINKED_QCLIENT_BINARY
 }
 
 download_file() {
