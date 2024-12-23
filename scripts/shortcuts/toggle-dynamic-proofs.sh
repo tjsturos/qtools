@@ -1,4 +1,4 @@
-CURRENT_STATE=$(yq eval '.engine.createDynamicProof' $QTOOLS_CONFIG_FILE)
+CURRENT_STATE=$(yq eval '.engine.createDynamicProof' $QUIL_CONFIG_FILE)
 
 MANUAL_STATE=""
 
@@ -20,12 +20,12 @@ done
 
 enable_dynamic_proofs() {
     echo "Enabling dynamic proofs"
-    yq eval -i '.engine.createDynamicProof = "true"' $QTOOLS_CONFIG_FILE
+    yq eval -i '.engine.createDynamicProof = "true"' $QUIL_CONFIG_FILE
 }
 
 disable_dynamic_proofs() {
     echo "Disabling dynamic proofs"
-    yq eval -i '.engine.createDynamicProof = "false"' $QTOOLS_CONFIG_FILE
+    yq eval -i '.engine.createDynamicProof = "false"' $QUIL_CONFIG_FILE
 }
 
 if [ "$MANUAL_STATE" == "true" ]; then        
