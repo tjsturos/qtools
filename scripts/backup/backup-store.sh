@@ -80,7 +80,6 @@ echo "Saving store to $REMOTE_DIR"
 
 install_package "tmux" "tmux" false
 
-
 # Perform the rsync backup for .config directory
 if tmux new-session -d "rsync -avzrP --delete-after \
   --exclude=\"keys.yml\" \
