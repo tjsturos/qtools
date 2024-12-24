@@ -374,6 +374,12 @@ process_log_line() {
         if [[ "$log_type" != "historical" ]]; then
             echo "Completed creating proof for frame $frame_num ($ring_size ring, frame age $frame_age):"
         fi
+        if [[ $line =~ "dynamic" ]]; then
+            workers=$(echo "$line" | jq -r '.active_workers')
+            frame_data[$frame_num,proof_started,workers]=$workers
+        fi
+        
+        
         frame_data[$frame_num,proof_completed]=$frame_age
         frame_data[$frame_num,proof_completed,ring]=$ring_size
         frame_data[$frame_num,proof_completed,timestamp]=$LOG_TIMESTAMP
