@@ -13,6 +13,6 @@ if ! [[ $1 =~ ^[0-9]+$ ]]; then
 fi
 
 # Set the dynamic proof stop time
-yq eval -i ".engine.dynamicProofStopTime = \"$1\"" $QUIL_CONFIG_FILE
+yq eval -i ".engine.dynamicProofStopTime = \"$1s\"" $QUIL_CONFIG_FILE
 
 echo "Set dynamic proof stop time to ${1}s"
