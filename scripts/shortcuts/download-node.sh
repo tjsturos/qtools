@@ -25,11 +25,11 @@ while [[ $# -gt 0 ]]; do
         shift # past argument
         shift # past value
         ;;
-        --no-signatures)
+        --no-signatures|-ns)
         BINARY_ONLY="true"
         shift # past argument
         ;;
-        --dev-build)
+        --dev-build|--dev|-d)
         DEV_BUILD="true"
         BINARY_ONLY="true"
         echo "Fetching Dev Build"
@@ -45,7 +45,7 @@ done
 # If NODE_VERSION is set, get release files for that specific version
 if [ -n "$NODE_VERSION" ]; then
     NODE_RELEASE_FILES="node-${NODE_VERSION}-${OS_ARCH}"
-    if [ "$BINARY_ONLY" != "true" ]; then
+    if [ "$BINARY_ONLY" != "true" ] || [ "$DEV_BUILD" != "true" ]; then
         NODE_RELEASE_FILES+=" node-${NODE_VERSION}-${OS_ARCH}.dgst"
         for i in $(seq 1 $SIGNER_COUNT); do
             NODE_RELEASE_FILES+=" node-${NODE_VERSION}-${OS_ARCH}.dgst.sig.$i"
