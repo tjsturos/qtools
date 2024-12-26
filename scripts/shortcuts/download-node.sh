@@ -15,7 +15,7 @@ while [[ $# -gt 0 ]]; do
         LINK="true"
         shift
         ;;
-        --version)
+        --version|-v)
         NODE_VERSION="$2"
         shift # past argument
         shift # past value
