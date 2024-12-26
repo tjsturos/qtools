@@ -65,6 +65,10 @@ link_node() {
     local BINARY_NAME=$1
     echo "Linking $LINKED_NODE_BINARY to $QUIL_NODE_PATH/$BINARY_NAME"
     sudo ln -sf $QUIL_NODE_PATH/$BINARY_NAME $LINKED_NODE_BINARY
+
+    if [ "$DEV_BUILD" == "true" ]; then
+        qtools update-service --skip-sig-check
+    fi
 }
 
 download_file() {
