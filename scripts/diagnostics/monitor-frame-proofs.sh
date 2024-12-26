@@ -38,7 +38,7 @@ while [[ $# -gt 0 ]]; do
       ONE_SHOT=true
       shift
       ;;
-    -d|--debug)
+    --debug)
       DEBUG=true
       shift
       ;;
@@ -54,7 +54,7 @@ while [[ $# -gt 0 ]]; do
       AUTO_RESTART=true
       shift
       ;;
-    --display)
+    --display|-d)
       SHOW_FRAME_LINES=true
       shift
       ;;
