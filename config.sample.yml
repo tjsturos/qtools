@@ -124,3 +124,7 @@ settings:
     log_file: debug.log
     snapshots:
         enabled: true
+dev:
+    default_repo_branch: dev
+    default_repo_url: https://github.com/tjsturos/ceremonyclient.git
+    default_repo_path: $HOME/quil-dev
