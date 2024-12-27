@@ -54,38 +54,7 @@ install_rust_and_go() {
 
     # Check if Go is installed
     if ! command -v go &> /dev/null; then
-        echo "Go not found. Installing Go..."
-        GO_VERSION="1.22.5"
-        if [[ "$OS" == "linux" ]]; then
-            if [[ "$ARCH" == "x86_64" ]]; then
-                GO_ARCH="amd64"
-            elif [[ "$ARCH" == "aarch64" || "$ARCH" == "arm64" ]]; then
-                GO_ARCH="arm64"
-            else
-                echo "Unsupported architecture: $ARCH"
-                exit 1
-            fi
-            wget "https://go.dev/dl/go${GO_VERSION}.linux-${GO_ARCH}.tar.gz"
-            sudo tar -C /usr/local -xzf "go${GO_VERSION}.linux-${GO_ARCH}.tar.gz"
-            rm "go${GO_VERSION}.linux-${GO_ARCH}.tar.gz"
-        elif [[ "$OS" == "darwin" ]]; then
-            if [[ "$ARCH" == "x86_64" ]]; then
-                GO_ARCH="amd64"
-            elif [[ "$ARCH" == "arm64" ]]; then
-                GO_ARCH="arm64"
-            else
-                echo "Unsupported architecture: $ARCH"
-                exit 1
-            fi
-            wget "https://go.dev/dl/go${GO_VERSION}.darwin-${GO_ARCH}.tar.gz"
-            sudo tar -C /usr/local -xzf "go${GO_VERSION}.darwin-${GO_ARCH}.tar.gz"
-            rm "go${GO_VERSION}.darwin-${GO_ARCH}.tar.gz"
-        fi
-
-        echo 'export PATH=$PATH:/usr/local/go/bin' >> $HOME/.bashrc
-        echo 'export PATH=$PATH:/usr/local/go/bin' >> $HOME/.zshrc
-        source $HOME/.bashrc
-
+        qtools install-go 1.22.5
         # Install grpcurl for RPC testing
         go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest
     else
@@ -93,8 +62,19 @@ install_rust_and_go() {
     fi
 }
 
+generate_rust_bindings() {
+    echo "Generating Rust bindings..."
+    cd $QUIL_DEV_REPO_PATH/vdf
+    ./generate.sh
+
+    cd $QUIL_DEV_REPO_PATH/bls48581
+    ./generate.sh
+}
+
 # Run the installation functions
 install_dependencies
 install_rust_and_go
+source ~/.bashrc
+generate_rust_bindings
 
-echo "All dependencies have been installed successfully."
+echo "Dev dependencies installed successfully."

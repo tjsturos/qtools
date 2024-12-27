@@ -2,11 +2,13 @@
 # HELP: Installs Go 1.22.4 on this node.
 echo "Installing Go"
 
+GO_VERSION=${1:-1.22.4}
+
 GO_BIN_DIR=/usr/local
 GOROOT=$GO_BIN_DIR/go
 GOPATH=$HOME/go
 
-GO_COMPRESSED_FILE=go1.22.4.linux-amd64.tar.gz
+GO_COMPRESSED_FILE=go${GO_VERSION}.linux-amd64.tar.gz
 
 echo "Downloading $GO_COMPRESSED_FILE..."
 wget https://go.dev/dl/$GO_COMPRESSED_FILE 
