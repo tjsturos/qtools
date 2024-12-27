@@ -2,7 +2,7 @@
 
 QUIL_DEV_REPO_URL=$(yq '.dev.default_repo_url // "https://github.com/QuilibriumNetwork/ceremonyclient.git"' $QTOOLS_CONFIG_FILE)
 QUIL_DEV_REPO_BRANCH=$(yq '.dev.default_repo_branch // "develop"' $QTOOLS_CONFIG_FILE)
-QUIL_DEV_REPO_PATH=$(yq '.dev.default_repo_path // "$HOME/quil-dev"' $QTOOLS_CONFIG_FILE)
+QUIL_DEV_REPO_PATH=$(eval echo $(yq '.dev.default_repo_path // "$HOME/quil-dev"' $QTOOLS_CONFIG_FILE))
 
 if [ ! -d "$QUIL_DEV_REPO_PATH" ]; then
   git clone $QUIL_DEV_REPO_URL $QUIL_DEV_REPO_PATH
