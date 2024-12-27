@@ -1,5 +1,21 @@
 #!/bin/bash
 
+# Parse command line args
+SINGLE_LINE=false
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -s|--single-line)
+            SINGLE_LINE=true
+            shift
+            ;;
+        *)
+            shift
+            ;;
+    esac
+done
+
+
+
 get_vendor() {
     cat /proc/cpuinfo | grep vendor_id | awk '{print $3}' | uniq
 }
@@ -33,5 +49,15 @@ print_hardware_info() {
     echo "Threads|$(get_threads)"
     echo "Hyperthreading Enabled|$(get_is_hyperthreading_enabled)"
 }
+
+
+print_hardware_info_single_line() {
+    echo "$(get_vendor)/$(get_model_name)/$(get_cores)/$(get_threads)/$(get_is_hyperthreading_enabled)"
+}
+
+if [ "$SINGLE_LINE" = true ]; then
+    print_hardware_info_single_line
+    exit 0
+fi
 
 print_hardware_info
