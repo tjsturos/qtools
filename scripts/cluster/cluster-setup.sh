@@ -285,6 +285,7 @@ handle_server() {
             setup_remote_firewall "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" "$CORE_COUNT" 
         fi
         add_remote_server_hardware_info "$index" "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" "$CORE_COUNT"
+    fi
 }
 
 # Start the master and update the config
