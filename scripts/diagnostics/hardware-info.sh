@@ -52,7 +52,13 @@ print_hardware_info() {
 
 
 print_hardware_info_single_line() {
-    echo "$(get_vendor)/$(get_model_name)/$(get_cores)/$(get_threads)/$(get_is_hyperthreading_enabled)"
+    HT_STATUS=$(get_is_hyperthreading_enabled)
+    if [ "$HT_STATUS" = "true" ]; then
+        HT="HT-on"
+    else
+        HT="HT-off"
+    fi
+    echo "$(get_vendor)/$(get_model_name)/phys-cores:$(get_cores)/nproc:$(get_threads)/$HT"
 }
 
 if [ "$SINGLE_LINE" = true ]; then
