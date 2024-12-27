@@ -91,20 +91,18 @@ fi
 
 update_local_quil_config() {
     local data_worker_count=$1
-
     if [ "$DRY_RUN" == "false" ]; then
         yq eval -i ".engine.dataWorkerMultiaddrs = []" $QUIL_CONFIG_FILE
     else
         echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ LOCAL ] [ $LOCAL_IP ] Would set $LOCAL_IP's $QUIL_CONFIG_FILE's engine.dataWorkerMultiaddrs to []${RESET}"
     fi
-    
 
     for ((i=0; i<$DATA_WORKER_COUNT; i++)); do
+        local addr="/ip4/$LOCAL_IP/tcp/$((BASE_PORT + $i))"
         if [ "$DRY_RUN" == "false" ]; then
-            local addr="/ip4/$LOCAL_IP/tcp/$((BASE_PORT + $i))"
             yq eval -i ".engine.dataWorkerMultiaddrs += \"$addr\"" "$QUIL_CONFIG_FILE"
         else
-            echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ LOCAL ] [ $LOCAL_IP ] Would add /ip4/$LOCAL_IP/tcp/$(($BASE_PORT + $i)) to $QUIL_CONFIG_FILE's engine.dataWorkerMultiaddrs${RESET}"
+            echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ LOCAL ] [ $LOCAL_IP ] Would add $addr to $QUIL_CONFIG_FILE's engine.dataWorkerMultiaddrs${RESET}"
         fi
     done
 }
@@ -235,6 +233,16 @@ copy_cluster_config_to_server() {
     fi
 }
 
+add_remote_server_hardware_info() {
+    local index=$1
+    local IP=$2
+    local REMOTE_USER=$3
+    local SSH_PORT=$4
+    local CORE_COUNT=$5
+    local HARDWARE_INFO=$(ssh_to_remote $IP $REMOTE_USER $SSH_PORT "qtools hardware-info --single-line")
+    yq eval -i ".service.clustering.servers[$index].hardware_info = \"$HARDWARE_INFO\"" $QTOOLS_CONFIG_FILE
+}
+
 handle_server() {
     local index=$1
     local SERVER=$(yq eval ".service.clustering.servers[$index]" $QTOOLS_CONFIG_FILE)
@@ -276,7 +284,7 @@ handle_server() {
         if [ "$SKIP_FIREWALL" == "false" ]; then
             setup_remote_firewall "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" "$CORE_COUNT" 
         fi
-    fi
+        add_remote_server_hardware_info "$index" "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" "$CORE_COUNT"
 }
 
 # Start the master and update the config
