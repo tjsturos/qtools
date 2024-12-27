@@ -18,5 +18,6 @@ echo $NEW_HOSTNAME | sudo tee /etc/hostname
 
 # Update the hostname in /etc/hosts
 sudo sed -i "s/127.0.0.1 .*/127.0.0.1 $NEW_HOSTNAME/" /etc/hosts
+sudo sed -i "s/127.0.1.1 .*/127.0.1.1 $NEW_HOSTNAME/" /etc/hosts
 
 echo "Hostname changed to $NEW_HOSTNAME. Reboot to apply changes."
