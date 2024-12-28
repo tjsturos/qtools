@@ -69,7 +69,6 @@ MAX_FRAME="$(yq eval '.engine.maxFrame // "-1"' $QUIL_CONFIG_FILE)"
 LOCAL_RPC=""
 GRPC_ADDR=$(yq eval '.listenGrpcMultiaddr' $QUIL_CONFIG_FILE)
 if [ -n "$GRPC_ADDR" ]; then
-    echo "Local gRPC endpoint is configured for $GRPC_ADDR, checking if it's listening..."
     # Extract port from multiaddr (assumes format /ip4/127.0.0.1/tcp/PORT)
     PORT=$(echo $GRPC_ADDR | grep -oP '/tcp/\K[0-9]+')
     if [ -n "$PORT" ] && nc -z localhost $PORT 2>/dev/null; then
@@ -78,6 +77,9 @@ if [ -n "$GRPC_ADDR" ]; then
         echo "Local gRPC endpoint is not listening on port $PORT, using public RPC"
         PUBLIC_RPC="true"
     fi
+else 
+    echo "Local gRPC endpoint is not configured, using public RPC"
+    PUBLIC_RPC="true"
 fi
 
 if [ "$MAX_FRAME" -lt 1000 ] && [ -z "$PUBLIC_RPC" ]; then
