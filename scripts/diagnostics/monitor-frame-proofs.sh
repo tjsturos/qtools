@@ -80,8 +80,7 @@ if [ -n "$GRPC_ADDR" ]; then
     fi
 fi
 
-echo "MAX_FRAME: $MAX_FRAME"
-if [ "$MAX_FRAME" -gt 1000 ] && [ -z "$PUBLIC_RPC" ]; then
+if [ "$MAX_FRAME" -lt 1000 ] && [ -z "$PUBLIC_RPC" ]; then
     echo "Frame pruning is enabled, using the public RPC to get frame data"
     PUBLIC_RPC="true"
 fi
