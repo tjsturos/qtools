@@ -73,7 +73,7 @@ if [ "$MAX_FRAME" -lt 1000 ] && [ -z "$PUBLIC_RPC" ]; then
 fi
 
 GRPC_ADDR=$(yq eval '.listenGrpcMultiaddr' $QUIL_CONFIG_FILE)
-if [ -n "$GRPC_ADDR" ] || [ -z "$PUBLIC_RPC" ]; then
+if [ -n "$GRPC_ADDR" ]; then
     # Extract port from multiaddr (assumes format /ip4/127.0.0.1/tcp/PORT)
     PORT=$(echo $GRPC_ADDR | grep -oP '/tcp/\K[0-9]+')
     if [ -n "$PORT" ] && nc -z localhost $PORT 2>/dev/null; then
@@ -83,8 +83,10 @@ if [ -n "$GRPC_ADDR" ] || [ -z "$PUBLIC_RPC" ]; then
         PUBLIC_RPC="true"
     fi
 else 
-    echo "Local gRPC endpoint is not configured, using public RPC"
-    PUBLIC_RPC="true"
+    if [ -z "$PUBLIC_RPC" ]; then
+        echo "Local gRPC endpoint is not configured, using public RPC"
+        PUBLIC_RPC="true"
+    fi
 fi
 
 get_hourly_reward() {
