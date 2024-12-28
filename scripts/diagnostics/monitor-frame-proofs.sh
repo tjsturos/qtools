@@ -64,6 +64,27 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+MAX_FRAME="$(yq eval '.engine.maxFrame // "-1"' $QUIL_CONFIG_FILE)"
+# Check if local gRPC endpoint is configured and listening
+LOCAL_RPC=""
+GRPC_ADDR=$(yq eval '.listenGrpcMultiaddr' $QUIL_CONFIG_FILE)
+if [ -n "$GRPC_ADDR" ]; then
+    echo "Local gRPC endpoint is configured for $GRPC_ADDR, checking if it's listening..."
+    # Extract port from multiaddr (assumes format /ip4/127.0.0.1/tcp/PORT)
+    PORT=$(echo $GRPC_ADDR | grep -oP '/tcp/\K[0-9]+')
+    if [ -n "$PORT" ] && nc -z localhost $PORT 2>/dev/null; then
+        echo "Local gRPC endpoint is listening on port $PORT"
+    else
+        echo "Local gRPC endpoint is not listening on port $PORT, using public RPC"
+        PUBLIC_RPC="true"
+    fi
+fi
+
+if [ "$MAX_FRAME" -gt 1000 ]; then
+    echo "Frame pruning is enabled, using the public RPC to get frame data"
+    PUBLIC_RPC="true"
+fi
+
 get_hourly_reward() {
     local avg_reward_per_second=$1
     if $DEBUG; then
@@ -371,18 +392,17 @@ process_log_line() {
     elif [[ $line =~ "submitting data proof" ]]; then
         frame_age=$(echo "$line" | jq -r '.frame_age')
         ring_size=$(echo "$line" | jq -r '.ring')
-        if [[ "$log_type" != "historical" ]]; then
-            echo "Completed creating proof for frame $frame_num ($ring_size ring, frame age $frame_age):"
-        fi
         if [[ $line =~ "dynamic" ]]; then
             workers=$(echo "$line" | jq -r '.active_workers')
             frame_data[$frame_num,proof_started,workers]=$workers
         fi
         
-        
         frame_data[$frame_num,proof_completed]=$frame_age
         frame_data[$frame_num,proof_completed,ring]=$ring_size
         frame_data[$frame_num,proof_completed,timestamp]=$LOG_TIMESTAMP
+        if [[ "$log_type" != "historical" ]]; then
+            echo "Completed creating proof for frame $frame_num ($ring_size ring, frame age $frame_age):"
+        fi
     fi 
 }
 

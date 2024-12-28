@@ -6,6 +6,6 @@ BALANCE="$(echo "$OUTPUT" | grep -oP 'Owned balance: \K.*')"
 if [ -n "$BALANCE" ]; then
     echo "$BALANCE"
 else
-    log "Could not find Peer ID."
+    log "Could not get balance."
 fi
  

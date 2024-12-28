@@ -239,7 +239,7 @@ add_remote_server_hardware_info() {
     local REMOTE_USER=$3
     local SSH_PORT=$4
     local CORE_COUNT=$5
-    local HARDWARE_INFO=$(ssh_to_remote $IP $REMOTE_USER $SSH_PORT "qtools hardware-info --single-line")
+    local HARDWARE_INFO=$(ssh_to_remote $IP $REMOTE_USER $SSH_PORT "qtools hardware-info -s")
     yq eval -i ".service.clustering.servers[$index].hardware_info = \"$HARDWARE_INFO\"" $QTOOLS_CONFIG_FILE
 }
 
