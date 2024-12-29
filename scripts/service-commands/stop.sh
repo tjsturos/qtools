@@ -3,17 +3,13 @@
 # Usage: qtools stop
 # Usage: qtools stop --quick
 # Initialize variables
-IS_QUICK_MODE=false
 IS_CLUSTERING_ENABLED=$(yq '.service.clustering.enabled // false' $QTOOLS_CONFIG_FILE)
 IS_KILL_MODE=false
 CORE_INDEX=false
+WAIT=false
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
-        --quick)
-            IS_QUICK_MODE=true
-            shift
-            ;;
         --kill)
             IS_KILL_MODE=true
             shift
@@ -23,6 +19,10 @@ while [[ $# -gt 0 ]]; do
             shift
             shift
             ;;
+        --wait)
+            WAIT=true
+            shift
+            ;;
         *)
             echo "Unknown option: $1"
             exit 1
@@ -30,38 +30,26 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-if [ "$IS_QUICK_MODE" == "true" ]; then
-    echo "Quick stop mode, skipping peripheral service disabling."
+
+if [ "$WAIT" == "true" ]; then
+    echo -e "${BLUE}${INFO_ICON} Waiting for next proof submission or workers to be available...${RESET}"
+    while read -r line; do
+        if [[ $line =~ "submitting data proof" ]] || [[ $line =~ "workers not yet available for proving" ]]; then
+            echo -e "${GREEN}${CHECK_ICON} Proof submission detected or workers not available, proceeding with restart${RESET}"
+            break
+        fi
+    done < <(journalctl -u $QUIL_SERVICE_NAME -f -n 0)
+
+    sudo systemctl stop $QUIL_SERVICE_NAME.service
+ 
+else
+    sudo systemctl stop $QUIL_SERVICE_NAME.service
 fi
 
-# Function to clean up processes
-clean_up_process() {
-    if [ "$IS_QUICK_MODE" != "true" ]; then
-        # Backup store
-        # qtools backup-store
-
-        # Disable backups
-        # qtools toggle-backups --off
-        
-        # Disable diagnostics
-        # qtools toggle-diagnostics --off
-
-        # Disable statistics
-        # qtools toggle-statistics --off
-
-        qtools update-cron
-    else
-        echo "Skipping process cleanup in quick mode."
-    fi
-}
-
-sudo systemctl stop $QUIL_SERVICE_NAME.service
 
 # Check if clustering is enabled
 if [ "$IS_CLUSTERING_ENABLED" == "true" ]; then
     qtools cluster-stop
-elif [ "$IS_QUICK_MODE" == "false" ]; then
-    clean_up_process
 fi
 
 # Kill mode is essentially quick mode + kill the node process
