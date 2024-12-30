@@ -2,9 +2,25 @@
 
 
 DRY_RUN="false"
-if [ "$1" = "--dry-run" ]; then
-    DRY_RUN="true"
-fi
+WAIT="false"
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --dry-run)
+            DRY_RUN=true
+            shift
+            ;;
+        --wait)
+            WAIT=true
+            shift
+            ;;
+        *)
+            echo "Unknown option: $1"
+            exit 1
+            ;;
+    esac
+done
+
 
 # Get publish multiaddr settings from config
 SSH_KEY_PATH=$(yq eval '.settings.publish_multiaddr.ssh_key_path' $QTOOLS_CONFIG_FILE)
@@ -51,5 +67,14 @@ done
 rm $TEMP_FILE
 
 if [ "$DRY_RUN" == "false" ]; then
+    if [ "$WAIT" == "true" ]; then
+        echo -e "${BLUE}${INFO_ICON} Waiting for next proof submission or workers to be available...${RESET}"
+        while read -r line; do
+            if [[ $line =~ "submitting data proof" ]] || [[ $line =~ "workers not yet available for proving" ]]; then
+                echo -e "${GREEN}${CHECK_ICON} Proof submission detected or workers not available, proceeding with restart${RESET}"
+                break
+            fi
+        done < <(journalctl -u $QUIL_SERVICE_NAME -f -n 0)
+    fi
     qtools restart
 fi
