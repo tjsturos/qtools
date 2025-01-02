@@ -223,9 +223,14 @@ ssh_command_to_each_server() {
 
         if [ -n "$ip" ] && [ "$ip" != "null" ]; then
             if [ "$DRY_RUN" == "false" ]; then
-                if ! echo "$(hostname -I)" | grep -q "$ip"; then
+                if ! echo "$(hostname -I)" | grep -q "$ip" && [ "$ip" != "127.0.0.1" ]; then
                     echo "Running $command on $ip ($remote_user)"
                     ssh_to_remote $ip $remote_user $ssh_port "$command" &
+                fi
+
+                if [ "$ip" == "127.0.0.1" ]; then
+                    echo "Running $command on localhost"
+                    $command &
                 fi
             else
                 echo "[DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would run $command on $remote_user@$ip"
