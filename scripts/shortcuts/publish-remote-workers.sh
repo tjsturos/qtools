@@ -56,11 +56,12 @@ publish_multiaddr() {
 # Loop through each remote worker and publish the multiaddr
 for REMOTE_WORKER in $REMOTE_WORKERS; do
     IP=$(echo $REMOTE_WORKER | cut -d '/' -f 3)
+    echo "IP: $IP"
     # Skip if IP exists in local interfaces
     if ip addr | grep -q "$IP"; then
         echo "Skipping worker $REMOTE_WORKER as IP $IP belongs to local machine"
         continue
     fi
     echo "Publishing multiaddr for $REMOTE_WORKER"
-    # publish-multiaddr.sh $REMOTE_WORKER
+    publish_multiaddr $REMOTE_WORKER
 done
