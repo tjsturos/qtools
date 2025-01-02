@@ -5,10 +5,25 @@ SSH_KEY_PATH=$(yq eval '.settings.publish_multiaddr.ssh_key_path' $QTOOLS_CONFIG
 REMOTE_USER=$(yq eval '.settings.publish_multiaddr.remote_user' $QTOOLS_CONFIG_FILE)
 REMOTE_HOST=$(yq eval '.settings.publish_multiaddr.remote_host' $QTOOLS_CONFIG_FILE)
 REMOTE_FILE=$(yq eval '.settings.publish_multiaddr.remote_file' $QTOOLS_CONFIG_FILE)
-PEER_ID=$(qtools peer-id "$@")
+
+INTERNAL_IP=""
+# Parse command line arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --internal)
+            INTERNAL_IP="true"
+            shift
+            ;;
+        *)
+            shift
+            ;;
+    esac
+done
+
+PEER_ID=$(qtools peer-id)
 
 # Get the multiaddr
-MULTIADDR=$(qtools get-multiaddr "$@")
+MULTIADDR=$(qtools get-multiaddr ${INTERNAL_IP:+"--internal"})
 
 # Validate peer ID format
 if [[ ! "$PEER_ID" =~ ^Qm ]]; then
