@@ -33,7 +33,7 @@ publish_multiaddr() {
     fi
 
     # Check if multiaddr already exists in the specified cluster
-    if yq eval '.$CLUSTER_NAME[] | select(. == "$MULTIADDR")' "$REMOTE_FILE" | grep -q .; then
+    if yq eval '.$CLUSTER_NAME[] | select(. == \'$MULTIADDR\')' "$REMOTE_FILE" | grep -q .; then
         echo "Multiaddr already exists in cluster $CLUSTER_NAME"
         exit 0
     fi
