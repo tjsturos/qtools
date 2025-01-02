@@ -250,9 +250,13 @@ handle_server() {
     local REMOTE_USER=$(echo "$SERVER" | yq eval ".user // \"$DEFAULT_USER\"" -)
     local SSH_PORT=$(echo "$SERVER" | yq eval ".ssh_port // \"$DEFAULT_SSH_PORT\"" -)
     local CORE_COUNT=$(echo "$SERVER" | yq eval '.data_worker_count // "false"' -)
+    echo "SERVER_IP: $SERVER_IP"
+    echo "REMOTE_USER: $REMOTE_USER"
+    echo "SSH_PORT: $SSH_PORT"
+    echo "CORE_COUNT: $CORE_COUNT"
 
     local IS_LOCAL_SERVER=$(echo "$(hostname -I)" | grep -q "$SERVER_IP" || echo "$SERVER_IP" | grep -q "127.0.0.1" && echo "true" || echo "false")
-
+    echo "IS_LOCAL_SERVER: $IS_LOCAL_SERVER"
     if [ "$IS_LOCAL_SERVER" == "false" ]; then
         if ! check_server_ssh_connection $SERVER_IP $REMOTE_USER $SSH_PORT; then
             echo -e "${RED}${WARNING_ICON} Failed to connect to $SERVER_IP ($REMOTE_USER) on port $SSH_PORT${RESET}"
