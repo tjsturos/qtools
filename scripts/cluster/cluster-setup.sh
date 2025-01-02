@@ -251,7 +251,7 @@ handle_server() {
     local SSH_PORT=$(echo "$SERVER" | yq eval ".ssh_port // \"$DEFAULT_SSH_PORT\"" -)
     local CORE_COUNT=$(echo "$SERVER" | yq eval '.data_worker_count // "false"' -)
 
-    local IS_LOCAL_SERVER=$(echo "$(hostname -I)" | grep -q "$SERVER_IP" && echo "true" || echo "false")
+    local IS_LOCAL_SERVER=$(echo "$(hostname -I)" | grep -q "$SERVER_IP" || echo "$SERVER_IP" | grep -q "127.0.0.1" && echo "true" || echo "false")
 
     if [ "$IS_LOCAL_SERVER" == "false" ]; then
         if ! check_server_ssh_connection $SERVER_IP $REMOTE_USER $SSH_PORT; then
