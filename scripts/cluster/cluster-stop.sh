@@ -35,5 +35,4 @@ if [ "$IS_MASTER" == "true" ] || [ "$(is_master)" == "true" ]; then
     echo "Stopping services on remote servers..."
     ssh_command_to_each_server "qtools cluster-stop"
 fi
-
 stop_local_data_worker_services 1 $DATA_WORKER_COUNT
