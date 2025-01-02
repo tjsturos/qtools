@@ -57,6 +57,9 @@ publish_multiaddr() {
 for REMOTE_WORKER in $REMOTE_WORKERS; do
     IP=$(echo $REMOTE_WORKER | cut -d '/' -f 3)
     echo "IP: $IP"
+    if [ "$IP" == "-" ]; then
+        continue
+    fi
     # Skip if IP exists in local interfaces
     if ip addr | grep -q "$IP"; then
         echo "Skipping worker $REMOTE_WORKER as IP $IP belongs to local machine"
