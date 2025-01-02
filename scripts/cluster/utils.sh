@@ -24,7 +24,7 @@ ssh_to_remote() {
     local SSH_PORT=$3
     local COMMAND=$4
 
-
+    
     ssh -i $SSH_CLUSTER_KEY -q -p $SSH_PORT -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "$USER@$IP" $COMMAND
 }
 
@@ -331,7 +331,7 @@ update_quil_config() {
         fi
 
         echo "Processing server: $ip (user: $remote_user, worker count: $data_worker_count)"
-        if echo "$(hostname -I)" | grep -q "$ip"; then
+        if echo "$(hostname -I)" | grep -q "$ip" || echo "$ip" | grep -q "127.0.0.1"; then
             if [ "$DRY_RUN" == "false" ]; then
                 yq eval -i ".service.clustering.main_ip = \"$ip\"" $QTOOLS_CONFIG_FILE
                 echo "Set main IP to $ip in clustering configuration"
