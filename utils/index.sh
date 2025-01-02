@@ -41,11 +41,13 @@ get_local_ip() {
         local server=$(echo "$servers" | yq eval ".[$i]" -)
         local ip=$(echo "$server" | yq eval '.ip' -)
         
-        if echo "$local_ips" | grep -q "$ip"; then
+        if echo "$local_ips" | grep -q "$ip" || echo "$ip" | grep -q "127.0.0.1"; then
             echo "$ip"
             return
         fi
     done
+
+    
 }
 
 is_master() {
