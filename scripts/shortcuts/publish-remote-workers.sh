@@ -38,9 +38,6 @@ publish_multiaddr() {
         exit 0
     fi
 
-    # Remove any existing entries with the same IP from the specified cluster
-    WORKER_IP=$(echo "$MULTIADDR" | cut -d'/' -f3)
-    yq eval -i 'del(.$CLUSTER_NAME[] | select(contains("/ip4/$WORKER_IP")))' $REMOTE_FILE
     # Check if multiaddr already exists
     if ! grep -q \"$MULTIADDR\" $REMOTE_FILE; then
         # Add new multiaddr to directPeers array
