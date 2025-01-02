@@ -33,14 +33,14 @@ publish_multiaddr() {
     fi
 
     # Check if multiaddr already exists in the specified cluster
-    if yq eval '.$CLUSTER_NAME[] | select(. == "'$MULTIADDR'")' "$REMOTE_FILE" | grep -q .; then
+    if yq eval '.$CLUSTER_NAME[] | select(. == "$MULTIADDR")' "$REMOTE_FILE" | grep -q .; then
         echo "Multiaddr already exists in cluster $CLUSTER_NAME"
         exit 0
     fi
 
     # Remove any existing entries with the same IP from the specified cluster
     WORKER_IP=$(echo "$MULTIADDR" | cut -d'/' -f3)
-    yq eval -i 'del(.$CLUSTER_NAME[] | select(contains("/ip4/'$WORKER_IP'")))' $REMOTE_FILE
+    yq eval -i 'del(.$CLUSTER_NAME[] | select(contains("/ip4/$WORKER_IP")))' $REMOTE_FILE
     # Check if multiaddr already exists
     if ! grep -q \"$MULTIADDR\" $REMOTE_FILE; then
         # Add new multiaddr to directPeers array
@@ -56,10 +56,10 @@ publish_multiaddr() {
 # Loop through each remote worker and publish the multiaddr
 for REMOTE_WORKER in $REMOTE_WORKERS; do
     IP=$(echo $REMOTE_WORKER | cut -d '/' -f 3)
-    echo "IP: $IP"
     if [ "$IP" == "-" ]; then
         continue
     fi
+    echo "IP: $IP"
     # Skip if IP exists in local interfaces
     if ip addr | grep -q "$IP"; then
         echo "Skipping worker $REMOTE_WORKER as IP $IP belongs to local machine"
