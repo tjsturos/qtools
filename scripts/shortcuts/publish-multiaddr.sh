@@ -37,6 +37,7 @@ if [[ ! "$MULTIADDR" =~ ^/ip4/ ]] || [[ ! "$MULTIADDR" =~ /p2p/Qm ]]; then
     exit 1
 fi
 
+IP=$(hostname -I | awk '{print $1}')
 
 # Create or update the remote YAML file
 ssh -i "$SSH_KEY_PATH" "${REMOTE_USER}@${REMOTE_HOST}" "
@@ -51,8 +52,9 @@ if grep -q "$MULTIADDR" "$REMOTE_FILE"; then
 fi
 
 
-# Remove any existing entries with the same peer-id
+# Remove any existing entries with the same peer-id or IP
 yq eval -i 'del(.directPeers[] | select(test(\"$PEER_ID$\")))' $REMOTE_FILE
+yq eval -i 'del(.directPeers[] | select(test(\"$IP$\")))' $REMOTE_FILE
 
 # Check if multiaddr already exists
 if ! grep -q \"$MULTIADDR\" $REMOTE_FILE; then
