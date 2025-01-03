@@ -126,6 +126,6 @@ settings:
         enabled: true
     internal_ip: ""
 dev:
-    default_repo_branch: dev
+    default_repo_branch: develop
     default_repo_url: https://github.com/tjsturos/ceremonyclient.git
     default_repo_path: $HOME/quil-dev
