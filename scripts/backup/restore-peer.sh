@@ -8,12 +8,17 @@
 IS_BACKUP_ENABLED="$(yq '.scheduled_tasks.backup.enabled // false' $QTOOLS_CONFIG_FILE)"
 
 AUTO=false
-
+LOCAL=""
 # Parse command-line arguments
 while [[ $# -gt 0 ]]; do
   case $1 in
     --auto)
       AUTO=true
+      shift
+      ;;
+    --local)
+      LOCAL=$2
+      shift
       shift
       ;;
     *)
@@ -24,6 +29,34 @@ while [[ $# -gt 0 ]]; do
       ;;
   esac
 done
+
+if [ ! -z "$LOCAL" ]; then
+    if [ ! -d "$LOCAL" ]; then
+        echo "Error: Local directory '$LOCAL' does not exist"
+        exit 1
+    fi
+
+    # Check for required config files in local directory
+    if [ ! -f "$LOCAL/config.yml" ] || [ ! -f "$LOCAL/keys.yml" ]; then
+        echo "Error: Required config files not found in $LOCAL"
+        exit 1
+    fi
+
+    # Get encryption key and peer private key from local config
+    ENCRYPTION_KEY="$(yq '.key.keyManagerFile.encryptionKey' "$LOCAL/config.yml")"
+    PEER_PRIVATE_KEY="$(yq '.p2p.peerPrivKey' "$LOCAL/config.yml")"
+
+    # Create .config directory if it doesn't exist
+    mkdir -p "$QUIL_NODE_PATH/.config"
+
+    # Copy the config files from local directory
+    cp "$LOCAL/keys.yml" "$QUIL_NODE_PATH/.config/"
+    cp "$LOCAL/config.yml" "$QUIL_NODE_PATH/.config/"
+    
+    echo "Restored peer config from local directory: $LOCAL"
+    exit 0
+fi
+
 
 if [ -z "$PEER_ID" ]; then
     NODE_BACKUP_NAME="$(yq '.scheduled_tasks.backup.node_backup_name' $QTOOLS_CONFIG_FILE)"
