@@ -21,6 +21,10 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     --local)
+      if [ -z "$2" ]; then
+        echo "Error: --local flag requires a directory path, e.g. qtools backup-peer --local /path/to/backup"
+        exit 1
+      fi
       LOCAL=$2
       shift
       ;;
