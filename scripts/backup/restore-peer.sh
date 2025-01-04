@@ -41,16 +41,18 @@ if [ ! -z "$LOCAL" ]; then
         echo "Error: Required config files not found in $LOCAL"
         exit 1
     fi
-
+    echo "Restoring peer config from local directory: $LOCAL"
     # Get encryption key and peer private key from local config
     ENCRYPTION_KEY="$(yq '.key.keyManagerFile.encryptionKey' "$LOCAL/config.yml")"
     PEER_PRIVATE_KEY="$(yq '.p2p.peerPrivKey' "$LOCAL/config.yml")"
 
     # Create .config directory if it doesn't exist
     mkdir -p "$QUIL_NODE_PATH/.config"
-
+    echo "Getting encryption key from local config"
     yq -i ".key.keyManagerFile.encryptionKey = \"$ENCRYPTION_KEY\"" $QUIL_NODE_PATH/.config/config.yml
+    echo "Getting peer private key from local config"
     yq -i ".p2p.peerPrivKey = \"$PEER_PRIVATE_KEY\"" $QUIL_NODE_PATH/.config/config.yml
+    echo "Copying keys.yml from local config"
     cp $LOCAL/keys.yml $QUIL_NODE_PATH/.config/keys.yml
     
     echo "Restored peer config from local directory: $LOCAL"
