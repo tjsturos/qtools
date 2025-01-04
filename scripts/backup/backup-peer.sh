@@ -8,7 +8,7 @@
 IS_BACKUP_ENABLED="$(yq '.scheduled_tasks.backup.enabled // false' $QTOOLS_CONFIG_FILE)"
 CONFIRM=false
 AUTO=false
-
+LOCAL=""
 # Parse command-line arguments
 while [[ $# -gt 0 ]]; do
   case $1 in
@@ -18,6 +18,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --confirm) 
       CONFIRM=true 
+      shift
+      ;;
+    --local)
+      LOCAL=$2
       shift
       ;;
     *)
@@ -30,6 +34,18 @@ IS_CLUSTERING_ENABLED="$(yq '.service.clustering.enabled // false' $QTOOLS_CONFI
 
 if [ "$IS_CLUSTERING_ENABLED" == "true" ] && [ "$(is_master)" == "false" ]; then
   echo "Clustering is enabled, skipping backup."
+  exit 0
+fi
+
+if [ ! -z "$LOCAL" ]; then
+  # Create local directory if it doesn't exist
+  mkdir -p "$LOCAL"
+  echo "Backing up peer config from local directory: $LOCAL"
+
+  cp $QUIL_NODE_PATH/.config/config.yml $LOCAL/config.yml
+  cp $QUIL_NODE_PATH/.config/keys.yml $LOCAL/keys.yml
+
+  echo "Peer config backup completed successfully."
   exit 0
 fi
 
