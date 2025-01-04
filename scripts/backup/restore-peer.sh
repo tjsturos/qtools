@@ -43,8 +43,8 @@ if [ ! -z "$LOCAL" ]; then
     fi
 
     # Get encryption key and peer private key from local config
-    ENCRYPTION_KEY="$(yq '.key.keyManagerFile.encryptionKey' $LOCAL/config.yml)"
-    PEER_PRIVATE_KEY="$(yq '.p2p.peerPrivKey' $LOCAL/config.yml)"
+    ENCRYPTION_KEY="$(yq '.key.keyManagerFile.encryptionKey' "$LOCAL/config.yml")"
+    PEER_PRIVATE_KEY="$(yq '.p2p.peerPrivKey' "$LOCAL/config.yml")"
 
     # Create .config directory if it doesn't exist
     mkdir -p "$QUIL_NODE_PATH/.config"
