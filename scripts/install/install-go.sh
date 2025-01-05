@@ -8,7 +8,11 @@ GO_BIN_DIR=/usr/local
 GOROOT=$GO_BIN_DIR/go
 GOPATH=$HOME/go
 
-GO_COMPRESSED_FILE=go${GO_VERSION}.linux-amd64.tar.gz
+if [[ "$OS_ARCH" == *"arm64"* ]]; then
+    GO_COMPRESSED_FILE=go${GO_VERSION}.linux-arm64.tar.gz
+else
+    GO_COMPRESSED_FILE=go${GO_VERSION}.linux-amd64.tar.gz
+fi
 
 echo "Downloading $GO_COMPRESSED_FILE..."
 wget https://go.dev/dl/$GO_COMPRESSED_FILE 
