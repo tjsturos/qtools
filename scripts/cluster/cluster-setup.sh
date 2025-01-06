@@ -98,7 +98,7 @@ update_local_quil_config() {
     fi
 
     for ((i=0; i<$DATA_WORKER_COUNT; i++)); do
-        local addr="/ip4/$LOCAL_IP/tcp/$((BASE_PORT + $i))"
+        local addr="/ip4/127.0.0.1/tcp/$((BASE_PORT + $i))"
         if [ "$DRY_RUN" == "false" ]; then
             yq eval -i ".engine.dataWorkerMultiaddrs += \"$addr\"" "$QUIL_CONFIG_FILE"
         else
