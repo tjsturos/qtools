@@ -1,7 +1,9 @@
 #!/bin/bash
 # HELP: Installs \'yq\' version 4.20.1 for parsing config files.
 VERSION=v4.44.2
-if [[ "$OS_ARCH" == *"arm64"* ]] || [[ "$OS_ARCH" == *"aarch64"* ]]; then
+ARCH=$(uname -m)
+
+if [[ "$ARCH" == *"arm64"* ]] || [[ "$ARCH" == *"aarch64"* ]]; then
     BINARY=yq_linux_arm64
     VERSION=v4.44.6
 else
