@@ -53,7 +53,7 @@ if [ ! -L "$QTOOLS_BIN_PATH" ]; then
 fi
 
 # Update the INIT_COMPLETE file with the current date and time
-touch $QTOOLS_PATH/INIT_COMPLETE
-date > $QTOOLS_PATH/INIT_COMPLETE
+sudo touch $QTOOLS_PATH/INIT_COMPLETE
+date | sudo tee $QTOOLS_PATH/INIT_COMPLETE > /dev/null
 
 source $QTOOLS_PATH/qtools.sh add-auto-complete
