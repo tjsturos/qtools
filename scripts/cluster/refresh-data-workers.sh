@@ -46,21 +46,9 @@ while [[ $# -gt 0 ]]; do
 done
 
 restart_data_workers() {
-    local LOCAL_IP=$(get_local_ip)
-
-    local WORKER_COUNT=$(get_cluster_worker_count "$LOCAL_IP")
-
-    if [ "$WORKER_COUNT" -eq 0 ] || [ "$WORKER_COUNT" == "null" ] || [ -z "$WORKER_COUNT" ]; then
-        echo "No data workers found for $LOCAL_IP, skipping restart"
-        exit 0
-    fi
-
-    echo "Found $WORKER_COUNT data workers for $LOCAL_IP, restarting..."
-
-    bash -c "sudo systemctl stop ${QUIL_DATA_WORKER_SERVICE_NAME}@{1..$WORKER_COUNT}"
-    bash -c "sudo systemctl start ${QUIL_DATA_WORKER_SERVICE_NAME}@{1..$WORKER_COUNT}"
+    bash -c "sudo systemctl stop ${QUIL_DATA_WORKER_SERVICE_NAME}@*"
+    bash -c "sudo systemctl start ${QUIL_DATA_WORKER_SERVICE_NAME}@*"
 }
-
 
 if $MEMORY_CHECK; then
     memory_percentage=$(get_memory_percentage)
