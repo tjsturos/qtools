@@ -389,6 +389,8 @@ update_quil_config() {
         workers_per_core=$((data_worker_count / cores_to_use))
         remaining_workers=$((data_worker_count % cores_to_use))
 
+        echo "Cores to use: $cores_to_use, Workers per core: $workers_per_core, Remaining workers: $remaining_workers"
+
         worker_index=0
         for ((core=0; core<cores_to_use; core++)); do
             # Calculate number of workers for this core

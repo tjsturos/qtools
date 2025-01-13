@@ -264,8 +264,6 @@ handle_server() {
         echo "Skipping SSH check for $SERVER_IP ($REMOTE_USER) because it is local"
     fi
 
-   
-
     if [ "$IS_LOCAL_SERVER" == "false" ]; then
         if [[ "$SERVER_CORE_COUNT" == "false" ]]; then
             echo "Getting available cores for $SERVER_IP (user: $REMOTE_USER)"
