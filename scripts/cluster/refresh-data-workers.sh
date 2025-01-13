@@ -47,22 +47,22 @@ done
 
 restart_data_workers() {
     # Get list of enabled data worker services
-    enabled_workers=$(systemctl list-units --type=service --state=enabled "${QUIL_DATA_WORKER_SERVICE_NAME}@*" --plain --no-legend | awk '{print $1}')
+    enabled_workers=$(systemctl list-units --type=service --state=running "${QUIL_DATA_WORKER_SERVICE_NAME}@*" --plain --no-legend | awk '{print $1}')
     
     if [ -n "$enabled_workers" ]; then
-        echo "Stopping enabled data worker services..."
+        echo "Stopping running data worker services..."
         for service in $enabled_workers; do
             echo "Stopping $service"
             sudo systemctl stop "$service"
         done
         
-        echo "Starting enabled data worker services..."
+        echo "Restarting data worker services..."
         for service in $enabled_workers; do
             echo "Starting $service"
             sudo systemctl start "$service" 
         done
     else
-        echo "No enabled data worker services found"
+        echo "No running data worker services found"
     fi
 }
 
