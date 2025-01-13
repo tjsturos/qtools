@@ -34,7 +34,7 @@ done
 
 # Validate DATA_WORKER_COUNT
 if ! [[ "$CORES_TO_USE" =~ ^[1-9][0-9]*$ ]] && [ "$(is_master)" == "false" ]; then
-    echo "Error: --cores-to-use must be a positive integer ($CORES_TO_USE) on non-master nodes"
+    echo -e "${RED}${ERROR_ICON} [ $(if [ "$(is_master)" == "true" ]; then echo "MASTER"; else echo "SLAVE"; fi) ] [ $LOCAL_IP ] Error: --cores-to-use must be a positive integer ($CORES_TO_USE) on non-master nodes${RESET}"
     exit 1
 fi
 
