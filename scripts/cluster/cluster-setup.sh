@@ -11,8 +11,6 @@ LOCAL_ONLY=$(yq eval ".service.clustering.local_only" $QTOOLS_CONFIG_FILE)
 SKIP_FIREWALL=false
 CORES_TO_USE=$(get_cores_to_use "$LOCAL_IP")
 
-echo "CORES_TO_USE ($LOCAL_IP): $CORES_TO_USE"
-
 # Function to display usage information
 usage() {
     echo "Usage: $0 [--master] [--dry-run]"
@@ -65,7 +63,6 @@ if [ "$CORES_TO_USE" == "0" ] && [ "$(is_master)" == "false" ]; then
     CORES_TO_USE=$TOTAL_CORES
 fi
 
-echo "CORES_TO_USE ($LOCAL_IP): $CORES_TO_USE"
 
 if [ "$DRY_RUN" == "true" ]; then
     echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ LOCAL ] [ $LOCAL_IP ] Running in dry run mode, no changes will be made${RESET}"
@@ -267,13 +264,13 @@ handle_server() {
         echo "Skipping SSH check for $SERVER_IP ($REMOTE_USER) because it is local"
     fi
 
-    if [[ "$CORE_COUNT" == "false" ]]; then
+    if [[ "$CORE_COUNT" == "0" ]]; then
         if [ "$IS_LOCAL_SERVER" == "true" ] ; then
-            available_cores=$(($(nproc) - 1))
+            CORE_COUNT=$(($(nproc) - 1))
         else
             echo "Getting available cores for $SERVER_IP (user: $REMOTE_USER)"
             # Get the number of available cores
-            available_cores=$(ssh_to_remote $SERVER_IP $REMOTE_USER $SSH_PORT "nproc")
+            CORE_COUNT=$(ssh_to_remote $SERVER_IP $REMOTE_USER $SSH_PORT "nproc")
         fi
     fi
 
