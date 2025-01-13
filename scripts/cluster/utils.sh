@@ -401,7 +401,7 @@ update_quil_config() {
 
             # Assign workers to this core
             for ((w=0; w<core_workers; w++)); do
-                port=$((base_port + worker_index))
+                port=$((base_port + core))
                 addr="/ip4/$ip/tcp/$port"
                 if [ "$DRY_RUN" == "false" ]; then
                     yq eval -i ".engine.dataWorkerMultiaddrs += \"$addr\"" "$QUIL_CONFIG_FILE"
