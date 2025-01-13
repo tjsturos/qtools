@@ -6,8 +6,8 @@ IMMEDIATE_RESTART=true
 
 LOCAL_IP=$(get_local_ip)
 
-if [ "$DATA_WORKER_COUNT" == "null" ]; then
-    DATA_WORKER_COUNT=$(nproc)
+if [ "$CORES_TO_USE" == "null" ]; then
+    CORES_TO_USE=$(nproc)
 fi
 
 # Parse command line arguments
