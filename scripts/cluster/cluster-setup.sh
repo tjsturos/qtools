@@ -11,7 +11,7 @@ LOCAL_ONLY=$(yq eval ".service.clustering.local_only" $QTOOLS_CONFIG_FILE)
 SKIP_FIREWALL=false
 CORES_TO_USE=$(get_cores_to_use "$LOCAL_IP")
 
-echo "CORES_TO_USE: $CORES_TO_USE"
+echo "CORES_TO_USE ($LOCAL_IP): $CORES_TO_USE"
 
 # Function to display usage information
 usage() {
@@ -65,7 +65,7 @@ if [ "$CORES_TO_USE" == "0" ] && [ "$(is_master)" == "false" ]; then
     CORES_TO_USE=$TOTAL_CORES
 fi
 
-echo "CORES_TO_USE: $CORES_TO_USE"
+echo "CORES_TO_USE ($LOCAL_IP): $CORES_TO_USE"
 
 if [ "$DRY_RUN" == "true" ]; then
     echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ LOCAL ] [ $LOCAL_IP ] Running in dry run mode, no changes will be made${RESET}"
