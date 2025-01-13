@@ -1,6 +1,6 @@
 
 DRY_RUN=false
-DATA_WORKER_COUNT=$(yq eval ".service.clustering.local_data_worker_count" $QTOOLS_CONFIG_FILE)
+CORES_TO_USE=$(yq eval ".service.clustering.local_data_worker_count" $QTOOLS_CONFIG_FILE)
 LOCAL_ONLY=$(yq eval ".service.clustering.local_only" $QTOOLS_CONFIG_FILE)
 IMMEDIATE_RESTART=true
 
@@ -13,8 +13,8 @@ fi
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
-        --data-worker-count)
-            DATA_WORKER_COUNT="$2"
+        --cores-to-use)
+            CORES_TO_USE="$2"
             shift 2
             ;;
         --dry-run)
@@ -33,12 +33,12 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Validate DATA_WORKER_COUNT
-if ! [[ "$DATA_WORKER_COUNT" =~ ^[1-9][0-9]*$ ]] && [ "$(is_master)" == "false" ]; then
-    echo "Error: --data-worker-count must be a positive integer ($DATA_WORKER_COUNT) on non-master nodes"
+if ! [[ "$CORES_TO_USE" =~ ^[1-9][0-9]*$ ]] && [ "$(is_master)" == "false" ]; then
+    echo "Error: --cores-to-use must be a positive integer ($CORES_TO_USE) on non-master nodes"
     exit 1
 fi
 
-echo -e "${BLUE}${INFO_ICON} [ $(if [ "$(is_master)" == "true" ]; then echo "MASTER"; else echo "SLAVE"; fi) ] [ $LOCAL_IP ] Found configuration for $DATA_WORKER_COUNT data workers${RESET}"
+echo -e "${BLUE}${INFO_ICON} [ $(if [ "$(is_master)" == "true" ]; then echo "MASTER"; else echo "SLAVE"; fi) ] [ $LOCAL_IP ] Found configuration for $CORES_TO_USE cores to use${RESET}"
 
 
 if [ "$(is_master)" == "true" ]; then
@@ -75,6 +75,6 @@ else
     echo -e "${BLUE}${INFO_ICON} Not master node, skipping${RESET}"
 fi
 
-if [ "$DATA_WORKER_COUNT" -gt 0 ]; then
-    start_local_data_worker_services 1 $DATA_WORKER_COUNT $LOCAL_IP
+if [ "$CORES_TO_USE" -gt 0 ]; then
+    start_local_data_worker_services 1 $CORES_TO_USE $LOCAL_IP
 fi
