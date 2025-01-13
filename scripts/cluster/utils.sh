@@ -208,6 +208,25 @@ get_cluster_worker_count() {
     echo "0"
 }
 
+get_cores_to_use() {
+    local ip="$1"
+    local config=$(yq eval . $QTOOLS_CONFIG_FILE)
+    local servers=$(echo "$config" | yq eval '.service.clustering.servers' -)
+    local server_count=$(echo "$servers" | yq eval '. | length' -)
+
+    for ((i=0; i<server_count; i++)); do
+        local server=$(echo "$servers" | yq eval ".[$i]" -)
+        local server_ip=$(echo "$server" | yq eval '.ip' -)
+        if [ "$server_ip" == "$ip" ]; then
+            local cores_to_use=$(echo "$server" | yq eval '.cores_to_use // "0"' -)
+            echo "$cores_to_use"
+            return
+        fi
+    done
+
+    echo "0"
+}
+
 ssh_command_to_each_server() {
     local command=$1
     
@@ -323,6 +342,7 @@ update_quil_config() {
         ssh_port=$(echo "$server" | yq eval ".ssh_port // \"$DEFAULT_SSH_PORT\"" -)
         base_port=$(echo "$server" | yq eval ".base_port // \"$BASE_PORT\"" -)
         data_worker_count=$(echo "$server" | yq eval '.data_worker_count // "false"' -)
+        cores_to_use=$(echo "$server" | yq eval '.cores_to_use // "false"' -)
         available_cores=$(nproc)
         
         # Skip invalid entries
@@ -350,6 +370,11 @@ update_quil_config() {
         if [ "$data_worker_count" == "false" ]; then
             data_worker_count=$available_cores
         fi
+
+        if [ "$cores_to_use" == "false" ]; then
+            cores_to_use=$available_cores
+        fi
+
         # Convert data_worker_count to integer and ensure it's not greater than available cores
         data_worker_count=$(echo "$data_worker_count" | tr -cd '0-9')
 
@@ -360,18 +385,31 @@ update_quil_config() {
         # Calculate the starting port for this server
        
        
-        for ((j=0; j<data_worker_count; j++)); do
-            if [ "$single_worker" == "true" ]; then
-                port=$((base_port))
-            else
-                port=$((base_port + j))
+        # Calculate workers per core
+        workers_per_core=$((data_worker_count / cores_to_use))
+        remaining_workers=$((data_worker_count % cores_to_use))
+
+        echo "Cores to use: $cores_to_use, Workers per core: $workers_per_core, Remaining workers: $remaining_workers"
+
+        worker_index=0
+        for ((core=0; core<cores_to_use; core++)); do
+            # Calculate number of workers for this core
+            core_workers=$workers_per_core
+            if [ $core -lt $remaining_workers ]; then
+                core_workers=$((core_workers + 1))
             fi
-            addr="/ip4/$ip/tcp/$port"
-            if [ "$DRY_RUN" == "false" ]; then
-                yq eval -i ".engine.dataWorkerMultiaddrs += \"$addr\"" "$QUIL_CONFIG_FILE"
-            else
-                echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would add $addr to $QUIL_CONFIG_FILE's $dataWorkerMultiaddrs${RESET}"
-            fi
+
+            # Assign workers to this core
+            for ((w=0; w<core_workers; w++)); do
+                port=$((base_port + core))
+                addr="/ip4/$ip/tcp/$port"
+                if [ "$DRY_RUN" == "false" ]; then
+                    yq eval -i ".engine.dataWorkerMultiaddrs += \"$addr\"" "$QUIL_CONFIG_FILE"
+                else
+                    echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would add $addr to $QUIL_CONFIG_FILE's $dataWorkerMultiaddrs${RESET}"
+                fi
+                worker_index=$((worker_index + 1))
+            done
         done
         if [ "$DRY_RUN" == "false" ]; then
             # Count total lines with this IP

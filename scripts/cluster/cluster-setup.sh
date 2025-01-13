@@ -8,15 +8,14 @@ MASTER=false
 DRY_RUN=false
 LOCAL_IP=$(get_local_ip)
 LOCAL_ONLY=$(yq eval ".service.clustering.local_only" $QTOOLS_CONFIG_FILE)
-DATA_WORKER_COUNT=$(get_cluster_worker_count "$LOCAL_IP")
 SKIP_FIREWALL=false
-SINGLE_WORKER=false
+CORES_TO_USE=$(get_cores_to_use "$LOCAL_IP")
 
 # Function to display usage information
 usage() {
     echo "Usage: $0 [--master] [--dry-run]"
     echo "  --help               Display this help message"
-    echo "  --data-worker-count  Number of workers to start (default: number of CPU cores)"
+    echo "  --cores-to-use       Number of cores to use (default: number of CPU cores to split workers across)"
     echo "  --dry-run            Dry run mode (default: false)"
     echo "  --skip-firewall      Skip firewall setup (default: false)"
     echo "  --master             Run a master node as one of this CPU's cores"
@@ -39,10 +38,6 @@ while [[ $# -gt 0 ]]; do
         --help)
             usage
             ;;
-        --data-worker-count)
-            DATA_WORKER_COUNT="$2"
-            shift 2
-            ;;
         --master)
             MASTER=true
             shift
@@ -51,9 +46,9 @@ while [[ $# -gt 0 ]]; do
             DRY_RUN=true
             shift
             ;;
-        --single-worker)
-            SINGLE_WORKER=true
-            shift
+        --cores-to-use)
+            CORES_TO_USE="$2"
+            shift 2
             ;;
         *)
             echo "Unknown option: $1"
@@ -64,13 +59,10 @@ while [[ $# -gt 0 ]]; do
 done
 
 
-if [ "$DATA_WORKER_COUNT" == "0" ] && [ "$(is_master)" == "false" ]; then
-    DATA_WORKER_COUNT=$TOTAL_CORES
+if [ "$CORES_TO_USE" == "0" ] && [ "$(is_master)" == "false" ]; then
+    CORES_TO_USE=$TOTAL_CORES
 fi
 
-if [ "$SINGLE_WORKER" == "true" ]; then
-    DATA_WORKER_COUNT=1
-fi
 
 if [ "$DRY_RUN" == "true" ]; then
     echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ LOCAL ] [ $LOCAL_IP ] Running in dry run mode, no changes will be made${RESET}"
@@ -78,7 +70,7 @@ fi
 
 # Check if data worker service file exists
 
-if [ ! -f "$DATA_WORKER_SERVICE_FILE" ] && [ "$DATA_WORKER_COUNT" -gt 0 ]; then
+if [ ! -f "$DATA_WORKER_SERVICE_FILE" ] && [ "$CORES_TO_USE" -gt 0 ]; then
     echo -e "${BLUE}${INFO_ICON} Creating data worker service file${RESET}"
     if [ "$DRY_RUN" == "false" ]; then
         create_data_worker_service_file
@@ -99,41 +91,30 @@ if [ "$server_count" -eq 0 ]; then
 fi
 
 update_local_quil_config() {
-    local data_worker_count=$1
+    local cores_to_use=$1
     if [ "$DRY_RUN" == "false" ]; then
         yq eval -i ".engine.dataWorkerMultiaddrs = []" $QUIL_CONFIG_FILE
     else
         echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ LOCAL ] [ $LOCAL_IP ] Would set $LOCAL_IP's $QUIL_CONFIG_FILE's engine.dataWorkerMultiaddrs to []${RESET}"
     fi
 
-    if [ "$SINGLE_WORKER" == "true" ]; then
-        local addr="/ip4/${LOCAL_IP:-0.0.0.0}/tcp/$((BASE_PORT))"
-         if [ "$DRY_RUN" == "false" ]; then
+    for ((i=0; i<$cores_to_use; i++)); do
+        local addr="/ip4/${LOCAL_IP:-0.0.0.0}/tcp/$((BASE_PORT + $i))"
+    
+        if [ "$DRY_RUN" == "false" ]; then
             yq eval -i ".engine.dataWorkerMultiaddrs += \"$addr\"" "$QUIL_CONFIG_FILE"
         else
             echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ LOCAL ] [ $LOCAL_IP ] Would add $addr to $QUIL_CONFIG_FILE's engine.dataWorkerMultiaddrs${RESET}"
         fi
-    else
-        for ((i=0; i<$DATA_WORKER_COUNT; i++)); do
-            local addr="/ip4/${LOCAL_IP:-0.0.0.0}/tcp/$((BASE_PORT + $i))"
-        
-            if [ "$DRY_RUN" == "false" ]; then
-                yq eval -i ".engine.dataWorkerMultiaddrs += \"$addr\"" "$QUIL_CONFIG_FILE"
-            else
-                echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ LOCAL ] [ $LOCAL_IP ] Would add $addr to $QUIL_CONFIG_FILE's engine.dataWorkerMultiaddrs${RESET}"
-            fi
-        done
-    fi
-
-        
+    done
 }
 
 if [ "$DRY_RUN" == "false" ]; then  
-    yq eval -i ".service.clustering.local_data_worker_count = $DATA_WORKER_COUNT" $QTOOLS_CONFIG_FILE
-    echo -e "${BLUE}${INFO_ICON} [ LOCAL ] [ $LOCAL_IP ] Setting this server's data_worker_count to $DATA_WORKER_COUNT${RESET}"
-    update_local_quil_config $DATA_WORKER_COUNT
+    yq eval -i ".service.clustering.local_data_worker_count = $CORES_TO_USE" $QTOOLS_CONFIG_FILE
+    echo -e "${BLUE}${INFO_ICON} [ LOCAL ] [ $LOCAL_IP ] Setting this server's cores_to_use to $CORES_TO_USE${RESET}"
+    update_local_quil_config $CORES_TO_USE
 else
-    echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ LOCAL ] [ $LOCAL_IP ] Would set $QTOOLS_CONFIG_FILE's data_worker_count to $DATA_WORKER_COUNT${RESET}"
+    echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ LOCAL ] [ $LOCAL_IP ] Would set $QTOOLS_CONFIG_FILE's data_worker_count to $CORES_TO_USE${RESET}"
 fi
 
 if [ "$DRY_RUN" == "false" ]; then
@@ -150,22 +131,22 @@ if [ "$DRY_RUN" == "false" ]; then
     stop_local_data_worker_services
     disable_local_data_worker_services
 
-    if [ "$DATA_WORKER_COUNT" -gt 0 ]; then
-        echo "Enabling $QUIL_DATA_WORKER_SERVICE_NAME@{1..$DATA_WORKER_COUNT}"
-        enable_local_data_worker_services 1 $DATA_WORKER_COUNT
+    if [ "$CORES_TO_USE" -gt 0 ]; then
+        echo "Enabling $QUIL_DATA_WORKER_SERVICE_NAME@{1..$CORES_TO_USE}"
+        enable_local_data_worker_services 1 $CORES_TO_USE
     fi
     sudo systemctl daemon-reload
 else
-    echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ LOCAL ] [ $LOCAL_IP ] Would enable local $QUIL_DATA_WORKER_SERVICE_NAME@{1..$DATA_WORKER_COUNT}${RESET}"
+    echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ LOCAL ] [ $LOCAL_IP ] Would enable local $QUIL_DATA_WORKER_SERVICE_NAME@{1..$CORES_TO_USE}${RESET}"
 fi
 
 setup_remote_firewall() {
     local IP=$1
     local REMOTE_USER=$2
     local SSH_PORT=$3
-    local DATA_WORKER_COUNT=$4
+    local CORES_TO_USE=$4
 
-    local END_PORT=$((BASE_PORT + DATA_WORKER_COUNT - 1))
+    local END_PORT=$((BASE_PORT + CORES_TO_USE - 1))
     local MASTER_IP=$(yq eval '.service.clustering.main_ip' $QTOOLS_CONFIG_FILE)
     if [ -z "$MASTER_IP" ] && [ "$DRY_RUN" == "false" ]; then
         echo -e "${RED}${WARNING_ICON} Warning: .service.clustering.main_ip is not set in $QTOOLS_CONFIG_FILE${RESET}"
@@ -208,7 +189,7 @@ setup_remote_data_workers() {
         echo -e "${BLUE}${INFO_ICON} Configuring cluster's data workers on $IP ($USER)${RESET}"
         # Log the core count
         echo "Setting up remote server with core count: $CORE_COUNT"
-        ssh_to_remote $IP $USER $SSH_PORT "qtools cluster-setup --data-worker-count $CORE_COUNT"
+        ssh_to_remote $IP $USER $SSH_PORT "qtools cluster-setup --cores-to-use $CORE_COUNT"
     else
         echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would configure cluster's data workers on $IP ($USER)${RESET}"
         echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would run setup-cluster.sh on $IP ($USER) with data worker count of $CORE_COUNT${RESET}"
@@ -270,7 +251,7 @@ handle_server() {
     local SERVER_IP=$(echo "$SERVER" | yq eval '.ip' -)
     local REMOTE_USER=$(echo "$SERVER" | yq eval ".user // \"$DEFAULT_USER\"" -)
     local SSH_PORT=$(echo "$SERVER" | yq eval ".ssh_port // \"$DEFAULT_SSH_PORT\"" -)
-    local CORE_COUNT=$(echo "$SERVER" | yq eval '.data_worker_count // "false"' -)
+    local SERVER_CORE_COUNT=$(echo "$SERVER" | yq eval '.cores_to_use // "false"' -)
    
     local IS_LOCAL_SERVER=$(echo "$(hostname -I)" | grep -q "$SERVER_IP" || echo "$SERVER_IP" | grep -q "127.0.0.1" && echo "true" || echo "false")
     if [ "$IS_LOCAL_SERVER" == "false" ]; then
@@ -283,35 +264,24 @@ handle_server() {
         echo "Skipping SSH check for $SERVER_IP ($REMOTE_USER) because it is local"
     fi
 
-    if [[ "$CORE_COUNT" == "false" ]]; then
-        if [ "$IS_LOCAL_SERVER" == "true" ] ; then
-            available_cores=$(($(nproc) - 1))
-        else
-            if [ "$SINGLE_WORKER" == "true" ]; then
-                CORE_COUNT=1
-            else
-                echo "Getting available cores for $SERVER_IP (user: $REMOTE_USER)"
-                # Get the number of available cores
-                available_cores=$(ssh_to_remote $SERVER_IP $REMOTE_USER $SSH_PORT "nproc")
-            fi
-        fi
-    fi
-
-    echo -e "${BLUE}${INFO_ICON} Configuring server $REMOTE_USER@$SERVER_IP with $CORE_COUNT data workers${RESET}"
-
     if [ "$IS_LOCAL_SERVER" == "false" ]; then
-        if [ "$SINGLE_WORKER" == "true" ]; then
-            CORE_COUNT=1
+        if [[ "$SERVER_CORE_COUNT" == "false" ]]; then
+            echo "Getting available cores for $SERVER_IP (user: $REMOTE_USER)"
+            # Get the number of available cores
+            SERVER_CORE_COUNT=$(ssh_to_remote $SERVER_IP $REMOTE_USER $SSH_PORT "nproc")
         fi
+        echo -e "${BLUE}${INFO_ICON} Configuring server $REMOTE_USER@$SERVER_IP with $SERVER_CORE_COUNT cores${RESET}"
         copy_quil_config_to_server "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" 
         copy_quil_keys_to_server "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" 
         copy_cluster_config_to_server "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" 
-        setup_remote_data_workers "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" "$CORE_COUNT" 
+        setup_remote_data_workers "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" "$SERVER_CORE_COUNT" 
         # Call the function to set up the remote firewall
         if [ "$SKIP_FIREWALL" == "false" ]; then
-            setup_remote_firewall "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" "$CORE_COUNT" 
+            setup_remote_firewall "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" "$SERVER_CORE_COUNT" 
         fi
-        add_remote_server_hardware_info "$index" "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" "$CORE_COUNT"
+        add_remote_server_hardware_info "$index" "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" "$SERVER_CORE_COUNT"
+    else
+        echo -e "${BLUE}${INFO_ICON} Skipping server setup for $SERVER_IP ($REMOTE_USER) because it is local${RESET}"
     fi
 }
 
@@ -322,7 +292,7 @@ if [ "$MASTER" == "true" ]; then
         check_ssh_key_pair
     fi
 
-    update_quil_config ${SINGLE_WORKER}
+    update_quil_config
 
     servers=$(yq eval '.service.clustering.servers' $QTOOLS_CONFIG_FILE)
     server_count=$(echo "$servers" | yq eval '. | length' -)
