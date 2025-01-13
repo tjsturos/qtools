@@ -24,7 +24,7 @@ qtools update-node
 
 if [ "$IS_MASTER" == "true" ] || [ "$(is_master)" == "true" ]; then
     if [ "$UPDATE_QTOOLS" == "true" ]; then
-        ssh_command_to_each_server "qtools self-update"
+        ssh_command_to_each_server "cd ~/qtools && git pull"
     fi
 
     ssh_command_to_each_server "qtools download-node --link"
