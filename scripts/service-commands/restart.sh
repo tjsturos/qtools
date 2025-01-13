@@ -32,12 +32,20 @@ if [ "$WAIT" == "true" ]; then
     if [ "$CLUSTERING_IS_ENABLED" == "true" ]; then
         restart_cluster_data_workers
         wait
+        if [ "$(is_master)" == "true" ]; then
+            sudo systemctl restart $QUIL_SERVICE_NAME
+        fi
+    else
+        sudo systemctl restart $QUIL_SERVICE_NAME
     fi
-    sudo systemctl restart $QUIL_SERVICE_NAME
 else
     if [ "$CLUSTERING_IS_ENABLED" == "true" ]; then
         restart_cluster_data_workers
         wait
+        if [ "$(is_master)" == "true" ]; then
+            sudo systemctl restart $QUIL_SERVICE_NAME
+        fi
+    else
+        sudo systemctl restart $QUIL_SERVICE_NAME
     fi
-    sudo systemctl restart $QUIL_SERVICE_NAME
 fi
