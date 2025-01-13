@@ -270,7 +270,12 @@ handle_server() {
     local SERVER_IP=$(echo "$SERVER" | yq eval '.ip' -)
     local REMOTE_USER=$(echo "$SERVER" | yq eval ".user // \"$DEFAULT_USER\"" -)
     local SSH_PORT=$(echo "$SERVER" | yq eval ".ssh_port // \"$DEFAULT_SSH_PORT\"" -)
-    local CORE_COUNT=$(echo "$SERVER" | yq eval '.data_worker_count // "false"' -)
+
+    if [ "$SINGLE_WORKER" == "true" ] && [ "$IS_LOCAL_SERVER" == "false" ]; then
+        CORE_COUNT=1
+    else
+        CORE_COUNT=$(echo "$SERVER" | yq eval '.data_worker_count // "false"' -)
+    fi
    
     local IS_LOCAL_SERVER=$(echo "$(hostname -I)" | grep -q "$SERVER_IP" || echo "$SERVER_IP" | grep -q "127.0.0.1" && echo "true" || echo "false")
     if [ "$IS_LOCAL_SERVER" == "false" ]; then
