@@ -270,12 +270,7 @@ handle_server() {
     local SERVER_IP=$(echo "$SERVER" | yq eval '.ip' -)
     local REMOTE_USER=$(echo "$SERVER" | yq eval ".user // \"$DEFAULT_USER\"" -)
     local SSH_PORT=$(echo "$SERVER" | yq eval ".ssh_port // \"$DEFAULT_SSH_PORT\"" -)
-
-    if [ "$SINGLE_WORKER" == "true" ] && [ "$IS_LOCAL_SERVER" == "false" ]; then
-        CORE_COUNT=1
-    else
-        CORE_COUNT=$(echo "$SERVER" | yq eval '.data_worker_count // "false"' -)
-    fi
+    local CORE_COUNT=$(echo "$SERVER" | yq eval '.data_worker_count // "false"' -)
    
     local IS_LOCAL_SERVER=$(echo "$(hostname -I)" | grep -q "$SERVER_IP" || echo "$SERVER_IP" | grep -q "127.0.0.1" && echo "true" || echo "false")
     if [ "$IS_LOCAL_SERVER" == "false" ]; then
@@ -292,15 +287,22 @@ handle_server() {
         if [ "$IS_LOCAL_SERVER" == "true" ] ; then
             available_cores=$(($(nproc) - 1))
         else
-            echo "Getting available cores for $SERVER_IP (user: $REMOTE_USER)"
-            # Get the number of available cores
-            available_cores=$(ssh_to_remote $SERVER_IP $REMOTE_USER $SSH_PORT "nproc")
+            if [ "$SINGLE_WORKER" == "true" ]; then
+                CORE_COUNT=1
+            else
+                echo "Getting available cores for $SERVER_IP (user: $REMOTE_USER)"
+                # Get the number of available cores
+                available_cores=$(ssh_to_remote $SERVER_IP $REMOTE_USER $SSH_PORT "nproc")
+            fi
         fi
     fi
 
     echo -e "${BLUE}${INFO_ICON} Configuring server $REMOTE_USER@$SERVER_IP with $CORE_COUNT data workers${RESET}"
 
     if [ "$IS_LOCAL_SERVER" == "false" ]; then
+        if [ "$SINGLE_WORKER" == "true" ]; then
+            CORE_COUNT=1
+        fi
         copy_quil_config_to_server "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" 
         copy_quil_keys_to_server "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" 
         copy_cluster_config_to_server "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" 
