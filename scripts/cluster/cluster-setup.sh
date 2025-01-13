@@ -264,28 +264,26 @@ handle_server() {
         echo "Skipping SSH check for $SERVER_IP ($REMOTE_USER) because it is local"
     fi
 
-    if [[ "$SERVER_CORE_COUNT" == "false" ]]; then
-        if [ "$(is_master)" == "true" ]; then
-            SERVER_CORE_COUNT=$(($(nproc) - 1))
-        else
+   
+
+    if [ "$IS_LOCAL_SERVER" == "false" ]; then
+        if [[ "$SERVER_CORE_COUNT" == "false" ]]; then
             echo "Getting available cores for $SERVER_IP (user: $REMOTE_USER)"
             # Get the number of available cores
             SERVER_CORE_COUNT=$(ssh_to_remote $SERVER_IP $REMOTE_USER $SSH_PORT "nproc")
         fi
-    fi
-
-    echo -e "${BLUE}${INFO_ICON} Configuring server $REMOTE_USER@$SERVER_IP with $SERVER_CORE_COUNT cores${RESET}"
-
-    if [ "$IS_LOCAL_SERVER" == "false" ]; then
+        echo -e "${BLUE}${INFO_ICON} Configuring server $REMOTE_USER@$SERVER_IP with $SERVER_CORE_COUNT cores${RESET}"
         copy_quil_config_to_server "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" 
         copy_quil_keys_to_server "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" 
         copy_cluster_config_to_server "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" 
-        setup_remote_data_workers "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" "$CORE_COUNT" 
+        setup_remote_data_workers "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" "$SERVER_CORE_COUNT" 
         # Call the function to set up the remote firewall
         if [ "$SKIP_FIREWALL" == "false" ]; then
-            setup_remote_firewall "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" "$CORE_COUNT" 
+            setup_remote_firewall "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" "$SERVER_CORE_COUNT" 
         fi
-        add_remote_server_hardware_info "$index" "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" "$CORE_COUNT"
+        add_remote_server_hardware_info "$index" "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" "$SERVER_CORE_COUNT"
+    else
+        echo -e "${BLUE}${INFO_ICON} Skipping server setup for $SERVER_IP ($REMOTE_USER) because it is local${RESET}"
     fi
 }
 
