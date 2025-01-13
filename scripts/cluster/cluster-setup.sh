@@ -251,7 +251,7 @@ handle_server() {
     local SERVER_IP=$(echo "$SERVER" | yq eval '.ip' -)
     local REMOTE_USER=$(echo "$SERVER" | yq eval ".user // \"$DEFAULT_USER\"" -)
     local SSH_PORT=$(echo "$SERVER" | yq eval ".ssh_port // \"$DEFAULT_SSH_PORT\"" -)
-    local CORE_COUNT=$(echo "$SERVER" | yq eval '.cores_to_use // "0"' -)
+    local CORE_COUNT=$(echo "$SERVER" | yq eval '.cores_to_use // "false"' -)
    
     local IS_LOCAL_SERVER=$(echo "$(hostname -I)" | grep -q "$SERVER_IP" || echo "$SERVER_IP" | grep -q "127.0.0.1" && echo "true" || echo "false")
     if [ "$IS_LOCAL_SERVER" == "false" ]; then
@@ -264,8 +264,7 @@ handle_server() {
         echo "Skipping SSH check for $SERVER_IP ($REMOTE_USER) because it is local"
     fi
 
-    if [[ "$CORE_COUNT" == "0" && "$(is_master)" != "true" ]] || [ $CORE_COUNT == "false" ]; then
-
+    if [[ "$CORE_COUNT" == "false"]]; then
         if [ "$(is_master)" == "true" ]; then
             CORE_COUNT=$(($(nproc) - 1))
         else
@@ -273,7 +272,6 @@ handle_server() {
             # Get the number of available cores
             CORE_COUNT=$(ssh_to_remote $SERVER_IP $REMOTE_USER $SSH_PORT "nproc")
         fi
-        
     fi
 
     echo -e "${BLUE}${INFO_ICON} Configuring server $REMOTE_USER@$SERVER_IP with $CORE_COUNT cores${RESET}"
