@@ -30,20 +30,28 @@ if [ "$WAIT" == "true" ]; then
         fi
     done < <(journalctl -u $QUIL_SERVICE_NAME -f -n 0)
     if [ "$CLUSTERING_IS_ENABLED" == "true" ]; then
-        restart_cluster_data_workers
-        wait
+       
         if [ "$(is_master)" == "true" ]; then
             sudo systemctl restart $QUIL_SERVICE_NAME
+            restart_cluster_data_workers
+            wait
+        else
+            qtools refresh-data-workers
+            wait
         fi
     else
         sudo systemctl restart $QUIL_SERVICE_NAME
     fi
 else
     if [ "$CLUSTERING_IS_ENABLED" == "true" ]; then
-        restart_cluster_data_workers
-        wait
+        
         if [ "$(is_master)" == "true" ]; then
             sudo systemctl restart $QUIL_SERVICE_NAME
+            restart_cluster_data_workers
+            wait
+        else
+            qtools refresh-data-workers
+            wait
         fi
     else
         sudo systemctl restart $QUIL_SERVICE_NAME
