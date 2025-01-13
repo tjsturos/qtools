@@ -264,14 +264,16 @@ handle_server() {
         echo "Skipping SSH check for $SERVER_IP ($REMOTE_USER) because it is local"
     fi
 
-    if [[ "$CORE_COUNT" == "0" ]]; then
-        if [ "$IS_LOCAL_SERVER" == "true" ] ; then
+    if [[ "$CORE_COUNT" == "0" && "$(is_master)" != "true" ]] || [ $CORE_COUNT == "false" ]; then
+
+        if [ "$(is_master)" == "true" ]; then
             CORE_COUNT=$(($(nproc) - 1))
         else
             echo "Getting available cores for $SERVER_IP (user: $REMOTE_USER)"
             # Get the number of available cores
             CORE_COUNT=$(ssh_to_remote $SERVER_IP $REMOTE_USER $SSH_PORT "nproc")
         fi
+        
     fi
 
     echo -e "${BLUE}${INFO_ICON} Configuring server $REMOTE_USER@$SERVER_IP with $CORE_COUNT cores${RESET}"
