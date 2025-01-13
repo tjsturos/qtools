@@ -10,6 +10,7 @@ LOCAL_IP=$(get_local_ip)
 LOCAL_ONLY=$(yq eval ".service.clustering.local_only" $QTOOLS_CONFIG_FILE)
 DATA_WORKER_COUNT=$(get_cluster_worker_count "$LOCAL_IP")
 SKIP_FIREWALL=false
+SINGLE_WORKER=false
 
 # Function to display usage information
 usage() {
@@ -50,6 +51,10 @@ while [[ $# -gt 0 ]]; do
             DRY_RUN=true
             shift
             ;;
+        --single-worker)
+            SINGLE_WORKER=true
+            shift
+            ;;
         *)
             echo "Unknown option: $1"
             usage
@@ -61,6 +66,10 @@ done
 
 if [ "$DATA_WORKER_COUNT" == "0" ] && [ "$(is_master)" == "false" ]; then
     DATA_WORKER_COUNT=$TOTAL_CORES
+fi
+
+if [ "$SINGLE_WORKER" == "true" ]; then
+    DATA_WORKER_COUNT=1
 fi
 
 if [ "$DRY_RUN" == "true" ]; then
@@ -97,14 +106,26 @@ update_local_quil_config() {
         echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ LOCAL ] [ $LOCAL_IP ] Would set $LOCAL_IP's $QUIL_CONFIG_FILE's engine.dataWorkerMultiaddrs to []${RESET}"
     fi
 
-    for ((i=0; i<$DATA_WORKER_COUNT; i++)); do
-        local addr="/ip4/${LOCAL_IP:-0.0.0.0}/tcp/$((BASE_PORT + $i))"
-        if [ "$DRY_RUN" == "false" ]; then
+    if [ "$SINGLE_WORKER" == "true" ]; then
+        local addr="/ip4/${LOCAL_IP:-0.0.0.0}/tcp/$((BASE_PORT))"
+         if [ "$DRY_RUN" == "false" ]; then
             yq eval -i ".engine.dataWorkerMultiaddrs += \"$addr\"" "$QUIL_CONFIG_FILE"
         else
             echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ LOCAL ] [ $LOCAL_IP ] Would add $addr to $QUIL_CONFIG_FILE's engine.dataWorkerMultiaddrs${RESET}"
         fi
-    done
+    else
+        for ((i=0; i<$DATA_WORKER_COUNT; i++)); do
+            local addr="/ip4/${LOCAL_IP:-0.0.0.0}/tcp/$((BASE_PORT + $i))"
+        
+            if [ "$DRY_RUN" == "false" ]; then
+                yq eval -i ".engine.dataWorkerMultiaddrs += \"$addr\"" "$QUIL_CONFIG_FILE"
+            else
+                echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ LOCAL ] [ $LOCAL_IP ] Would add $addr to $QUIL_CONFIG_FILE's engine.dataWorkerMultiaddrs${RESET}"
+            fi
+        done
+    fi
+
+        
 }
 
 if [ "$DRY_RUN" == "false" ]; then  
@@ -294,7 +315,7 @@ if [ "$MASTER" == "true" ]; then
         check_ssh_key_pair
     fi
 
-    update_quil_config 
+    update_quil_config ${SINGLE_WORKER}
 
     servers=$(yq eval '.service.clustering.servers' $QTOOLS_CONFIG_FILE)
     server_count=$(echo "$servers" | yq eval '. | length' -)

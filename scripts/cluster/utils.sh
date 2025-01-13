@@ -296,6 +296,7 @@ restart_cluster_data_workers() {
 }
 
 update_quil_config() {
+    local single_worker=$1
     config=$(yq eval . $QTOOLS_CONFIG_FILE)
     
     # Get the array of servers
@@ -360,7 +361,11 @@ update_quil_config() {
        
        
         for ((j=0; j<data_worker_count; j++)); do
-            port=$((base_port + j))
+            if [ "$single_worker" == "true" ]; then
+                port=$((base_port))
+            else
+                port=$((base_port + j))
+            fi
             addr="/ip4/$ip/tcp/$port"
             if [ "$DRY_RUN" == "false" ]; then
                 yq eval -i ".engine.dataWorkerMultiaddrs += \"$addr\"" "$QUIL_CONFIG_FILE"
