@@ -264,7 +264,7 @@ handle_server() {
         echo "Skipping SSH check for $SERVER_IP ($REMOTE_USER) because it is local"
     fi
 
-    if [[ "$CORE_COUNT" == "false"]]; then
+    if [[ "$CORE_COUNT" == "false" ]]; then
         if [ "$(is_master)" == "true" ]; then
             CORE_COUNT=$(($(nproc) - 1))
         else
