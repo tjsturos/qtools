@@ -46,8 +46,24 @@ while [[ $# -gt 0 ]]; do
 done
 
 restart_data_workers() {
-    bash -c "sudo systemctl stop ${QUIL_DATA_WORKER_SERVICE_NAME}@*"
-    bash -c "sudo systemctl start ${QUIL_DATA_WORKER_SERVICE_NAME}@*"
+    # Get list of enabled data worker services
+    enabled_workers=$(systemctl list-units --type=service --state=enabled "${QUIL_DATA_WORKER_SERVICE_NAME}@*" --plain --no-legend | awk '{print $1}')
+    
+    if [ -n "$enabled_workers" ]; then
+        echo "Stopping enabled data worker services..."
+        for service in $enabled_workers; do
+            echo "Stopping $service"
+            sudo systemctl stop "$service"
+        done
+        
+        echo "Starting enabled data worker services..."
+        for service in $enabled_workers; do
+            echo "Starting $service"
+            sudo systemctl start "$service" 
+        done
+    else
+        echo "No enabled data worker services found"
+    fi
 }
 
 if $MEMORY_CHECK; then
