@@ -2,7 +2,9 @@
 
 To init:
 ```bash
-qtools/qtools.sh init-qtools
+git clone https://github.com/tjsturos/qtools.git
+cd qtools
+./qtools.sh init
 source ~/.bashrc # to get autocompete working
 ```
 
