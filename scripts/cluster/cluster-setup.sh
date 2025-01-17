@@ -203,8 +203,8 @@ copy_quil_config_to_server() {
     if [ "$DRY_RUN" == "false" ]; then  
         echo -e "${BLUE}${INFO_ICON} Copying $QUIL_CONFIG_FILE to $IP ($REMOTE_USER)${RESET}"
         ssh_to_remote $IP $REMOTE_USER $SSH_PORT "mkdir -p ~/ceremonyclient/node/.config"
-        ssh_to_remote $IP $REMOTE_USER $SSH_PORT "echo '' > ~/ceremonyclient/node/.config/config.yml"
-        # scp_to_remote "$QUIL_CONFIG_FILE $REMOTE_USER@$IP:~/ceremonyclient/node/.config/config.yml" $SSH_PORT &> /dev/null
+        # ssh_to_remote $IP $REMOTE_USER $SSH_PORT "echo '' > ~/ceremonyclient/node/.config/config.yml"
+        scp_to_remote "$QUIL_CONFIG_FILE $REMOTE_USER@$IP:~/ceremonyclient/node/.config/config.yml" $SSH_PORT &> /dev/null
     else
         echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would copy $QUIL_CONFIG_FILE to $IP ($REMOTE_USER)${RESET}"
     fi
@@ -274,7 +274,7 @@ handle_server() {
         fi
         echo -e "${BLUE}${INFO_ICON} Configuring server $REMOTE_USER@$SERVER_IP with $SERVER_CORE_COUNT cores${RESET}"
         copy_quil_config_to_server "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" 
-        #copy_quil_keys_to_server "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" 
+        copy_quil_keys_to_server "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" 
         copy_cluster_config_to_server "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" 
         setup_remote_data_workers "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" "$SERVER_CORE_COUNT" 
         # Call the function to set up the remote firewall
