@@ -4,7 +4,7 @@ release_version: 1.4.19.1
 current_node_version: 1.4.19.1
 current_qclient_version: 1.4.19.1
 os_arch: linux-amd64
-qtools_version: 19
+qtools_version: 20
 qclient_cli_name: qclient
 ssh:
     allow_from_ip: false
