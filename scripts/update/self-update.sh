@@ -22,6 +22,11 @@ main() {
     cd $QTOOLS_PATH
     git pull &> /dev/null
     log "Changes fetched."
+    
+    # Run config migration after pulling changes
+    log "Checking for config updates..."
+    qtools migrate-qtools-config
+    
     qtools add-auto-complete
     qtools install-cron
 }

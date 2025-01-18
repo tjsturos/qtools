@@ -4,7 +4,7 @@ release_version: 1.4.19.1
 current_node_version: 1.4.19.1
 current_qclient_version: 1.4.19.1
 os_arch: linux-amd64
-qtools_version: 18
+qtools_version: 19
 qclient_cli_name: qclient
 ssh:
     allow_from_ip: false
@@ -99,6 +99,11 @@ scheduled_tasks:
     diagnostics:
         enabled: false
         cron_expression: ""
+    config_carousel:
+        enabled: false
+        frames: 10
+        peer_list: []
+        current_index: 0
 settings:
     publish_multiaddr:
         enabled: false
