@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 DRY_RUN="false"
 WAIT="false"
 
@@ -21,7 +20,6 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-
 # Get publish multiaddr settings from config
 SSH_KEY_PATH=$(yq eval '.settings.publish_multiaddr.ssh_key_path' $QTOOLS_CONFIG_FILE)
 REMOTE_USER=$(yq eval '.settings.publish_multiaddr.remote_user' $QTOOLS_CONFIG_FILE)
@@ -32,13 +30,18 @@ REMOTE_FILE=$(yq eval '.settings.publish_multiaddr.remote_file' $QTOOLS_CONFIG_F
 TEMP_FILE=$(mktemp)
 scp -i "$SSH_KEY_PATH" "${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_FILE}" $TEMP_FILE
 
-# Update local config with remote peers
-REMOTE_PEERS=$(yq eval '.directPeers[]' $TEMP_FILE)
-yq eval -i ".p2p.directPeers = []" $QUIL_CONFIG_FILE
+# Create a temporary file for the new peers list
+NEW_PEERS_FILE=$(mktemp)
+yq eval '.p2p.directPeers' $QUIL_CONFIG_FILE > $NEW_PEERS_FILE
 
+CHANGES_MADE=false
 LOCAL_PEER_ID=$(qtools peer-id)
+
 # Add each remote peer to local config, excluding our own multiaddr
-for peer in $REMOTE_PEERS; do
+while IFS= read -r peer; do
+    # Skip empty lines or comments
+    [[ -z "$peer" || "$peer" =~ ^[[:space:]]*# ]] && continue
+    
     # Extract IP from multiaddr if it exists
     PEER_IP=$(echo $peer | grep -oE '/ip4/[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | cut -d'/' -f3)
     if [ ! -z "$PEER_IP" ]; then
@@ -56,17 +59,21 @@ for peer in $REMOTE_PEERS; do
         continue
     fi
 
-    echo "Adding peer $peer to local config"
-    if [ "$DRY_RUN" == "false" ]; then
-        yq eval -i ".p2p.directPeers += [\"$peer\"]" $QUIL_CONFIG_FILE
+    # Check if peer already exists in current config
+    if ! grep -q "$peer" "$NEW_PEERS_FILE"; then
+        echo "Adding new peer $peer to local config"
+        if [ "$DRY_RUN" == "false" ]; then
+            yq eval -i ".p2p.directPeers += [\"$peer\"]" $QUIL_CONFIG_FILE
+            CHANGES_MADE=true
+        fi
     fi
-    
-done
+done < <(yq eval '.directPeers[]' $TEMP_FILE)
 
 # Cleanup
 rm $TEMP_FILE
+rm $NEW_PEERS_FILE
 
-if [ "$DRY_RUN" == "false" ]; then
+if [ "$DRY_RUN" == "false" ] && [ "$CHANGES_MADE" == "true" ]; then
     if [ "$WAIT" == "true" ]; then
         echo -e "${BLUE}${INFO_ICON} Waiting for next proof submission or workers to be available...${RESET}"
         while read -r line; do
@@ -76,5 +83,8 @@ if [ "$DRY_RUN" == "false" ]; then
             fi
         done < <(journalctl -u $QUIL_SERVICE_NAME -f -n 0)
     fi
+    echo "Changes were made to direct peers list, restarting service..."
     qtools restart
+else
+    echo "No changes were made to direct peers list, skipping restart."
 fi
