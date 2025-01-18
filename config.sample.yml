@@ -54,6 +54,9 @@ scheduled_tasks:
             cron_expression: ""
             interval_seconds: 20
             retry_count: 5
+    direct_peers:
+        enabled: false
+        cron_expression: ""
     backup:
         enabled: true
         cron_expression: ""

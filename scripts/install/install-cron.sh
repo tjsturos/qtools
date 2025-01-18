@@ -81,6 +81,20 @@ if [ "$IS_CLUSTERING_ENABLED" == "true" ] && [ "$IS_MASTER" == "true" ] || [ "$I
     append_to_file $FILE_CRON "$CLUSTER_MEMORY_CHECK_CRON_EXPRESSION qtools cluster-check-mem-levels" false
   fi
 
+  AUTO_UPDATE_DIRECT_PEERS=$(yq eval '.scheduled_tasks.direct_peers.enabled // "false"' $QTOOLS_CONFIG_FILE)
+
+  if [ "$AUTO_UPDATE_DIRECT_PEERS" == "true" ]; then
+    DIRECT_PEERS_UPDATE_CRON_EXPRESSION=$(yq eval '.scheduled_tasks.direct_peers.cron_expression' $QTOOLS_CONFIG_FILE)
+    
+    # Check if Expression is valid
+    if [ -z "$DIRECT_PEERS_UPDATE_CRON_EXPRESSION" ]; then
+      DIRECT_PEERS_UPDATE_CRON_EXPRESSION="*/5 * * * *"
+    fi
+    
+    log "Adding direct peers update cron expression: $DIRECT_PEERS_UPDATE_CRON_EXPRESSION"
+    append_to_file $FILE_CRON "$DIRECT_PEERS_UPDATE_CRON_EXPRESSION qtools update-direct-peers" false
+  fi
+
   AUTO_BACKUP_STORE=$(yq eval '.scheduled_tasks.backup.enabled // "false"' $QTOOLS_CONFIG_FILE)
 
   if [ "$AUTO_BACKUP_STORE" == "true" ]; then
