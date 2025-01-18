@@ -3,7 +3,8 @@
 # PARAM: --on: Explicitly turn config carousel on
 # PARAM: --off: Explicitly turn config carousel off
 # PARAM: --frames: Number of frames to wait before switching (default: 10)
-# Usage: qtools toggle-config-carousel [--on|--off] [--frames <num-frames>]
+# PARAM: --restart: Restart the service if it's running
+# Usage: qtools toggle-config-carousel [--on|--off] [--frames <num-frames>] [--restart]
 
 # Check if config needs migration
 if ! yq eval '.scheduled_tasks.config_carousel' $QTOOLS_CONFIG_FILE >/dev/null 2>&1; then
@@ -12,6 +13,7 @@ if ! yq eval '.scheduled_tasks.config_carousel' $QTOOLS_CONFIG_FILE >/dev/null 2
 fi
 
 FRAMES=10
+RESTART=false
 
 # Function to set switch configs status
 set_switch_configs_status() {
@@ -51,6 +53,14 @@ WantedBy=multi-user.target"
         sudo systemctl enable "$service_name"
         sudo systemctl start "$service_name"
         echo "Config switching service started"
+    elif [ "$action" = "restart" ]; then
+        if sudo systemctl is-active "$service_name" >/dev/null 2>&1; then
+            echo "Restarting config switching service..."
+            sudo systemctl restart "$service_name"
+            echo "Config switching service restarted"
+        else
+            echo "Config switching service is not running"
+        fi
     else
         sudo systemctl stop "$service_name"
         sudo systemctl disable "$service_name"
@@ -71,12 +81,22 @@ while [[ $# -gt 0 ]]; do
             FRAMES="$2"
             shift 2
             ;;
+        --restart)
+            RESTART=true
+            shift
+            ;;
         *)
-            echo "Invalid argument. Use --on or --off to set status, and optionally --frames <num>"
+            echo "Invalid argument. Use --on or --off to set status, --restart to restart service, and optionally --frames <num>"
             exit 1
             ;;
     esac
 done
+
+# Handle restart flag first if specified
+if [ "$RESTART" = true ]; then
+    manage_service restart
+    exit 0
+fi
 
 # Get current status
 current_status=$(yq '.scheduled_tasks.config_carousel.enabled // false' $QTOOLS_CONFIG_FILE)
