@@ -1,7 +1,7 @@
 #!/bin/bash
-# HELP: Adds a peer ID to the config carousel list
-# PARAM: <peer_id>: The Qm... peer ID to add to the carousel
-# Usage: qtools add-to-carousel <peer_id>
+# HELP: Adds one or more peer IDs to the config carousel list
+# PARAM: <peer_id...>: One or more Qm... peer IDs to add to the carousel
+# Usage: qtools add-to-carousel <peer_id> [peer_id...]
 
 # Check if config needs migration
 if ! yq eval '.scheduled_tasks.config_carousel' $QTOOLS_CONFIG_FILE >/dev/null 2>&1; then
@@ -10,27 +10,49 @@ if ! yq eval '.scheduled_tasks.config_carousel' $QTOOLS_CONFIG_FILE >/dev/null 2
 fi
 
 # Validate input
-if [ $# -ne 1 ]; then
-    echo "Error: Please provide exactly one peer ID"
-    echo "Usage: qtools add-to-carousel <peer_id>"
+if [ $# -lt 1 ]; then
+    echo "Error: Please provide at least one peer ID"
+    echo "Usage: qtools add-to-carousel <peer_id> [peer_id...]"
     exit 1
 fi
 
-PEER_ID="$1"
+add_peer() {
+    local PEER_ID="$1"
+    
+    # Validate peer ID format (starts with Qm)
+    if [[ ! $PEER_ID =~ ^Qm ]]; then
+        echo "Skipping invalid peer ID format (must start with 'Qm'): $PEER_ID"
+        return 0
+    fi
 
-# Validate peer ID format (starts with Qm)
-if [[ ! $PEER_ID =~ ^Qm ]]; then
-    echo "Error: Invalid peer ID format. Must start with 'Qm'"
-    exit 1
-fi
+    # Check if peer ID already exists in the list
+    if yq eval ".scheduled_tasks.config_carousel.peer_list[] | select(. == \"$PEER_ID\")" $QTOOLS_CONFIG_FILE | grep -q .; then
+        echo "Peer ID already exists in carousel: $PEER_ID"
+        return 0
+    fi
 
-# Check if peer ID already exists in the list
-if yq eval ".scheduled_tasks.config_carousel.peer_list[] | select(. == \"$PEER_ID\")" $QTOOLS_CONFIG_FILE | grep -q .; then
-    echo "Peer ID already exists in carousel"
-    exit 0
-fi
+    # Check if peer config exists locally
+    if [ ! -d "$QUIL_NODE_PATH/$PEER_ID" ]; then
+        echo "Peer configuration not found locally. Downloading: $PEER_ID"
+        if ! qtools restore-peer "$PEER_ID"; then
+            echo "Failed to download peer configuration, skipping: $PEER_ID"
+            return 0
+        fi
+        echo "Creating local backup: $PEER_ID"
+        if ! qtools backup-peer --local "$PEER_ID"; then
+            echo "Failed to create local backup, skipping: $PEER_ID"
+            return 0
+        fi
+    fi
 
-# Add peer ID to the list
-yq eval -i ".scheduled_tasks.config_carousel.peer_list += [\"$PEER_ID\"]" $QTOOLS_CONFIG_FILE
+    # Add peer ID to the list
+    yq eval -i ".scheduled_tasks.config_carousel.peer_list += [\"$PEER_ID\"]" $QTOOLS_CONFIG_FILE
 
-echo "Added peer ID to carousel: $PEER_ID" 
+    echo "Added peer ID to carousel: $PEER_ID"
+    return 0
+}
+
+# Process each peer ID
+for peer in "$@"; do
+    add_peer "$peer"
+done 
