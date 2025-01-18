@@ -31,6 +31,12 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+# Add logging function after the initial argument parsing
+log_message() {
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1"
+    logger -t "qtools-config-carousel" "$1"
+}
+
 switch_config() {
     # Get the peer list and current index
     PEER_LIST=$(yq eval '.scheduled_tasks.config_carousel.peer_list[]' $QTOOLS_CONFIG_FILE)
@@ -38,7 +44,7 @@ switch_config() {
     TOTAL_PEERS=$(echo "$PEER_LIST" | wc -l)
 
     if [ $TOTAL_PEERS -eq 0 ]; then
-        echo "No peer IDs configured in scheduled_tasks.config_carousel.peer_list"
+        log_message "Error: No peer IDs configured in scheduled_tasks.config_carousel.peer_list"
         exit 1
     fi
 
@@ -49,7 +55,7 @@ switch_config() {
     NEXT_PEER=$(echo "$PEER_LIST" | sed -n "$((NEXT_INDEX + 1))p")
 
     if [ -z "$NEXT_PEER" ]; then
-        echo "Failed to get next peer ID"
+        log_message "Error: Failed to get next peer ID"
         exit 1
     fi
 
@@ -60,12 +66,14 @@ switch_config() {
     cd $QUIL_NODE_PATH || exit 1
 
     # Restore the peer configuration and restart
-    echo "Switching to peer ID: $NEXT_PEER"
+    log_message "Switching to peer ID: $NEXT_PEER"
     qtools restore-peer --local "$NEXT_PEER"
     qtools restart
+    log_message "Successfully switched to peer ID: $NEXT_PEER"
 }
 
 if [ "$DAEMON_MODE" = true ]; then
+    log_message "Starting config carousel in daemon mode (switching every $FRAMES_BEFORE_SWITCH frames)"
     while true; do
         FRAME_COUNT=0
         while [ $FRAME_COUNT -lt $FRAMES_BEFORE_SWITCH ]; do
@@ -75,7 +83,7 @@ if [ "$DAEMON_MODE" = true ]; then
                     if [ "$CURRENT_FRAME" != "$LAST_FRAME" ]; then
                         FRAME_COUNT=$((FRAME_COUNT + 1))
                         LAST_FRAME=$CURRENT_FRAME
-                        echo "Frame count: $FRAME_COUNT/$FRAMES_BEFORE_SWITCH"
+                        log_message "Frame count: $FRAME_COUNT/$FRAMES_BEFORE_SWITCH"
                         if [ $FRAME_COUNT -ge $FRAMES_BEFORE_SWITCH ]; then
                             break 2
                         fi
@@ -86,5 +94,6 @@ if [ "$DAEMON_MODE" = true ]; then
         switch_config
     done
 else
+    log_message "Running single config switch"
     switch_config
 fi 
