@@ -68,6 +68,7 @@ switch_config() {
     # Restore the peer configuration and restart
     log_message "Switching to peer ID: $NEXT_PEER"
     qtools restore-peer --local "$NEXT_PEER"
+    qtools publish-multiaddr --internal
     qtools restart
     log_message "Successfully switched to peer ID: $NEXT_PEER"
 }
