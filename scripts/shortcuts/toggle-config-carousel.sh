@@ -23,13 +23,13 @@ set_switch_configs_status() {
 # Function to manage systemd service
 manage_service() {
     local action=$1
-    local service_name="quil-switch-config@$USER.service"
+    local service_name="quil-config-carousel.service"
     local service_path="/etc/systemd/system/$service_name"
     
     if [ "$action" = "start" ]; then
         # Create service content
         local SERVICE_CONTENT="[Unit]
-Description=Quilibrium Config Switcher Service
+Description=Quilibrium Config Carousel Service
 After=network.target
 
 [Service]
@@ -37,7 +37,7 @@ Type=simple
 User=$USER
 Environment=QTOOLS_CONFIG_FILE=$HOME/.qtools/config.yml
 Environment=QUIL_NODE_PATH=$HOME/ceremonyclient/node
-ExecStart=/usr/local/bin/qtools switch-config --daemon --frames $FRAMES
+ExecStart=/usr/local/bin/qtools config-carousel --daemon --frames $FRAMES
 Restart=always
 RestartSec=10
 

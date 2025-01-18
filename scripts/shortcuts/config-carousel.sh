@@ -69,16 +69,19 @@ if [ "$DAEMON_MODE" = true ]; then
     while true; do
         FRAME_COUNT=0
         while [ $FRAME_COUNT -lt $FRAMES_BEFORE_SWITCH ]; do
-            # Check if a new frame is available
-            if [ -f "$QUIL_NODE_PATH/frame.json" ]; then
-                CURRENT_FRAME=$(cat "$QUIL_NODE_PATH/frame.json" | jq -r '.frame // 0')
-                if [ "$CURRENT_FRAME" != "$LAST_FRAME" ]; then
-                    FRAME_COUNT=$((FRAME_COUNT + 1))
-                    LAST_FRAME=$CURRENT_FRAME
-                    echo "Frame count: $FRAME_COUNT/$FRAMES_BEFORE_SWITCH"
+            while read -r line; do
+                if [[ $line =~ "submitting data proof" ]]; then
+                    CURRENT_FRAME=$(echo "$line" | jq -r '.frame_number')
+                    if [ "$CURRENT_FRAME" != "$LAST_FRAME" ]; then
+                        FRAME_COUNT=$((FRAME_COUNT + 1))
+                        LAST_FRAME=$CURRENT_FRAME
+                        echo "Frame count: $FRAME_COUNT/$FRAMES_BEFORE_SWITCH"
+                        if [ $FRAME_COUNT -ge $FRAMES_BEFORE_SWITCH ]; then
+                            break 2
+                        fi
+                    fi
                 fi
-            fi
-            sleep 5
+            done < <(journalctl -f -u $QUIL_SERVICE_NAME -o cat)
         done
         switch_config
     done
