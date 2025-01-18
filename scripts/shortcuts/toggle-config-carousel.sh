@@ -56,6 +56,7 @@ WantedBy=multi-user.target"
     elif [ "$action" = "restart" ]; then
         if sudo systemctl is-active "$service_name" >/dev/null 2>&1; then
             echo "Restarting config switching service..."
+            sudo systemctl daemon-reload
             sudo systemctl restart "$service_name"
             echo "Config switching service restarted"
         else
