@@ -4,6 +4,8 @@
 # PARAM: --rate: Maximum requests per second (default: 5)
 # Usage: qtools transfer-all-tokens --deposit-account 0x... [--rate 5]
 
+source $QTOOLS_PATH/scripts/qclient/utils.sh
+
 DEPOSIT_ACCOUNT=""
 PIDS=()
 REQUESTS_PER_SECOND=5
@@ -78,6 +80,24 @@ fi
 while IFS= read -r PEER_ID; do
     (
         log_message "Processing peer: $PEER_ID"
+        
+        # Get source account address
+        SOURCE_ACCOUNT=$(get_config_account_address "$PEER_ID")
+        
+        if [ -z "$SOURCE_ACCOUNT" ]; then
+            log_message "Failed to get account from config, trying peer ID lookup..."
+            SOURCE_ACCOUNT=$(qtools account-from-peer-id --peer-id "$PEER_ID")
+        fi
+        
+        if [ -z "$SOURCE_ACCOUNT" ]; then
+            log_message "Failed to get account address for peer $PEER_ID, skipping..."
+            exit 0
+        fi
+        
+        if [ "$SOURCE_ACCOUNT" = "$DEPOSIT_ACCOUNT" ]; then
+            log_message "Skipping peer $PEER_ID - source account matches deposit account"
+            exit 0
+        fi
         
         # Get all tokens for this peer's config
         rate_limit
