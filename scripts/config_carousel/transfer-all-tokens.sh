@@ -1,17 +1,25 @@
 #!/bin/bash
 # HELP: Transfers all tokens from a carousel peer config to a specified deposit account
 # PARAM: --deposit-account|-d: Deposit account address (required, hex format)
-# Usage: qtools transfer-all-tokens --deposit-account 0x...
+# PARAM: --rate: Maximum requests per second (default: 5)
+# Usage: qtools transfer-all-tokens --deposit-account 0x... [--rate 5]
 
 DEPOSIT_ACCOUNT=""
 PIDS=()
-RATE_LIMIT_DELAY=0.2  # 200ms delay between requests (5 req/s)
+REQUESTS_PER_SECOND=5
+RATE_LIMIT_DELAY=0.2  # Default 200ms delay (5 req/s)
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
         --deposit-account|-d)
             DEPOSIT_ACCOUNT="$2"
+            shift 2
+            ;;
+        --rate)
+            REQUESTS_PER_SECOND="$2"
+            # Calculate delay in seconds (e.g., 5 req/s = 0.2s delay)
+            RATE_LIMIT_DELAY=$(echo "scale=3; 1/$REQUESTS_PER_SECOND" | bc)
             shift 2
             ;;
         *)
@@ -29,6 +37,12 @@ fi
 
 if [[ ! "$DEPOSIT_ACCOUNT" =~ ^0x[0-9a-fA-F]+$ ]]; then
     echo "Error: Deposit account must be in hex format (0x...)"
+    exit 1
+fi
+
+# Validate rate limit
+if ! [[ "$REQUESTS_PER_SECOND" =~ ^[0-9]+$ ]] || [ "$REQUESTS_PER_SECOND" -lt 1 ]; then
+    echo "Error: Rate limit must be a positive integer"
     exit 1
 fi
 
