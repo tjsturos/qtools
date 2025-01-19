@@ -56,6 +56,24 @@ WantedBy=multi-user.target"
     elif [ "$action" = "restart" ]; then
         if sudo systemctl is-active "$service_name" >/dev/null 2>&1; then
             echo "Restarting config switching service..."
+            local SERVICE_CONTENT="[Unit]
+Description=Quilibrium Config Carousel Service
+After=network.target
+
+[Service]
+Type=simple
+User=$USER
+Environment=QTOOLS_CONFIG_FILE=$HOME/.qtools/config.yml
+Environment=QUIL_NODE_PATH=$HOME/ceremonyclient/node
+ExecStart=/usr/local/bin/qtools config-carousel --daemon --frames $FRAMES
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target"
+
+        # Write service file
+        echo "$SERVICE_CONTENT" | sudo tee "$service_path" > /dev/null
             sudo systemctl daemon-reload
             sudo systemctl restart "$service_name"
             echo "Config switching service restarted"
