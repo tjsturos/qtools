@@ -5,6 +5,7 @@
 
 DEPOSIT_ACCOUNT=""
 PIDS=()
+RATE_LIMIT_DELAY=0.2  # 200ms delay between requests (5 req/s)
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -31,6 +32,11 @@ if [[ ! "$DEPOSIT_ACCOUNT" =~ ^0x[0-9a-fA-F]+$ ]]; then
     exit 1
 fi
 
+# Add rate limiting function
+rate_limit() {
+    sleep $RATE_LIMIT_DELAY
+}
+
 # Check if config needs migration
 if ! yq eval '.scheduled_tasks.config_carousel' $QTOOLS_CONFIG_FILE >/dev/null 2>&1; then
     echo "Config needs migration. Running migration..."
@@ -42,6 +48,9 @@ log_message() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1"
     logger -t "qtools-transfer-all-tokens" "$1"
 }
+
+# Change to the node directory
+cd $QUIL_NODE_PATH || exit 1
 
 # Get the peer list from config carousel
 PEER_LIST=$(yq eval '.scheduled_tasks.config_carousel.peer_list[]' $QTOOLS_CONFIG_FILE)
@@ -55,10 +64,9 @@ fi
 while IFS= read -r PEER_ID; do
     (
         log_message "Processing peer: $PEER_ID"
-
-        # Change to the node directory
-        cd $QUIL_NODE_PATH || exit 1
+        
         # Get all tokens for this peer's config
+        rate_limit
         TOKENS=$($LINKED_QCLIENT_BINARY token coins --config=$PEER_ID --public-rpc)
         
         if [ -z "$TOKENS" ]; then
@@ -71,11 +79,13 @@ while IFS= read -r PEER_ID; do
         
         if [ "$TOKEN_COUNT" -gt 1 ]; then
             log_message "Found $TOKEN_COUNT tokens. Running token merge..."
+            rate_limit
             $LINKED_QCLIENT_BINARY token merge all --config=$PEER_ID
             
             # Wait for consolidation to complete
             while true; do
                 sleep 20
+                rate_limit
                 CURRENT_TOKENS=$($LINKED_QCLIENT_BINARY token coins --config=$PEER_ID --public-rpc)
                 CURRENT_COUNT=$(echo "$CURRENT_TOKENS" | grep -c "Coin")
                 
@@ -96,6 +106,7 @@ while IFS= read -r PEER_ID; do
                 TOKEN_ADDRESS=$(echo "$TOKEN_INFO" | awk '{print $NF}' | sed 's/^(Coin //' | sed 's/)$//')
                 
                 log_message "Starting transfer of token $TOKEN_ADDRESS to $DEPOSIT_ACCOUNT"
+                rate_limit
                 if $LINKED_QCLIENT_BINARY token transfer $DEPOSIT_ACCOUNT $TOKEN_ADDRESS --config=$PEER_ID --public-rpc; then
                     log_message "Successfully transferred token $TOKEN_ADDRESS"
                 else
@@ -109,6 +120,9 @@ while IFS= read -r PEER_ID; do
     
     # Store the background process ID
     PIDS+=($!)
+    
+    # Add delay between launching peer processes to stagger the initial requests
+    sleep 0.5
 done <<< "$PEER_LIST"
 
 # Wait for all peer processes to complete
