@@ -2,6 +2,8 @@
 
 # Install Flint
 
+cd ~/Downloads
+
 wget http://ftp.de.debian.org/debian/pool/main/g/gf2x/libgf2x3_1.3.0-1+b1_amd64.deb
 sudo dpkg -i libgf2x3_1.3.0-1+b1_amd64.deb
 
