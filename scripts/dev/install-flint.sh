@@ -2,13 +2,36 @@
 
 # Install Flint
 
-cd ~/Downloads
+cd $HOME
+sudo apt-get install -y \
+    build-essential \
+    curl \
+    git \
+    cmake \
+    libgmp-dev \
+    libmpfr-dev \
+    libmpfr6 \
+    wget \
+    m4 \
+    pkg-config \
+    gcc \
+    g++ \
+    make \
+    autoconf \
+    automake \
+    libtool \
+    && sudo rm -rf /var/lib/apt/lists/*
 
-wget http://ftp.de.debian.org/debian/pool/main/g/gf2x/libgf2x3_1.3.0-1+b1_amd64.deb
-sudo dpkg -i libgf2x3_1.3.0-1+b1_amd64.deb
-
-wget http://ftp.de.debian.org/debian/pool/main/n/ntl/libntl43_11.4.3-1+b1_amd64.deb
-sudo dpkg -i libntl43_11.4.3-1+b1_amd64.deb
-wget http://ftp.de.debian.org/debian/pool/main/f/flint/libflint-2.6.3_2.6.3-3_amd64.deb
-sudo dpkg -i libflint-2.6.3_2.6.3-3_amd64.deb
-
+git clone https://github.com/flintlib/flint.git && \
+    cd flint && \
+    git checkout flint-3.0 && \
+    ./bootstrap.sh && \
+    ./configure \
+        --prefix=/usr/local \
+        --with-gmp=/usr/local \
+        --with-mpfr=/usr/local \
+        --enable-static \
+        --disable-shared \
+	CFLAGS="-O3" && \
+    make && \
+    make install
