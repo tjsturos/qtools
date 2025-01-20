@@ -34,4 +34,4 @@ git clone https://github.com/flintlib/flint.git && \
         --disable-shared \
 	CFLAGS="-O3" && \
     make && \
-    make install
+    sudo make install
