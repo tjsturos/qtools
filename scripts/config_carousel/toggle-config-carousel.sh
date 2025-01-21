@@ -12,7 +12,7 @@ if ! yq eval '.scheduled_tasks.config_carousel' $QTOOLS_CONFIG_FILE >/dev/null 2
     qtools migrate-qtools-config
 fi
 
-FRAMES=10
+FRAMES=$(yq eval '.scheduled_tasks.config_carousel.frames // 10' $QTOOLS_CONFIG_FILE)
 RESTART=false
 
 # Function to set switch configs status
