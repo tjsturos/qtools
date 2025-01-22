@@ -110,6 +110,8 @@ scheduled_tasks:
         check_workers:
             enabled: false
             cron_expression: "* * * * *"
+            idle_config_file: ~/ceremonyclient/node/idle-config.yml
+            in_use_config_file: ~/ceremonyclient/node/in-use-config.yml
         service_name: quil-config-carousel
 settings:
     publish_multiaddr:
