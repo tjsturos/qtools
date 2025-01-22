@@ -4,7 +4,7 @@ release_version: 1.4.19.1
 current_node_version: 1.4.19.1
 current_qclient_version: 1.4.19.1
 os_arch: linux-amd64
-qtools_version: 20
+qtools_version: 21
 qclient_cli_name: qclient
 ssh:
     allow_from_ip: false
@@ -107,13 +107,17 @@ scheduled_tasks:
         frames: 10
         peer_list: []
         current_index: 0
+        check_workers:
+            enabled: false
+            cron_expression: "* * * * *"
 settings:
     publish_multiaddr:
         enabled: false
+        remote_file: ~/directPeersList.yml
+    central_server:
         ssh_key_path: ~/.ssh/backup-server
         remote_user: root
         remote_host: backups.example.com
-        remote_file: ~/directPeersList.yml
     listenAddr:
         mode: "udp"
         port: 8336

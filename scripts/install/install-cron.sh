@@ -108,6 +108,15 @@ if [ "$IS_CLUSTERING_ENABLED" == "true" ] && [ "$IS_MASTER" == "true" ] || [ "$I
     log "Adding backup store cron expression: $BACKUP_STORE_CRON_EXPRESSION"
     append_to_file $FILE_CRON "$BACKUP_STORE_CRON_EXPRESSION qtools backup-store --restart" false
   fi
+
+  AUTO_CHECK_WORKERS=$(yq eval '.scheduled_tasks.config_carousel.check_workers.enabled // "false"' $QTOOLS_CONFIG_FILE)
+
+  if [ "$AUTO_CHECK_WORKERS" == "true" ]; then
+    CHECK_WORKERS_CRON_EXPRESSION=$(yq eval '.scheduled_tasks.config_carousel.check_workers.cron_expression // "* * * * *"' $QTOOLS_CONFIG_FILE)
+    
+    log "Adding worker availability check cron expression: $CHECK_WORKERS_CRON_EXPRESSION"
+    append_to_file $FILE_CRON "$CHECK_WORKERS_CRON_EXPRESSION qtools check-worker-availability && sleep 30 && qtools check-worker-availability" false
+  fi
 fi
 
 echo "$(crontab -l)" > $FILE_ACTUAL_OUTPUT

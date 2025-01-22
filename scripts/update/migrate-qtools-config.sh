@@ -34,6 +34,7 @@ map_values_to_new_field() {
     local default_value="$3"
 
     yq eval -i "$new_field = $old_field // \"$default_value\"" $QTOOLS_CONFIG_FILE
+    yq eval -i "del($old_field)" $QTOOLS_CONFIG_FILE
 }
 
 update_backup_settings() {
@@ -88,6 +89,32 @@ VERSION_5() {
     fi
 }
 
+VERSION_21() {
+    local VERSION=21
+    local VERSION=21
+    current_version=$(yq eval '.qtools_version // "0"' "$QTOOLS_CONFIG_FILE")
+    echo "Current version: $current_version vs $VERSION"
+    if [ "$current_version" -lt "$VERSION" ]; then
+        echo "Migrating config.yml to version 21"
+
+        # Check if old publish_multiaddrs settings exist and migrate them
+        if yq eval '.settings.publish_multiaddr.ssh_key_path' "$QTOOLS_CONFIG_FILE" &>/dev/null; then
+            map_values_to_new_field ".settings.publish_multiaddr.ssh_key_path" ".settings.central_server.ssh_key_path"
+        fi
+
+        if yq eval '.settings.publish_multiaddr.remote_user' "$QTOOLS_CONFIG_FILE" &>/dev/null; then
+            map_values_to_new_field ".settings.publish_multiaddr.remote_user" ".settings.central_server.remote_user"
+        fi
+
+        if yq eval '.settings.publish_multiaddrs.remote_host' "$QTOOLS_CONFIG_FILE" &>/dev/null; then
+            map_values_to_new_field ".settings.publish_multiaddr.remote_host" ".settings.central_server.remote_host"
+        fi
+
+        yq eval -i '.qtools_version = 21' "$QTOOLS_CONFIG_FILE"
+        echo "Updated qtools_version to 21"
+    fi
+}
+
 get_latest_qtools_version() {
     yq eval '.qtools_version // "0"' "$QTOOLS_CONFIG_FILE_SAMPLE"
 }
@@ -96,6 +123,7 @@ get_latest_qtools_version() {
 VERSION_2
 VERSION_3
 VERSION_5
+VERSION_21
 
 yq eval -i ".qtools_version = \"$(get_latest_qtools_version)\"" "$QTOOLS_CONFIG_FILE"
 

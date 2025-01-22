@@ -78,8 +78,13 @@ if [ "$DAEMON_MODE" = true ]; then
     while true; do
         FRAME_COUNT=0
         while [ $FRAME_COUNT -lt $FRAMES_BEFORE_SWITCH ]; do
+
+            
             while read -r line; do
-                if [[ $line =~ "submitting data proof" ]]; then
+                # When starting new frame batch, mark worker as in-use
+                if [ $FRAME_COUNT -eq 0 ] && [[ $line =~ "creating data shard" ]]; then
+                    qtools toggle-worker-availability --in-use
+                elif [[ $line =~ "submitting data proof" ]]; then
                     CURRENT_FRAME=$(echo "$line" | jq -r '.frame_number')
                     if [ "$CURRENT_FRAME" != "$LAST_FRAME" ]; then
                         FRAME_COUNT=$((FRAME_COUNT + 1))
@@ -92,6 +97,7 @@ if [ "$DAEMON_MODE" = true ]; then
                 fi
             done < <(journalctl -f -u $QUIL_SERVICE_NAME -o cat)
         done
+        qtools toggle-worker-availability --available
         switch_config
     done
 else
