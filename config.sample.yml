@@ -110,6 +110,7 @@ scheduled_tasks:
         check_workers:
             enabled: false
             cron_expression: "* * * * *"
+        service_name: quil-config-carousel
 settings:
     publish_multiaddr:
         enabled: false

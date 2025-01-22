@@ -25,7 +25,7 @@ set_switch_configs_status() {
 # Function to manage systemd service
 manage_service() {
     local action=$1
-    local service_name="quil-config-carousel.service"
+    local service_name="$CONFIG_CAROUSEL_SERVICE_NAME.service"
     local service_path="/etc/systemd/system/$service_name"
     
     if [ "$action" = "start" ]; then

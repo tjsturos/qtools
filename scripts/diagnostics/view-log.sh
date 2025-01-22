@@ -6,10 +6,14 @@ IS_CLUSTERING_ENABLED="$(yq '.service.clustering.enabled' $QTOOLS_CONFIG_FILE)"
 FILTER_TEXT=""
 CORE_ID=false
 LINES=""
+CONFIG_CAROUSEL=""
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
+        --config-carousel)
+            CONFIG_CAROUSEL="true"
+            ;;
         --core)
             if [[ -n $2 && $2 =~ ^[0-9]+$ ]]; then
                 CORE_ID=$2
@@ -37,7 +41,9 @@ while [[ $# -gt 0 ]]; do
     shift
 done
 
-if [ "$IS_CLUSTERING_ENABLED" == "true" ]; then
+if [ "$CONFIG_CAROUSEL" == "true" ]; then
+    sudo journalctl -u $CONFIG_CAROUSEL_SERVICE_NAME -f --no-hostname -o cat ${FILTER_TEXT:+--grep="$FILTER_TEXT"} ${LINES:+-n $LINES}
+elif [ "$IS_CLUSTERING_ENABLED" == "true" ]; then
     if [ "$CORE_ID" == "false" ]; then
         sudo journalctl -u $QUIL_SERVICE_NAME -f --no-hostname -o cat ${FILTER_TEXT:+--grep="$FILTER_TEXT"} ${LINES:+-n $LINES}
     else
