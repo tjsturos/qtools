@@ -59,8 +59,13 @@ while [[ $# -gt 0 ]]; do
 done
 
 
-if [ "$CORES_TO_USE" == "0" ] && [ "$(is_master)" == "false" ]; then
-    CORES_TO_USE=$TOTAL_CORES
+if [[ ("$CORES_TO_USE" == "0" || "$CORES_TO_USE" == "false") ]]; then
+
+    if [ "$(is_master)" == "false" ]; then
+        CORES_TO_USE=$TOTAL_CORES
+    else
+        CORES_TO_USE=$((TOTAL_CORES - 1))
+    fi
 fi
 
 

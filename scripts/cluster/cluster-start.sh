@@ -6,7 +6,7 @@ IMMEDIATE_RESTART=true
 
 LOCAL_IP=$(get_local_ip)
 
-if [ "$CORES_TO_USE" == "null" ]; then
+if [ "$CORES_TO_USE" == "false" ]; then
     CORES_TO_USE=$(nproc)
 fi
 
