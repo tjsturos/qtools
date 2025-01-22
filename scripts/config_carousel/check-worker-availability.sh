@@ -20,6 +20,8 @@ check_availability() {
     echo $AVAILABLE
 }
 
+AVAILABLE=$(check_availability)
+
 if [[ "$AVAILABLE" == "true" ]]; then
     echo "Workers are available, switching to in-use config"
     IN_USE_CONFIG_FILE=$(yq eval '.scheduled_tasks.config_carousel.in_use_config_file // "~/ceremonyclient/node/in-use-config.yml"' $QTOOLS_CONFIG_FILE)
