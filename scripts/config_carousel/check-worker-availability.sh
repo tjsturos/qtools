@@ -24,9 +24,9 @@ AVAILABLE=$(check_availability)
 
 if [[ "$AVAILABLE" == "true" ]]; then
     echo "Workers are available, switching to in-use config"
-    IN_USE_CONFIG_FILE=$(yq eval '.scheduled_tasks.config_carousel.in_use_config_file // "~/ceremonyclient/node/in-use-config.yml"' $QTOOLS_CONFIG_FILE)
-    if [ -f $IN_USE_CONFIG_FILE ]; then
-        cp $IN_USE_CONFIG_FILE $QUIL_NODE_CONFIG_FILE/.config/config.yml
+    IN_USE_CONFIG_FILE="$(eval echo $(yq eval '.scheduled_tasks.config_carousel.in_use_config_file // "~/ceremonyclient/node/in-use-config.yml"' $QTOOLS_CONFIG_FILE))"
+    if [ -f ${IN_USE_CONFIG_FILE} ]; then
+        cp ${IN_USE_CONFIG_FILE} $QUIL_NODE_CONFIG_FILE/.config/config.yml
         sudo systemctl restart $QUIL_SERVICE_NAME
     else
         echo "No in-use config file found ($IN_USE_CONFIG_FILE), starting whatever is already defined"
@@ -34,9 +34,9 @@ if [[ "$AVAILABLE" == "true" ]]; then
     fi
 else
     echo "Workers are not available, switching to idle config"
-    IDLE_CONFIG_FILE=$(yq eval '.scheduled_tasks.config_carousel.idle_config_file // "~/ceremonyclient/node/idle-config.yml"' $QTOOLS_CONFIG_FILE)
-    if [ -f $IDLE_CONFIG_FILE ]; then
-        cp $IDLE_CONFIG_FILE $QUIL_NODE_CONFIG_FILE/.config/config.yml
+    IDLE_CONFIG_FILE="$(eval echo $(yq eval '.scheduled_tasks.config_carousel.idle_config_file // "~/ceremonyclient/node/idle-config.yml"' $QTOOLS_CONFIG_FILE))"
+    if [ -f ${IDLE_CONFIG_FILE} ]; then
+        cp ${IDLE_CONFIG_FILE} $QUIL_NODE_CONFIG_FILE/.config/config.yml
         sudo systemctl restart $QUIL_SERVICE_NAME
     else
         echo "No idle config file found ($IDLE_CONFIG_FILE), stopping node"
