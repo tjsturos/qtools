@@ -13,6 +13,8 @@ Then you can run the command from anywhere on your system:
 qtools <command>
 ```
 
+For a complete list of available commands and their usage, see the [Commands Documentation](docs/Commands.md).
+
 ## Config & Initialization
 There are quite a few settings in the [config file](qtools/config.sample.yml).
 

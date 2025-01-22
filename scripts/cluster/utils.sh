@@ -218,7 +218,7 @@ get_cores_to_use() {
         local server=$(echo "$servers" | yq eval ".[$i]" -)
         local server_ip=$(echo "$server" | yq eval '.ip' -)
         if [ "$server_ip" == "$ip" ]; then
-            local cores_to_use=$(echo "$server" | yq eval '.cores_to_use // "0"' -)
+            local cores_to_use=$(echo "$server" | yq eval '.cores_to_use // "false"' -)
             echo "$cores_to_use"
             return
         fi
