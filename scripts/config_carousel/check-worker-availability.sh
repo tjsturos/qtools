@@ -21,7 +21,9 @@ check_availability() {
 }
 
 if [[ "$AVAILABLE" == "true" ]]; then
+    echo "Workers are available"
     sudo systemctl start $QUIL_SERVICE_NAME
 else
+    echo "Workers are not available"
     sudo systemctl stop $QUIL_SERVICE_NAME
 fi
