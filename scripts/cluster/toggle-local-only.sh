@@ -9,11 +9,11 @@ MANUAL_STATE=""
 
 while [[ $# -gt 0 ]]; do
     case $1 in
-        --on)
+        --true)
             MANUAL_STATE="true"
             shift
             ;;
-        --off)
+        --false)
             MANUAL_STATE="false"
             shift
             ;;
