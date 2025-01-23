@@ -1,0 +1,43 @@
+#!/bin/bash
+
+# Exit on error
+set -e
+
+# Get current local_only value
+CURRENT_VALUE=$(yq eval '.service.clustering.local_only' $QTOOLS_CONFIG_FILE)
+MANUAL_STATE=""
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --on)
+            MANUAL_STATE="true"
+            shift
+            ;;
+        --off)
+            MANUAL_STATE="false"
+            shift
+            ;;
+        *)
+            shift
+            ;;
+    esac
+done
+
+if [ -n "$MANUAL_STATE" ]; then
+    NEW_VALUE="$MANUAL_STATE"
+    yq eval -i ".service.clustering.local_only = $NEW_VALUE" $QTOOLS_CONFIG_FILE
+    echo "Set local_only to $NEW_VALUE"
+    exit 0
+fi
+
+# Toggle the value
+if [ "$CURRENT_VALUE" = "true" ]; then
+    NEW_VALUE="false"
+else
+    NEW_VALUE="true" 
+fi
+
+# Update the config file
+yq eval -i ".service.clustering.local_only = $NEW_VALUE" $QTOOLS_CONFIG_FILE
+
+echo "Toggled local_only from $CURRENT_VALUE to $NEW_VALUE"

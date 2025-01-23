@@ -38,7 +38,8 @@ add_server_to_config() {
     local ssh_port=${2:-$DEFAULT_SSH_PORT}  # Default SSH port is 22 if not specified
     local user=${3:-$DEFAULT_USER}   # Default user is the current user if not specified
     local worker_count=${4:-null}
-    local base_port=${5:-$BASE_PORT}
+    local core_count=${5:-null}
+    local base_port=${6:-$BASE_PORT}
     # Check if the server already exists in the config
     if yq eval ".service.clustering.servers[] | select(.ip == \"$ip\")" "$QTOOLS_CONFIG_FILE" | grep -q .; then
         echo -e "${YELLOW}${WARNING_ICON} Server $ip already exists in the configuration. Removing existing entry.${RESET}"
@@ -72,26 +73,26 @@ fi
 # Loop through all provided IP addresses
 for arg in "${SERVERS[@]}"; do
     # Parse the argument into components
-    if [[ $arg =~ ^([^@]+@)?([^:/]+)(:([0-9]+))?(/([0-9]+))?$ ]]; then
+    if [[ $arg =~ ^([^@]+@)?([^:/]+)(:([0-9]+))?(/([0-9]+))?(/([0-9]+))?$ ]]; then
         user="${BASH_REMATCH[1]%@}"
         [ -z "$user" ] && user="$DEFAULT_USER"
         ip="${BASH_REMATCH[2]}"
         ssh_port="${BASH_REMATCH[4]:-$DEFAULT_SSH_PORT}"
         worker_count="${BASH_REMATCH[6]}"
-        
+        core_count="${BASH_REMATCH[8]}"
         if [ -n "$worker_count" ]; then
             echo -e "${BLUE}${INFO_ICON} Processing server: $user@$ip (port: $ssh_port, workers: $worker_count)${RESET}"
-            add_server_to_config "$ip" "$ssh_port" "$user" "$worker_count" "$BASE_PORT"
+            add_server_to_config "$ip" "$ssh_port" "$user" "$worker_count" "$core_count" "$BASE_PORT"
             for ((i=0; i<$worker_count; i++)); do
                 yq eval -i ".engine.dataWorkerMultiaddrs += \"/ip4/$ip/tcp/$((BASE_PORT + i))\"" $QUIL_CONFIG_FILE
             done
         else
             echo -e "${BLUE}${INFO_ICON} Processing server: $user@$ip (port: $ssh_port)${RESET}"
-            add_server_to_config "$ip" "$ssh_port" "$user" null "$BASE_PORT"
+            add_server_to_config "$ip" "$ssh_port" "$user" null null "$BASE_PORT"
         fi
     else
         echo -e "${RED}${ERROR_ICON} Invalid format for argument: $arg${RESET}"
-        echo "Expected format: [user@]<ip>[:<ssh-port>][/worker-count]"
+        echo "Expected format: [user@]<ip>[:<ssh-port>][/worker-count][/core-count]"
         continue
     fi
 done
