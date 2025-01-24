@@ -39,6 +39,10 @@ DISABLE_SSH_PASSWORDS="$(yq '.settings.install.ssh.disable_password_login // "fa
 
 cd $QUIL_HOME
 
+# Initialize hooks first so node.real symlink exists
+source $QTOOLS_PATH/hooks/hooks-init.sh
+
+# Now download and link the node binary to node.real
 qtools download-node --link
 qtools download-qclient --link
 qtools update-service

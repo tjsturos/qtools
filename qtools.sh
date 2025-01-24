@@ -72,17 +72,23 @@ export QUIL_PATH=$HOME/ceremonyclient
 
 export QUIL_NODE_PATH=$QUIL_PATH/node
 export QUIL_CLIENT_PATH=$QUIL_PATH/client
-export QUIL_NODE_BIN=/usr/local/bin/node
 export QTOOLS_BIN_PATH=/usr/local/bin/qtools
 export QUIL_QCLIENT_BIN=/usr/local/bin/qclient
 export SYSTEMD_SERVICE_PATH=/etc/systemd/system
+
+# Node binary configuration
+export NODE_BINARY_PATH="$(yq '.service.link_directory // "/usr/local/bin"' $QTOOLS_CONFIG_FILE)"
+export NODE_BINARY_NAME="$(yq '.service.link_name // "node.real"' $QTOOLS_CONFIG_FILE)"
+export NODE_WRAPPER_NAME="node"
+
+export QUIL_NODE_BIN="$NODE_BINARY_PATH/$NODE_WRAPPER_NAME"
+export QUIL_NODE_REAL="$NODE_BINARY_PATH/$NODE_BINARY_NAME"
 
 # Check if SYSTEMD_SERVICE_PATH exists, if not, use /lib/systemd/system
 if [ ! -d "$SYSTEMD_SERVICE_PATH" ]; then
     export SYSTEMD_SERVICE_PATH=/lib/systemd/system
     log "SYSTEMD_SERVICE_PATH not found. Using /lib/systemd/system instead."
 fi
-
 
 export BASHRC_FILE="$HOME/.bashrc"
 
@@ -121,13 +127,9 @@ export IS_MASTER="$(is_master)"
 export QUIL_DATA_WORKER_SERVICE_NAME="$(yq '.service.clustering.data_worker_service_name // "dataworker"' $QTOOLS_CONFIG_FILE)"
 export QUIL_DATA_WORKER_SERVICE_FILE="$SYSTEMD_SERVICE_PATH/$QUIL_DATA_WORKER_SERVICE_NAME@.service"
 
-export LINKED_BINARY_PATH="$(yq '.service.link_directory // "/usr/local/bin"' $QTOOLS_CONFIG_FILE)"
-export LINKED_BINARY_NAME="$(yq '.service.link_name // "node"' $QTOOLS_CONFIG_FILE)"
-
 export QCLIENT_CLI_NAME="$(yq '.qclient_cli_name // "qclient"' $QTOOLS_CONFIG_FILE)"
-export LINKED_QCLIENT_BINARY="$LINKED_BINARY_PATH/$QCLIENT_CLI_NAME"
-
-export LINKED_NODE_BINARY="$LINKED_BINARY_PATH/$LINKED_BINARY_NAME"
+export LINKED_QCLIENT_BINARY="$NODE_BINARY_PATH/$QCLIENT_CLI_NAME"
+export LINKED_NODE_BINARY="$QUIL_NODE_REAL"
 
 # statistics service name
 export STATISTICS_SERVICE_NAME="$(yq '.scheduled_tasks.statistics.service_name // "statistics"' $QTOOLS_CONFIG_FILE)"

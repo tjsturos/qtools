@@ -1,0 +1,3 @@
+#!/bin/bash
+# Hook executed before node starts
+echo "[$(date)] Node starting..." >> /var/log/node_hooks.log 

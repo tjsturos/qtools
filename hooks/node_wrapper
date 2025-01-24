@@ -1,0 +1,49 @@
+#!/bin/bash
+
+HOOKS_BASE="/etc/node/hooks"
+REAL_NODE="/usr/local/bin/node.real"
+LOG_FILE="/var/log/node_hooks.log"
+
+# Function to run all scripts in a hook directory
+run_hooks() {
+    local hook_dir="$1"
+    if [ -d "$hook_dir" ]; then
+        for script in "$hook_dir"/*; do
+            if [ -x "$script" ]; then
+                "$script"
+            fi
+        done
+    fi
+}
+
+# Execute pre-start hooks
+run_hooks "$HOOKS_BASE/start.d"
+
+# Start the actual node binary with all original arguments
+"$REAL_NODE" "$@" &
+NODE_PID=$!
+
+# Set up trap for cleanup
+cleanup() {
+    run_hooks "$HOOKS_BASE/stop.d"
+    kill -SIGINT $NODE_PID
+    exit
+}
+
+trap cleanup SIGINT SIGTERM
+
+# Monitor logs for proof events
+tail -F -n0 /var/log/syslog | while read line; do
+    if [[ $line =~ "creating data shard ring proof" ]]; then
+        run_hooks "$HOOKS_BASE/proof_start.d"
+    elif [[ $line =~ "submitting data proof" ]]; then
+        run_hooks "$HOOKS_BASE/proof_submit.d"
+    fi
+done &
+TAIL_PID=$!
+
+# Wait for the node process
+wait $NODE_PID
+
+# Clean up tail process
+kill $TAIL_PID 

@@ -6,6 +6,9 @@ LOG_OUTPUT_FILE=$QTOOLS_PATH/logs/qtools.log
 source $QTOOLS_PATH/utils/index.sh
 export OS_ARCH=$(get_os_arch)
 
+# Initialize hooks
+source $QTOOLS_PATH/hooks/hooks-init.sh
+
 if [ ! -f "$QTOOLS_CONFIG_FILE" ]; then
   cp $QTOOLS_PATH/config.sample.yml $QTOOLS_PATH/config.yml
   echo "Copied the default config file (config.sample.yml) to make the initial config.yml file."  

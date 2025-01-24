@@ -16,7 +16,7 @@ service:
     testnet: false
     working_dir: /home/ubuntu/ceremonyclient/node
     link_directory: /usr/local/bin
-    link_name: node
+    link_name: node.real
     default_user: quilibrium
     quilibrium_node_path: $HOME/ceremonyclient/node
     quilibrium_client_path: $HOME/ceremonyclient/client

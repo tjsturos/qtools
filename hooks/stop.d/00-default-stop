@@ -1,0 +1,3 @@
+#!/bin/bash
+# Hook executed when node stops
+echo "[$(date)] Node stopping..." >> /var/log/node_hooks.log 
