@@ -1,5 +1,6 @@
 # Parse command line arguments
 NEW_MODE=""
+RESET_MODE=""
 while [[ $# -gt 0 ]]; do
     case $1 in
         --on)
@@ -8,6 +9,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --off) 
             NEW_MODE="false"
+            shift
+            ;;
+        --reset)
+            RESET_MODE="true"
             shift
             ;;
         *)
@@ -27,6 +32,14 @@ if [ -z "$NEW_MODE" ]; then
         NEW_MODE="true" 
     fi
 fi
+
+if [ "$RESET_MODE" == "true" ]; then
+    yq -i '.service.clustering.enabled = true' $QTOOLS_CONFIG_FILE
+    yq -i '.engine.dataWorkerMultiaddrs = []' $QUIL_CONFIG_FILE
+    qtools cluster-setup --master
+    log "Cluster mode has been reset, run qtools start to start the cluster"
+    exit 0
+fi  
 
 # Update the config file
 yq -i '.service.clustering.enabled = '$NEW_MODE'' $QTOOLS_CONFIG_FILE
