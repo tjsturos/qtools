@@ -24,26 +24,35 @@ AVAILABLE=$(check_availability)
 USING_WORKERS=$(yq eval '.scheduled_tasks.config_carousel.check_workers.using_workers // false' $QTOOLS_CONFIG_FILE)
 echo "AVAILABLE: $AVAILABLE"
 echo "USING_WORKERS: $USING_WORKERS"
-if [[ "$AVAILABLE" == "true" ]] && [[ "$USING_WORKERS" == "false" ]]; then
-    yq eval -i '.scheduled_tasks.config_carousel.check_workers.using_workers = true' $QTOOLS_CONFIG_FILE
-    echo "Workers are available, switching to in-use config"
-    IN_USE_CONFIG_FILE="$(eval echo $(yq eval '.scheduled_tasks.config_carousel.check_workers.in_use_config_file // "~/ceremonyclient/node/in-use-config.yml"' $QTOOLS_CONFIG_FILE))"
-    if [ -f ${IN_USE_CONFIG_FILE} ]; then
-        cp ${IN_USE_CONFIG_FILE} $QUIL_NODE_PATH/.config/config.yml
-        sudo systemctl restart $QUIL_SERVICE_NAME
+if [[ "$AVAILABLE" == "true" ]] &; then
+
+    if [[ "$USING_WORKERS" == "false" ]]; then
+        yq eval -i '.scheduled_tasks.config_carousel.check_workers.using_workers = true' $QTOOLS_CONFIG_FILE
+        echo "Workers are available, switching to in-use config"
+        IN_USE_CONFIG_FILE="$(eval echo $(yq eval '.scheduled_tasks.config_carousel.check_workers.in_use_config_file // "~/ceremonyclient/node/in-use-config.yml"' $QTOOLS_CONFIG_FILE))"
+        if [ -f ${IN_USE_CONFIG_FILE} ]; then
+            cp ${IN_USE_CONFIG_FILE} $QUIL_NODE_PATH/.config/config.yml
+            sudo systemctl restart $QUIL_SERVICE_NAME
+        else
+            echo "No in-use config file found ($IN_USE_CONFIG_FILE), starting whatever is already defined"
+            sudo systemctl start $QUIL_SERVICE_NAME
+        fi
     else
-        echo "No in-use config file found ($IN_USE_CONFIG_FILE), starting whatever is already defined"
-        sudo systemctl start $QUIL_SERVICE_NAME
+        echo "Workers are available, but already in use, skipping"
     fi
-elif [[ "$AVAILABLE" == "false" ]] && [[ "$USING_WORKERS" == "true" ]]; then
-    yq eval -i '.scheduled_tasks.config_carousel.check_workers.using_workers = false' $QTOOLS_CONFIG_FILE
-    echo "Workers are not available, switching to idle config"
-    IDLE_CONFIG_FILE="$(eval echo $(yq eval '.scheduled_tasks.config_carousel.check_workers.idle_config_file // "~/ceremonyclient/node/idle-config.yml"' $QTOOLS_CONFIG_FILE))"
-    if [ -f ${IDLE_CONFIG_FILE} ]; then
-        cp ${IDLE_CONFIG_FILE} $QUIL_NODE_PATH/.config/config.yml
-        sudo systemctl restart $QUIL_SERVICE_NAME
+elif [[ "$AVAILABLE" == "false" ]]; then
+    if [[ "$USING_WORKERS" == "true" ]]; then
+        yq eval -i '.scheduled_tasks.config_carousel.check_workers.using_workers = false' $QTOOLS_CONFIG_FILE
+        echo "Workers are not available, switching to idle config"
+        IDLE_CONFIG_FILE="$(eval echo $(yq eval '.scheduled_tasks.config_carousel.check_workers.idle_config_file // "~/ceremonyclient/node/idle-config.yml"' $QTOOLS_CONFIG_FILE))"
+        if [ -f ${IDLE_CONFIG_FILE} ]; then
+            cp ${IDLE_CONFIG_FILE} $QUIL_NODE_PATH/.config/config.yml
+            sudo systemctl restart $QUIL_SERVICE_NAME
+        else
+            echo "No idle config file found ($IDLE_CONFIG_FILE), stopping node"
+            sudo systemctl stop $QUIL_SERVICE_NAME
+        fi
     else
-        echo "No idle config file found ($IDLE_CONFIG_FILE), stopping node"
-        sudo systemctl stop $QUIL_SERVICE_NAME
+        echo "Workers are not available, but already in idle state, skipping"
     fi
 fi
