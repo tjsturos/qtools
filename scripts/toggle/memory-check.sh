@@ -12,7 +12,7 @@ while [[ $# -gt 0 ]]; do
             ;;
         *)
             echo "Unknown option: $1"
-            echo "Usage: qtools cluster-mode [--on|--off]"
+            echo "Usage: qtools toggle-memory-check [--on|--off]"
             exit 1
             ;;
     esac
