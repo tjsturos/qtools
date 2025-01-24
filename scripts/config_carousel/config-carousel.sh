@@ -80,7 +80,7 @@ if [ "$DAEMON_MODE" = true ]; then
         while [ $FRAME_COUNT -lt $FRAMES_BEFORE_SWITCH ]; do
             while read -r line; do
                 # When starting new frame batch, mark worker as in-use
-                if [[ $line =~ "creating data shard ring proof" ]]; then
+                if [[ $line =~ "creating data shard ring proof" ]] || [[ $line =~ "peer announced but has already been announced" ]]; then
                     log_message "Marking worker as in-use"
                     qtools toggle-worker-availability --in-use
                 elif [[ $line =~ "submitting data proof" ]]; then
