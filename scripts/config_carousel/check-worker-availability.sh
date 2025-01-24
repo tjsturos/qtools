@@ -24,8 +24,7 @@ AVAILABLE=$(check_availability)
 USING_WORKERS=$(yq eval '.scheduled_tasks.config_carousel.check_workers.using_workers // false' $QTOOLS_CONFIG_FILE)
 echo "AVAILABLE: $AVAILABLE"
 echo "USING_WORKERS: $USING_WORKERS"
-if [[ "$AVAILABLE" == "true" ]] &; then
-
+if [[ "$AVAILABLE" == "true" ]]; then
     if [[ "$USING_WORKERS" == "false" ]]; then
         yq eval -i '.scheduled_tasks.config_carousel.check_workers.using_workers = true' $QTOOLS_CONFIG_FILE
         echo "Workers are available, switching to in-use config"
