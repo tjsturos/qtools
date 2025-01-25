@@ -14,7 +14,7 @@ while [[ $# -gt 0 ]]; do
             shift 2
             ;;
         --servers)
-            TARGET_SERVERS="$2"
+            TARGET_SERVERS=$(echo "$2" | tr '|' ' ')
             shift 2
             ;;
         *)
