@@ -4,7 +4,7 @@ release_version: 1.4.19.1
 current_node_version: 1.4.19.1
 current_qclient_version: 1.4.19.1
 os_arch: linux-amd64
-qtools_version: 21
+qtools_version: 22
 qclient_cli_name: qclient
 ssh:
     allow_from_ip: false
@@ -115,6 +115,7 @@ scheduled_tasks:
             using_workers: false
         service_name: quil-config-carousel
 settings:
+    use_avx512: false
     publish_multiaddr:
         enabled: false
         remote_file: ~/directPeersList.yml

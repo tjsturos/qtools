@@ -7,6 +7,7 @@ SIGNER_COUNT=17
 BINARY_ONLY=""
 LINK=""
 DEV_BUILD=""
+USE_AVX512="$(yq '.settings.use_avx512' $QTOOLS_CONFIG_FILE)"
 
 while [[ $# -gt 0 ]]; do
     key="$1"
@@ -35,16 +36,26 @@ while [[ $# -gt 0 ]]; do
         echo "Fetching Dev Build"
         shift # past argument
         ;;
+        --use-avx512|-avx512)
+        USE_AVX512="true"
+        shift # past argument
+        ;;
         *)    # unknown option
         shift # past argument
         ;;
     esac
 done
 
+# Disable AVX512 for non-linux-amd64 architectures
+if [ "$OS_ARCH" != "linux-amd64" ] || [ "$USE_AVX512" != "true" ]; then
+    USE_AVX512=""
+fi
+
+
 
 # If NODE_VERSION is set, get release files for that specific version
 if [ -n "$NODE_VERSION" ]; then
-    NODE_RELEASE_FILES="node-${NODE_VERSION}-${OS_ARCH}"
+    NODE_RELEASE_FILES="node-${NODE_VERSION}-${OS_ARCH}${USE_AVX512:+-avx512}"
     if [ "$BINARY_ONLY" != "true" ] || [ "$DEV_BUILD" != "true" ]; then
         NODE_RELEASE_FILES+=" node-${NODE_VERSION}-${OS_ARCH}.dgst"
         for i in $(seq 1 $SIGNER_COUNT); do
