@@ -4,7 +4,7 @@ release_version: 1.4.19.1
 current_node_version: 1.4.19.1
 current_qclient_version: 1.4.19.1
 os_arch: linux-amd64
-qtools_version: 22
+qtools_version: 23
 qclient_cli_name: qclient
 ssh:
     allow_from_ip: false
@@ -31,6 +31,7 @@ service:
         default_user: ubuntu
         local_data_worker_count: null
         ssh_key_path: $HOME/.ssh
+        dataworker_priority: 90
         ssh_key_name: cluster-key
         main_ip: ""
         servers: []
