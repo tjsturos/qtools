@@ -132,7 +132,7 @@ FinalKillSignal=SIGKILL
 TimeoutStopSec=240
 
 CPUSchedulingPolicy=rr
-CPUSchedulingPriority=$(yq '.settings.service.dataworker_priority // 90' $QTOOLS_CONFIG_FILE)
+CPUSchedulingPriority=$(yq '.service.dataworker_priority // 90' $QTOOLS_CONFIG_FILE)
 
 [Install]
 WantedBy=multi-user.target"
