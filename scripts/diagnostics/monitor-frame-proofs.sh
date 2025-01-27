@@ -64,10 +64,10 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-MAX_FRAME="$(yq eval '.engine.maxFrame // "-1"' $QUIL_CONFIG_FILE)"
+MAX_FRAME="$(yq eval '.engine.maxFrames // "-1"' $QUIL_CONFIG_FILE)"
 # Check if local gRPC endpoint is configured and listening
 
-if [ "$MAX_FRAME" -lt 1000 ] && [ -z "$PUBLIC_RPC" ]; then
+if [ -n "$MAX_FRAME" ] && [ "$MAX_FRAME" -eq "$MAX_FRAME" ] 2>/dev/null && [ "$MAX_FRAME" -lt 1000 ] && [ "$MAX_FRAME" -ne -1 ] && [ -z "$PUBLIC_RPC" ]; then
     echo "Frame pruning is enabled, using the public RPC to get frame data"
     PUBLIC_RPC="true"
 fi
