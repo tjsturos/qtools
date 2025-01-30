@@ -94,7 +94,6 @@ export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
 export QTOOLS_CONFIG_FILE=$QTOOLS_PATH/config.yml
 export QUIL_KEYS_FILE="$QUIL_NODE_PATH/.config/keys.yml"
 export QUIL_CONFIG_FILE="$QUIL_NODE_PATH/.config/config.yml"
-export QUIL_TESTNET_CONFIG_FILE="$QUIL_NODE_PATH/test/.config/config.yml"
 
 # many util scripts require the log
 if [ "$1" == "init" ] || [ ! -f "$QTOOLS_PATH/INIT_COMPLETE" ]; then
@@ -108,7 +107,6 @@ if [ "$IS_TESTNET" == "true" ]; then
   export QUIL_NODE_PATH=$QUIL_PATH/node/test
   export QUIL_KEYS_FILE="$QUIL_NODE_PATH/.config/keys.yml"
   export QUIL_CONFIG_FILE="$QUIL_NODE_PATH/.config/config.yml"
-  export QUIL_TESTNET_CONFIG_FILE="$QUIL_NODE_PATH/test/.config/config.yml"
 fi
 export LOG_OUTPUT_FILE="$(yq '.settings.log_file // "${HOME}/qtools/qtools.log"' $QTOOLS_CONFIG_FILE)"
 source $QTOOLS_PATH/utils/index.sh
