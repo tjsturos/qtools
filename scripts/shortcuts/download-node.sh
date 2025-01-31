@@ -56,7 +56,7 @@ fi
 # If NODE_VERSION is set, get release files for that specific version
 if [ -n "$NODE_VERSION" ]; then
     NODE_RELEASE_FILES="node-${NODE_VERSION}-${OS_ARCH}${USE_AVX512:+-avx512}"
-    if [ "$BINARY_ONLY" != "true" ] || [ "$DEV_BUILD" != "true" ]; then
+    if [ "$BINARY_ONLY" != "true" ] && [ "$DEV_BUILD" != "true" ]; then
         NODE_RELEASE_FILES+=" node-${NODE_VERSION}-${OS_ARCH}.dgst"
         for i in $(seq 1 $SIGNER_COUNT); do
             NODE_RELEASE_FILES+=" node-${NODE_VERSION}-${OS_ARCH}.dgst.sig.$i"
