@@ -8,7 +8,7 @@ BINARY_ONLY=""
 LINK=""
 DEV_BUILD=""
 USE_AVX512="$(yq '.settings.use_avx512' $QTOOLS_CONFIG_FILE)"
-
+TESTNET=""
 while [[ $# -gt 0 ]]; do
     key="$1"
     case $key in
@@ -25,6 +25,11 @@ while [[ $# -gt 0 ]]; do
         SIGNER_COUNT="$2"
         shift # past argument
         shift # past value
+        ;;
+        --testnet|-t)
+        TESTNET="true"
+        BINARY_ONLY="true"
+        shift # past argument
         ;;
         --no-signatures|-ns)
         BINARY_ONLY="true"
@@ -130,7 +135,9 @@ for file in $NODE_RELEASE_FILES; do
             link_node $file
         fi
 
-        if [ "$DEV_BUILD" == "true" ] || [ "$BINARY_ONLY" == "true" ]; then
+        if [ "$TESTNET" == "true" ]; then
+            qtools update-service --skip-sig-check --testnet
+        elif [ "$DEV_BUILD" == "true" ] || [ "$BINARY_ONLY" == "true" ]; then
             qtools update-service --skip-sig-check
         fi
     fi
