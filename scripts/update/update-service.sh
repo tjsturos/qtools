@@ -137,12 +137,18 @@ CPUSchedulingPriority=$(yq '.service.dataworker_priority // 90' $QTOOLS_CONFIG_F
 [Install]
 WantedBy=multi-user.target"
 
+updateServiceContent() {
+    local CONTENT=$1
+    local FILE=$2
+    echo "$CONTENT" | sudo tee "$FILE" > /dev/null
+}
+
 updateServiceBinary() {
-    echo "$SERVICE_CONTENT" | sudo tee "$SERVICE_FILE" > /dev/null
+    updateServiceContent "$SERVICE_CONTENT" "$SERVICE_FILE"
 }
 
 updateDataWorkerServiceBinary() {
-    echo "$DATA_WORKER_SERVICE_CONTENT" | sudo tee "$QUIL_DATA_WORKER_SERVICE_FILE" > /dev/null
+    updateServiceContent "$DATA_WORKER_SERVICE_CONTENT" "$QUIL_DATA_WORKER_SERVICE_FILE"
 }
 
 createServiceIfNone() {
