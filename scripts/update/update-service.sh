@@ -137,16 +137,6 @@ CPUSchedulingPriority=$(yq '.service.dataworker_priority // 90' $QTOOLS_CONFIG_F
 [Install]
 WantedBy=multi-user.target"
 
-
-updateOrAddLine() {
-    local KEY=$1
-    local VALUE=$2
-    SERVICE_CONTENT=$(echo "$SERVICE_CONTENT" | sed -e "/^$KEY=/c\\$KEY=$VALUE")
-    if ! echo "$SERVICE_CONTENT" | grep -q "^$KEY="; then
-        SERVICE_CONTENT=$(echo "$SERVICE_CONTENT" | sed "/\[Service\]/a $KEY=$VALUE")
-    fi
-}
-
 updateServiceBinary() {
     echo "$SERVICE_CONTENT" | sudo tee "$SERVICE_FILE" > /dev/null
 }
