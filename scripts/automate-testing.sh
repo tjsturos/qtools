@@ -95,23 +95,27 @@ download_and_execute() {
         chmod +x "$BINARY_NAME"
         log "Made binary executable"
 
-        # Execute the binary with output to log file only
-        log "Starting execution of $BINARY_NAME (output going to $LOG_FILE)"
-        ./"$BINARY_NAME" >> "$LOG_FILE" 2>&1 &
-        APP_PID=$!
-        log "Started $BINARY_NAME with PID: $APP_PID"
-
-        # Wait for the process to complete
-        wait $APP_PID
-        local exit_code=$?
-        log "Process completed with exit code: $exit_code"
-        APP_PID=""  # Clear the PID since process has ended
-
         return 0
     else
         log "ERROR: Failed to download binary"
         return 1
     fi
+}
+
+# Function to run the binary
+run_binary() {
+    log "Starting execution of $BINARY_NAME (output going to $LOG_FILE)"
+    ./"$BINARY_NAME" >> "$LOG_FILE" 2>&1 &
+    APP_PID=$!
+    log "Started $BINARY_NAME with PID: $APP_PID"
+
+    # Wait for the process to complete
+    wait $APP_PID
+    local exit_code=$?
+    log "Process completed with exit code: $exit_code"
+    APP_PID=""  # Clear the PID since process has ended
+
+    return $exit_code
 }
 
 # Main script
@@ -126,28 +130,46 @@ main() {
     log "Check interval: $CHECK_INTERVAL seconds"
     log "Application output will be logged to: $LOG_FILE"
 
-    # Main loop
-    while true; do
+    local binary_downloaded=false
+
+    # Main loop - first wait for binary to be available and download it
+    while [ "$binary_downloaded" = false ]; do
         log "Checking if URL is active..."
 
         if check_url "$url"; then
-            log "URL is active! Proceeding with download and execution"
+            log "URL is active! Proceeding with download"
 
             if download_and_execute "$url"; then
-                log "Successfully completed execution"
-                break
+                log "Successfully downloaded binary"
+                binary_downloaded=true
             else
-                log "Failed to download or execute, will retry in $CHECK_INTERVAL seconds"
+                log "Failed to download, will retry in $CHECK_INTERVAL seconds"
+                sleep $CHECK_INTERVAL
             fi
         else
             log "URL not active yet, will check again in $CHECK_INTERVAL seconds"
+            sleep $CHECK_INTERVAL
         fi
-
-        # Wait for the specified interval
-        sleep $CHECK_INTERVAL
     done
 
-    log "Script completed"
+    # Now continuously run the binary until interrupted
+    log "Starting continuous execution loop (press Ctrl+C to stop)"
+    local run_count=0
+
+    while true; do
+        run_count=$((run_count + 1))
+        log "Starting run #$run_count"
+
+        run_binary
+
+        if [ $? -eq 0 ]; then
+            log "Run completed successfully with exit code 0. Check the log file for details."
+        fi
+
+        log "Run #$run_count completed, starting next run immediately..."
+        # Small delay to allow for log flushing and prevent tight loop
+        sleep 1
+    done
 }
 
 # Run the main function
