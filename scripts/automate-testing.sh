@@ -10,6 +10,33 @@ CHECK_INTERVAL=300  # 5 minutes in seconds
 LOG_FILE="lunchtime-simulator.log"
 BINARY_NAME="lunchtime-simulator"
 
+# Global variable to track the PID of the running application
+APP_PID=""
+
+# Function to handle cleanup on exit
+cleanup() {
+    log "Caught interrupt signal, cleaning up..."
+
+    # Kill the application if it's running
+    if [ -n "$APP_PID" ] && kill -0 "$APP_PID" 2>/dev/null; then
+        log "Terminating $BINARY_NAME (PID: $APP_PID)..."
+        kill -TERM "$APP_PID"
+        sleep 2
+
+        # Force kill if still running
+        if kill -0 "$APP_PID" 2>/dev/null; then
+            log "Force killing $BINARY_NAME..."
+            kill -KILL "$APP_PID"
+        fi
+    fi
+
+    log "Cleanup complete, exiting."
+    exit 0
+}
+
+# Set up trap for SIGINT (Ctrl+C) and SIGTERM
+trap cleanup SIGINT SIGTERM
+
 # Function to detect OS and architecture
 detect_system() {
     local os=""
@@ -71,13 +98,14 @@ download_and_execute() {
         # Execute the binary with output to log file only
         log "Starting execution of $BINARY_NAME (output going to $LOG_FILE)"
         ./"$BINARY_NAME" >> "$LOG_FILE" 2>&1 &
-        local pid=$!
-        log "Started $BINARY_NAME with PID: $pid"
+        APP_PID=$!
+        log "Started $BINARY_NAME with PID: $APP_PID"
 
         # Wait for the process to complete
-        wait $pid
+        wait $APP_PID
         local exit_code=$?
         log "Process completed with exit code: $exit_code"
+        APP_PID=""  # Clear the PID since process has ended
 
         return 0
     else
