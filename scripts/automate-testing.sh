@@ -3,6 +3,8 @@
 # Script to automatically check, download, and execute Quilibrium lunchtime simulator
 # based on system architecture and OS
 
+# Ideally this should be run in a tmux session for persistence
+
 # Configuration
 CHECK_INTERVAL=300  # 5 minutes in seconds
 LOG_FILE="lunchtime-simulator.log"
@@ -17,7 +19,7 @@ detect_system() {
     case "$(uname -s)" in
         Linux*)     os="linux";;
         Darwin*)    os="darwin";;
-        *)          echo "Unsupported OS: $(uname -s)" | tee -a "$LOG_FILE"
+        *)          echo "Unsupported OS: $(uname -s)"
                     exit 1;;
     esac
 
@@ -25,16 +27,16 @@ detect_system() {
     case "$(uname -m)" in
         x86_64)     arch="amd64";;
         aarch64|arm64) arch="arm64";;
-        *)          echo "Unsupported architecture: $(uname -m)" | tee -a "$LOG_FILE"
+        *)          echo "Unsupported architecture: $(uname -m)"
                     exit 1;;
     esac
 
     echo "${os}-${arch}"
 }
 
-# Function to log with timestamp
+# Function to log with timestamp (stdout only)
 log() {
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a "$LOG_FILE"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1"
 }
 
 # Function to check if URL is active
@@ -59,15 +61,15 @@ download_and_execute() {
     log "Downloading binary from: $url"
 
     # Download the binary
-    if curl -L -o "$BINARY_NAME" "$url" 2>>"$LOG_FILE"; then
+    if curl -L -o "$BINARY_NAME" "$url" 2>/dev/null; then
         log "Download successful"
 
         # Make it executable
         chmod +x "$BINARY_NAME"
         log "Made binary executable"
 
-        # Execute the binary with output to log file
-        log "Starting execution of $BINARY_NAME"
+        # Execute the binary with output to log file only
+        log "Starting execution of $BINARY_NAME (output going to $LOG_FILE)"
         ./"$BINARY_NAME" >> "$LOG_FILE" 2>&1 &
         local pid=$!
         log "Started $BINARY_NAME with PID: $pid"
@@ -94,6 +96,7 @@ main() {
     log "System detected: $system"
     log "Target URL: $url"
     log "Check interval: $CHECK_INTERVAL seconds"
+    log "Application output will be logged to: $LOG_FILE"
 
     # Main loop
     while true; do
