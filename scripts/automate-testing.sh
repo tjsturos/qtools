@@ -85,7 +85,8 @@ detect_system() {
     echo "${os}-${arch}"
 }
 
-LOG_FILE="lunchtime-simulator.log"
+# Function to check if URL is active
+check_url() {
     local url=$1
     # Use curl with head request to check if URL is accessible
     # -s: silent, -o /dev/null: discard output, -w %{http_code}: write HTTP code
