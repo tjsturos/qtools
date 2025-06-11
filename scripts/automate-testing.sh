@@ -11,8 +11,8 @@ LOG_DIR="logs"
 BINARY_NAME="lunchtime-simulator"
 
 # Global array to track PIDs of running applications
-declare -A APP_PIDS=()  # Associative array: PID -> instance_id
-declare -A APP_LOGS=()  # Associative array: PID -> log_file
+APP_PIDS=()  # Associative array: PID -> instance_id
+APP_LOGS=()  # Associative array: PID -> log_file
 
 # Function to log_to_user with timestamp (stdout only)
 log_to_user() {
