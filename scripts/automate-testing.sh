@@ -12,6 +12,7 @@ BINARY_NAME="lunchtime-simulator"
 
 # Global array to track PIDs of running applications
 declare -A APP_PIDS=()  # Associative array: PID -> instance_id
+declare -A APP_LOGS=()  # Associative array: PID -> log_file
 
 # Function to log_to_user with timestamp (stdout only)
 log_to_user() {
@@ -133,7 +134,8 @@ run_binary_instance() {
     local pid=$!
     log_to_user "[Instance $instance_id] Started run #$run_number with PID: $pid"
 
-    echo $pid
+    # Return both PID and log file
+    echo "$pid|$log_file"
 }
 
 # Function to maintain parallel instances
@@ -152,8 +154,11 @@ maintain_parallel_instances() {
     for ((i=1; i<=target_instances; i++)); do
         instance_run_count[$i]=$((instance_run_count[$i] + 1))
         total_runs=$((total_runs + 1))
-        local pid=$(run_binary_instance $i ${instance_run_count[$i]})
+        local result=$(run_binary_instance $i ${instance_run_count[$i]})
+        local pid=$(echo "$result" | cut -d'|' -f1)
+        local log_file=$(echo "$result" | cut -d'|' -f2)
         APP_PIDS[$pid]=$i
+        APP_LOGS[$pid]=$log_file
     done
 
     # Continuously maintain the target number of instances
@@ -161,22 +166,33 @@ maintain_parallel_instances() {
         # Check for completed processes and restart them
         for pid in "${!APP_PIDS[@]}"; do
             if ! kill -0 "$pid" 2>/dev/null; then
-                # Process has finished
-                wait "$pid" 2>/dev/null
-                local exit_code=$?
                 local instance_id=${APP_PIDS[$pid]}
-                log_to_user "[Instance $instance_id] Process (PID: $pid) completed with exit code: $exit_code"
+                local log_file=${APP_LOGS[$pid]}
+                # Process has finished
+                wait "$pid"
+                local exit_code=$?
+
+                if [ $exit_code -eq 0 ]; then
+                    log_to_user "[Instance $instance_id] ✓ Process (PID: $pid) completed successfully (exit code 0)"
+                else
+                    log_to_user "\033[31m[Instance $instance_id] ✗ Process (PID: $pid) failed (exit code: $exit_code)\033[0m"
+                    log_to_user "\033[31m[Instance $instance_id] Find and return the log file at: $log_file\033[0m"
+                fi
 
                 # Remove from tracking
                 unset APP_PIDS[$pid]
+                unset APP_LOGS[$pid]
 
                 # Start a new instance immediately
                 instance_run_count[$instance_id]=$((instance_run_count[$instance_id] + 1))
                 total_runs=$((total_runs + 1))
                 log_to_user "[Instance $instance_id] Total runs across all instances: $total_runs"
 
-                local new_pid=$(run_binary_instance $instance_id ${instance_run_count[$instance_id]})
+                local result=$(run_binary_instance $instance_id ${instance_run_count[$instance_id]})
+                local new_pid=$(echo "$result" | cut -d'|' -f1)
+                local new_log_file=$(echo "$result" | cut -d'|' -f2)
                 APP_PIDS[$new_pid]=$instance_id
+                APP_LOGS[$new_pid]=$new_log_file
 
                 # Small delay to prevent tight loop
                 sleep 0.1
