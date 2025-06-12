@@ -11,7 +11,7 @@ LOG_DIR="logs"
 BINARY_NAME="lunchtime-simulator"
 
 # Global array to track PIDs of running applications
-declare -A APP_PIDS=()  # Associative array: PID -> instance_id
+APP_PIDS=()  # Associative array: PID -> instance_id
 
 # Function to log_to_user with timestamp (stdout only)
 log_to_user() {
@@ -139,7 +139,7 @@ run_binary_instance() {
 # Function to maintain parallel instances
 maintain_parallel_instances() {
     local target_instances=$1
-    local -A instance_run_count  # Track run count per instance
+    local instance_run_count=()  # Track run count per instance
     local total_runs=0
 
     # Initialize instance run counts
