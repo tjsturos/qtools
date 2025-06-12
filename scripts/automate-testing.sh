@@ -148,7 +148,7 @@ run_binary_instance() {
 # Function to maintain parallel instances
 maintain_parallel_instances() {
     local target_instances=$1
-    local -A instance_run_count  # Track run count per instance
+    local instance_run_count=()  # Track run count per instance
     local total_runs=0
 
     # Initialize instance run counts
