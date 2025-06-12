@@ -214,6 +214,11 @@ main() {
 
     local binary_downloaded=false
 
+    # Check if binary already exists
+    if [ -f "lunchtime-simulator" ]; then
+        binary_downloaded=true
+    fi
+
     # Main loop - first wait for binary to be available and download it
     while [ "$binary_downloaded" = false ]; do
         log_to_user "Checking if URL is active..."
