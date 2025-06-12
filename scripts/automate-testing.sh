@@ -37,9 +37,9 @@ cleanup() {
 
     # Kill all running application instances
     for pid in "${!APP_PIDS[@]}"; do
-        if kill -0 "$pid" 2>/dev/null; then
-            log_to_user "Terminating $BINARY_NAME (PID: $pid, Instance: ${APP_PIDS[$pid]})..."
-            kill -TERM "$pid"
+        if pgrep -f "$BINARY_NAME" > /dev/null; then
+            log_to_user "Terminating all instances of $BINARY_NAME..."
+            pkill -f "$BINARY_NAME" > /dev/null 2>&1
         fi
     done
 
@@ -128,10 +128,10 @@ run_binary_instance() {
     local timestamp=$(date '+%Y%m%d_%H%M%S')
     local log_file="${LOG_DIR}/lunchtime-simulator-instance${instance_id}-run${run_number}-${timestamp}.log"
 
-    log_to_user "[Instance $instance_id] Starting execution run #$run_number (output going to $log_file)"
+    log_to_user "[Instance $instance_id] Starting execution run #$run_number (output going to $log_file)" >&2
     ./"$BINARY_NAME" >> "$log_file" 2>&1 &
     local pid=$!
-    log_to_user "[Instance $instance_id] Started run #$run_number with PID: $pid"
+    log_to_user "[Instance $instance_id] Started run #$run_number with PID: $pid" >&2
 
     echo $pid
 }
@@ -165,7 +165,21 @@ maintain_parallel_instances() {
                 wait "$pid" 2>/dev/null
                 local exit_code=$?
                 local instance_id=${APP_PIDS[$pid]}
-                log_to_user "[Instance $instance_id] Process (PID: $pid) completed with exit code: $exit_code"
+
+                                if [ $exit_code -eq 0 ]; then
+                    log_to_user "[Instance $instance_id] ✓ Process (PID: $pid) completed successfully"
+                else
+                    log_to_user "[Instance $instance_id] ✗ Process (PID: $pid) failed with exit code: $exit_code"
+
+                    # Add a delay for failed processes to prevent rapid cycling
+                    if [ $exit_code -eq 127 ]; then
+                        log_to_user "[Instance $instance_id] Exit code 127 indicates command not found - check if binary exists and is executable"
+                        sleep 5
+                    elif [ $exit_code -eq 1 ]; then
+                        # Normal failure, add small delay
+                        sleep 2
+                    fi
+                fi
 
                 # Remove from tracking
                 unset APP_PIDS[$pid]
