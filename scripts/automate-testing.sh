@@ -107,6 +107,13 @@ download_and_execute() {
 
     log_to_user "Downloading binary from: $url"
 
+    # Check if binary already exists
+    if [ -f "$BINARY_NAME" ] || [ -f "lunchtime-simulator" ]; then
+        log_to_user "Binary already exists, skipping download"
+        chmod +x "$BINARY_NAME" 2>/dev/null || chmod +x "lunchtime-simulator" 2>/dev/null
+        return 0
+    fi
+
     # Download the binary
     if curl -L -o "$BINARY_NAME" "$url" 2>/dev/null; then
         log_to_user "Download successful"
