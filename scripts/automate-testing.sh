@@ -11,8 +11,7 @@ LOG_DIR="logs"
 BINARY_NAME="lunchtime-simulator"
 
 # Global array to track PIDs of running applications
-APP_PIDS=()  # Associative array: PID -> instance_id
-APP_LOGS=()  # Associative array: PID -> log_file
+declare -A APP_PIDS=()  # Associative array: PID -> instance_id
 
 # Function to log_to_user with timestamp (stdout only)
 log_to_user() {
@@ -107,8 +106,6 @@ download_and_execute() {
 
     log_to_user "Downloading binary from: $url"
 
-
-
     # Download the binary
     if curl -L -o "$BINARY_NAME" "$url" 2>/dev/null; then
         log_to_user "Download successful"
@@ -136,14 +133,13 @@ run_binary_instance() {
     local pid=$!
     log_to_user "[Instance $instance_id] Started run #$run_number with PID: $pid"
 
-    # Return both PID and log file
-    echo "$pid|$log_file"
+    echo $pid
 }
 
 # Function to maintain parallel instances
 maintain_parallel_instances() {
     local target_instances=$1
-    local instance_run_count=()  # Track run count per instance
+    local -A instance_run_count  # Track run count per instance
     local total_runs=0
 
     # Initialize instance run counts
@@ -156,11 +152,8 @@ maintain_parallel_instances() {
     for ((i=1; i<=target_instances; i++)); do
         instance_run_count[$i]=$((instance_run_count[$i] + 1))
         total_runs=$((total_runs + 1))
-        local result=$(run_binary_instance $i ${instance_run_count[$i]})
-        local pid=$(echo "$result" | cut -d'|' -f1)
-        local log_file=$(echo "$result" | cut -d'|' -f2)
+        local pid=$(run_binary_instance $i ${instance_run_count[$i]})
         APP_PIDS[$pid]=$i
-        APP_LOGS[$pid]=$log_file
     done
 
     # Continuously maintain the target number of instances
@@ -168,33 +161,22 @@ maintain_parallel_instances() {
         # Check for completed processes and restart them
         for pid in "${!APP_PIDS[@]}"; do
             if ! kill -0 "$pid" 2>/dev/null; then
-                local instance_id=${APP_PIDS[$pid]}
-                local log_file=${APP_LOGS[$pid]}
                 # Process has finished
-                wait "$pid"
+                wait "$pid" 2>/dev/null
                 local exit_code=$?
-
-                if [ $exit_code -eq 0 ]; then
-                    log_to_user "[Instance $instance_id] ✓ Process (PID: $pid) completed successfully (exit code 0)"
-                else
-                    log_to_user "\033[31m[Instance $instance_id] ✗ Process (PID: $pid) failed (exit code: $exit_code)\033[0m"
-                    log_to_user "\033[31m[Instance $instance_id] Find and return the log file at: $log_file\033[0m"
-                fi
+                local instance_id=${APP_PIDS[$pid]}
+                log_to_user "[Instance $instance_id] Process (PID: $pid) completed with exit code: $exit_code"
 
                 # Remove from tracking
                 unset APP_PIDS[$pid]
-                unset APP_LOGS[$pid]
 
                 # Start a new instance immediately
                 instance_run_count[$instance_id]=$((instance_run_count[$instance_id] + 1))
                 total_runs=$((total_runs + 1))
                 log_to_user "[Instance $instance_id] Total runs across all instances: $total_runs"
 
-                local result=$(run_binary_instance $instance_id ${instance_run_count[$instance_id]})
-                local new_pid=$(echo "$result" | cut -d'|' -f1)
-                local new_log_file=$(echo "$result" | cut -d'|' -f2)
+                local new_pid=$(run_binary_instance $instance_id ${instance_run_count[$instance_id]})
                 APP_PIDS[$new_pid]=$instance_id
-                APP_LOGS[$new_pid]=$new_log_file
 
                 # Small delay to prevent tight loop
                 sleep 0.1
@@ -232,14 +214,6 @@ main() {
 
     local binary_downloaded=false
 
-
-    # Check if binary already exists
-    if [ -f "$BINARY_NAME" ] || [ -f "lunchtime-simulator" ]; then
-        log_to_user "Binary already exists, skipping download"
-        chmod +x "$BINARY_NAME" 2>/dev/null || chmod +x "lunchtime-simulator" 2>/dev/null
-        binary_downloaded=true
-    fi
-
     # Main loop - first wait for binary to be available and download it
     while [ "$binary_downloaded" = false ]; do
         log_to_user "Checking if URL is active..."
@@ -269,4 +243,3 @@ main() {
 
 # Run the main function
 main
-
