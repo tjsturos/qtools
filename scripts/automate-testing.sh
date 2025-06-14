@@ -14,10 +14,34 @@ BINARY_NAME="lunchtime-simulator"
 APP_PIDS=()  # Associative array: PID -> instance_id
 APP_LOGS=()  # Associative array: PID -> log_file
 
+# Color codes for alternating instance colors
+# Check if terminal supports colors (check stderr since we output colors there)
+if [ -t 2 ] && [ -n "${TERM}" ] && [ "${TERM}" != "dumb" ]; then
+    COLOR_ODD="\033[1;36m"   # Bright cyan for odd instances
+    COLOR_EVEN="\033[1;35m"  # Bright magenta for even instances
+    COLOR_ERROR="\033[1;31m"  # Bright red for errors
+    COLOR_RESET="\033[0m"    # Reset color
+else
+    # No color support
+    COLOR_ODD=""
+    COLOR_EVEN=""
+    COLOR_ERROR=""
+    COLOR_RESET=""
+fi
+
+# Function to get color based on instance ID
+get_instance_color() {
+    local instance_id=$1
+    if [ $((instance_id % 2)) -eq 1 ]; then
+        echo "$COLOR_ODD"
+    else
+        echo "$COLOR_EVEN"
+    fi
+}
 
 # Function to log_to_user with timestamp (stdout only)
 log_to_user() {
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1"
+    echo -e "[$(date '+%Y-%m-%d %H:%M:%S')] $1"
 }
 
 # Function to calculate number of parallel instances
@@ -177,8 +201,6 @@ run_binary_instance() {
     local log_file="${LOG_DIR}/lunchtime-simulator-instance${instance_id}-run${run_number}-pid${pid}-${timestamp}.log"
     mv "$temp_log_file" "$log_file"
 
-    log_to_user "[Instance $instance_id] Started run #$run_number with PID: $pid ($log_file)" >&2
-
     # Return both PID and log file path
     echo "$pid|$log_file"
 }
@@ -268,6 +290,10 @@ maintain_parallel_instances() {
         local log_file=$(echo "$result" | cut -d'|' -f2)
         APP_PIDS[$pid]=$i
         APP_LOGS[$pid]=$log_file
+
+        # Log the instance start
+        local instance_color=$(get_instance_color $i)
+        log_to_user "${instance_color}[Instance $i] Started run #${instance_run_count[$i]} with PID: $pid ($log_file)${COLOR_RESET}"
     done
 
     # Continuously maintain the target number of instances
@@ -299,6 +325,10 @@ maintain_parallel_instances() {
                         local log_file=$(echo "$result" | cut -d'|' -f2)
                         APP_PIDS[$pid]=$i
                         APP_LOGS[$pid]=$log_file
+
+                        # Log the instance start
+                        local instance_color=$(get_instance_color $i)
+                        log_to_user "${instance_color}[Instance $i] Started run #${instance_run_count[$i]} with PID: $pid ($log_file)${COLOR_RESET}"
                     done
                 fi
             fi
@@ -314,12 +344,13 @@ maintain_parallel_instances() {
                 local exit_code=$?
                 local instance_id=${APP_PIDS[$pid]}
                 local log_file=${APP_LOGS[$pid]}
+                local instance_color=$(get_instance_color $instance_id)
 
                 if [ $exit_code -eq 0 ]; then
-                    log_to_user "[Instance $instance_id] ✓ Process (PID: $pid) completed successfully"
+                    log_to_user "${instance_color}[Instance $instance_id] ✓ Process (PID: $pid) completed successfully${COLOR_RESET}"
                 else
-                    log_to_user "[Instance $instance_id] ✗ Process (PID: $pid) failed with exit code: $exit_code"
-                    log_to_user "[Instance $instance_id] ⚠️  ERROR LOG FILE: $log_file"
+                    log_to_user "${COLOR_ERROR}[Instance $instance_id] ✗ Process (PID: $pid) failed with exit code: $exit_code${COLOR_RESET}"
+                    log_to_user "${COLOR_ERROR}[Instance $instance_id] ⚠️  ERROR LOG FILE: $log_file${COLOR_RESET}"
                 fi
 
                 # Remove from tracking
@@ -329,13 +360,16 @@ maintain_parallel_instances() {
                 # Start a new instance immediately
                 instance_run_count[$instance_id]=$((instance_run_count[$instance_id] + 1))
                 total_runs=$((total_runs + 1))
-                log_to_user "[Instance $instance_id] Total runs across all instances: $total_runs"
+                log_to_user "${instance_color}[Instance $instance_id] Total runs across all instances: $total_runs${COLOR_RESET}"
 
                 local result=$(run_binary_instance $instance_id ${instance_run_count[$instance_id]})
                 local new_pid=$(echo "$result" | cut -d'|' -f1)
                 local new_log_file=$(echo "$result" | cut -d'|' -f2)
                 APP_PIDS[$new_pid]=$instance_id
                 APP_LOGS[$new_pid]=$new_log_file
+
+                # Log the instance restart
+                log_to_user "${instance_color}[Instance $instance_id] Started run #${instance_run_count[$instance_id]} with PID: $new_pid ($new_log_file)${COLOR_RESET}"
 
                 # Small delay to prevent tight loop
                 sleep 0.1
