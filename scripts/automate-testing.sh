@@ -9,6 +9,9 @@
 CHECK_INTERVAL=300  # 5 minutes in seconds
 LOG_DIR="logs"
 BINARY_NAME="lunchtime-simulator"
+PID_TRACKING_FILE="running_processes.json"
+MONITOR_SCRIPT="monitor-scenarios-advanced.sh"
+MONITOR_SCRIPT_URL="https://raw.githubusercontent.com/tjsturos/qtools/refs/heads/main/scripts/monitor-scenarios-advanced.sh"
 
 # Global array to track PIDs of running applications
 APP_PIDS=()  # Associative array: PID -> instance_id
@@ -61,6 +64,38 @@ calculate_parallel_instances() {
     echo $instances
 }
 
+# Function to update PID tracking file
+update_pid_tracking_file() {
+    local temp_file="${PID_TRACKING_FILE}.tmp"
+
+    # Start JSON array
+    echo "{" > "$temp_file"
+    echo "  \"last_updated\": \"$(date -u '+%Y-%m-%dT%H:%M:%SZ')\"," >> "$temp_file"
+    echo "  \"processes\": [" >> "$temp_file"
+
+    local first=true
+    for pid in "${!APP_PIDS[@]}"; do
+        if kill -0 "$pid" 2>/dev/null; then
+            if [ "$first" = false ]; then
+                echo "," >> "$temp_file"
+            fi
+            echo -n "    {" >> "$temp_file"
+            echo -n "\"pid\": $pid, " >> "$temp_file"
+            echo -n "\"instance_id\": ${APP_PIDS[$pid]}, " >> "$temp_file"
+            echo -n "\"log_file\": \"${APP_LOGS[$pid]}\"" >> "$temp_file"
+            echo -n "}" >> "$temp_file"
+            first=false
+        fi
+    done
+
+    echo "" >> "$temp_file"
+    echo "  ]" >> "$temp_file"
+    echo "}" >> "$temp_file"
+
+    # Atomically replace the file
+    mv "$temp_file" "$PID_TRACKING_FILE"
+}
+
 # Function to handle cleanup on exit
 cleanup() {
     log_to_user "${COLOR_CLEANUP}Caught interrupt signal, cleaning up...${COLOR_RESET}"
@@ -84,12 +119,38 @@ cleanup() {
         fi
     done
 
+    # Remove PID tracking file
+    if [ -f "$PID_TRACKING_FILE" ]; then
+        log_to_user "${COLOR_CLEANUP}Removing PID tracking file...${COLOR_RESET}"
+        rm -f "$PID_TRACKING_FILE"
+    fi
+
     log_to_user "${COLOR_CLEANUP}Cleanup complete, exiting.${COLOR_RESET}"
     exit 0
 }
 
 # Set up trap for SIGINT (Ctrl+C) and SIGTERM
 trap cleanup SIGINT SIGTERM
+
+# Function to check and download monitor script
+check_and_download_monitor_script() {
+    if [ ! -f "$MONITOR_SCRIPT" ]; then
+        log_to_user "${COLOR_INFO}Monitor script not found. Downloading from GitHub...${COLOR_RESET}"
+
+        if curl -L -o "$MONITOR_SCRIPT" "$MONITOR_SCRIPT_URL" 2>/dev/null; then
+            chmod +x "$MONITOR_SCRIPT"
+            log_to_user "${COLOR_INFO}Monitor script downloaded successfully: $MONITOR_SCRIPT${COLOR_RESET}"
+            return 0
+        else
+            log_to_user "${COLOR_ERROR}Failed to download monitor script from: $MONITOR_SCRIPT_URL${COLOR_RESET}"
+            log_to_user "${COLOR_CLEANUP}You can manually download it or the script will continue without it${COLOR_RESET}"
+            return 1
+        fi
+    else
+        log_to_user "${COLOR_INFO}Monitor script already exists: $MONITOR_SCRIPT${COLOR_RESET}"
+        return 0
+    fi
+}
 
 # Function to detect OS and architecture
 detect_system() {
@@ -163,6 +224,13 @@ stop_all_processes() {
 
     # Wait a bit for graceful shutdown
     sleep 2
+
+    # Clear the tracking arrays
+    APP_PIDS=()
+    APP_LOGS=()
+
+    # Update PID tracking file to show no processes running
+    update_pid_tracking_file
 
     log_to_user "${COLOR_CLEANUP}All processes stopped${COLOR_RESET}"
 }
@@ -300,6 +368,9 @@ maintain_parallel_instances() {
         log_to_user "${instance_color}[Instance $i] Started run #${instance_run_count[$i]} with PID: $pid ($log_file)${COLOR_RESET}"
     done
 
+    # Update PID tracking file after starting all initial instances
+    update_pid_tracking_file
+
     # Continuously maintain the target number of instances
     while true; do
         # Check if it's time to check for updates
@@ -334,6 +405,9 @@ maintain_parallel_instances() {
                         local instance_color=$(get_instance_color $i)
                         log_to_user "${instance_color}[Instance $i] Started run #${instance_run_count[$i]} with PID: $pid ($log_file)${COLOR_RESET}"
                     done
+
+                    # Update PID tracking file after restarting all instances
+                    update_pid_tracking_file
                 fi
             fi
 
@@ -378,6 +452,9 @@ maintain_parallel_instances() {
                 # Log the instance restart
                 log_to_user "${instance_color}[Instance $instance_id] Started run #${instance_run_count[$instance_id]} with PID: $new_pid ($new_log_file)${COLOR_RESET}"
 
+                # Update PID tracking file
+                update_pid_tracking_file
+
                 # Small delay to prevent tight loop
                 sleep 0.1
             fi
@@ -396,6 +473,9 @@ main() {
         log_to_user "${COLOR_INFO}Created logs directory: $LOG_DIR${COLOR_RESET}"
     fi
 
+    # Check and download monitor script if needed
+    check_and_download_monitor_script
+
     # Detect system
     local system=$(detect_system)
     local url="https://releases.quilibrium.com/lunchtime-simulator-${system}"
@@ -412,6 +492,8 @@ main() {
     log_to_user "${COLOR_INFO}Update check interval: $CHECK_INTERVAL seconds${COLOR_RESET}"
     log_to_user "${COLOR_INFO}Log files will be stored in: $LOG_DIR${COLOR_RESET}"
     log_to_user "${COLOR_INFO}Errors will be logged to: $LOG_DIR/winners.log${COLOR_RESET}"
+    log_to_user "${COLOR_INFO}Process tracking file: $PID_TRACKING_FILE${COLOR_RESET}"
+    log_to_user "${COLOR_INFO}Monitor script: ./$MONITOR_SCRIPT (run in another terminal to monitor progress)${COLOR_RESET}"
 
     # Main loop - first wait for binary to be available and download it
     while true; do
