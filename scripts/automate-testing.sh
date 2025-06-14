@@ -26,7 +26,7 @@ calculate_parallel_instances() {
     local instances=$((cores / 8))
 
     # Ensure at least 1 instance
-    if [ $instances -lt 1 ]; then
+    if [ $instances -lt 1 ] || [ $cores -eq 8 ]; then
         instances=1
     fi
 
