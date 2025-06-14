@@ -12,6 +12,8 @@ BINARY_NAME="lunchtime-simulator"
 
 # Global array to track PIDs of running applications
 APP_PIDS=()  # Associative array: PID -> instance_id
+APP_LOGS=()  # Associative array: PID -> log_file
+
 
 # Function to log_to_user with timestamp (stdout only)
 log_to_user() {
@@ -39,7 +41,7 @@ cleanup() {
     for pid in "${!APP_PIDS[@]}"; do
         if pgrep -f "$BINARY_NAME" > /dev/null; then
             log_to_user "Terminating all instances of $BINARY_NAME..."
-            pkill -f "$BINARY_NAME" > /dev/null 2>&1
+            stop_all_processes
         fi
     done
 
@@ -100,6 +102,43 @@ check_url() {
     fi
 }
 
+# Function to get remote binary content-length
+get_remote_binary_size() {
+    local url=$1
+    # Use curl to get headers and extract content-length
+    local content_length=$(curl -sI "$url" 2>/dev/null | grep -i "content-length:" | awk '{print $2}' | tr -d '\r')
+
+    if [ -n "$content_length" ]; then
+        echo "$content_length"
+        return 0
+    else
+        echo "0"
+        return 1
+    fi
+}
+
+# Function to get local binary size
+get_local_binary_size() {
+    if [ -f "$BINARY_NAME" ]; then
+        stat -c%s "$BINARY_NAME" 2>/dev/null || stat -f%z "$BINARY_NAME" 2>/dev/null || echo "0"
+    else
+        echo "0"
+    fi
+}
+
+# Function to stop all running processes
+stop_all_processes() {
+    log_to_user "Stopping all running processes for update..."
+
+    # Kill all running application instances
+    pkill -f "$BINARY_NAME" > /dev/null 2>&1
+
+    # Wait a bit for graceful shutdown
+    sleep 2
+
+    log_to_user "All processes stopped"
+}
+
 # Function to download and execute binary
 download_and_execute() {
     local url=$1
@@ -126,21 +165,93 @@ run_binary_instance() {
     local instance_id=$1
     local run_number=$2
     local timestamp=$(date '+%Y%m%d_%H%M%S')
-    local log_file="${LOG_DIR}/lunchtime-simulator-instance${instance_id}-run${run_number}-${timestamp}.log"
 
-    log_to_user "[Instance $instance_id] Starting execution run #$run_number (output going to $log_file)" >&2
-    ./"$BINARY_NAME" >> "$log_file" 2>&1 &
+    # Start with a temporary log file name
+    local temp_log_file="${LOG_DIR}/lunchtime-simulator-instance${instance_id}-run${run_number}-${timestamp}-temp.log"
+
+    # Start the process
+    ./"$BINARY_NAME" >> "$temp_log_file" 2>&1 &
     local pid=$!
-    log_to_user "[Instance $instance_id] Started run #$run_number with PID: $pid" >&2
 
-    echo $pid
+    # Now rename the log file to include the PID
+    local log_file="${LOG_DIR}/lunchtime-simulator-instance${instance_id}-run${run_number}-pid${pid}-${timestamp}.log"
+    mv "$temp_log_file" "$log_file"
+
+    log_to_user "[Instance $instance_id] Started run #$run_number with PID: $pid ($log_file)" >&2
+
+    # Return both PID and log file path
+    echo "$pid|$log_file"
+}
+
+# Function to check and perform binary update if needed
+check_and_update_binary() {
+    local url=$1
+    local force_update=${2:-false}
+
+    log_to_user "Checking for binary updates..."
+
+    # Get remote and local sizes
+    local remote_size=$(get_remote_binary_size "$url")
+    local local_size=$(get_local_binary_size)
+
+    log_to_user "Remote binary size: $remote_size bytes"
+    log_to_user "Local binary size: $local_size bytes"
+
+    # Check if update is needed
+    if [ "$remote_size" = "0" ]; then
+        log_to_user "Failed to get remote binary size, skipping update check"
+        return 1
+    fi
+
+    if [ "$local_size" = "0" ] || [ "$remote_size" != "$local_size" ] || [ "$force_update" = true ]; then
+        if [ "$local_size" = "0" ]; then
+            log_to_user "Local binary not found, downloading..."
+        elif [ "$force_update" = true ]; then
+            log_to_user "Force update requested, downloading..."
+        else
+            log_to_user "Binary size mismatch detected, update required!"
+        fi
+
+        # Stop all running processes
+        stop_all_processes
+
+        # Remove old binary if it exists
+        if [ -f "$BINARY_NAME" ]; then
+            log_to_user "Removing old binary"
+            rm -f "$BINARY_NAME"
+        fi
+
+        # Download new binary
+        if download_and_execute "$url"; then
+            log_to_user "Binary updated successfully"
+
+            # Verify the downloaded size matches expected
+            local new_local_size=$(get_local_binary_size)
+            if [ "$new_local_size" = "$remote_size" ]; then
+                log_to_user "Downloaded binary size verified: $new_local_size bytes"
+                return 0
+            else
+                log_to_user "WARNING: Downloaded binary size ($new_local_size) doesn't match expected size ($remote_size)"
+                return 1
+            fi
+        else
+            log_to_user "Failed to download update"
+            return 1
+        fi
+    else
+        log_to_user "Binary is up to date"
+        return 0
+    fi
 }
 
 # Function to maintain parallel instances
 maintain_parallel_instances() {
     local target_instances=$1
+    local url=$2
     local instance_run_count=()  # Track run count per instance
     local total_runs=0
+    local last_update_check=$(date +%s)
+    local update_check_interval=$CHECK_INTERVAL  # Use same interval as main check
 
     # Initialize instance run counts
     for ((i=1; i<=target_instances; i++)); do
@@ -152,12 +263,49 @@ maintain_parallel_instances() {
     for ((i=1; i<=target_instances; i++)); do
         instance_run_count[$i]=$((instance_run_count[$i] + 1))
         total_runs=$((total_runs + 1))
-        local pid=$(run_binary_instance $i ${instance_run_count[$i]})
+        local result=$(run_binary_instance $i ${instance_run_count[$i]})
+        local pid=$(echo "$result" | cut -d'|' -f1)
+        local log_file=$(echo "$result" | cut -d'|' -f2)
         APP_PIDS[$pid]=$i
+        APP_LOGS[$pid]=$log_file
     done
 
     # Continuously maintain the target number of instances
     while true; do
+        # Check if it's time to check for updates
+        local current_time=$(date +%s)
+        local time_since_last_check=$((current_time - last_update_check))
+
+        if [ $time_since_last_check -ge $update_check_interval ]; then
+            log_to_user "Time for update check (${time_since_last_check}s since last check)"
+
+            # Check for updates
+            if check_and_update_binary "$url"; then
+                # If binary was updated, restart all instances
+                if [ ${#APP_PIDS[@]} -eq 0 ]; then
+                    log_to_user "Binary was updated, restarting all instances..."
+
+                    # Reset instance run counts
+                    for ((i=1; i<=target_instances; i++)); do
+                        instance_run_count[$i]=0
+                    done
+
+                    # Start all instances fresh
+                    for ((i=1; i<=target_instances; i++)); do
+                        instance_run_count[$i]=$((instance_run_count[$i] + 1))
+                        total_runs=$((total_runs + 1))
+                        local result=$(run_binary_instance $i ${instance_run_count[$i]})
+                        local pid=$(echo "$result" | cut -d'|' -f1)
+                        local log_file=$(echo "$result" | cut -d'|' -f2)
+                        APP_PIDS[$pid]=$i
+                        APP_LOGS[$pid]=$log_file
+                    done
+                fi
+            fi
+
+            last_update_check=$current_time
+        fi
+
         # Check for completed processes and restart them
         for pid in "${!APP_PIDS[@]}"; do
             if ! kill -0 "$pid" 2>/dev/null; then
@@ -165,32 +313,29 @@ maintain_parallel_instances() {
                 wait "$pid" 2>/dev/null
                 local exit_code=$?
                 local instance_id=${APP_PIDS[$pid]}
+                local log_file=${APP_LOGS[$pid]}
 
-                                if [ $exit_code -eq 0 ]; then
+                if [ $exit_code -eq 0 ]; then
                     log_to_user "[Instance $instance_id] ✓ Process (PID: $pid) completed successfully"
                 else
                     log_to_user "[Instance $instance_id] ✗ Process (PID: $pid) failed with exit code: $exit_code"
-
-                    # Add a delay for failed processes to prevent rapid cycling
-                    if [ $exit_code -eq 127 ]; then
-                        log_to_user "[Instance $instance_id] Exit code 127 indicates command not found - check if binary exists and is executable"
-                        sleep 5
-                    elif [ $exit_code -eq 1 ]; then
-                        # Normal failure, add small delay
-                        sleep 2
-                    fi
+                    log_to_user "[Instance $instance_id] ⚠️  ERROR LOG FILE: $log_file"
                 fi
 
                 # Remove from tracking
                 unset APP_PIDS[$pid]
+                unset APP_LOGS[$pid]
 
                 # Start a new instance immediately
                 instance_run_count[$instance_id]=$((instance_run_count[$instance_id] + 1))
                 total_runs=$((total_runs + 1))
                 log_to_user "[Instance $instance_id] Total runs across all instances: $total_runs"
 
-                local new_pid=$(run_binary_instance $instance_id ${instance_run_count[$instance_id]})
+                local result=$(run_binary_instance $instance_id ${instance_run_count[$instance_id]})
+                local new_pid=$(echo "$result" | cut -d'|' -f1)
+                local new_log_file=$(echo "$result" | cut -d'|' -f2)
                 APP_PIDS[$new_pid]=$instance_id
+                APP_LOGS[$new_pid]=$new_log_file
 
                 # Small delay to prevent tight loop
                 sleep 0.1
@@ -218,33 +363,27 @@ main() {
     local cores=$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo "8")
     local parallel_instances=$(calculate_parallel_instances)
 
-    log_to_user "Starting automated testing script"
+    log_to_user "Starting automated testing script with auto-update"
     log_to_user "System detected: $system"
     log_to_user "CPU cores detected: $cores"
     log_to_user "Parallel instances to run: $parallel_instances (cores/8)"
     log_to_user "Target URL: $url"
-    log_to_user "Check interval: $CHECK_INTERVAL seconds"
+    log_to_user "Update check interval: $CHECK_INTERVAL seconds"
     log_to_user "Log files will be stored in: $LOG_DIR"
 
-    local binary_downloaded=false
-
-    # Check if binary already exists
-    if [ -f "lunchtime-simulator" ]; then
-        binary_downloaded=true
-    fi
-
     # Main loop - first wait for binary to be available and download it
-    while [ "$binary_downloaded" = false ]; do
+    while true; do
         log_to_user "Checking if URL is active..."
 
         if check_url "$url"; then
-            log_to_user "URL is active! Proceeding with download"
+            log_to_user "URL is active! Checking for binary..."
 
-            if download_and_execute "$url"; then
-                log_to_user "Successfully downloaded binary"
-                binary_downloaded=true
+            # Use the update function to download initial binary (no force update)
+            if check_and_update_binary "$url"; then
+                log_to_user "Binary ready, starting execution"
+                break
             else
-                log_to_user "Failed to download, will retry in $CHECK_INTERVAL seconds"
+                log_to_user "Failed to download binary, will retry in $CHECK_INTERVAL seconds"
                 sleep $CHECK_INTERVAL
             fi
         else
@@ -253,11 +392,12 @@ main() {
         fi
     done
 
-    # Now continuously maintain the target number of parallel instances
+    # Now continuously maintain the target number of parallel instances with auto-update
     log_to_user "Starting continuous execution with $parallel_instances parallel instances (press Ctrl+C to stop)"
     log_to_user "Each instance will restart immediately upon completion"
+    log_to_user "Binary will be automatically updated every $CHECK_INTERVAL seconds if a new version is available"
 
-    maintain_parallel_instances $parallel_instances
+    maintain_parallel_instances $parallel_instances "$url"
 }
 
 # Run the main function
