@@ -282,18 +282,13 @@ check_and_update_binary() {
     local url=$1
     local force_update=${2:-false}
 
-    log_to_user "Checking for binary updates..."
-
     # Get remote and local sizes
     local remote_size=$(get_remote_binary_size "$url")
     local local_size=$(get_local_binary_size)
 
-    log_to_user "Remote binary size: $remote_size bytes"
-    log_to_user "Local binary size: $local_size bytes"
-
     # Check if update is needed
     if [ "$remote_size" = "0" ]; then
-        log_to_user "Failed to get remote binary size, skipping update check"
+        # Silently skip if we can't get remote size
         return 1
     fi
 
@@ -304,6 +299,8 @@ check_and_update_binary() {
             log_to_user "Force update requested, downloading..."
         else
             log_to_user "Binary size mismatch detected, update required!"
+            log_to_user "Remote binary size: $remote_size bytes"
+            log_to_user "Local binary size: $local_size bytes"
         fi
 
         # Stop all running processes
@@ -333,7 +330,7 @@ check_and_update_binary() {
             return 1
         fi
     else
-        log_to_user "Binary is up to date"
+        # Binary is up to date - no message needed
         return 0
     fi
 }
@@ -378,9 +375,7 @@ maintain_parallel_instances() {
         local time_since_last_check=$((current_time - last_update_check))
 
         if [ $time_since_last_check -ge $update_check_interval ]; then
-            log_to_user "Time for update check (${time_since_last_check}s since last check)"
-
-            # Check for updates
+            # Check for updates silently
             if check_and_update_binary "$url"; then
                 # If binary was updated, restart all instances
                 if [ ${#APP_PIDS[@]} -eq 0 ]; then
