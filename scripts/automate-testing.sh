@@ -412,41 +412,21 @@ maintain_parallel_instances() {
         # Check for completed processes and restart them
         for pid in "${!APP_PIDS[@]}"; do
             if ! kill -0 "$pid" 2>/dev/null; then
-                # Process has finished
-                local exit_code=0
-                # Try to wait for the process if it's still a child
-                if wait "$pid" 2>/dev/null; then
-                    exit_code=$?
-                else
-                    # If wait fails, we can't determine the exit code
-                    # Check if there's a pattern in the log that indicates success/failure
-                    exit_code=-1  # Unknown exit code
-                fi
-
+                # Process has finished (PID no longer active)
                 local instance_id=${APP_PIDS[$pid]}
                 local log_file=${APP_LOGS[$pid]}
                 local instance_color=$(get_instance_color $instance_id)
 
-                if [ $exit_code -eq 0 ]; then
-                    # Check if the log file ends with the completion message
-                    local completion_message="========================================\nCHAOS SCENARIO TEST COMPLETED\n========================================"
-                    local log_tail=$(tail -n 3 "$log_file" 2>/dev/null | tr -d '\0')
-                    if [[ "$log_tail" == *"$completion_message"* ]]; then
-                        # Extract the 'Nodes at consensus' line and format it
-                        local nodes_line=$(grep -o "Nodes at consensus: [0-9]\+/[0-9]\+ (matching content)" "$log_file" 2>/dev/null)
-                        local nodes_consensus=$(echo "$nodes_line" | grep -o "[0-9]\+/[0-9]\+")
-                        log_to_user "${instance_color}[Instance $instance_id] ✓ Process (PID: $pid) completed successfully (node consensus: $nodes_consensus)${COLOR_RESET}"
-                    else
-                        log_to_user "${instance_color}[Instance $instance_id] ✗ Process (PID: $pid) completed but did not finish successfully${COLOR_RESET}"
-                    fi
-                elif [ $exit_code -eq -1 ]; then
-                    log_to_user "${instance_color}[Instance $instance_id] Process (PID: $pid) completed (exit code unknown)${COLOR_RESET}"
+                # Check if the log file ends with the completion message
+                local completion_message="========================================\nCHAOS SCENARIO TEST COMPLETED\n========================================"
+                local log_tail=$(tail -n 3 "$log_file" 2>/dev/null | tr -d '\0')
+                if [[ "$log_tail" == *"$completion_message"* ]]; then
+                    # Extract the 'Nodes at consensus' line and format it
+                    local nodes_line=$(grep -o "Nodes at consensus: [0-9]\+/[0-9]\+ (matching content)" "$log_file" 2>/dev/null)
+                    local nodes_consensus=$(echo "$nodes_line" | grep -o "[0-9]\+/[0-9]\+")
+                    log_to_user "${instance_color}[Instance $instance_id] ✓ Process (PID: $pid) completed successfully (node consensus: $nodes_consensus)${COLOR_RESET}"
                 else
-                    log_to_user "${COLOR_ERROR}[Instance $instance_id] ✗ Process (PID: $pid) failed with exit code: $exit_code${COLOR_RESET}"
-                    log_to_user "${COLOR_ERROR}[Instance $instance_id] ⚠️  ERROR LOG FILE: $log_file${COLOR_RESET}"
-
-                    # Log error to winners.log
-                    echo "[$(date '+%Y-%m-%d %H:%M:%S')] ERROR - Instance: $instance_id, PID: $pid, Exit Code: $exit_code, Log File: $log_file" >> "${LOG_DIR}/winners.log"
+                    log_to_user "${instance_color}[Instance $instance_id] ✗ Process (PID: $pid) completed but did not finish successfully${COLOR_RESET}"
                 fi
 
                 # Remove from tracking
