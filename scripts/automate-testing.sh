@@ -434,6 +434,11 @@ maintain_parallel_instances() {
                         echo "[$(date '+%Y-%m-%d %H:%M:%S')] WINNER - Instance: $instance_id, PID: $pid, Node Consensus: $nodes_consensus, Content Groups: $content_groups, Log File: $log_file" >> "${LOG_DIR}/winners.log"
                     else
                         log_to_user "${instance_color}[Instance $instance_id] ✓ Process (PID: $pid) completed successfully (node consensus: $nodes_consensus, content groups: $content_groups)${COLOR_RESET}"
+
+                        # Check for non-standard values
+                        if [[ "$nodes_consensus" != "8/8" || "$content_groups" -gt 1 ]]; then
+                            log_to_user "${COLOR_ERROR}[Instance $instance_id] ⚠️  WARNING: Non-standard values detected (node consensus: $nodes_consensus, content groups: $content_groups) - please review log: $log_file${COLOR_RESET}"
+                        fi
                     fi
                 else
                     log_to_user "${instance_color}[Instance $instance_id] ✗ Process (PID: $pid) completed but did not finish successfully${COLOR_RESET}"
