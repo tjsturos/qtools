@@ -418,9 +418,9 @@ maintain_parallel_instances() {
                 local instance_color=$(get_instance_color $instance_id)
 
                 # Check if the log file ends with the completion message
-                local completion_message="========================================\nCHAOS SCENARIO TEST COMPLETED\n========================================"
+                local completion_message="CHAOS SCENARIO TEST COMPLETED"
                 local log_tail=$(tail -n 3 "$log_file" 2>/dev/null | tr -d '\0')
-                if [[ "$log_tail" == *"$completion_message"* ]]; then
+                if grep -q "$completion_message" "$log_file" 2>/dev/null; then
                     # Extract the 'Nodes at consensus' line and format it
                     local nodes_line=$(grep -o "Nodes at consensus: [0-9]\+/[0-9]\+ (matching content)" "$log_file" 2>/dev/null)
                     local nodes_consensus=$(echo "$nodes_line" | grep -o "[0-9]\+/[0-9]\+")
