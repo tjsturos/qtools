@@ -22,8 +22,8 @@ APP_EXIT_CODES=()  # Associative array: PID -> exit_code
 # Check if terminal supports colors (check stderr since we output colors there)
 if [ -t 2 ] && [ -n "${TERM}" ] && [ "${TERM}" != "dumb" ]; then
     COLOR_ODD="\033[1;36m"   # Bright cyan for odd instances
-    COLOR_EVEN="\033[1;35m"  # Bright magenta for even instances
-    COLOR_ERROR="\033[1;31m"  # Bright red for errors
+    COLOR_EVEN="\033[0;36m"  # Standard cyan for even instances
+    COLOR_ERROR="\033[1;33m"  # Bright yellow for errors
     COLOR_CLEANUP="\033[1;33m" # Bright yellow for cleanup messages
     COLOR_INFO="\033[1;32m"  # Bright green for important startup info
     COLOR_RESET="\033[0m"    # Reset color
