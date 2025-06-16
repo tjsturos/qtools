@@ -424,7 +424,17 @@ maintain_parallel_instances() {
                     # Extract the 'Nodes at consensus' line and format it
                     local nodes_line=$(grep -o "Nodes at consensus: [0-9]\+/[0-9]\+ (matching content)" "$log_file" 2>/dev/null)
                     local nodes_consensus=$(echo "$nodes_line" | grep -o "[0-9]\+/[0-9]\+")
-                    log_to_user "${instance_color}[Instance $instance_id] ✓ Process (PID: $pid) completed successfully (node consensus: $nodes_consensus)${COLOR_RESET}"
+
+                    # Extract content groups info
+                    local content_groups=$(grep -o "Content groups: [0-9]\+" "$log_file" 2>/dev/null | grep -o "[0-9]\+")
+
+                    # Check for panic in logs
+                    if grep -q "panic" "$log_file" 2>/dev/null; then
+                        log_to_user "${instance_color}[Instance $instance_id] ✓ Process (PID: $pid) completed successfully (node consensus: $nodes_consensus, content groups: $content_groups) - PANIC DETECTED (WINNER)${COLOR_RESET}"
+                        echo "[$(date '+%Y-%m-%d %H:%M:%S')] WINNER - Instance: $instance_id, PID: $pid, Node Consensus: $nodes_consensus, Content Groups: $content_groups, Log File: $log_file" >> "${LOG_DIR}/winners.log"
+                    else
+                        log_to_user "${instance_color}[Instance $instance_id] ✓ Process (PID: $pid) completed successfully (node consensus: $nodes_consensus, content groups: $content_groups)${COLOR_RESET}"
+                    fi
                 else
                     log_to_user "${instance_color}[Instance $instance_id] ✗ Process (PID: $pid) completed but did not finish successfully${COLOR_RESET}"
                 fi
