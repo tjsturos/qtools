@@ -263,14 +263,14 @@ run_binary_instance() {
     local run_number=$2
 
     # Start with a temporary log file name
-    local temp_log_file="${LOG_DIR}/lunchtime-simulator-instance${instance_id}-run${run_number}-temp.log"
+    local temp_log_file="${LOG_DIR}/lunchtime-simulator-run${run_number}-temp.log"
 
     # Start the process
     ./"$BINARY_NAME" >> "$temp_log_file" 2>&1 &
     local pid=$!
 
     # Now rename the log file to include the PID
-    local log_file="${LOG_DIR}/lunchtime-simulator-instance${instance_id}-pid${pid}.log"
+    local log_file="${LOG_DIR}/lunchtime-simulator-pid${pid}.log"
     mv "$temp_log_file" "$log_file"
 
     # Return both PID and log file path
