@@ -40,7 +40,7 @@ fi
 CURRENT_CONFIG_DIR="$(dirname "$QUIL_CONFIG_FILE")"
 
 # Read values from source config
-SOURCE_ENCRYPTION_KEY="$(yq eval '.key.encryptionKey // ""' "$SOURCE_CONFIG_FILE")"
+SOURCE_ENCRYPTION_KEY="$(yq eval '.key.keyManagerFile.encryptionKey // ""' "$SOURCE_CONFIG_FILE")"
 SOURCE_P2P_PRIV_KEY="$(yq eval '.p2p.peerPrivKey // ""' "$SOURCE_CONFIG_FILE")"
 
 if [ -z "$SOURCE_ENCRYPTION_KEY" ] || [ "$SOURCE_ENCRYPTION_KEY" = "null" ]; then
@@ -83,13 +83,13 @@ rm -f "$QUIL_KEYS_FILE"
 cp "$SOURCE_KEYS_FILE" "$QUIL_KEYS_FILE"
 
 # Update sensitive fields in current config.yml from source values
-ENCRYPTION_KEY="$SOURCE_ENCRYPTION_KEY" yq -i e '.key.encryptionKey = strenv(ENCRYPTION_KEY)' "$QUIL_CONFIG_FILE"
+ENCRYPTION_KEY="$SOURCE_ENCRYPTION_KEY" yq -i e '.key.keyManagerFile.encryptionKey = strenv(ENCRYPTION_KEY)' "$QUIL_CONFIG_FILE"
 P2P_PRIV_KEY="$SOURCE_P2P_PRIV_KEY" yq -i e '.p2p.peerPrivKey = strenv(P2P_PRIV_KEY)' "$QUIL_CONFIG_FILE"
 
 if command -v log >/dev/null 2>&1; then
-  log "Migrated keys.yml and updated .key.encryptionKey and .p2p.peerPrivKey in $QUIL_CONFIG_FILE"
+  log "Migrated keys.yml and updated .key.keyManagerFile.encryptionKey and .p2p.peerPrivKey in $QUIL_CONFIG_FILE"
 else
-  echo "Migrated keys.yml and updated .key.encryptionKey and .p2p.peerPrivKey in $QUIL_CONFIG_FILE"
+  echo "Migrated keys.yml and updated .key.keyManagerFile.encryptionKey and .p2p.peerPrivKey in $QUIL_CONFIG_FILE"
 fi
 
 echo "Done. Backups saved at $BACKUP_DIR"
