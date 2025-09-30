@@ -33,6 +33,11 @@ sudo ufw allow "$STREAM_PORT"
 BASE_P2P_PORT=$(yq eval '.engine.dataWorkerBaseP2PPort // "50000"' "$QUIL_CONFIG_FILE")
 BASE_STREAM_PORT=$(yq eval '.engine.dataWorkerBaseStreamPort // "60000"' "$QUIL_CONFIG_FILE")
 
+echo "BASE_P2P_PORT: $BASE_P2P_PORT"
+echo "BASE_STREAM_PORT: $BASE_STREAM_PORT"
+
+echo "STREAM_PORT: $STREAM_PORT"
+
 # Determine worker count from config; fallback to vCPU count
 WORKER_COUNT=$(yq eval '.engine.dataWorkerP2PMultiaddrs | length' "$QUIL_CONFIG_FILE" 2>/dev/null)
 if [ -z "$WORKER_COUNT" ] || [ "$WORKER_COUNT" = "null" ] || [ "$WORKER_COUNT" -eq 0 ] 2>/dev/null; then
