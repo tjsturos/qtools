@@ -27,11 +27,22 @@ STREAM_MULTIADDR=$(yq eval '.p2p.streamListenMultiaddr // ""' "$QUIL_CONFIG_FILE
 # Extract tcp port from multiaddr, fallback to 8340 per docs
 STREAM_PORT=$(echo "$STREAM_MULTIADDR" | sed -n 's#.*/tcp/\([0-9]\+\).*#\1#p')
 [ -z "$STREAM_PORT" ] && STREAM_PORT=8340
+# Fallback if zero or invalid
+if ! [[ "$STREAM_PORT" =~ ^[0-9]+$ ]] || [ "$STREAM_PORT" -eq 0 ] 2>/dev/null; then
+    STREAM_PORT=8340
+fi
 sudo ufw allow "$STREAM_PORT"
 
 # Determine worker base ports with sensible defaults per 2.1
 BASE_P2P_PORT=$(yq eval '.engine.dataWorkerBaseP2PPort // "50000"' "$QUIL_CONFIG_FILE")
 BASE_STREAM_PORT=$(yq eval '.engine.dataWorkerBaseStreamPort // "60000"' "$QUIL_CONFIG_FILE")
+# Fallback to defaults if zero or invalid
+if ! [[ "$BASE_P2P_PORT" =~ ^[0-9]+$ ]] || [ "$BASE_P2P_PORT" -eq 0 ] 2>/dev/null; then
+    BASE_P2P_PORT=50000
+fi
+if ! [[ "$BASE_STREAM_PORT" =~ ^[0-9]+$ ]] || [ "$BASE_STREAM_PORT" -eq 0 ] 2>/dev/null; then
+    BASE_STREAM_PORT=60000
+fi
 
 echo "BASE_P2P_PORT: $BASE_P2P_PORT"
 echo "BASE_STREAM_PORT: $BASE_STREAM_PORT"
