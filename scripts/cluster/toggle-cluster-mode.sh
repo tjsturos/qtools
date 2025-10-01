@@ -7,7 +7,7 @@ while [[ $# -gt 0 ]]; do
             NEW_MODE="true"
             shift
             ;;
-        --off) 
+        --off)
             NEW_MODE="false"
             shift
             ;;
@@ -29,25 +29,28 @@ if [ -z "$NEW_MODE" ]; then
     if [ "$CURRENT_MODE" == "true" ]; then
         NEW_MODE="false"
     else
-        NEW_MODE="true" 
+        NEW_MODE="true"
     fi
 fi
 
 if [ "$RESET_MODE" == "true" ]; then
     yq -i '.service.clustering.enabled = true' $QTOOLS_CONFIG_FILE
-    yq -i '.engine.dataWorkerMultiaddrs = []' $QUIL_CONFIG_FILE
+    # 2.1+: initialize worker arrays and ensure base ports exist
+    yq -i '.engine.dataWorkerBaseP2PPort = (.engine.dataWorkerBaseP2PPort // 50000)' $QUIL_CONFIG_FILE
+    yq -i '.engine.dataWorkerBaseStreamPort = (.engine.dataWorkerBaseStreamPort // 60000)' $QUIL_CONFIG_FILE
+    yq -i '.engine.dataWorkerP2PMultiaddrs = []' $QUIL_CONFIG_FILE
+    yq -i '.engine.dataWorkerStreamMultiaddrs = []' $QUIL_CONFIG_FILE
     qtools cluster-setup --master
     log "Cluster mode has been reset, run qtools start to start the cluster"
     exit 0
-fi  
+fi
 
 # Update the config file
 yq -i '.service.clustering.enabled = '$NEW_MODE'' $QTOOLS_CONFIG_FILE
 
 if [ "$NEW_MODE" == "false" ]; then
     qtools cluster-stop
-    yq -i '.engine.dataWorkerMultiaddrs = []' $QUIL_CONFIG_FILE
-else 
+else
     qtools cluster-setup --master
 fi
 

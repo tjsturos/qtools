@@ -8,6 +8,10 @@ export DEFAULT_USER=$(eval echo $(yq eval '.service.clustering.default_user // "
 export DEFAULT_SSH_PORT=$(yq eval '.service.clustering.default_ssh_port // "22"' $QTOOLS_CONFIG_FILE)
 export QUIL_DATA_WORKER_SERVICE_NAME="$(yq eval '.service.clustering.data_worker_service_name // "dataworker"' $QTOOLS_CONFIG_FILE)"
 export BASE_PORT=$(yq eval '.service.clustering.base_port // "40000"' $QTOOLS_CONFIG_FILE)
+export WORKER_BASE_P2P_PORT=$(yq eval '.engine.dataWorkerBaseP2PPort // "50000"' $QUIL_CONFIG_FILE)
+export WORKER_BASE_STREAM_PORT=$(yq eval '.engine.dataWorkerBaseStreamPort // "60000"' $QUIL_CONFIG_FILE)
+if [ -z "$WORKER_BASE_P2P_PORT" ] || [ "$WORKER_BASE_P2P_PORT" = "0" ]; then WORKER_BASE_P2P_PORT=50000; fi
+if [ -z "$WORKER_BASE_STREAM_PORT" ] || [ "$WORKER_BASE_STREAM_PORT" = "0" ]; then WORKER_BASE_STREAM_PORT=60000; fi
 
 MASTER_SERVICE_NAME=$(yq eval '.service.clustering.master_service_name' $QTOOLS_CONFIG_FILE)
 MASTER_SERVICE_FILE="/etc/systemd/system/$MASTER_SERVICE_NAME.service"
@@ -24,7 +28,7 @@ ssh_to_remote() {
     local SSH_PORT=$3
     local COMMAND=$4
 
-    
+
     ssh -i $SSH_CLUSTER_KEY -q -p $SSH_PORT -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "$USER@$IP" $COMMAND
 }
 
@@ -45,7 +49,7 @@ create_master_service_file() {
         exit 1
     fi
     echo -e "${BLUE}${INFO_ICON} Updating $QUIL_SERVICE_NAME.service file...${RESET}"
-    local temp_file=$(mktemp)   
+    local temp_file=$(mktemp)
 
     cat > "$temp_file" <<EOF
 [Unit]
@@ -60,7 +64,7 @@ Restart=always
 RestartSec=5
 StartLimitBurst=5
 User=$USER
-WorkingDirectory=$QUIL_NODE_PATH 
+WorkingDirectory=$QUIL_NODE_PATH
 ExecStart=$LINKED_NODE_BINARY ${SIGNATURE_CHECK:+"--signature-check=false"} ${DEBUG:+"--debug"} ${TESTNET:+"--network=1"}
 ExecStop=/bin/kill -s SIGINT $MAINPID
 ExecReload=/bin/kill -s SIGINT $MAINPID && $LINKED_NODE_BINARY ${SIGNATURE_CHECK:+"--signature-check=false"} ${DEBUG:+"--debug"} ${TESTNET:+"--network=1"}
@@ -85,7 +89,7 @@ EOF
 }
 
 create_data_worker_service_file() {
-   
+
     USER=$(whoami)
     if [ -z "$USER" ]; then
         echo "Error: Failed to get user information"
@@ -93,10 +97,10 @@ create_data_worker_service_file() {
     fi
     SIGNATURE_CHECK=$(yq eval '.service.signature_check // ""' $QTOOLS_CONFIG_FILE)
     DEBUG=$(yq eval '.service.debug // ""' $QTOOLS_CONFIG_FILE)
-    TESTNET=$(yq eval '.service.testnet // ""' $QTOOLS_CONFIG_FILE) 
+    TESTNET=$(yq eval '.service.testnet // ""' $QTOOLS_CONFIG_FILE)
     echo -e "${BLUE}${INFO_ICON} Updating $DATA_WORKER_SERVICE_FILE file...${RESET}"
     local temp_file=$(mktemp)
-    
+
     cat > "$temp_file" <<EOF
 [Unit]
 Description=Quilibrium Worker Service %i
@@ -151,11 +155,11 @@ enable_local_data_worker_services() {
     local START_CORE_INDEX=$1
     local END_CORE_INDEX=$2
     # start the master node
-    bash -c "sudo systemctl enable $QUIL_DATA_WORKER_SERVICE_NAME\@{$START_CORE_INDEX..$END_CORE_INDEX} &> /dev/null" 
+    bash -c "sudo systemctl enable $QUIL_DATA_WORKER_SERVICE_NAME\@{$START_CORE_INDEX..$END_CORE_INDEX} &> /dev/null"
 }
 
 disable_local_data_worker_services() {
-    bash -c "sudo systemctl disable $QUIL_DATA_WORKER_SERVICE_NAME@.service &> /dev/null" 
+    bash -c "sudo systemctl disable $QUIL_DATA_WORKER_SERVICE_NAME@.service &> /dev/null"
 }
 
 start_local_data_worker_services() {
@@ -180,7 +184,7 @@ get_cluster_ips() {
     for ((i=0; i<server_count; i++)); do
         local server=$(echo "$servers" | yq eval ".[$i]" -)
         local ip=$(echo "$server" | yq eval '.ip' -)
-        
+
         if [ -n "$ip" ] && [ "$ip" != "null" ]; then
             ips+=("$ip")
         fi
@@ -229,11 +233,11 @@ get_cores_to_use() {
 
 ssh_command_to_each_server() {
     local command=$1
-    
+
     local config=$(yq eval . $QTOOLS_CONFIG_FILE)
     local servers=$(echo "$config" | yq eval '.service.clustering.servers' -)
     local server_count=$(echo "$servers" | yq eval '. | length' -)
-    
+
     for ((i=0; i<server_count; i++)); do
         local server=$(echo "$servers" | yq eval ".[$i]" -)
         local ip=$(echo "$server" | yq eval '.ip' -)
@@ -258,17 +262,17 @@ copy_file_to_each_server() {
     local file_path=$1
     local destination_path=$2
     local command=$1
-    
+
     local config=$(yq eval . $QTOOLS_CONFIG_FILE)
     local servers=$(echo "$config" | yq eval '.service.clustering.servers' -)
     local server_count=$(echo "$servers" | yq eval '. | length' -)
-    
+
     for ((i=0; i<server_count; i++)); do
         local server=$(echo "$servers" | yq eval ".[$i]" -)
         local ip=$(echo "$server" | yq eval '.ip' -)
         local ssh_port=$(echo "$server" | yq eval ".ssh_port // \"$DEFAULT_SSH_PORT\"" -)
         local remote_user=$(echo "$server" | yq eval ".user // \"$DEFAULT_USER\"" -)
-        
+
         if [ -n "$ip" ] && [ "$ip" != "null" ]; then
             if [ "$DRY_RUN" == "false" ]; then
                 if ! echo "$(hostname -I)" | grep -q "$ip"; then
@@ -285,15 +289,15 @@ copy_file_to_each_server() {
 ssh_command_to_server() {
     local ip=$1
     local command=$2
-    
+
     local config=$(yq eval . $QTOOLS_CONFIG_FILE)
     local servers=$(echo "$config" | yq eval '.service.clustering.servers' -)
     local server_count=$(echo "$servers" | yq eval '. | length' -)
-    
+
     for ((i=0; i<server_count; i++)); do
         local server=$(echo "$servers" | yq eval ".[$i]" -)
         local server_ip=$(echo "$server" | yq eval '.ip' -)
-        
+
         if [ "$server_ip" == "$ip" ]; then
             local remote_user=$(echo "$server" | yq eval ".user // \"$DEFAULT_USER\"" -)
             local ssh_port=$(echo "$server" | yq eval ".ssh_port // \"$DEFAULT_SSH_PORT\"" -)
@@ -317,15 +321,19 @@ restart_cluster_data_workers() {
 update_quil_config() {
     local single_worker=$1
     config=$(yq eval . $QTOOLS_CONFIG_FILE)
-    
+
     # Get the array of servers
     servers=$(echo "$config" | yq eval '.service.clustering.servers' -)
 
-    # Clear the existing dataWorkerMultiaddrs array
+    # Ensure base P2P/Stream ports are set (2.1)
     if [ "$DRY_RUN" == "false" ]; then
-        yq eval -i '.engine.dataWorkerMultiaddrs = []' "$QUIL_CONFIG_FILE"
+        yq eval -i ".engine.dataWorkerBaseP2PPort = $WORKER_BASE_P2P_PORT" "$QUIL_CONFIG_FILE"
+        yq eval -i ".engine.dataWorkerBaseStreamPort = $WORKER_BASE_STREAM_PORT" "$QUIL_CONFIG_FILE"
+        # Clear existing arrays for 2.1 worker multiaddrs
+        yq eval -i '.engine.dataWorkerP2PMultiaddrs = []' "$QUIL_CONFIG_FILE"
+        yq eval -i '.engine.dataWorkerStreamMultiaddrs = []' "$QUIL_CONFIG_FILE"
     else
-        echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would clear $QUIL_CONFIG_FILE's $dataWorkerMultiaddrs${RESET}"
+        echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would set engine.dataWorkerBaseP2PPort=$WORKER_BASE_P2P_PORT and engine.dataWorkerBaseStreamPort=$WORKER_BASE_STREAM_PORT and clear dataWorkerP2PMultiaddrs/dataWorkerStreamMultiaddrs${RESET}"
     fi
 
     # Initialize TOTAL_EXPECTED_DATA_WORKERS
@@ -344,7 +352,7 @@ update_quil_config() {
         data_worker_count=$(echo "$server" | yq eval '.data_worker_count // "false"' -)
         cores_to_use=$(echo "$server" | yq eval '.cores_to_use // "false"' -)
         available_cores=$(nproc)
-        
+
         # Skip invalid entries
         if [ -z "$ip" ] || [ "$ip" == "null" ]; then
             echo "Skipping invalid server entry: $server"
@@ -379,42 +387,26 @@ update_quil_config() {
         data_worker_count=$(echo "$data_worker_count" | tr -cd '0-9')
 
         echo "Data worker count for $ip: $data_worker_count"
-        
+
         # Increment the global count
         TOTAL_EXPECTED_DATA_WORKERS=$((TOTAL_EXPECTED_DATA_WORKERS + data_worker_count))
-        # Calculate the starting port for this server
-       
-       
-        # Calculate workers per core
-        workers_per_core=$((data_worker_count / cores_to_use))
-        remaining_workers=$((data_worker_count % cores_to_use))
-
-        echo "Cores to use: $cores_to_use, Workers per core: $workers_per_core, Remaining workers: $remaining_workers"
-
-        worker_index=0
-        for ((core=0; core<cores_to_use; core++)); do
-            # Calculate number of workers for this core
-            core_workers=$workers_per_core
-            if [ $core -lt $remaining_workers ]; then
-                core_workers=$((core_workers + 1))
+        # Build explicit P2P and Stream multiaddrs arrays for 2.1
+        for ((w=0; w<data_worker_count; w++)); do
+            p2p_port=$((WORKER_BASE_P2P_PORT + w))
+            stream_port=$((WORKER_BASE_STREAM_PORT + w))
+            p2p_addr="/ip4/$ip/tcp/$p2p_port"
+            stream_addr="/ip4/$ip/tcp/$stream_port"
+            if [ "$DRY_RUN" == "false" ]; then
+                yq eval -i ".engine.dataWorkerP2PMultiaddrs += \"$p2p_addr\"" "$QUIL_CONFIG_FILE"
+                yq eval -i ".engine.dataWorkerStreamMultiaddrs += \"$stream_addr\"" "$QUIL_CONFIG_FILE"
+            else
+                echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would add $p2p_addr and $stream_addr to 2.1 worker arrays${RESET}"
             fi
-
-            # Assign workers to this core
-            for ((w=0; w<core_workers; w++)); do
-                port=$((base_port + core))
-                addr="/ip4/$ip/tcp/$port"
-                if [ "$DRY_RUN" == "false" ]; then
-                    yq eval -i ".engine.dataWorkerMultiaddrs += \"$addr\"" "$QUIL_CONFIG_FILE"
-                else
-                    echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would add $addr to $QUIL_CONFIG_FILE's $dataWorkerMultiaddrs${RESET}"
-                fi
-                worker_index=$((worker_index + 1))
-            done
         done
         if [ "$DRY_RUN" == "false" ]; then
             # Count total lines with this IP
             total_lines=$(yq eval '.engine.dataWorkerMultiaddrs[] | select(contains("'$ip'"))' "$QUIL_CONFIG_FILE" | wc -l)
-        
+
             echo "Server $ip:  Total lines: $total_lines, Expected data workers: $data_worker_count"
             if [ "$total_lines" -ne "$data_worker_count" ]; then
                 echo -e "\e[33mWarning: Mismatch detected for server $ip\e[0m"
@@ -423,20 +415,7 @@ update_quil_config() {
         fi
     done
 
-    if [ "$DRY_RUN" == "false" ]; then
-        # Print out the number of data worker multiaddrs
-        actual_data_workers=$(yq eval '.engine.dataWorkerMultiaddrs | length' "$QUIL_CONFIG_FILE")
-
-        if [ "$TOTAL_EXPECTED_DATA_WORKERS" -ne "$actual_data_workers" ]; then
-            echo -e "\e[33mWarning: The number of data worker multiaddrs in the config doesn't match the expected count.\e[0m"
-            echo -e "${BLUE}${INFO_ICON} Data workers to be started: $TOTAL_EXPECTED_DATA_WORKERS${RESET}"
-            echo -e "${BLUE}${INFO_ICON} Actual data worker multiaddrs in config: $actual_data_workers${RESET}"
-        else
-            echo -e "${BLUE}${INFO_ICON} Number of actual data workers found ($actual_data_workers) matches the expected amount.${RESET}"
-        fi
-    else 
-        echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would update data worker multiaddrs to have $TOTAL_EXPECTED_DATA_WORKERS data workers${RESET}"
-    fi
+    # 2.1: Using explicit P2P/Stream worker arrays; no legacy validation
 }
 
 check_ssh_key_pair() {
@@ -449,7 +428,7 @@ check_ssh_key_pair() {
         echo -e "${YELLOW}ssh-keygen -t ed25519 -f $SSH_CLUSTER_KEY -N '' -C 'cluster-key'${RESET}"
         echo -e "${BLUE}${INFO_ICON} You will then need to add this public key (${SSH_CLUSTER_KEY}.pub) to the ~/.ssh/authorized_keys file on all slave servers and will automatically be used for cluster operations.${RESET}"
         read -p "Or you can enter yes to use the added helper function to generate a new SSH key pair? (y/n): " generate_key
-        
+
         if [[ $generate_key =~ ^[Yy]$ ]]; then
             generate_ssh_key_pair
         else
@@ -457,13 +436,13 @@ check_ssh_key_pair() {
             return 1
         fi
     fi
-    
+
     return 0
 }
 
 generate_ssh_key_pair() {
     ssh-keygen -t ed25519 -f "$SSH_CLUSTER_KEY" -N "" -C "cluster-key"
-    
+
     if [ $? -eq 0 ]; then
         echo -e "${GREEN}${CHECK_ICON} SSH key pair generated successfully at $SSH_CLUSTER_KEY${RESET}"
         echo -e "${BLUE}${INFO_ICON} Please copy the following public key to the ~/.ssh/authorized_keys file on all slave servers:${RESET}"
@@ -475,7 +454,7 @@ generate_ssh_key_pair() {
         echo -e "${RED}${WARNING_ICON} Failed to generate SSH key pair${RESET}"
         return 1
     fi
-    
+
     return 0
 }
 
@@ -501,7 +480,7 @@ check_ssh_connections() {
         fi
         local user=$(echo "$server" | yq eval ".user // \"$DEFAULT_USER\"" -)
         local ssh_port=$(echo "$server" | yq eval ".ssh_port // \"$DEFAULT_SSH_PORT\"" -)
-        
+
         if echo "$(hostname -I)" | grep -q "$ip"; then
             echo -e "${GREEN}✓ Local server $ip is reachable${RESET}"
         else
@@ -524,7 +503,7 @@ check_data_worker_services() {
     # Check if ports are listening using netstat
     local netstat_cmd="netstat -tuln | grep LISTEN"
     local ports_status=""
-    
+
     if echo "$(hostname -I)" | grep -q "$ip"; then
         # Check locally
         ports_status=$(eval $netstat_cmd)

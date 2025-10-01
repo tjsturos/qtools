@@ -60,10 +60,10 @@ fi
 
 # Open P2P and stream ports for each worker
 if [ "$WORKER_COUNT" -gt 0 ] 2>/dev/null; then
-    for ((i=0; i<WORKER_COUNT; i++)); do
-        sudo ufw allow $((BASE_P2P_PORT + i))
-        sudo ufw allow $((BASE_STREAM_PORT + i))
-    done
+    END_P2P_PORT=$((BASE_P2P_PORT + WORKER_COUNT - 1))
+    END_STREAM_PORT=$((BASE_STREAM_PORT + WORKER_COUNT - 1))
+    sudo ufw allow ${BASE_P2P_PORT}:${END_P2P_PORT}/tcp
+    sudo ufw allow ${BASE_STREAM_PORT}:${END_STREAM_PORT}/tcp
 fi
 
 # Block RFC1918 private address ranges
@@ -84,11 +84,12 @@ required_ports=(
 )
 
 # Include worker P2P/stream ranges in verification
+required_ranges=()
 if [ "$WORKER_COUNT" -gt 0 ] 2>/dev/null; then
-  for ((i=0; i<WORKER_COUNT; i++)); do
-    required_ports+=("$((BASE_P2P_PORT + i))")
-    required_ports+=("$((BASE_STREAM_PORT + i))")
-  done
+  END_P2P_PORT=$((BASE_P2P_PORT + WORKER_COUNT - 1))
+  END_STREAM_PORT=$((BASE_STREAM_PORT + WORKER_COUNT - 1))
+  required_ranges+=("${BASE_P2P_PORT}:${END_P2P_PORT}")
+  required_ranges+=("${BASE_STREAM_PORT}:${END_STREAM_PORT}")
 fi
 
 # Get the actual output of 'ufw status'
@@ -108,13 +109,28 @@ for port in "${required_ports[@]}"; do
   fi
 done
 
+# Check each required range (format-agnostic)
+missing_ranges=()
+for range in "${required_ranges[@]}"; do
+  if ! echo "$actual_output" | grep -E "(^|[^0-9])${range}(/tcp)?\\s+ALLOW" >/dev/null; then
+    missing_ranges+=("$range")
+  fi
+done
+
 # Report results
-if [ ${#missing_ports[@]} -eq 0 ]; then
+if [ ${#missing_ports[@]} -eq 0 ] && [ ${#missing_ranges[@]} -eq 0 ]; then
   log "All expected rules are present in the UFW status."
 else
   log "The following expected rules are missing in the UFW status:"
-  for port in "${missing_ports[@]}"; do
-    log "Port $port (ALLOW)"
-  done
+  if [ ${#missing_ports[@]} -gt 0 ]; then
+    for port in "${missing_ports[@]}"; do
+      log "Port $port (ALLOW)"
+    done
+  fi
+  if [ ${#missing_ranges[@]} -gt 0 ]; then
+    for range in "${missing_ranges[@]}"; do
+      log "Port range $range (ALLOW)"
+    done
+  fi
   exit 1
 fi

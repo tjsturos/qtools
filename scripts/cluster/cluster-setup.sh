@@ -97,24 +97,27 @@ fi
 
 update_local_quil_config() {
     local cores_to_use=$1
-    if [ "$DRY_RUN" == "false" ]; then
-        yq eval -i ".engine.dataWorkerMultiaddrs = []" $QUIL_CONFIG_FILE
-    else
-        echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ LOCAL ] [ $LOCAL_IP ] Would set $LOCAL_IP's $QUIL_CONFIG_FILE's engine.dataWorkerMultiaddrs to []${RESET}"
-    fi
+    # Set base P2P and stream ports for workers if not present, and populate 2.1 arrays for local server
+    local base_p2p=$(yq eval '.engine.dataWorkerBaseP2PPort // "0"' $QUIL_CONFIG_FILE)
+    local base_stream=$(yq eval '.engine.dataWorkerBaseStreamPort // "0"' $QUIL_CONFIG_FILE)
+    if [ -z "$base_p2p" ] || [ "$base_p2p" = "0" ]; then base_p2p=50000; fi
+    if [ -z "$base_stream" ] || [ "$base_stream" = "0" ]; then base_stream=60000; fi
 
-    for ((i=0; i<$cores_to_use; i++)); do
-        local addr="/ip4/${LOCAL_IP:-0.0.0.0}/tcp/$((BASE_PORT + $i))"
-    
-        if [ "$DRY_RUN" == "false" ]; then
-            yq eval -i ".engine.dataWorkerMultiaddrs += \"$addr\"" "$QUIL_CONFIG_FILE"
-        else
-            echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ LOCAL ] [ $LOCAL_IP ] Would add $addr to $QUIL_CONFIG_FILE's engine.dataWorkerMultiaddrs${RESET}"
-        fi
-    done
+    if [ "$DRY_RUN" == "false" ]; then
+        yq eval -i ".engine.dataWorkerBaseP2PPort = $base_p2p" $QUIL_CONFIG_FILE
+        yq eval -i ".engine.dataWorkerBaseStreamPort = $base_stream" $QUIL_CONFIG_FILE
+        yq eval -i '.engine.dataWorkerP2PMultiaddrs = []' $QUIL_CONFIG_FILE
+        yq eval -i '.engine.dataWorkerStreamMultiaddrs = []' $QUIL_CONFIG_FILE
+        for ((i=0; i<$cores_to_use; i++)); do
+            yq eval -i ".engine.dataWorkerP2PMultiaddrs += \"/ip4/${LOCAL_IP:-0.0.0.0}/tcp/$((base_p2p + i))\"" $QUIL_CONFIG_FILE
+            yq eval -i ".engine.dataWorkerStreamMultiaddrs += \"/ip4/${LOCAL_IP:-0.0.0.0}/tcp/$((base_stream + i))\"" $QUIL_CONFIG_FILE
+        done
+    else
+        echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ LOCAL ] [ $LOCAL_IP ] Would set base ports and populate 2.1 worker arrays for $cores_to_use workers${RESET}"
+    fi
 }
 
-if [ "$DRY_RUN" == "false" ]; then  
+if [ "$DRY_RUN" == "false" ]; then
     yq eval -i ".service.clustering.local_data_worker_count = $CORES_TO_USE" $QTOOLS_CONFIG_FILE
     echo -e "${BLUE}${INFO_ICON} [ LOCAL ] [ $LOCAL_IP ] Setting this server's cores_to_use to $CORES_TO_USE${RESET}"
     update_local_quil_config $CORES_TO_USE
@@ -132,7 +135,7 @@ if [ "$DRY_RUN" == "false" ]; then
         sudo systemctl disable $QUIL_SERVICE_NAME &> /dev/null
     fi
     echo -e "${BLUE}${INFO_ICON} Resetting any existing dataworker services${RESET}"
-    
+
     stop_local_data_worker_services
     disable_local_data_worker_services
 
@@ -171,13 +174,13 @@ setup_remote_firewall() {
             # Remove any existing rules for these ports
             # ssh_to_remote $IP $REMOTE_USER $SSH_PORT "sudo ufw status numbered | grep '$BASE_PORT' | cut -d']' -f1 | tac | xargs -I {} sudo ufw --force delete {}"
             ssh_to_remote $IP $REMOTE_USER $SSH_PORT "sudo ufw allow proto tcp from $MASTER_IP to any port $BASE_PORT:$END_PORT" &> /dev/null
-            
+
             # Reload ufw to apply changes
             ssh_to_remote $IP $REMOTE_USER $SSH_PORT "sudo ufw reload" &> /dev/null
-            
+
             echo -e "${GREEN}${CHECK_ICON} Remote firewall setup completed on $IP${RESET}"
         fi
-        
+
     else
         echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would set up remote firewall on $IP ($USER) for ports $BASE_PORT-$END_PORT${RESET}"
     fi
@@ -205,7 +208,7 @@ copy_quil_config_to_server() {
     local IP=$1
     local REMOTE_USER=$2
     local SSH_PORT=$3
-    if [ "$DRY_RUN" == "false" ]; then  
+    if [ "$DRY_RUN" == "false" ]; then
         echo -e "${BLUE}${INFO_ICON} Copying $QUIL_CONFIG_FILE to $IP ($REMOTE_USER)${RESET}"
         ssh_to_remote $IP $REMOTE_USER $SSH_PORT "mkdir -p ~/ceremonyclient/node/.config"
         # ssh_to_remote $IP $REMOTE_USER $SSH_PORT "echo '' > ~/ceremonyclient/node/.config/config.yml"
@@ -219,7 +222,7 @@ copy_quil_keys_to_server() {
     local IP=$1
     local REMOTE_USER=$2
     local SSH_PORT=$3
-    if [ "$DRY_RUN" == "false" ]; then  
+    if [ "$DRY_RUN" == "false" ]; then
         echo -e "${BLUE}${INFO_ICON} Copying $QUIL_KEYS_FILE to $IP ($REMOTE_USER)${RESET}"
         ssh_to_remote $IP $REMOTE_USER $SSH_PORT "mkdir -p ~/ceremonyclient/node/.config" &> /dev/null
         scp_to_remote "$QUIL_KEYS_FILE $REMOTE_USER@$IP:~/ceremonyclient/node/.config/keys.yml" $SSH_PORT &> /dev/null
@@ -232,7 +235,7 @@ copy_cluster_config_to_server() {
     local IP=$1
     local REMOTE_USER=$2
     local SSH_PORT=$3
-    if [ "$DRY_RUN" == "false" ]; then  
+    if [ "$DRY_RUN" == "false" ]; then
         echo -e "${BLUE}${INFO_ICON} Copying $QTOOLS_CONFIG_FILE to $IP ($REMOTE_USER)${RESET}"
         ssh_to_remote $IP $REMOTE_USER $SSH_PORT "mkdir -p ~/qtools"
 
@@ -259,7 +262,7 @@ handle_server() {
     local REMOTE_USER=$(echo "$SERVER" | yq eval ".user // \"$DEFAULT_USER\"" -)
     local SSH_PORT=$(echo "$SERVER" | yq eval ".ssh_port // \"$DEFAULT_SSH_PORT\"" -)
     local SERVER_CORE_COUNT=$(echo "$SERVER" | yq eval '.cores_to_use // "false"' -)
-   
+
     local IS_LOCAL_SERVER=$(echo "$(hostname -I)" | grep -q "$SERVER_IP" || echo "$SERVER_IP" | grep -q "127.0.0.1" && echo "true" || echo "false")
     if [ "$IS_LOCAL_SERVER" == "false" ]; then
         if ! check_server_ssh_connection $SERVER_IP $REMOTE_USER $SSH_PORT; then
@@ -278,13 +281,13 @@ handle_server() {
             SERVER_CORE_COUNT=$(ssh_to_remote $SERVER_IP $REMOTE_USER $SSH_PORT "nproc")
         fi
         echo -e "${BLUE}${INFO_ICON} Configuring server $REMOTE_USER@$SERVER_IP with $SERVER_CORE_COUNT cores${RESET}"
-        copy_quil_config_to_server "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" 
-        copy_quil_keys_to_server "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" 
-        copy_cluster_config_to_server "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" 
-        setup_remote_data_workers "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" "$SERVER_CORE_COUNT" 
+        copy_quil_config_to_server "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT"
+        copy_quil_keys_to_server "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT"
+        copy_cluster_config_to_server "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT"
+        setup_remote_data_workers "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" "$SERVER_CORE_COUNT"
         # Call the function to set up the remote firewall
         if [ "$SKIP_FIREWALL" == "false" ]; then
-            setup_remote_firewall "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" "$SERVER_CORE_COUNT" 
+            setup_remote_firewall "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" "$SERVER_CORE_COUNT"
         fi
         add_remote_server_hardware_info "$index" "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" "$SERVER_CORE_COUNT"
     else

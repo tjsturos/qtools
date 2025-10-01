@@ -40,14 +40,14 @@ get_local_ip() {
     for ((i=0; i<server_count; i++)); do
         local server=$(echo "$servers" | yq eval ".[$i]" -)
         local ip=$(echo "$server" | yq eval '.ip' -)
-        
+
         if echo "$local_ips" | grep -q "$ip" || echo "$ip" | grep -q "127.0.0.1"; then
             echo "$ip"
             return
         fi
     done
 
-    
+
 }
 
 is_master() {
@@ -85,9 +85,9 @@ append_to_file() {
     LOG_OUTPUT="${3:-true}"
 
     if ! grep -qFx "$CONTENT" $FILE 2>/dev/null; then
-        
+
         log "Adding $CONTENT to $FILE" $LOG_OUTPUT
-        
+
         sudo -- sh -c "echo \"$CONTENT\" >> $FILE"
     else
         log "$CONTENT already found in $FILE. Skipping." $LOG_OUTPUT
@@ -99,7 +99,7 @@ remove_directory() {
     LOG_OUTPUT="${2:-true}"
     if [ -d "$DIRECTORY" ]; then
         log "Directory $DIRECTORY found.  Removing." $LOG_OUTPUT
-        
+
         sudo rm -rf $DIRECTORY
         if [ ! -d $DIRECTORY ]; then
             log "Directory $DIRECTORY deletion was successful." $LOG_OUTPUT
@@ -114,7 +114,7 @@ remove_file() {
     LOG_OUTPUT="${2:-true}"
     if [ -f "$FILE" ]; then
         log "File $FILE found.  Removing." $LOG_OUTPUT
-        
+
         sudo rm $FILE
         if [ ! -f $FILE ]; then
             log "File $FILE deletion was successful." $LOG_OUTPUT
@@ -149,17 +149,17 @@ run_node_command() {
     FILTERED_ARGS=()
     while [[ $# -gt 0 ]]; do
         if [[ "$1" == "--print-cmd" ]]; then
-            
+
             echo "Command: $LINKED_NODE_BINARY$SIGNATURE_CHECK$TESTNET$DEBUG $@"
             echo "Signature Check:$SIGNATURE_CHECK"
-            echo "Testnet:$TESTNET" 
+            echo "Testnet:$TESTNET"
             echo "Debug:$DEBUG"
             shift
         else
             FILTERED_ARGS+=("$1")
             shift
         fi
-       
+
     done
     set -- "${FILTERED_ARGS[@]}"
 
@@ -205,7 +205,7 @@ install_package() {
 
         # Verify if the installation was successful
         if command_exists $command; then
-            log "$package was successfuly installed and $command is now available for use." 
+            log "$package was successfuly installed and $command is now available for use."
         fi
     fi
 }
@@ -245,32 +245,40 @@ fetch_qclient_release_version() {
 }
 
 set_current_node_version() {
-    local current_version="$1" 
+    local current_version="$1"
     yq -i e ".current_node_version = \"$current_version\"" $QTOOLS_CONFIG_FILE
 }
 
 set_current_qclient_version() {
-    local current_version="$1" 
+    local current_version="$1"
     yq -i e ".current_qclient_version = \"$current_version\"" $QTOOLS_CONFIG_FILE
 }
 
 get_current_node_version() {
-    local CURRENT_VERSION="$(yq eval '.current_node_version' $QTOOLS_CONFIG_FILE)"
+    local CONFIG_VERSION="$(yq eval '.current_node_version' $QTOOLS_CONFIG_FILE)"
+    local LINKED_BINARY_NAME=$(readlink -f "$LINKED_NODE_BINARY")
+    local SYMLINK_VERSION=""
 
-    if [ -z "$CURRENT_VERSION" ]; then
-        # Get the version from the symlinked binary
-        local LINKED_BINARY_NAME=$(readlink -f "$LINKED_NODE_BINARY")
-        if [[ -n "$LINKED_BINARY_NAME" ]]; then
-            CURRENT_VERSION=$(basename "$LINKED_BINARY_NAME" | grep -oP "node-\K([0-9]+\.?)+")
-            if [[ -z "$CURRENT_VERSION" ]]; then
-                CURRENT_VERSION="0.0.0"
-            fi
-        else
-            CURRENT_VERSION="0.0.0"
-        fi
+    if [[ -n "$LINKED_BINARY_NAME" ]]; then
+        SYMLINK_VERSION=$(basename "$LINKED_BINARY_NAME" | grep -oP "node-\K([0-9]+\.?)+")
     fi
 
-    echo $CURRENT_VERSION
+    # If both are empty, return a safe default
+    if [[ -z "$CONFIG_VERSION" && -z "$SYMLINK_VERSION" ]]; then
+        echo "0.0.0"
+        return
+    fi
+
+    # Prefer the symlinked version when available; persist to config if it differs
+    if [[ -n "$SYMLINK_VERSION" ]]; then
+        if [[ "$SYMLINK_VERSION" != "$CONFIG_VERSION" ]]; then
+            set_current_node_version "$SYMLINK_VERSION"
+        fi
+        echo "$SYMLINK_VERSION"
+        return
+    fi
+
+    echo "$CONFIG_VERSION"
 }
 
 get_current_qclient_version() {
@@ -311,7 +319,7 @@ get_remote_quil_files() {
             else
                 log "File $dest_file already exists"
             fi
-        
+
         fi
     done <<< "$files"
 }

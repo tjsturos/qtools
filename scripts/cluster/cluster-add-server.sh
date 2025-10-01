@@ -27,7 +27,7 @@ done
 if [ -z "$BASE_PORT" ]; then
     echo -e "${RED}${ERROR_ICON} Error: Base port not specified in config or via --base-port parameter${RESET}"
     exit 1
-else 
+else
     echo -e "${GREEN}${CHECK_ICON} Base port set to $BASE_PORT${RESET}"
 fi
 
@@ -83,9 +83,6 @@ for arg in "${SERVERS[@]}"; do
         if [ -n "$worker_count" ]; then
             echo -e "${BLUE}${INFO_ICON} Processing server: $user@$ip (port: $ssh_port, workers: $worker_count)${RESET}"
             add_server_to_config "$ip" "$ssh_port" "$user" "$worker_count" "$core_count" "$BASE_PORT"
-            for ((i=0; i<$worker_count; i++)); do
-                yq eval -i ".engine.dataWorkerMultiaddrs += \"/ip4/$ip/tcp/$((BASE_PORT + i))\"" $QUIL_CONFIG_FILE
-            done
         else
             echo -e "${BLUE}${INFO_ICON} Processing server: $user@$ip (port: $ssh_port)${RESET}"
             add_server_to_config "$ip" "$ssh_port" "$user" null null "$BASE_PORT"

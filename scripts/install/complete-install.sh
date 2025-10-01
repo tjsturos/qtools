@@ -47,6 +47,7 @@ qtools install-go
 qtools install-grpc
 qtools setup-firewall
 qtools install-cron
+qtools expand-storage
 
 generate_default_config() {
     # This first command generates a default config file
@@ -54,7 +55,7 @@ generate_default_config() {
     BINARY_FILE=$QUIL_NODE_PATH/$BINARY_NAME
     $BINARY_FILE -peer-id
     sleep 3
-    if [ -f $BINARY_FILE ]; then 
+    if [ -f $BINARY_FILE ]; then
         qtools modify-config
     fi
 }
@@ -65,7 +66,7 @@ if [ "$PEER_ID" != "" ]; then
     if [ "$PEER_ID" != "false" ] && [ "$PEER_ID" != "" ]; then
         qtools restore-backup --peer-id $PEER_ID --force
         wait
-        if [ -f $BINARY_FILE ]; then 
+        if [ -f $BINARY_FILE ]; then
             qtools modify-config
         fi
     else

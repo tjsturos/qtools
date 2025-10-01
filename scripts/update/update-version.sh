@@ -99,6 +99,8 @@ update_node_link() {
     sudo ln -sf "${QUIL_NODE_PATH}/node-$VERSION-$OS_ARCH" "${LINKED_NODE_BINARY}"
     if [ $? -eq 0 ]; then
         log "Successfully linked $LINKED_NODE_BINARY to ${QUIL_NODE_PATH}/node-$VERSION-$OS_ARCH"
+        # Persist the current node version to config after linking
+        set_current_node_version "$VERSION"
     else
         log "Failed to link $LINKED_NODE_BINARY to ${QUIL_NODE_PATH}/node-$VERSION-$OS_ARCH"
         return 1

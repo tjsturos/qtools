@@ -82,6 +82,12 @@ link_node() {
     echo "Linking $LINKED_NODE_BINARY to $QUIL_NODE_PATH/$BINARY_NAME"
     sudo ln -sf $QUIL_NODE_PATH/$BINARY_NAME $LINKED_NODE_BINARY
 
+    # Persist the current node version to config after linking
+    local VERSION_FROM_LINK=$(basename "$BINARY_NAME" | grep -oP "node-\K([0-9]+\.?)+")
+    if [[ -n "$VERSION_FROM_LINK" ]]; then
+        set_current_node_version "$VERSION_FROM_LINK"
+    fi
+
     if [ "$DEV_BUILD" == "true" ]; then
         qtools update-service --skip-sig-check
     fi
@@ -94,7 +100,7 @@ download_file() {
         echo "$FILE_NAME already exists. Skipping download."
         return
     fi
-    
+
     echo "Downloading $FILE_NAME..."
 
     if [ "$DEV_BUILD" != "true" ]; then
@@ -112,7 +118,7 @@ download_file() {
     if [ $? -eq 0 ]; then
         echo "Successfully downloaded $FILE_NAME"
         # Check if the file is the base binary (without .dgst or .sig suffix)
-       
+
     else
         echo "Failed to download $file"
     fi
@@ -141,7 +147,7 @@ for file in $NODE_RELEASE_FILES; do
             qtools update-service --skip-sig-check
         fi
     fi
-    
+
     echo "------------------------"
 done
 
