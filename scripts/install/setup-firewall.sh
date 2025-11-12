@@ -19,15 +19,53 @@ else
     sudo ufw allow $SSH_PORT
 fi
 
-LISTEN_ADDR=$(yq eval '.settings.listenAddr.port' $QTOOLS_CONFIG_FILE)
-sudo ufw allow 8336
+# Get listen port from config, with fallback to quil config or default
+LISTEN_PORT=$(yq eval '.settings.listenAddr.port // ""' $QTOOLS_CONFIG_FILE)
+if [ -z "$LISTEN_PORT" ] || [ "$LISTEN_PORT" = "null" ] || [ "$LISTEN_PORT" = "0" ]; then
+    # Try to extract from quil config listenMultiaddr
+    LISTEN_MULTIADDR=$(yq eval '.p2p.listenMultiaddr // ""' "$QUIL_CONFIG_FILE")
+    if [ -n "$LISTEN_MULTIADDR" ]; then
+        LISTEN_PORT=$(echo "$LISTEN_MULTIADDR" | sed -n 's#.*/\(udp\|tcp\)/\([0-9]\+\).*#\2#p')
+    fi
+    # Fallback to default
+    [ -z "$LISTEN_PORT" ] && LISTEN_PORT=8336
+fi
+# Validate and fallback if invalid
+if ! [[ "$LISTEN_PORT" =~ ^[0-9]+$ ]] || [ "$LISTEN_PORT" -eq 0 ] 2>/dev/null; then
+    LISTEN_PORT=8336
+fi
+
+# Get listen mode to determine protocol (udp or tcp)
+LISTEN_MODE=$(yq eval '.settings.listenAddr.mode // "udp"' $QTOOLS_CONFIG_FILE)
+if [ -z "$LISTEN_MODE" ] || [ "$LISTEN_MODE" = "null" ]; then
+    # Try to extract from quil config
+    LISTEN_MULTIADDR=$(yq eval '.p2p.listenMultiaddr // ""' "$QUIL_CONFIG_FILE")
+    if [ -n "$LISTEN_MULTIADDR" ]; then
+        LISTEN_MODE=$(echo "$LISTEN_MULTIADDR" | sed -n 's#.*/ip4/[0-9.]\+/\([a-z]\+\)/.*#\1#p')
+    fi
+    [ -z "$LISTEN_MODE" ] && LISTEN_MODE="udp"
+fi
+
+# Allow the listen port with appropriate protocol
+if [ "$LISTEN_MODE" = "udp" ]; then
+    sudo ufw allow $LISTEN_PORT/udp
+else
+    sudo ufw allow $LISTEN_PORT/tcp
+fi
 
 # Read Quil node config for 2.1 worker/master stream requirements
-STREAM_MULTIADDR=$(yq eval '.p2p.streamListenMultiaddr // ""' "$QUIL_CONFIG_FILE")
-# Extract tcp port from multiaddr, fallback to 8340 per docs
-STREAM_PORT=$(echo "$STREAM_MULTIADDR" | sed -n 's#.*/tcp/\([0-9]\+\).*#\1#p')
-[ -z "$STREAM_PORT" ] && STREAM_PORT=8340
-# Fallback if zero or invalid
+# First try to get from qtools config
+STREAM_PORT=$(yq eval '.service.clustering.master_stream_port // ""' $QTOOLS_CONFIG_FILE)
+if [ -z "$STREAM_PORT" ] || [ "$STREAM_PORT" = "null" ] || [ "$STREAM_PORT" = "0" ]; then
+    # Try to extract from quil config streamListenMultiaddr
+    STREAM_MULTIADDR=$(yq eval '.p2p.streamListenMultiaddr // ""' "$QUIL_CONFIG_FILE")
+    if [ -n "$STREAM_MULTIADDR" ]; then
+        STREAM_PORT=$(echo "$STREAM_MULTIADDR" | sed -n 's#.*/tcp/\([0-9]\+\).*#\1#p')
+    fi
+    # Fallback to default
+    [ -z "$STREAM_PORT" ] && STREAM_PORT=8340
+fi
+# Validate and fallback if invalid
 if ! [[ "$STREAM_PORT" =~ ^[0-9]+$ ]] || [ "$STREAM_PORT" -eq 0 ] 2>/dev/null; then
     STREAM_PORT=8340
 fi
@@ -50,9 +88,9 @@ if ! [[ "$BASE_STREAM_PORT" =~ ^[0-9]+$ ]] || [ "$BASE_STREAM_PORT" -eq 0 ] 2>/d
     BASE_STREAM_PORT=60000
 fi
 
+echo "LISTEN_PORT: $LISTEN_PORT ($LISTEN_MODE)"
 echo "BASE_P2P_PORT: $BASE_P2P_PORT"
 echo "BASE_STREAM_PORT: $BASE_STREAM_PORT"
-
 echo "STREAM_PORT: $STREAM_PORT"
 
 # Determine worker count from config; fallback to vCPU count
@@ -93,7 +131,7 @@ sudo ufw deny out to 255.255.255.255
 
 required_ports=(
   "$SSH_PORT"
-  "8336"
+  "$LISTEN_PORT"
   "$STREAM_PORT"
 )
 
@@ -118,8 +156,22 @@ fi
 # Check each required port (format-agnostic)
 missing_ports=()
 for port in "${required_ports[@]}"; do
-  if ! echo "$actual_output" | grep -E "(^|[^0-9])${port}(/tcp)?\\s+ALLOW" >/dev/null; then
-    missing_ports+=("$port")
+  # For listen port, check with appropriate protocol
+  if [ "$port" = "$LISTEN_PORT" ]; then
+    if [ "$LISTEN_MODE" = "udp" ]; then
+      if ! echo "$actual_output" | grep -E "(^|[^0-9])${port}/udp\\s+ALLOW" >/dev/null; then
+        missing_ports+=("$port/udp")
+      fi
+    else
+      if ! echo "$actual_output" | grep -E "(^|[^0-9])${port}(/tcp)?\\s+ALLOW" >/dev/null; then
+        missing_ports+=("$port/tcp")
+      fi
+    fi
+  else
+    # For other ports (SSH, stream), check tcp
+    if ! echo "$actual_output" | grep -E "(^|[^0-9])${port}(/tcp)?\\s+ALLOW" >/dev/null; then
+      missing_ports+=("$port")
+    fi
   fi
 done
 
