@@ -9,6 +9,7 @@ qclient_cli_name: qclient
 ssh:
     allow_from_ip: false
     port: 22
+    skip_192_168_block: false  # Skip blocking 192.168.0.0/16 outbound traffic (useful for localhost/local_only networks)
 service:
     file_name: ceremonyclient
     debug: false

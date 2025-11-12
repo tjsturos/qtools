@@ -75,7 +75,15 @@ fi
 # Block RFC1918 private address ranges
 sudo ufw deny out to 10.0.0.0/8
 sudo ufw deny out to 172.16.0.0/12
-sudo ufw deny out to 192.168.0.0/16
+
+# Check if we should skip the 192.168 block (for localhost/local_only networks)
+SKIP_192_168_BLOCK=$(yq eval '.ssh.skip_192_168_block // false' $QTOOLS_CONFIG_FILE)
+LOCAL_ONLY=$(yq eval '.service.clustering.local_only // false' $QTOOLS_CONFIG_FILE)
+
+# Skip 192.168 block if explicitly set or if local_only is enabled
+if [ "$SKIP_192_168_BLOCK" != "true" ] && [ "$LOCAL_ONLY" != "true" ]; then
+    sudo ufw deny out to 192.168.0.0/16
+fi
 
 # Block multicast
 sudo ufw deny out to 224.0.0.0/4
