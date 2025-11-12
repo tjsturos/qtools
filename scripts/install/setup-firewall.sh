@@ -34,8 +34,14 @@ fi
 sudo ufw allow "$STREAM_PORT"
 
 # Determine worker base ports with sensible defaults per 2.1
-BASE_P2P_PORT=$(yq eval '.engine.dataWorkerBaseP2PPort // "50000"' "$QUIL_CONFIG_FILE")
-BASE_STREAM_PORT=$(yq eval '.engine.dataWorkerBaseStreamPort // "60000"' "$QUIL_CONFIG_FILE")
+BASE_P2P_PORT=$(yq eval '.engine.dataWorkerBaseP2PPort // ""' "$QUIL_CONFIG_FILE")
+if [ -z "$BASE_P2P_PORT" ] || [ "$BASE_P2P_PORT" = "0" ]; then
+  BASE_P2P_PORT=$(yq eval '.service.clustering.worker_base_p2p_port // "50000"' "$QTOOLS_CONFIG_FILE")
+fi
+BASE_STREAM_PORT=$(yq eval '.engine.dataWorkerBaseStreamPort // ""' "$QUIL_CONFIG_FILE")
+if [ -z "$BASE_STREAM_PORT" ] || [ "$BASE_STREAM_PORT" = "0" ]; then
+  BASE_STREAM_PORT=$(yq eval '.service.clustering.worker_base_stream_port // "60000"' "$QTOOLS_CONFIG_FILE")
+fi
 # Fallback to defaults if zero or invalid
 if ! [[ "$BASE_P2P_PORT" =~ ^[0-9]+$ ]] || [ "$BASE_P2P_PORT" -eq 0 ] 2>/dev/null; then
     BASE_P2P_PORT=50000

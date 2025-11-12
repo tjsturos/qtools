@@ -3,3 +3,6 @@ quil_on_start_log
 config.yml
 files/*.key
 files/*.cert
+
+INIT_COMPLETE
+*.txt

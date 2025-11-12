@@ -10,12 +10,12 @@ check_and_add_keys() {
     mv "$QTOOLS_CONFIG_FILE_MERGED" "$QTOOLS_CONFIG_FILE"
 
     echo "Config migration completed. All missing keys have been added."
-}   
+}
 
 # Function to check and add missing keys from config.sample.yml to config.yml
 migrate_base_config() {
     check_and_add_keys ""
-    
+
     echo "Base config migration completed."
 }
 
@@ -44,7 +44,7 @@ update_backup_settings() {
     map_values_to_new_field ".settings.backups.remote_user" ".scheduled_tasks.backup.remote_user" ""
     map_values_to_new_field ".settings.backups.ssh_key_path" ".scheduled_tasks.backup.ssh_key_path" ""
     map_values_to_new_field ".settings.backups.remote_backup_dir" ".scheduled_tasks.backup.remote_backup_dir" ""
-    
+
     echo "Updated backup settings"
 }
 
@@ -54,9 +54,9 @@ VERSION_2() {
     echo "Current version: $current_version vs $VERSION"
     if [ "$current_version" -lt "$VERSION" ]; then
         echo "Migrating config.yml to version 2"
-        
+
         update_backup_settings
-        
+
         # Update qtools_version to 2
         yq eval -i '.qtools_version = 2' "$QTOOLS_CONFIG_FILE"
         echo "Updated qtools_version to 2"
@@ -78,7 +78,7 @@ VERSION_3() {
 VERSION_5() {
     local VERSION=5
     current_version=$(yq eval '.qtools_version // "0"' "$QTOOLS_CONFIG_FILE")
-    
+
     echo "Current version: $current_version vs $VERSION"
     if [ "$current_version" -lt "$VERSION" ]; then
         echo "Migrating config.yml to version 5"
@@ -119,11 +119,27 @@ get_latest_qtools_version() {
     yq eval '.qtools_version // "0"' "$QTOOLS_CONFIG_FILE_SAMPLE"
 }
 
+# Version 24: Add clustering worker base ports and master stream port defaults
+VERSION_24() {
+    local VERSION=24
+    current_version=$(yq eval '.qtools_version // "0"' "$QTOOLS_CONFIG_FILE")
+    echo "Current version: $current_version vs $VERSION"
+    if [ "$current_version" -lt "$VERSION" ]; then
+        echo "Migrating config.yml to version 24"
+        yq eval -i '.service.clustering.worker_base_p2p_port = (.service.clustering.worker_base_p2p_port // 50000)' "$QTOOLS_CONFIG_FILE"
+        yq eval -i '.service.clustering.worker_base_stream_port = (.service.clustering.worker_base_stream_port // 60000)' "$QTOOLS_CONFIG_FILE"
+        yq eval -i '.service.clustering.master_stream_port = (.service.clustering.master_stream_port // 8340)' "$QTOOLS_CONFIG_FILE"
+        yq eval -i '.qtools_version = 24' "$QTOOLS_CONFIG_FILE"
+        echo "Updated qtools_version to 24"
+    fi
+}
+
 # run the version migration
 VERSION_2
 VERSION_3
 VERSION_5
 VERSION_21
+VERSION_24
 
 yq eval -i ".qtools_version = \"$(get_latest_qtools_version)\"" "$QTOOLS_CONFIG_FILE"
 

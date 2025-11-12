@@ -16,12 +16,13 @@ CONFIG=$(yq eval . $QTOOLS_CONFIG_FILE)
 SERVERS=$(echo "$CONFIG" | yq eval '.service.clustering.servers' -)
 
 # Filter out the server with the given IP
-NEW_SERVERS=$(echo "$SERVERS" | yq eval 'map(select(.ip != '""""$IP_TO_REMOVE""""'))' -)
+NEW_SERVERS=$(echo "$SERVERS" | yq eval 'map(select(.ip != "'"$IP_TO_REMOVE"'"))' -)
 
 # Update the configuration file
 yq eval -i '.service.clustering.servers = '"$NEW_SERVERS"'' $QTOOLS_CONFIG_FILE
 
-# 2.1+: No longer maintaining engine.dataWorkerMultiaddrs entries
+# Remove any data worker multiaddrs containing this IP from the engine config
+yq eval -i '.engine.dataWorkerMultiaddrs = (.engine.dataWorkerMultiaddrs // [] | map(select(contains("'"$IP_TO_REMOVE"'") | not)))' $QUIL_CONFIG_FILE
 
 # Check if the server was actually removed
 if [ "$(echo "$NEW_SERVERS" | yq eval '. | length' -)" -lt "$(echo "$SERVERS" | yq eval '. | length' -)" ]; then

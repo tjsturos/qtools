@@ -8,8 +8,8 @@ export DEFAULT_USER=$(eval echo $(yq eval '.service.clustering.default_user // "
 export DEFAULT_SSH_PORT=$(yq eval '.service.clustering.default_ssh_port // "22"' $QTOOLS_CONFIG_FILE)
 export QUIL_DATA_WORKER_SERVICE_NAME="$(yq eval '.service.clustering.data_worker_service_name // "dataworker"' $QTOOLS_CONFIG_FILE)"
 export BASE_PORT=$(yq eval '.service.clustering.base_port // "40000"' $QTOOLS_CONFIG_FILE)
-export WORKER_BASE_P2P_PORT=$(yq eval '.engine.dataWorkerBaseP2PPort // "50000"' $QUIL_CONFIG_FILE)
-export WORKER_BASE_STREAM_PORT=$(yq eval '.engine.dataWorkerBaseStreamPort // "60000"' $QUIL_CONFIG_FILE)
+export WORKER_BASE_P2P_PORT=$(yq eval '.engine.dataWorkerBaseP2PPort // .service.clustering.worker_base_p2p_port // "50000"' $QUIL_CONFIG_FILE $QTOOLS_CONFIG_FILE)
+export WORKER_BASE_STREAM_PORT=$(yq eval '.engine.dataWorkerBaseStreamPort // .service.clustering.worker_base_stream_port // "60000"' $QUIL_CONFIG_FILE $QTOOLS_CONFIG_FILE)
 if [ -z "$WORKER_BASE_P2P_PORT" ] || [ "$WORKER_BASE_P2P_PORT" = "0" ]; then WORKER_BASE_P2P_PORT=50000; fi
 if [ -z "$WORKER_BASE_STREAM_PORT" ] || [ "$WORKER_BASE_STREAM_PORT" = "0" ]; then WORKER_BASE_STREAM_PORT=60000; fi
 
@@ -378,7 +378,6 @@ update_quil_config() {
         if [ "$data_worker_count" == "false" ]; then
             data_worker_count=$available_cores
         fi
-
         if [ "$cores_to_use" == "false" ]; then
             cores_to_use=$available_cores
         fi
@@ -386,7 +385,7 @@ update_quil_config() {
         # Convert data_worker_count to integer and ensure it's not greater than available cores
         data_worker_count=$(echo "$data_worker_count" | tr -cd '0-9')
 
-        echo "Data worker count for $ip: $data_worker_count"
+        echo "Workers for $ip: $data_worker_count (cores to use: $cores_to_use)"
 
         # Increment the global count
         TOTAL_EXPECTED_DATA_WORKERS=$((TOTAL_EXPECTED_DATA_WORKERS + data_worker_count))
