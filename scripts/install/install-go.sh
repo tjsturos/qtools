@@ -1,8 +1,22 @@
 #!/bin/bash
 # HELP: Installs Go 1.22.4 on this node.
-echo "Installing Go"
 
 GO_VERSION=${1:-1.24.9}
+
+# Check if Go is already installed and matches target version
+if command_exists go; then
+    CURRENT_VERSION=$(go version 2>/dev/null | awk '{print $3}' | sed 's/go//')
+    if [ -n "$CURRENT_VERSION" ] && [ "$CURRENT_VERSION" == "$GO_VERSION" ]; then
+        log "Go version $GO_VERSION is already installed. Skipping installation."
+        exit 0
+    elif [ -n "$CURRENT_VERSION" ]; then
+        log "Go version $CURRENT_VERSION is installed, but target version is $GO_VERSION. Proceeding with installation."
+    else
+        log "Go is installed but version check failed. Proceeding with installation."
+    fi
+fi
+
+echo "Installing Go"
 
 GO_BIN_DIR=/usr/local
 GOROOT=$GO_BIN_DIR/go
