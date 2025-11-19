@@ -4,7 +4,7 @@ release_version: 1.4.19.1
 current_node_version: 1.4.19.1
 current_qclient_version: 1.4.19.1
 os_arch: linux-amd64
-qtools_version: 24
+qtools_version: 25
 qclient_cli_name: qclient
 ssh:
     allow_from_ip: false
@@ -107,18 +107,6 @@ scheduled_tasks:
     diagnostics:
         enabled: false
         cron_expression: ""
-    config_carousel:
-        enabled: false
-        frames: 10
-        peer_list: []
-        current_index: 0
-        check_workers:
-            enabled: false
-            cron_expression: "* * * * *"
-            idle_config_file: ~/ceremonyclient/node/idle-config.yml
-            in_use_config_file: ~/ceremonyclient/node/in-use-config.yml
-            using_workers: false
-        service_name: quil-config-carousel
 settings:
     use_avx512: false
     publish_multiaddr:

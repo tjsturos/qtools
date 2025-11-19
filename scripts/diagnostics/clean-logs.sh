@@ -51,11 +51,6 @@ if [ "$CLEAN_JOURNAL" == "true" ]; then
         sudo journalctl --vacuum-time=1s -u "$QUIL_DATA_WORKER_SERVICE_NAME@*" > /dev/null 2>&1
     fi
 
-    # Clean config carousel logs if they exist
-    if [ -n "$CONFIG_CAROUSEL_SERVICE_NAME" ]; then
-        sudo journalctl --vacuum-time=1s -u "$CONFIG_CAROUSEL_SERVICE_NAME" > /dev/null 2>&1
-    fi
-
     echo "Cleaned systemd journal logs"
 fi
 

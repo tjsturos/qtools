@@ -21,7 +21,7 @@ AUTO_UPDATE_NODE=$(yq eval '.scheduled_tasks.updates.node.enabled' $QTOOLS_CONFI
 
 if [ "$AUTO_UPDATE_NODE" == "true" ]; then
   NODE_UPDATE_CRON_EXPRESSION=$(yq eval '.scheduled_tasks.updates.node.cron_expression' $QTOOLS_CONFIG_FILE)
-  
+
   # Check if Expression is valid
   if [ -z "$NODE_UPDATE_CRON_EXPRESSION" ]; then
     NODE_UPDATE_CRON_EXPRESSION="*/10 * * * *"
@@ -34,7 +34,7 @@ AUTO_UPDATE_QTOOLS=$(yq eval '.scheduled_tasks.updates.qtools.enabled' $QTOOLS_C
 
 if [ "$AUTO_UPDATE_QTOOLS" == "true" ]; then
   QTOOLS_UPDATE_CRON_EXPRESSION=$(yq eval '.scheduled_tasks.updates.qtools.cron_expression' $QTOOLS_CONFIG_FILE)
-  
+
   # Check if Expression is valid
   if [ -z "$QTOOLS_UPDATE_CRON_EXPRESSION" ]; then
     QTOOLS_UPDATE_CRON_EXPRESSION="*/10 * * * *"
@@ -49,12 +49,12 @@ if [ "$IS_CLUSTERING_ENABLED" == "true" ] && [ "$IS_MASTER" == "true" ] || [ "$I
 
   if [ "$AUTO_RUN_DIAGNOSTICS" == "true" ] ; then
     DIAGNOSTICS_CRON_EXPRESSION=$(yq eval '.scheduled_tasks.diagnostics.cron_expression' $QTOOLS_CONFIG_FILE)
-    
+
     # Check if Expression is valid
     if [ -z "$DIAGNOSTICS_CRON_EXPRESSION" ]; then
       DIAGNOSTICS_CRON_EXPRESSION="*/10 * * * *"
     fi
-    
+
     log "Adding diagnostics cron expression: $DIAGNOSTICS_CRON_EXPRESSION"
     append_to_file $FILE_CRON "$DIAGNOSTICS_CRON_EXPRESSION qtools run-diagnostics --auto" false
   fi
@@ -85,12 +85,12 @@ if [ "$IS_CLUSTERING_ENABLED" == "true" ] && [ "$IS_MASTER" == "true" ] || [ "$I
 
   if [ "$AUTO_UPDATE_DIRECT_PEERS" == "true" ]; then
     DIRECT_PEERS_UPDATE_CRON_EXPRESSION=$(yq eval '.scheduled_tasks.direct_peers.cron_expression' $QTOOLS_CONFIG_FILE)
-    
+
     # Check if Expression is valid
     if [ -z "$DIRECT_PEERS_UPDATE_CRON_EXPRESSION" ]; then
       DIRECT_PEERS_UPDATE_CRON_EXPRESSION="*/5 * * * *"
     fi
-    
+
     log "Adding direct peers update cron expression: $DIRECT_PEERS_UPDATE_CRON_EXPRESSION"
     append_to_file $FILE_CRON "$DIRECT_PEERS_UPDATE_CRON_EXPRESSION qtools update-direct-peers" false
   fi
@@ -99,23 +99,14 @@ if [ "$IS_CLUSTERING_ENABLED" == "true" ] && [ "$IS_MASTER" == "true" ] || [ "$I
 
   if [ "$AUTO_BACKUP_STORE" == "true" ]; then
     BACKUP_STORE_CRON_EXPRESSION=$(yq eval '.scheduled_tasks.backup.cron_expression' $QTOOLS_CONFIG_FILE)
-    
+
     # Check if Expression is valid
     if [ -z "$BACKUP_STORE_CRON_EXPRESSION" ]; then
       BACKUP_STORE_CRON_EXPRESSION="*/10 * * * *"
     fi
-    
+
     log "Adding backup store cron expression: $BACKUP_STORE_CRON_EXPRESSION"
     append_to_file $FILE_CRON "$BACKUP_STORE_CRON_EXPRESSION qtools backup-store --restart" false
-  fi
-
-  AUTO_CHECK_WORKERS=$(yq eval '.scheduled_tasks.config_carousel.check_workers.enabled // "false"' $QTOOLS_CONFIG_FILE)
-
-  if [ "$AUTO_CHECK_WORKERS" == "true" ]; then
-    CHECK_WORKERS_CRON_EXPRESSION=$(yq eval '.scheduled_tasks.config_carousel.check_workers.cron_expression // "* * * * *"' $QTOOLS_CONFIG_FILE)
-    
-    log "Adding worker availability check cron expression: $CHECK_WORKERS_CRON_EXPRESSION"
-    append_to_file $FILE_CRON "$CHECK_WORKERS_CRON_EXPRESSION qtools check-worker-availability && sleep 30 && qtools check-worker-availability" false
   fi
 fi
 
@@ -136,7 +127,7 @@ if [[ $DIFF_BEFORE ]]; then
   else
     log "The crontab was successfully updated."
   fi
-else 
+else
   log "The crontab does not need to be updated.  Skipping."
 fi
 

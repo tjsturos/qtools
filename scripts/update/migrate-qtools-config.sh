@@ -134,12 +134,32 @@ VERSION_24() {
     fi
 }
 
+# Version 25: Remove config_carousel functionality (no longer supported)
+VERSION_25() {
+    local VERSION=25
+    current_version=$(yq eval '.qtools_version // "0"' "$QTOOLS_CONFIG_FILE")
+    echo "Current version: $current_version vs $VERSION"
+    if [ "$current_version" -lt "$VERSION" ]; then
+        echo "Migrating config.yml to version 25"
+
+        # Remove config_carousel section if it exists
+        if yq eval '.scheduled_tasks.config_carousel' "$QTOOLS_CONFIG_FILE" &>/dev/null; then
+            yq eval -i 'del(.scheduled_tasks.config_carousel)' "$QTOOLS_CONFIG_FILE"
+            echo "Removed config_carousel section (no longer supported)"
+        fi
+
+        yq eval -i '.qtools_version = 25' "$QTOOLS_CONFIG_FILE"
+        echo "Updated qtools_version to 25"
+    fi
+}
+
 # run the version migration
 VERSION_2
 VERSION_3
 VERSION_5
 VERSION_21
 VERSION_24
+VERSION_25
 
 yq eval -i ".qtools_version = \"$(get_latest_qtools_version)\"" "$QTOOLS_CONFIG_FILE"
 

@@ -49,7 +49,6 @@ This document provides a comprehensive list of all available qtools commands.
 |---------|-------------|------------|---------|
 | `modify-config` | Formats node's config file | None | `qtools modify-config` |
 | `migrate-qtools-config` | Updates config structure | None | `qtools migrate-qtools-config` |
-| `config-carousel` | Switches peer configurations | `--frames`: Frames before switch<br>`--daemon`: Run continuously | `qtools config-carousel` |
 
 ## Diagnostic Commands
 
@@ -116,4 +115,4 @@ This document provides a comprehensive list of all available qtools commands.
 | `update-bandwidth` | Updates node bandwidth settings | `--plan <low/high/default>`: Bandwidth plan<br>`--d`: D value<br>`--dLo`: Low D value<br>`--dHi`: High D value<br>`--dOut`: Out D value<br>`--lower-watermark`: Low connection limit<br>`--high-watermark`: High connection limit | `qtools update-bandwidth --plan high` |
 | `update-direct-peers` | Updates direct peer list from remote source | `--dry-run`: Test without changes<br>`--wait`: Wait for next proof | `qtools update-direct-peers` |
 
-These commands help configure various aspects of your node's operation, from networking parameters to performance settings. The firewall setup ensures proper port access while maintaining security. 
+These commands help configure various aspects of your node's operation, from networking parameters to performance settings. The firewall setup ensures proper port access while maintaining security.
