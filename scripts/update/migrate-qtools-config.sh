@@ -2,6 +2,42 @@
 QTOOLS_CONFIG_FILE_SAMPLE="$QTOOLS_PATH/config.sample.yml"
 QTOOLS_CONFIG_FILE_MERGED="$QTOOLS_PATH/config_merged.yml"
 
+# Validate and restore config.sample.yml if corrupted
+validate_and_restore_sample_config() {
+    # Check if sample config exists and is valid YAML
+    if [ -f "$QTOOLS_CONFIG_FILE_SAMPLE" ]; then
+        if ! yq eval '.' "$QTOOLS_CONFIG_FILE_SAMPLE" > /dev/null 2>&1; then
+            echo "Warning: config.sample.yml appears to be corrupted. Attempting to restore from source..."
+
+            # Try to restore from git if in a git repository
+            if [ -d "$QTOOLS_PATH/.git" ]; then
+                cd "$QTOOLS_PATH"
+                if git checkout HEAD -- config.sample.yml 2>/dev/null; then
+                    # Verify the restored file is valid
+                    if yq eval '.' "$QTOOLS_CONFIG_FILE_SAMPLE" > /dev/null 2>&1; then
+                        echo "Restored config.sample.yml from git repository"
+                        return 0
+                    else
+                        echo "Error: Restored config.sample.yml is still invalid"
+                        exit 1
+                    fi
+                fi
+            fi
+
+            # If git restore failed or not a git repo, try to copy from a backup location
+            # or remove and let it be recreated (though this shouldn't happen in normal operation)
+            echo "Error: Could not restore config.sample.yml. Please restore it manually from the repository."
+            exit 1
+        fi
+    else
+        echo "Error: config.sample.yml not found at $QTOOLS_CONFIG_FILE_SAMPLE"
+        exit 1
+    fi
+}
+
+# Validate sample config before proceeding
+validate_and_restore_sample_config
+
 check_and_add_keys() {
     yq eval-all '
         select(fileIndex == 0) * select(fileIndex == 1) * select(fileIndex == 0)
