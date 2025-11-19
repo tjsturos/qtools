@@ -70,7 +70,10 @@ map_values_to_new_field() {
     local default_value="$3"
 
     yq eval -i "$new_field = $old_field // \"$default_value\"" $QTOOLS_CONFIG_FILE
-    yq eval -i "del($old_field)" $QTOOLS_CONFIG_FILE
+    # Only delete if the old field exists
+    if yq eval "$old_field" "$QTOOLS_CONFIG_FILE" &>/dev/null; then
+        yq eval -i "del($old_field)" $QTOOLS_CONFIG_FILE
+    fi
 }
 
 update_backup_settings() {
@@ -179,7 +182,8 @@ VERSION_25() {
         echo "Migrating config.yml to version 25"
 
         # Remove config_carousel section if it exists
-        if yq eval '.scheduled_tasks.config_carousel' "$QTOOLS_CONFIG_FILE" &>/dev/null; then
+        config_carousel_value=$(yq eval '.scheduled_tasks.config_carousel' "$QTOOLS_CONFIG_FILE" 2>/dev/null)
+        if [ $? -eq 0 ] && [ "$config_carousel_value" != "null" ] && [ -n "$config_carousel_value" ]; then
             yq eval -i 'del(.scheduled_tasks.config_carousel)' "$QTOOLS_CONFIG_FILE"
             echo "Removed config_carousel section (no longer supported)"
         fi
