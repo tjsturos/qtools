@@ -41,9 +41,9 @@ while [[ $# -gt 0 ]]; do
             DEBUG_MODE=true
             shift
             ;;
-        --skip-sig-check)
+        --skip-sig-check|--skip-signature-check)
             SKIP_SIGNATURE_CHECK=true
-            
+
             shift
             ;;
         --ipfs-debug)
@@ -164,13 +164,13 @@ echo "Clustering: $IS_CLUSTERING_ENABLED, IS MASTER: $IS_MASTER"
 # update normal service
 if [ "$IS_CLUSTERING_ENABLED" == "true" ]; then
     if [ "$IS_MASTER" == "true" ]; then
-        createServiceIfNone 
+        createServiceIfNone
         updateServiceBinary
     elif [ -f $SERVICE_FILE ]; then
         sudo rm $SERVICE_FILE
     fi
 else
-    createServiceIfNone 
+    createServiceIfNone
     updateServiceBinary
 fi
 
