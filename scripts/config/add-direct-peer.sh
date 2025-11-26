@@ -93,7 +93,7 @@ if [ -n "$PEER_IP" ] && [ -n "$PEER_ID" ]; then
 
     # Get default port from config if not provided
     if [ -z "$PORT" ]; then
-        PORT=$(yq eval '.settings.listenAddr.port // 40000' $QTOOLS_CONFIG_FILE)
+        PORT=$(yq eval '.settings.listenAddr.port // 8336' $QTOOLS_CONFIG_FILE)
     fi
 
     # Validate port range
@@ -114,7 +114,7 @@ elif [ -z "$MULTIADDR" ]; then
     echo "Error: Both --ip and --peer-id are required, or provide a full peer address"
     echo "Usage: qtools add-direct-peer --ip <ip_address> --peer-id <peer_id> [--port <port>] [--protocol tcp|udp] [--dry-run] [--wait]"
     echo "   or: qtools add-direct-peer <peer_address>"
-    echo "Example: qtools add-direct-peer --ip 1.2.3.4 --peer-id 12D3KooWxxxxxx --port 40000 --protocol tcp"
+    echo "Example: qtools add-direct-peer --ip 1.2.3.4 --peer-id 12D3KooWxxxxxx --port 8336 --protocol tcp"
     exit 1
 fi
 
