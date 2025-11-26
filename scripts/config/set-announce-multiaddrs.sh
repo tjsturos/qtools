@@ -83,16 +83,17 @@ fi
 # Read master stream listen multiaddr
 MASTER_STREAM_MULTIADDR=$(yq eval '.p2p.streamListenMultiaddr // ""' "$QUIL_CONFIG_FILE")
 if [ -z "$MASTER_STREAM_MULTIADDR" ] || [ "$MASTER_STREAM_MULTIADDR" = "null" ]; then
-    echo "Error: p2p.streamListenMultiaddr not found in QUIL config"
-    exit 1
-fi
-
-# Extract port from master stream listen multiaddr
-# Format: /ip4/0.0.0.0/tcp/8340
-MASTER_STREAM_PORT=$(echo "$MASTER_STREAM_MULTIADDR" | sed -n 's#.*/tcp/\([0-9]\+\).*#\1#p')
-if [ -z "$MASTER_STREAM_PORT" ]; then
-    echo "Error: Could not parse master stream listen multiaddr: $MASTER_STREAM_MULTIADDR"
-    exit 1
+    # Use default port 8340 if not defined
+    MASTER_STREAM_PORT=8340
+    echo "p2p.streamListenMultiaddr not found in QUIL config, using default port: $MASTER_STREAM_PORT"
+else
+    # Extract port from master stream listen multiaddr
+    # Format: /ip4/0.0.0.0/tcp/8340
+    MASTER_STREAM_PORT=$(echo "$MASTER_STREAM_MULTIADDR" | sed -n 's#.*/tcp/\([0-9]\+\).*#\1#p')
+    if [ -z "$MASTER_STREAM_PORT" ]; then
+        echo "Warning: Could not parse master stream listen multiaddr: $MASTER_STREAM_MULTIADDR, using default port: 8340"
+        MASTER_STREAM_PORT=8340
+    fi
 fi
 
 # Get worker count - use override if provided, otherwise read from config
