@@ -3,6 +3,30 @@
 
 log "Updating the service..."
 
+# Get the service user from config, default to 'quilibrium'
+SERVICE_USER=$(yq '.service.default_user // "quilibrium"' $QTOOLS_CONFIG_FILE)
+
+# Ensure quilibrium user exists
+if [ "$SERVICE_USER" == "quilibrium" ]; then
+    if ! id "$SERVICE_USER" &>/dev/null; then
+        log "Quilibrium user not found. Creating it..."
+        qtools create-quilibrium-user
+    fi
+    # Use quilibrium user's node path
+    QUIL_NODE_PATH_FOR_SERVICE="/home/quilibrium/ceremonyclient/node"
+    # Check if quilibrium_node_path is configured
+    CONFIGURED_PATH=$(yq '.service.quilibrium_node_path // ""' $QTOOLS_CONFIG_FILE)
+    if [ -n "$CONFIGURED_PATH" ] && [ "$CONFIGURED_PATH" != "null" ]; then
+        # Replace $HOME with /home/quilibrium for quilibrium user
+        CONFIGURED_PATH=$(echo "$CONFIGURED_PATH" | sed "s|\$HOME|/home/quilibrium|g")
+        # Expand any remaining variables in the path
+        QUIL_NODE_PATH_FOR_SERVICE=$(eval echo "$CONFIGURED_PATH")
+    fi
+else
+    # Use the current QUIL_NODE_PATH for other users
+    QUIL_NODE_PATH_FOR_SERVICE="$QUIL_NODE_PATH"
+fi
+
 getProcessorCount() {
   # Get the CPU count using the nproc command
   cpu_count=$(nproc)
@@ -93,8 +117,8 @@ Description=Quilibrium Ceremony Client Service
 Type=simple
 Restart=always
 RestartSec=$(yq '.service.restart_time' $QTOOLS_CONFIG_FILE)
-User=$(whoami)
-WorkingDirectory=$QUIL_NODE_PATH
+User=$SERVICE_USER
+WorkingDirectory=$QUIL_NODE_PATH_FOR_SERVICE
 Environment="${IPFS_DEBUGGING:+ IPFS_LOGGING=debug}"
 ExecStart=${LINKED_NODE_BINARY}${TESTNET:+ --network=1}${DEBUG_MODE:+ --debug}${SKIP_SIGNATURE_CHECK:+ --signature-check=false}
 ExecStop=/bin/kill -s SIGINT \$MAINPID
@@ -116,11 +140,11 @@ StartLimitIntervalSec=0
 
 [Service]
 Type=simple
-WorkingDirectory=$QUIL_NODE_PATH
+WorkingDirectory=$QUIL_NODE_PATH_FOR_SERVICE
 Restart=on-failure
 RestartSec=5s
 StartLimitBurst=5
-User=$USER
+User=$SERVICE_USER
 ${GOGC:+Environment=GOGC=${GOGC}}
 ${GOMEMLIMIT:+Environment=GOMEMLIMIT=${GOMEMLIMIT}}
 ExecStart=${LINKED_NODE_BINARY}${TESTNET:+ --network=1}${DEBUG_MODE:+ --debug}${SKIP_SIGNATURE_CHECK:+ --signature-check=false} --core %i

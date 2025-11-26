@@ -39,13 +39,34 @@ scp_to_remote() {
 }
 
 create_master_service_file() {
-    USER=$(whoami)
-    GROUP=$(id -gn)
+    SERVICE_USER=$(yq eval '.service.default_user // "quilibrium"' $QTOOLS_CONFIG_FILE)
     SIGNATURE_CHECK=$(yq eval '.service.signature_check // ""' $QTOOLS_CONFIG_FILE)
     DEBUG=$(yq eval '.service.debug // ""' $QTOOLS_CONFIG_FILE)
     TESTNET=$(yq eval '.service.testnet // ""' $QTOOLS_CONFIG_FILE)
-    if [ -z "$USER" ] || [ -z "$GROUP" ]; then
-        echo "Error: Failed to get user or group information"
+
+    # Ensure quilibrium user exists and determine correct node path
+    if [ "$SERVICE_USER" == "quilibrium" ]; then
+        if ! id "$SERVICE_USER" &>/dev/null; then
+            log "Quilibrium user not found. Creating it..."
+            qtools create-quilibrium-user
+        fi
+        # Use quilibrium user's node path
+        QUIL_NODE_PATH_FOR_SERVICE="/home/quilibrium/ceremonyclient/node"
+        # Check if quilibrium_node_path is configured
+        CONFIGURED_PATH=$(yq eval '.service.quilibrium_node_path // ""' $QTOOLS_CONFIG_FILE)
+        if [ -n "$CONFIGURED_PATH" ] && [ "$CONFIGURED_PATH" != "null" ]; then
+            # Replace $HOME with /home/quilibrium for quilibrium user
+            CONFIGURED_PATH=$(echo "$CONFIGURED_PATH" | sed "s|\$HOME|/home/quilibrium|g")
+            # Expand any remaining variables in the path
+            QUIL_NODE_PATH_FOR_SERVICE=$(eval echo "$CONFIGURED_PATH")
+        fi
+    else
+        # Use the current QUIL_NODE_PATH for other users
+        QUIL_NODE_PATH_FOR_SERVICE="$QUIL_NODE_PATH"
+    fi
+
+    if [ -z "$SERVICE_USER" ]; then
+        echo "Error: Failed to get service user information"
         exit 1
     fi
     echo -e "${BLUE}${INFO_ICON} Updating $QUIL_SERVICE_NAME.service file...${RESET}"
@@ -63,8 +84,8 @@ Type=simple
 Restart=always
 RestartSec=5
 StartLimitBurst=5
-User=$USER
-WorkingDirectory=$QUIL_NODE_PATH
+User=$SERVICE_USER
+WorkingDirectory=$QUIL_NODE_PATH_FOR_SERVICE
 ExecStart=$LINKED_NODE_BINARY ${SIGNATURE_CHECK:+"--signature-check=false"} ${DEBUG:+"--debug"} ${TESTNET:+"--network=1"}
 ExecStop=/bin/kill -s SIGINT $MAINPID
 ExecReload=/bin/kill -s SIGINT $MAINPID && $LINKED_NODE_BINARY ${SIGNATURE_CHECK:+"--signature-check=false"} ${DEBUG:+"--debug"} ${TESTNET:+"--network=1"}
@@ -89,10 +110,31 @@ EOF
 }
 
 create_data_worker_service_file() {
+    SERVICE_USER=$(yq eval '.service.default_user // "quilibrium"' $QTOOLS_CONFIG_FILE)
 
-    USER=$(whoami)
-    if [ -z "$USER" ]; then
-        echo "Error: Failed to get user information"
+    # Ensure quilibrium user exists and determine correct node path
+    if [ "$SERVICE_USER" == "quilibrium" ]; then
+        if ! id "$SERVICE_USER" &>/dev/null; then
+            log "Quilibrium user not found. Creating it..."
+            qtools create-quilibrium-user
+        fi
+        # Use quilibrium user's node path
+        QUIL_NODE_PATH_FOR_SERVICE="/home/quilibrium/ceremonyclient/node"
+        # Check if quilibrium_node_path is configured
+        CONFIGURED_PATH=$(yq eval '.service.quilibrium_node_path // ""' $QTOOLS_CONFIG_FILE)
+        if [ -n "$CONFIGURED_PATH" ] && [ "$CONFIGURED_PATH" != "null" ]; then
+            # Replace $HOME with /home/quilibrium for quilibrium user
+            CONFIGURED_PATH=$(echo "$CONFIGURED_PATH" | sed "s|\$HOME|/home/quilibrium|g")
+            # Expand any remaining variables in the path
+            QUIL_NODE_PATH_FOR_SERVICE=$(eval echo "$CONFIGURED_PATH")
+        fi
+    else
+        # Use the current QUIL_NODE_PATH for other users
+        QUIL_NODE_PATH_FOR_SERVICE="$QUIL_NODE_PATH"
+    fi
+
+    if [ -z "$SERVICE_USER" ]; then
+        echo "Error: Failed to get service user information"
         exit 1
     fi
     SIGNATURE_CHECK=$(yq eval '.service.signature_check // ""' $QTOOLS_CONFIG_FILE)
@@ -110,11 +152,11 @@ StartLimitIntervalSec=0
 
 [Service]
 Type=simple
-WorkingDirectory=$QUIL_NODE_PATH
+WorkingDirectory=$QUIL_NODE_PATH_FOR_SERVICE
 Restart=on-failure
 RestartSec=5
 StartLimitBurst=5
-User=$USER
+User=$SERVICE_USER
 ExecStart=$LINKED_NODE_BINARY --core %i ${SIGNATURE_CHECK:+"--signature-check=false"} ${DEBUG:+"--debug"} ${TESTNET:+"--network=1"}
 ExecStop=/bin/kill -s SIGINT $MAINPID
 ExecReload=/bin/kill -s SIGINT $MAINPID && $LINKED_NODE_BINARY --core %i ${SIGNATURE_CHECK:+"--signature-check=false"} ${DEBUG:+"--debug"} ${TESTNET:+"--network=1"}

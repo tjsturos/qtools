@@ -71,6 +71,9 @@ DISABLE_SSH_PASSWORDS="$(yq '.settings.install.ssh.disable_password_login // "fa
 
 cd $QUIL_HOME
 
+# Create quilibrium user for running node services
+qtools create-quilibrium-user
+
 qtools download-node --link
 qtools download-qclient --link
 qtools update-service
