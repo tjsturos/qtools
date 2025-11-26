@@ -78,13 +78,15 @@ else
     QCLIENT_RELEASE_FILES=$(curl -s $QCLIENT_RELEASE_LIST_URL | grep -oE "qclient-[0-9]+\.[0-9]+(\.[0-9]+)*(\.[0-9]+)?-${OS_ARCH}(\.dgst)?(\.sig\.[0-9]+)?")
 fi
 
-mkdir -p $QUIL_CLIENT_PATH
+sudo mkdir -p $QUIL_CLIENT_PATH
 cd $QUIL_CLIENT_PATH
 
 # Ensure quilibrium user has access if using quilibrium user
 SERVICE_USER=$(yq '.service.default_user // "quilibrium"' $QTOOLS_CONFIG_FILE 2>/dev/null || echo "quilibrium")
 if [ "$SERVICE_USER" == "quilibrium" ] && id "quilibrium" &>/dev/null; then
     sudo chown -R quilibrium:quilibrium "$QUIL_CLIENT_PATH" 2>/dev/null || true
+    # Ensure quilibrium user can write to the directory
+    sudo chmod -R u+w "$QUIL_CLIENT_PATH" 2>/dev/null || true
 fi
 
 for file in $QCLIENT_RELEASE_FILES; do

@@ -4,12 +4,14 @@
 OS_ARCH="$(get_os_arch)"
 log "Downloading release files..."
 
-mkdir -p $QUIL_NODE_PATH
+sudo mkdir -p $QUIL_NODE_PATH
 
 # Ensure quilibrium user has access if using quilibrium user
 SERVICE_USER=$(yq '.service.default_user // "quilibrium"' $QTOOLS_CONFIG_FILE 2>/dev/null || echo "quilibrium")
 if [ "$SERVICE_USER" == "quilibrium" ] && id "quilibrium" &>/dev/null; then
     sudo chown -R quilibrium:quilibrium "$QUIL_NODE_PATH" 2>/dev/null || true
+    # Ensure quilibrium user can write to the directory
+    sudo chmod -R u+w "$QUIL_NODE_PATH" 2>/dev/null || true
 fi
 
 node_files=$(fetch_available_files "https://releases.quilibrium.com/release")

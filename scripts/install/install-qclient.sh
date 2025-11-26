@@ -6,12 +6,14 @@ CURRENT_QCLIENT_BINARY="$(get_versioned_qclient)"
 if [ ! -f "$QUIL_CLIENT_PATH/$CURRENT_QCLIENT_BINARY" ]; then
     qclient_files=$(fetch_available_files "https://releases.quilibrium.com/qclient-release")
 
-    mkdir -p $QUIL_CLIENT_PATH
+    sudo mkdir -p $QUIL_CLIENT_PATH
 
     # Ensure quilibrium user has access if using quilibrium user
     SERVICE_USER=$(yq '.service.default_user // "quilibrium"' $QTOOLS_CONFIG_FILE 2>/dev/null || echo "quilibrium")
     if [ "$SERVICE_USER" == "quilibrium" ] && id "quilibrium" &>/dev/null; then
         sudo chown -R quilibrium:quilibrium "$QUIL_CLIENT_PATH" 2>/dev/null || true
+        # Ensure quilibrium user can write to the directory
+        sudo chmod -R u+w "$QUIL_CLIENT_PATH" 2>/dev/null || true
     fi
 
     get_remote_quil_files qclient_files[@] $QUIL_CLIENT_PATH

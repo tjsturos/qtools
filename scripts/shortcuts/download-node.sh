@@ -74,7 +74,7 @@ else
 fi
 
 # Change to the download directory
-mkdir -p $QUIL_NODE_PATH
+sudo mkdir -p $QUIL_NODE_PATH
 cd $QUIL_NODE_PATH
 
 # Ensure quilibrium user has access if using quilibrium user
@@ -84,13 +84,35 @@ if [ "$SERVICE_USER" == "quilibrium" ]; then
     if id "quilibrium" &>/dev/null; then
         # Set ownership to quilibrium user for new directories/files
         sudo chown -R quilibrium:quilibrium "$QUIL_NODE_PATH" 2>/dev/null || true
+        # Ensure quilibrium user can write to the directory
+        sudo chmod -R u+w "$QUIL_NODE_PATH" 2>/dev/null || true
     fi
 fi
 
 link_node() {
     local BINARY_NAME=$1
-    echo "Linking $LINKED_NODE_BINARY to $QUIL_NODE_PATH/$BINARY_NAME"
-    sudo ln -sf $QUIL_NODE_PATH/$BINARY_NAME $LINKED_NODE_BINARY
+    local BINARY_PATH="$QUIL_NODE_PATH/$BINARY_NAME"
+
+    # Ensure binary exists and has correct permissions
+    if [ ! -f "$BINARY_PATH" ]; then
+        echo "Error: Binary not found at $BINARY_PATH"
+        return 1
+    fi
+
+    # Ensure quilibrium user owns the binary if using quilibrium user
+    if [ "$SERVICE_USER" == "quilibrium" ] && id "quilibrium" &>/dev/null; then
+        sudo chown quilibrium:quilibrium "$BINARY_PATH" 2>/dev/null || true
+        sudo chmod +x "$BINARY_PATH" 2>/dev/null || true
+    fi
+
+    echo "Linking $LINKED_NODE_BINARY to $BINARY_PATH"
+    sudo ln -sf "$BINARY_PATH" "$LINKED_NODE_BINARY"
+
+    # Verify the symlink was created correctly
+    LINK_TARGET=$(readlink -f "$LINKED_NODE_BINARY" 2>/dev/null || echo "")
+    if [ "$LINK_TARGET" != "$BINARY_PATH" ]; then
+        echo "Warning: Symlink target mismatch. Expected: $BINARY_PATH, Got: $LINK_TARGET"
+    fi
 
     # Persist the current node version to config after linking
     local VERSION_FROM_LINK=$(basename "$BINARY_NAME" | grep -oP "node-\K([0-9]+\.?)+")
@@ -105,8 +127,10 @@ link_node() {
 
 download_file() {
     local FILE_NAME=$1
+    local DEST_FILE="$QUIL_NODE_PATH/$FILE_NAME"
+
     # Check if the file already exists
-    if [ -f "$FILE_NAME" ]; then
+    if [ -f "$DEST_FILE" ]; then
         echo "$FILE_NAME already exists. Skipping download."
         return
     fi
@@ -119,20 +143,36 @@ download_file() {
             echo "Remote file $FILE_NAME does not exist. Skipping download."
             return
         fi
-        wget "https://releases.quilibrium.com/$FILE_NAME"
-    else
-        wget --no-check-certificate "https://dev.qcommander.sh/$FILE_NAME" -O "$QUIL_NODE_PATH/$FILE_NAME"
-    fi
-
-    # Check if the download was successful
-    if [ $? -eq 0 ]; then
-        echo "Successfully downloaded $FILE_NAME"
-        # Ensure quilibrium user owns the file if using quilibrium user
-        if [ "$SERVICE_USER" == "quilibrium" ] && id "quilibrium" &>/dev/null; then
-            sudo chown quilibrium:quilibrium "$FILE_NAME" 2>/dev/null || true
+        # Download to temp location first, then move with proper ownership
+        TEMP_FILE=$(mktemp)
+        if wget "https://releases.quilibrium.com/$FILE_NAME" -O "$TEMP_FILE"; then
+            # Move to destination with proper ownership
+            if [ "$SERVICE_USER" == "quilibrium" ] && id "quilibrium" &>/dev/null; then
+                sudo mv "$TEMP_FILE" "$DEST_FILE"
+                sudo chown quilibrium:quilibrium "$DEST_FILE" 2>/dev/null || true
+            else
+                mv "$TEMP_FILE" "$DEST_FILE"
+            fi
+            echo "Successfully downloaded $FILE_NAME"
+        else
+            rm -f "$TEMP_FILE"
+            echo "Failed to download $FILE_NAME"
         fi
     else
-        echo "Failed to download $file"
+        # Dev build - download directly
+        TEMP_FILE=$(mktemp)
+        if wget --no-check-certificate "https://dev.qcommander.sh/$FILE_NAME" -O "$TEMP_FILE"; then
+            if [ "$SERVICE_USER" == "quilibrium" ] && id "quilibrium" &>/dev/null; then
+                sudo mv "$TEMP_FILE" "$DEST_FILE"
+                sudo chown quilibrium:quilibrium "$DEST_FILE" 2>/dev/null || true
+            else
+                mv "$TEMP_FILE" "$DEST_FILE"
+            fi
+            echo "Successfully downloaded $FILE_NAME"
+        else
+            rm -f "$TEMP_FILE"
+            echo "Failed to download $FILE_NAME"
+        fi
     fi
 }
 
@@ -141,11 +181,13 @@ for file in $NODE_RELEASE_FILES; do
     download_file $file
 
     if [[ $file =~ ^node-[0-9]+\.[0-9]+(\.[0-9]+)*(-[a-zA-Z0-9-]+)?-${OS_ARCH}$ ]]; then
+        BINARY_FILE="$QUIL_NODE_PATH/$file"
         echo "Making $file executable..."
-        chmod +x "$file"
-        # Ensure quilibrium user owns the file if using quilibrium user
         if [ "$SERVICE_USER" == "quilibrium" ] && id "quilibrium" &>/dev/null; then
-            sudo chown quilibrium:quilibrium "$file" 2>/dev/null || true
+            sudo chmod +x "$BINARY_FILE"
+            sudo chown quilibrium:quilibrium "$BINARY_FILE" 2>/dev/null || true
+        else
+            chmod +x "$BINARY_FILE"
         fi
         if [ $? -eq 0 ]; then
             echo "Successfully made $file executable"

@@ -93,16 +93,38 @@ fi
 
 update_node_link() {
     local VERSION=$1
+    local BINARY_PATH="${QUIL_NODE_PATH}/node-$VERSION-$OS_ARCH"
+
     echo "Switching node link to node version: $VERSION"
 
-    log "Linking link $LINKED_NODE_BINARY to ${QUIL_NODE_PATH}/node-$VERSION-$OS_ARCH"
-    sudo ln -sf "${QUIL_NODE_PATH}/node-$VERSION-$OS_ARCH" "${LINKED_NODE_BINARY}"
+    # Ensure binary exists
+    if [ ! -f "$BINARY_PATH" ]; then
+        log "Error: Binary not found at $BINARY_PATH"
+        return 1
+    fi
+
+    # Ensure quilibrium user owns the binary if using quilibrium user
+    SERVICE_USER=$(yq '.service.default_user // "quilibrium"' $QTOOLS_CONFIG_FILE 2>/dev/null || echo "quilibrium")
+    if [ "$SERVICE_USER" == "quilibrium" ] && id "quilibrium" &>/dev/null; then
+        sudo chown quilibrium:quilibrium "$BINARY_PATH" 2>/dev/null || true
+        sudo chmod +x "$BINARY_PATH" 2>/dev/null || true
+    fi
+
+    log "Linking $LINKED_NODE_BINARY to $BINARY_PATH"
+    sudo ln -sf "$BINARY_PATH" "$LINKED_NODE_BINARY"
+
+    # Verify the symlink was created correctly
+    LINK_TARGET=$(readlink -f "$LINKED_NODE_BINARY" 2>/dev/null || echo "")
+    if [ "$LINK_TARGET" != "$BINARY_PATH" ]; then
+        log "Warning: Symlink target mismatch. Expected: $BINARY_PATH, Got: $LINK_TARGET"
+    fi
+
     if [ $? -eq 0 ]; then
-        log "Successfully linked $LINKED_NODE_BINARY to ${QUIL_NODE_PATH}/node-$VERSION-$OS_ARCH"
+        log "Successfully linked $LINKED_NODE_BINARY to $BINARY_PATH"
         # Persist the current node version to config after linking
         set_current_node_version "$VERSION"
     else
-        log "Failed to link $LINKED_NODE_BINARY to ${QUIL_NODE_PATH}/node-$VERSION-$OS_ARCH"
+        log "Failed to link $LINKED_NODE_BINARY to $BINARY_PATH"
         return 1
     fi
 }

@@ -1,6 +1,6 @@
 #!/bin/bash
 # HELP: Installs all the automated taks for this node.  Currently, it runs qtools & node updates, as well as backups (if enabled) every 10 minutes.  It also records the unclaimed balances on different intervals (every hour, 1x a day, 1x week, 1x month).
-log "Updating this user's crontab for automated tasks..."
+log "Updating root's crontab for automated tasks..."
 
 IS_CLUSTERING_ENABLED="$(yq '.service.clustering.enabled // "false"' $QTOOLS_CONFIG_FILE)"
 IS_MASTER="$(is_master)"
@@ -110,25 +110,26 @@ if [ "$IS_CLUSTERING_ENABLED" == "true" ] && [ "$IS_MASTER" == "true" ] || [ "$I
   fi
 fi
 
-echo "$(crontab -l)" > $FILE_ACTUAL_OUTPUT
+# Install to root's crontab
+echo "$(sudo crontab -l 2>/dev/null)" > $FILE_ACTUAL_OUTPUT
 DIFF_BEFORE="$(colordiff -u $FILE_CRON $FILE_ACTUAL_OUTPUT)"
 if [[ $DIFF_BEFORE ]]; then
-  log "The crontab needs to be updated. Updating..."
+  log "The root crontab needs to be updated. Updating..."
 
-  # Load the updated file back into the crontab
-  crontab $FILE_CRON
+  # Load the updated file back into root's crontab
+  sudo crontab $FILE_CRON
 
-  # Get the actual output of 'ufw status'
-  echo "$(crontab -l)" > $FILE_ACTUAL_OUTPUT
+  # Get the actual output of root's crontab
+  echo "$(sudo crontab -l 2>/dev/null)" > $FILE_ACTUAL_OUTPUT
   DIFF_AFTER="$(colordiff -u $FILE_CRON $FILE_ACTUAL_OUTPUT)"
 
   if [[ $DIFF_AFTER ]]; then
-    log "$(echo -e \"The crontab was contains some errors:\n$DIFF_AFTER\")"
+    log "$(echo -e \"The root crontab contains some errors:\n$DIFF_AFTER\")"
   else
-    log "The crontab was successfully updated."
+    log "The root crontab was successfully updated."
   fi
 else
-  log "The crontab does not need to be updated.  Skipping."
+  log "The root crontab does not need to be updated.  Skipping."
 fi
 
 # cleanup files
