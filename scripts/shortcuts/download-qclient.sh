@@ -45,7 +45,7 @@ download_file() {
         log "$FILE_NAME already exists. Skipping download."
         return
     fi
-    
+
     log "Downloading $FILE_NAME..."
     # Check if the remote file exists
     if ! wget --spider "https://releases.quilibrium.com/$FILE_NAME" 2>/dev/null; then
@@ -58,7 +58,7 @@ download_file() {
     if [ $? -eq 0 ]; then
         log "Successfully downloaded $FILE_NAME"
         # Check if the file is the base binary (without .dgst or .sig suffix)
-       
+
     else
         log "Failed to download $file"
     fi
@@ -81,12 +81,22 @@ fi
 mkdir -p $QUIL_CLIENT_PATH
 cd $QUIL_CLIENT_PATH
 
+# Ensure quilibrium user has access if using quilibrium user
+SERVICE_USER=$(yq '.service.default_user // "quilibrium"' $QTOOLS_CONFIG_FILE 2>/dev/null || echo "quilibrium")
+if [ "$SERVICE_USER" == "quilibrium" ] && id "quilibrium" &>/dev/null; then
+    sudo chown -R quilibrium:quilibrium "$QUIL_CLIENT_PATH" 2>/dev/null || true
+fi
+
 for file in $QCLIENT_RELEASE_FILES; do
     download_file $file
 
     if [[ $file =~ ^qclient-[0-9]+\.[0-9]+(\.[0-9]+)*(-[a-zA-Z0-9-]+)?-${OS_ARCH}$ ]]; then
         log "Making $file executable..."
         chmod +x "$file"
+        # Ensure quilibrium user owns the file if using quilibrium user
+        if [ "$SERVICE_USER" == "quilibrium" ] && id "quilibrium" &>/dev/null; then
+            sudo chown quilibrium:quilibrium "$file" 2>/dev/null || true
+        fi
         if [ $? -eq 0 ]; then
             log "Successfully made $file executable"
         else
@@ -97,7 +107,7 @@ for file in $QCLIENT_RELEASE_FILES; do
             link_qclient $file
         fi
     fi
-    
+
     log "------------------------"
 done
 

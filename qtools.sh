@@ -68,8 +68,31 @@ fi
 # Load environment variables to be made available in all scripts
 export DEBIAN_FRONTEND=noninteractive
 export USER="$(whoami)"
-export QUIL_PATH=$HOME/ceremonyclient
+export QTOOLS_CONFIG_FILE=$QTOOLS_PATH/config.yml
 
+# Determine the base path for Quilibrium files based on service user configuration
+# Check if config file exists and if quilibrium user is configured
+QUIL_BASE_PATH="$HOME/ceremonyclient"
+if [ -f "$QTOOLS_CONFIG_FILE" ] && command -v yq >/dev/null 2>&1; then
+    SERVICE_USER=$(yq '.service.default_user // "quilibrium"' $QTOOLS_CONFIG_FILE 2>/dev/null || echo "quilibrium")
+    if [ "$SERVICE_USER" == "quilibrium" ]; then
+        # Use quilibrium user's home directory
+        QUIL_BASE_PATH="/home/quilibrium/ceremonyclient"
+        # Check if quilibrium_node_path is configured
+        CONFIGURED_NODE_PATH=$(yq '.service.quilibrium_node_path // ""' $QTOOLS_CONFIG_FILE 2>/dev/null)
+        if [ -n "$CONFIGURED_NODE_PATH" ] && [ "$CONFIGURED_NODE_PATH" != "null" ] && [ "$CONFIGURED_NODE_PATH" != "" ]; then
+            # Replace $HOME with /home/quilibrium for quilibrium user
+            CONFIGURED_NODE_PATH=$(echo "$CONFIGURED_NODE_PATH" | sed "s|\$HOME|/home/quilibrium|g")
+            # Expand any remaining variables
+            QUIL_NODE_PATH_FROM_CONFIG=$(eval echo "$CONFIGURED_NODE_PATH" 2>/dev/null || echo "")
+            if [ -n "$QUIL_NODE_PATH_FROM_CONFIG" ] && [ -d "$(dirname "$QUIL_NODE_PATH_FROM_CONFIG" 2>/dev/null)" ]; then
+                QUIL_BASE_PATH=$(dirname "$QUIL_NODE_PATH_FROM_CONFIG" 2>/dev/null | sed 's|/node$||' || echo "$QUIL_BASE_PATH")
+            fi
+        fi
+    fi
+fi
+
+export QUIL_PATH=$QUIL_BASE_PATH
 export QUIL_NODE_PATH=$QUIL_PATH/node
 export QUIL_CLIENT_PATH=$QUIL_PATH/client
 export QUIL_NODE_BIN=/usr/local/bin/node
@@ -91,7 +114,6 @@ export GO_BIN_DIR=/usr/local
 export GOROOT=$GO_BIN_DIR/go
 export GOPATH=$HOME/go
 export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
-export QTOOLS_CONFIG_FILE=$QTOOLS_PATH/config.yml
 export QUIL_KEYS_FILE="$QUIL_NODE_PATH/.config/keys.yml"
 export QUIL_CONFIG_FILE="$QUIL_NODE_PATH/.config/config.yml"
 
@@ -101,7 +123,7 @@ if [ "$1" == "init" ] || [ ! -f "$QTOOLS_PATH/INIT_COMPLETE" ]; then
   exit 0
 fi
 
-export IS_TESTNET=$(yq '.service.testnet' $QTOOLS_CONFIG_FILE)
+export IS_TESTNET=$(yq '.service.testnet' $QTOOLS_CONFIG_FILE 2>/dev/null || echo "false")
 
 if [ "$IS_TESTNET" == "true" ]; then
   export QUIL_NODE_PATH=$QUIL_PATH/node/test

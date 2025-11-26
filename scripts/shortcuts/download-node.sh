@@ -77,6 +77,16 @@ fi
 mkdir -p $QUIL_NODE_PATH
 cd $QUIL_NODE_PATH
 
+# Ensure quilibrium user has access if using quilibrium user
+SERVICE_USER=$(yq '.service.default_user // "quilibrium"' $QTOOLS_CONFIG_FILE 2>/dev/null || echo "quilibrium")
+if [ "$SERVICE_USER" == "quilibrium" ]; then
+    # Ensure quilibrium user exists
+    if id "quilibrium" &>/dev/null; then
+        # Set ownership to quilibrium user for new directories/files
+        sudo chown -R quilibrium:quilibrium "$QUIL_NODE_PATH" 2>/dev/null || true
+    fi
+fi
+
 link_node() {
     local BINARY_NAME=$1
     echo "Linking $LINKED_NODE_BINARY to $QUIL_NODE_PATH/$BINARY_NAME"
@@ -117,8 +127,10 @@ download_file() {
     # Check if the download was successful
     if [ $? -eq 0 ]; then
         echo "Successfully downloaded $FILE_NAME"
-        # Check if the file is the base binary (without .dgst or .sig suffix)
-
+        # Ensure quilibrium user owns the file if using quilibrium user
+        if [ "$SERVICE_USER" == "quilibrium" ] && id "quilibrium" &>/dev/null; then
+            sudo chown quilibrium:quilibrium "$FILE_NAME" 2>/dev/null || true
+        fi
     else
         echo "Failed to download $file"
     fi
@@ -131,6 +143,10 @@ for file in $NODE_RELEASE_FILES; do
     if [[ $file =~ ^node-[0-9]+\.[0-9]+(\.[0-9]+)*(-[a-zA-Z0-9-]+)?-${OS_ARCH}$ ]]; then
         echo "Making $file executable..."
         chmod +x "$file"
+        # Ensure quilibrium user owns the file if using quilibrium user
+        if [ "$SERVICE_USER" == "quilibrium" ] && id "quilibrium" &>/dev/null; then
+            sudo chown quilibrium:quilibrium "$file" 2>/dev/null || true
+        fi
         if [ $? -eq 0 ]; then
             echo "Successfully made $file executable"
         else

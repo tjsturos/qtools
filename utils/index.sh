@@ -308,6 +308,13 @@ get_remote_quil_files() {
     local files=("${!1}")
     local dest_dir=$2
 
+    # Check if we should set ownership for quilibrium user
+    SERVICE_USER=$(yq '.service.default_user // "quilibrium"' $QTOOLS_CONFIG_FILE 2>/dev/null || echo "quilibrium")
+    SET_OWNERSHIP=false
+    if [ "$SERVICE_USER" == "quilibrium" ] && id "quilibrium" &>/dev/null; then
+        SET_OWNERSHIP=true
+    fi
+
     while IFS= read -r file; do
         if [[ "$file" == *"$OS_ARCH"* ]]; then
             local file_url="https://releases.quilibrium.com/${file}"
@@ -316,6 +323,10 @@ get_remote_quil_files() {
             if [ ! -f "$dest_file" ]; then
                 log "Downloading $file_url to $dest_file"
                 curl -o "$dest_file" "$file_url"
+                # Set ownership if using quilibrium user
+                if [ "$SET_OWNERSHIP" == "true" ] && [ -f "$dest_file" ]; then
+                    sudo chown quilibrium:quilibrium "$dest_file" 2>/dev/null || true
+                fi
             else
                 log "File $dest_file already exists"
             fi
