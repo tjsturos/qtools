@@ -109,6 +109,14 @@ else
     yq -i '.service.debug = false' $QTOOLS_CONFIG_FILE
 fi
 
+DEFAULT_RESTART_TIME="5s"
+SERVICE_RESTART_TIME="$(yq ".service.restart_time // \"$DEFAULT_RESTART_TIME\"" $QTOOLS_CONFIG_FILE)"
+
+if [ "$SERVICE_RESTART_TIME" != "$DEFAULT_RESTART_TIME" ]; then
+    echo "Using custom service restart time: $SERVICE_RESTART_TIME"
+fi
+
+
 # Define the initial service file content as a variable
 SERVICE_CONTENT="[Unit]
 Description=Quilibrium Ceremony Client Service
@@ -116,7 +124,7 @@ Description=Quilibrium Ceremony Client Service
 [Service]
 Type=simple
 Restart=always
-RestartSec=$(yq '.service.restart_time' $QTOOLS_CONFIG_FILE)
+RestartSec=$SERVICE_RESTART_TIME
 User=$SERVICE_USER
 WorkingDirectory=$QUIL_NODE_PATH_FOR_SERVICE
 Environment="${IPFS_DEBUGGING:+ IPFS_LOGGING=debug}"
