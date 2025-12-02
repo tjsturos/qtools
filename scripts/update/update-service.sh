@@ -45,7 +45,7 @@ SKIP_SIGNATURE_CHECK=""
 IPFS_DEBUGGING=""
 GOGC=""
 GOMEMLIMIT=""
-
+SERVICE_RESTART_TIME=""
 while [[ $# -gt 0 ]]; do
     case $1 in
         --testnet)
@@ -72,6 +72,11 @@ while [[ $# -gt 0 ]]; do
             ;;
         --ipfs-debug)
             IPFS_DEBUGGING=true
+            shift
+            ;;
+        --restart-time)
+            SERVICE_RESTART_TIME=$2
+            shift
             shift
             ;;
         --gogc)
@@ -109,13 +114,18 @@ else
     yq -i '.service.debug = false' $QTOOLS_CONFIG_FILE
 fi
 
-DEFAULT_RESTART_TIME="5s"
-SERVICE_RESTART_TIME="$(yq ".service.restart_time // \"$DEFAULT_RESTART_TIME\"" $QTOOLS_CONFIG_FILE)"
-
-if [ "$SERVICE_RESTART_TIME" != "$DEFAULT_RESTART_TIME" ]; then
-    echo "Using custom service restart time: $SERVICE_RESTART_TIME"
+if [ -n "$SERVICE_RESTART_TIME" ]; then
+    SERVICE_RESTART_TIME="$(yq ".service.restart_time // \"5s\"" $QTOOLS_CONFIG_FILE)"
+else
+    # Allow integer (e.g. 20) or integer+s (e.g. 20s), normalize to "<int>s"
+    if [[ "$SERVICE_RESTART_TIME" =~ ^[0-9]+$ ]]; then
+        SERVICE_RESTART_TIME="${SERVICE_RESTART_TIME}s"
+    elif ! [[ "$SERVICE_RESTART_TIME" =~ ^[0-9]+s$ ]]; then
+        echo "Error: Service restart time must be a positive integer or a positive integer followed by 's'"
+        exit 1
+    fi
+    yq -i ".service.restart_time = \"$SERVICE_RESTART_TIME\"" $QTOOLS_CONFIG_FILE
 fi
-
 
 # Define the initial service file content as a variable
 SERVICE_CONTENT="[Unit]
@@ -192,7 +202,7 @@ createServiceIfNone() {
         echo "$SERVICE_CONTENT" | sudo tee "$SERVICE_FILE" > /dev/null
     fi
 }
-echo "Clustering: $IS_CLUSTERING_ENABLED, IS MASTER: $IS_MASTER"
+
 # update normal service
 if [ "$IS_CLUSTERING_ENABLED" == "true" ]; then
     if [ "$IS_MASTER" == "true" ]; then
