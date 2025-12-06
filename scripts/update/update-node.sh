@@ -33,6 +33,17 @@ CURRENT_QCLIENT_VERSION=$(get_current_qclient_version)
 RELEASE_NODE_VERSION=$(fetch_node_release_version)
 RELEASE_QCLIENT_VERSION=$(fetch_qclient_release_version)
 
+# Validate that versions were fetched successfully
+if [ -z "$RELEASE_NODE_VERSION" ]; then
+  log "Error: Failed to fetch node release version. Exiting."
+  exit 1
+fi
+
+if [ -z "$RELEASE_QCLIENT_VERSION" ]; then
+  log "Error: Failed to fetch qclient release version. Exiting."
+  exit 1
+fi
+
 # if this is an auto update, and auto update is disabled, exit
 if [ "$auto_update" == "true" ] && [ "$is_auto_update_enabled" == "false" ]; then
   log "Node auto-update is disabled. Exiting."
@@ -41,7 +52,7 @@ fi
 
 SKIP_VERSION=$(yq '.scheduled_tasks.updates.node.skip_version' $QTOOLS_CONFIG_FILE)
 # otherwise we may want to skip updating to the current version for now, but on the next update we will update it
-if [ "$SKIP_VERSION" != "false" ] && [ "$SKIP_VERSION" != "" ] && [ "$RELEASE_VERSION" == "$SKIP_VERSION" ]; then
+if [ "$SKIP_VERSION" != "false" ] && [ "$SKIP_VERSION" != "" ] && [ "$RELEASE_NODE_VERSION" == "$SKIP_VERSION" ]; then
   log "Skipping update for version $SKIP_VERSION"
   exit 0
 fi
@@ -51,7 +62,7 @@ if [ "$CURRENT_NODE_VERSION" == "$RELEASE_NODE_VERSION" ]; then
   exit 0
 fi
 
-qtools update-version --node-version $RELEASE_NODE_VERSION --qclient-version $RELEASE_QCLIENT_VERSION
+qtools update-version --node-version "$RELEASE_NODE_VERSION" --qclient-version "$RELEASE_QCLIENT_VERSION"
 set_current_node_version $RELEASE_NODE_VERSION
 set_current_qclient_version $RELEASE_QCLIENT_VERSION
 

@@ -75,7 +75,6 @@ fi
 
 # Change to the download directory
 sudo mkdir -p $QUIL_NODE_PATH
-cd $QUIL_NODE_PATH
 
 # Ensure quilibrium user has access if using quilibrium user
 SERVICE_USER=$(yq '.service.default_user // "quilibrium"' $QTOOLS_CONFIG_FILE 2>/dev/null || echo "quilibrium")
@@ -86,7 +85,20 @@ if [ "$SERVICE_USER" == "quilibrium" ]; then
         sudo chown -R quilibrium:quilibrium "$QUIL_NODE_PATH" 2>/dev/null || true
         # Ensure quilibrium user can write to the directory
         sudo chmod -R u+w "$QUIL_NODE_PATH" 2>/dev/null || true
+        # Ensure the directory is accessible (readable and executable) by others so we can cd into it
+        sudo chmod u+rx "$QUIL_NODE_PATH" 2>/dev/null || true
     fi
+fi
+
+# Change to the download directory after ensuring permissions
+if [ -d "$QUIL_NODE_PATH" ] && [ -r "$QUIL_NODE_PATH" ] && [ -x "$QUIL_NODE_PATH" ]; then
+    cd "$QUIL_NODE_PATH" || {
+        log "Error: Cannot change to directory $QUIL_NODE_PATH. Permission denied."
+        exit 1
+    }
+else
+    log "Error: Directory $QUIL_NODE_PATH does not exist or is not accessible."
+    exit 1
 fi
 
 link_node() {
