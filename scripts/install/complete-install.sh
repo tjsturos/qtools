@@ -69,6 +69,21 @@ done
 
 DISABLE_SSH_PASSWORDS="$(yq '.settings.install.ssh.disable_password_login // "false"' $QTOOLS_CONFIG_FILE)"
 
+# Helper function to safely modify QUIL_CONFIG_FILE that might be owned by quilibrium user
+# This handles the case where the user was just added to the quilibrium group
+# but the current shell session doesn't have the group membership active yet
+safe_modify_quil_config() {
+    local yq_command="$1"
+    if [ -f "$QUIL_CONFIG_FILE" ]; then
+        local file_owner=$(stat -c '%U' "$QUIL_CONFIG_FILE" 2>/dev/null || stat -f '%Su' "$QUIL_CONFIG_FILE" 2>/dev/null || echo "")
+        if [ "$file_owner" == "quilibrium" ] && [ "$(whoami)" != "root" ]; then
+            sudo yq eval -i "$yq_command" "$QUIL_CONFIG_FILE"
+        else
+            yq eval -i "$yq_command" "$QUIL_CONFIG_FILE"
+        fi
+    fi
+}
+
 cd $QUIL_HOME
 
 # Create quilibrium user for running node services
@@ -88,7 +103,18 @@ generate_default_config() {
     # This first command generates a default config file
     BINARY_NAME="$(get_current_versioned_node)"
     BINARY_FILE=$QUIL_NODE_PATH/$BINARY_NAME
-    $BINARY_FILE -peer-id
+
+    # Check if QUIL_NODE_PATH is owned by quilibrium user
+    # If so, use sg to activate quilibrium group for this command
+    # This handles the case where user was just added to quilibrium group
+    # but current shell session doesn't have group membership active yet
+    local node_path_owner=$(stat -c '%U' "$QUIL_NODE_PATH" 2>/dev/null || stat -f '%Su' "$QUIL_NODE_PATH" 2>/dev/null || echo "")
+    if [ "$node_path_owner" == "quilibrium" ] && [ "$(whoami)" != "root" ]; then
+        # Use sg to run with quilibrium group active
+        sg quilibrium -c "$BINARY_FILE -peer-id" 2>/dev/null || sudo $BINARY_FILE -peer-id
+    else
+        $BINARY_FILE -peer-id
+    fi
     sleep 3
     if [ -f $BINARY_FILE ]; then
         qtools modify-config
@@ -130,7 +156,7 @@ if [ "$LISTEN_PORT" != "" ]; then
         else
             PROTOCOL=""
         fi
-        yq eval -i ".p2p.listenMultiaddr = \"/ip4/0.0.0.0/${LISTEN_MODE}/${LISTEN_PORT}${PROTOCOL}\"" $QUIL_CONFIG_FILE
+        safe_modify_quil_config ".p2p.listenMultiaddr = \"/ip4/0.0.0.0/${LISTEN_MODE}/${LISTEN_PORT}${PROTOCOL}\""
     fi
 fi
 
@@ -146,7 +172,7 @@ if [ "$STREAM_PORT" != "" ]; then
     yq eval -i ".service.clustering.master_stream_port = $STREAM_PORT" $QTOOLS_CONFIG_FILE
     # Update quil config
     if [ -f "$QUIL_CONFIG_FILE" ]; then
-        yq eval -i ".p2p.streamListenMultiaddr = \"/ip4/0.0.0.0/tcp/${STREAM_PORT}\"" $QUIL_CONFIG_FILE
+        safe_modify_quil_config ".p2p.streamListenMultiaddr = \"/ip4/0.0.0.0/tcp/${STREAM_PORT}\""
     fi
 fi
 
@@ -160,7 +186,7 @@ if [ "$BASE_P2P_PORT" != "" ]; then
     log "Setting base P2P port to $BASE_P2P_PORT"
     yq eval -i ".service.clustering.worker_base_p2p_port = $BASE_P2P_PORT" $QTOOLS_CONFIG_FILE
     if [ -f "$QUIL_CONFIG_FILE" ]; then
-        yq eval -i ".engine.dataWorkerBaseP2PPort = $BASE_P2P_PORT" $QUIL_CONFIG_FILE
+        safe_modify_quil_config ".engine.dataWorkerBaseP2PPort = $BASE_P2P_PORT"
     fi
 fi
 
@@ -173,7 +199,7 @@ if [ "$BASE_STREAM_PORT" != "" ]; then
     log "Setting base stream port to $BASE_STREAM_PORT"
     yq eval -i ".service.clustering.worker_base_stream_port = $BASE_STREAM_PORT" $QTOOLS_CONFIG_FILE
     if [ -f "$QUIL_CONFIG_FILE" ]; then
-        yq eval -i ".engine.dataWorkerBaseStreamPort = $BASE_STREAM_PORT" $QUIL_CONFIG_FILE
+        safe_modify_quil_config ".engine.dataWorkerBaseStreamPort = $BASE_STREAM_PORT"
     fi
 fi
 

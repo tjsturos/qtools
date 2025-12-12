@@ -392,6 +392,40 @@ check_yq() {
     return 0
 }
 
+# Helper function to safely modify config files that might be owned by quilibrium user
+# This handles the case where the user was just added to the quilibrium group
+# but the current shell session doesn't have the group membership active yet
+safe_yq_write() {
+    local config_file="$1"
+    shift
+    local yq_command="$@"
+
+    # Check if file exists and is owned by quilibrium user
+    if [ -f "$config_file" ]; then
+        local file_owner=$(stat -c '%U' "$config_file" 2>/dev/null || stat -f '%Su' "$config_file" 2>/dev/null || echo "")
+        if [ "$file_owner" == "quilibrium" ] && [ "$(whoami)" != "root" ]; then
+            # File is owned by quilibrium and we're not root, use sudo
+            # This handles cases where group membership isn't active in current shell
+            sudo yq -i $yq_command "$config_file"
+        else
+            # File not owned by quilibrium or we're root, write normally
+            yq -i $yq_command "$config_file"
+        fi
+    else
+        # File doesn't exist yet, try normal write first
+        if ! yq -i $yq_command "$config_file" 2>/dev/null; then
+            # If that failed and parent directory might be owned by quilibrium, try sudo
+            local parent_dir=$(dirname "$config_file")
+            local dir_owner=$(stat -c '%U' "$parent_dir" 2>/dev/null || stat -f '%Su' "$parent_dir" 2>/dev/null || echo "")
+            if [ "$dir_owner" == "quilibrium" ] && [ "$(whoami)" != "root" ]; then
+                sudo yq -i $yq_command "$config_file"
+            else
+                yq -i $yq_command "$config_file"
+            fi
+        fi
+    fi
+}
+
 get_public_ip() {
     wget -qO- https://ipecho.net/plain ; echo
 }

@@ -27,19 +27,32 @@ modify_config_file() {
     STATS_MULTIADDR=$([ "$STATS_ENABLED" = "true" ] && echo "/dns/stats.quilibrium.com/tcp/443" || echo "")
 
     # Modify the config file using yq
-    yq -i '
-        .p2p.listenMultiaddr = "'"$P2P_MULTIADDR"'" |
-        .listenGrpcMultiaddr = "'"$GRPC_MULTIADDR"'" |
-        .listenRESTMultiaddr = "'"$REST_MULTIADDR"'" |
-        .engine.statsMultiaddr = "'"$STATS_MULTIADDR"'"
-    ' "$CONFIG_FILE"
+    # Check if file is owned by quilibrium user and use sudo if needed
+    # This handles cases where user was just added to quilibrium group
+    # but current shell session doesn't have group membership active yet
+    local file_owner=$(stat -c '%U' "$CONFIG_FILE" 2>/dev/null || stat -f '%Su' "$CONFIG_FILE" 2>/dev/null || echo "")
+    if [ "$file_owner" == "quilibrium" ] && [ "$(whoami)" != "root" ]; then
+        sudo yq -i '
+            .p2p.listenMultiaddr = "'"$P2P_MULTIADDR"'" |
+            .listenGrpcMultiaddr = "'"$GRPC_MULTIADDR"'" |
+            .listenRESTMultiaddr = "'"$REST_MULTIADDR"'" |
+            .engine.statsMultiaddr = "'"$STATS_MULTIADDR"'"
+        ' "$CONFIG_FILE"
+    else
+        yq -i '
+            .p2p.listenMultiaddr = "'"$P2P_MULTIADDR"'" |
+            .listenGrpcMultiaddr = "'"$GRPC_MULTIADDR"'" |
+            .listenRESTMultiaddr = "'"$REST_MULTIADDR"'" |
+            .engine.statsMultiaddr = "'"$STATS_MULTIADDR"'"
+        ' "$CONFIG_FILE"
+    fi
 
     log "Config file updated successfully."
 }
 
 if [ -f "$CONFIG_FILE" ]; then
     modify_config_file
-else 
+else
     log "No config file found."
 fi
 
