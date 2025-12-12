@@ -247,7 +247,15 @@ if [ ! -f "$SCRIPT" ]; then
   exit 1
 fi
 
-# remove the script name
+# Store command name and parameters for logging before shifting
+COMMAND_NAME="$1"
+# Copy all remaining parameters (excluding command name) for logging
+COMMAND_PARAMS=("${@:2}")
+
+# Log command execution (function is available from utils/index.sh which is sourced earlier)
+log_command_execution "$COMMAND_NAME" "${COMMAND_PARAMS[@]}"
+
+# Now shift to remove command name for script execution
 shift 1
 
 # Source the provided script

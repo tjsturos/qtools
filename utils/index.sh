@@ -32,6 +32,31 @@ log() {
     echo "$LOG" >> "$QTOOLS_PATH/$LOG_OUTPUT_FILE"
 }
 
+# Function to log command execution
+log_command_execution() {
+    local COMMAND="$1"
+    shift
+    local PARAMS=("$@")
+
+    # Log file path: qtools/log file
+    local LOG_FILE="$QTOOLS_PATH/log"
+
+    # Ensure log file exists
+    touch "$LOG_FILE"
+
+    # Format: timestamp - command [params]
+    local TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+    local LOG_ENTRY="$TIMESTAMP - $COMMAND"
+
+    # Add parameters if any
+    if [ ${#PARAMS[@]} -gt 0 ]; then
+        LOG_ENTRY="$LOG_ENTRY ${PARAMS[*]}"
+    fi
+
+    # Append to log file
+    echo "$LOG_ENTRY" >> "$LOG_FILE"
+}
+
 get_local_ip() {
     local servers=$(yq eval '.service.clustering.servers' $QTOOLS_CONFIG_FILE)
     local server_count=$(echo "$servers" | yq eval '. | length' -)
