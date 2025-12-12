@@ -53,14 +53,40 @@ if ! [[ "$PUBLIC_IP" =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; the
     exit 1
 fi
 
-# Check if QUIL config file exists
-if [ ! -f "$QUIL_CONFIG_FILE" ]; then
+# Check if QUIL config file exists (handle quilibrium-owned files)
+if ! safe_file_exists "$QUIL_CONFIG_FILE"; then
     echo "Error: QUIL config file not found at $QUIL_CONFIG_FILE"
     exit 1
 fi
 
+# Check if file is owned by quilibrium user and use sudo if needed
+file_owner=$(stat -c '%U' "$QUIL_CONFIG_FILE" 2>/dev/null || sudo stat -c '%U' "$QUIL_CONFIG_FILE" 2>/dev/null || stat -f '%Su' "$QUIL_CONFIG_FILE" 2>/dev/null || echo "")
+use_sudo=false
+if [ "$file_owner" == "quilibrium" ] && [ "$(whoami)" != "root" ]; then
+    use_sudo=true
+fi
+
+# Helper function to safely run yq commands
+safe_yq_eval() {
+    local yq_cmd="$1"
+    if [ "$use_sudo" == "true" ]; then
+        sudo yq eval "$yq_cmd" "$QUIL_CONFIG_FILE"
+    else
+        yq eval "$yq_cmd" "$QUIL_CONFIG_FILE"
+    fi
+}
+
+safe_yq_eval_i() {
+    local yq_cmd="$1"
+    if [ "$use_sudo" == "true" ]; then
+        sudo yq eval -i "$yq_cmd" "$QUIL_CONFIG_FILE"
+    else
+        yq eval -i "$yq_cmd" "$QUIL_CONFIG_FILE"
+    fi
+}
+
 # Read master listen multiaddr
-MASTER_LISTEN_MULTIADDR=$(yq eval '.p2p.listenMultiaddr // ""' "$QUIL_CONFIG_FILE")
+MASTER_LISTEN_MULTIADDR=$(safe_yq_eval '.p2p.listenMultiaddr // ""')
 if [ -z "$MASTER_LISTEN_MULTIADDR" ] || [ "$MASTER_LISTEN_MULTIADDR" = "null" ]; then
     echo "Error: p2p.listenMultiaddr not found in QUIL config"
     exit 1
@@ -81,7 +107,7 @@ if [ -z "$MASTER_PROTOCOL" ] || [ -z "$MASTER_PORT" ]; then
 fi
 
 # Read master stream listen multiaddr
-MASTER_STREAM_MULTIADDR=$(yq eval '.p2p.streamListenMultiaddr // ""' "$QUIL_CONFIG_FILE")
+MASTER_STREAM_MULTIADDR=$(safe_yq_eval '.p2p.streamListenMultiaddr // ""')
 if [ -z "$MASTER_STREAM_MULTIADDR" ] || [ "$MASTER_STREAM_MULTIADDR" = "null" ]; then
     # Use default port 8340 if not defined
     MASTER_STREAM_PORT=8340
@@ -101,14 +127,14 @@ if [ -n "$WORKER_COUNT_OVERRIDE" ]; then
     WORKER_COUNT="$WORKER_COUNT_OVERRIDE"
 else
     # Get worker count from dataWorkerP2PMultiaddrs length
-    WORKER_COUNT=$(yq eval '.engine.dataWorkerP2PMultiaddrs | length' "$QUIL_CONFIG_FILE" 2>/dev/null)
+    WORKER_COUNT=$(safe_yq_eval '.engine.dataWorkerP2PMultiaddrs | length' 2>/dev/null)
     if [ -z "$WORKER_COUNT" ] || [ "$WORKER_COUNT" = "null" ] || [ "$WORKER_COUNT" = "0" ]; then
         WORKER_COUNT=0
     fi
 fi
 
 # Get base ports for workers
-BASE_P2P_PORT=$(yq eval '.engine.dataWorkerBaseP2PPort // ""' "$QUIL_CONFIG_FILE")
+BASE_P2P_PORT=$(safe_yq_eval '.engine.dataWorkerBaseP2PPort // ""')
 if [ -z "$BASE_P2P_PORT" ] || [ "$BASE_P2P_PORT" = "0" ] || [ "$BASE_P2P_PORT" = "null" ]; then
     BASE_P2P_PORT=$(yq eval '.service.clustering.worker_base_p2p_port // "50000"' "$QTOOLS_CONFIG_FILE")
 fi
@@ -116,7 +142,7 @@ if [ -z "$BASE_P2P_PORT" ] || [ "$BASE_P2P_PORT" = "0" ]; then
     BASE_P2P_PORT=50000
 fi
 
-BASE_STREAM_PORT=$(yq eval '.engine.dataWorkerBaseStreamPort // ""' "$QUIL_CONFIG_FILE")
+BASE_STREAM_PORT=$(safe_yq_eval '.engine.dataWorkerBaseStreamPort // ""')
 if [ -z "$BASE_STREAM_PORT" ] || [ "$BASE_STREAM_PORT" = "0" ] || [ "$BASE_STREAM_PORT" = "null" ]; then
     BASE_STREAM_PORT=$(yq eval '.service.clustering.worker_base_stream_port // "60000"' "$QTOOLS_CONFIG_FILE")
 fi
@@ -153,12 +179,12 @@ if [ "$DRY_RUN" == "true" ]; then
     fi
 else
     # Set master announce multiaddrs
-    yq eval -i ".p2p.announceListenMultiaddr = \"$MASTER_ANNOUNCE_P2P\"" "$QUIL_CONFIG_FILE"
-    yq eval -i ".p2p.announceStreamListenMultiaddr = \"$MASTER_ANNOUNCE_STREAM\"" "$QUIL_CONFIG_FILE"
+    safe_yq_eval_i ".p2p.announceListenMultiaddr = \"$MASTER_ANNOUNCE_P2P\""
+    safe_yq_eval_i ".p2p.announceStreamListenMultiaddr = \"$MASTER_ANNOUNCE_STREAM\""
 
     # Clear and populate worker announce arrays
-    yq eval -i '.engine.dataWorkerAnnounceP2PMultiaddrs = []' "$QUIL_CONFIG_FILE"
-    yq eval -i '.engine.dataWorkerAnnounceStreamMultiaddrs = []' "$QUIL_CONFIG_FILE"
+    safe_yq_eval_i '.engine.dataWorkerAnnounceP2PMultiaddrs = []'
+    safe_yq_eval_i '.engine.dataWorkerAnnounceStreamMultiaddrs = []'
 
     if [ "$WORKER_COUNT" -gt 0 ]; then
         echo "Populating worker announce arrays with $WORKER_COUNT entries..."
@@ -168,8 +194,8 @@ else
             WORKER_P2P_MULTIADDR="/ip4/${PUBLIC_IP}/tcp/${WORKER_P2P_PORT}"
             WORKER_STREAM_MULTIADDR="/ip4/${PUBLIC_IP}/tcp/${WORKER_STREAM_PORT}"
 
-            yq eval -i ".engine.dataWorkerAnnounceP2PMultiaddrs += [\"$WORKER_P2P_MULTIADDR\"]" "$QUIL_CONFIG_FILE"
-            yq eval -i ".engine.dataWorkerAnnounceStreamMultiaddrs += [\"$WORKER_STREAM_MULTIADDR\"]" "$QUIL_CONFIG_FILE"
+            safe_yq_eval_i ".engine.dataWorkerAnnounceP2PMultiaddrs += [\"$WORKER_P2P_MULTIADDR\"]"
+            safe_yq_eval_i ".engine.dataWorkerAnnounceStreamMultiaddrs += [\"$WORKER_STREAM_MULTIADDR\"]"
         done
     fi
 

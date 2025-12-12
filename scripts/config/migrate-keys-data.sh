@@ -32,9 +32,17 @@ if [ -z "$QUIL_CONFIG_FILE" ] || [ -z "$QUIL_KEYS_FILE" ] || [ -z "$QUIL_NODE_PA
   return 1 2>/dev/null || exit 1
 fi
 
-if [ ! -f "$QUIL_CONFIG_FILE" ]; then
+# Check if QUIL config file exists (handle quilibrium-owned files)
+if ! safe_file_exists "$QUIL_CONFIG_FILE"; then
   echo "Error: Current config.yml not found at $QUIL_CONFIG_FILE"
   return 1 2>/dev/null || exit 1
+fi
+
+# Check if file is owned by quilibrium user and use sudo if needed
+file_owner=$(stat -c '%U' "$QUIL_CONFIG_FILE" 2>/dev/null || sudo stat -c '%U' "$QUIL_CONFIG_FILE" 2>/dev/null || stat -f '%Su' "$QUIL_CONFIG_FILE" 2>/dev/null || echo "")
+use_sudo=false
+if [ "$file_owner" == "quilibrium" ] && [ "$(whoami)" != "root" ]; then
+    use_sudo=true
 fi
 
 CURRENT_CONFIG_DIR="$(dirname "$QUIL_CONFIG_FILE")"
@@ -83,8 +91,13 @@ rm -f "$QUIL_KEYS_FILE"
 cp "$SOURCE_KEYS_FILE" "$QUIL_KEYS_FILE"
 
 # Update sensitive fields in current config.yml from source values
-ENCRYPTION_KEY="$SOURCE_ENCRYPTION_KEY" yq -i e '.key.keyManagerFile.encryptionKey = strenv(ENCRYPTION_KEY)' "$QUIL_CONFIG_FILE"
-P2P_PRIV_KEY="$SOURCE_P2P_PRIV_KEY" yq -i e '.p2p.peerPrivKey = strenv(P2P_PRIV_KEY)' "$QUIL_CONFIG_FILE"
+if [ "$use_sudo" == "true" ]; then
+    ENCRYPTION_KEY="$SOURCE_ENCRYPTION_KEY" sudo yq -i e '.key.keyManagerFile.encryptionKey = strenv(ENCRYPTION_KEY)' "$QUIL_CONFIG_FILE"
+    P2P_PRIV_KEY="$SOURCE_P2P_PRIV_KEY" sudo yq -i e '.p2p.peerPrivKey = strenv(P2P_PRIV_KEY)' "$QUIL_CONFIG_FILE"
+else
+    ENCRYPTION_KEY="$SOURCE_ENCRYPTION_KEY" yq -i e '.key.keyManagerFile.encryptionKey = strenv(ENCRYPTION_KEY)' "$QUIL_CONFIG_FILE"
+    P2P_PRIV_KEY="$SOURCE_P2P_PRIV_KEY" yq -i e '.p2p.peerPrivKey = strenv(P2P_PRIV_KEY)' "$QUIL_CONFIG_FILE"
+fi
 
 if command -v log >/dev/null 2>&1; then
   log "Migrated keys.yml and updated .key.keyManagerFile.encryptionKey and .p2p.peerPrivKey in $QUIL_CONFIG_FILE"

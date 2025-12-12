@@ -392,6 +392,21 @@ check_yq() {
     return 0
 }
 
+# Helper function to safely check if a file exists (handles quilibrium-owned files)
+# Returns 0 if file exists, 1 if it doesn't
+safe_file_exists() {
+    local file_path="$1"
+    # Try normal check first
+    if [ -f "$file_path" ]; then
+        return 0
+    fi
+    # File might exist but be owned by quilibrium user - check with sudo
+    if sudo test -f "$file_path" 2>/dev/null; then
+        return 0
+    fi
+    return 1
+}
+
 # Helper function to safely modify config files that might be owned by quilibrium user
 # This handles the case where the user was just added to the quilibrium group
 # but the current shell session doesn't have the group membership active yet

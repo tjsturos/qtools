@@ -23,14 +23,25 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Check if QUIL config file exists
-if [ ! -f "$QUIL_CONFIG_FILE" ]; then
+# Check if QUIL config file exists (handle quilibrium-owned files)
+if ! safe_file_exists "$QUIL_CONFIG_FILE"; then
     echo "Error: QUIL config file not found at $QUIL_CONFIG_FILE"
     exit 1
 fi
 
+# Check if file is owned by quilibrium user and use sudo if needed
+file_owner=$(stat -c '%U' "$QUIL_CONFIG_FILE" 2>/dev/null || sudo stat -c '%U' "$QUIL_CONFIG_FILE" 2>/dev/null || stat -f '%Su' "$QUIL_CONFIG_FILE" 2>/dev/null || echo "")
+use_sudo=false
+if [ "$file_owner" == "quilibrium" ] && [ "$(whoami)" != "root" ]; then
+    use_sudo=true
+fi
+
 # Get current direct peers count for display
-CURRENT_PEERS=$(yq eval '.p2p.directPeers | length' "$QUIL_CONFIG_FILE" 2>/dev/null || echo "0")
+if [ "$use_sudo" == "true" ]; then
+    CURRENT_PEERS=$(sudo yq eval '.p2p.directPeers | length' "$QUIL_CONFIG_FILE" 2>/dev/null || echo "0")
+else
+    CURRENT_PEERS=$(yq eval '.p2p.directPeers | length' "$QUIL_CONFIG_FILE" 2>/dev/null || echo "0")
+fi
 
 # Clear direct peers
 if [ "$DRY_RUN" == "true" ]; then
@@ -43,7 +54,11 @@ else
     fi
 
     echo "Clearing all direct peers (removing $CURRENT_PEERS peer(s))..."
-    yq eval -i '.p2p.directPeers = []' "$QUIL_CONFIG_FILE"
+    if [ "$use_sudo" == "true" ]; then
+        sudo yq eval -i '.p2p.directPeers = []' "$QUIL_CONFIG_FILE"
+    else
+        yq eval -i '.p2p.directPeers = []' "$QUIL_CONFIG_FILE"
+    fi
 
     if [ "$WAIT" == "true" ]; then
         echo -e "${BLUE}${INFO_ICON} Waiting for next proof submission or workers to be available...${RESET}"
