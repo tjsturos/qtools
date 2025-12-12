@@ -1,3 +1,7 @@
+#!/bin/bash
+
+# Source helper functions
+source $QTOOLS_PATH/scripts/cluster/service-helpers.sh
 
 DRY_RUN=false
 CORES_TO_USE=$(yq eval ".service.clustering.local_data_worker_count" $QTOOLS_CONFIG_FILE)
@@ -6,8 +10,8 @@ IMMEDIATE_RESTART=true
 
 LOCAL_IP=$(get_local_ip)
 
-if [ "$CORES_TO_USE" == "false" ]; then
-    CORES_TO_USE=$(nproc)
+if [ "$CORES_TO_USE" == "false" ] || [ -z "$CORES_TO_USE" ]; then
+    CORES_TO_USE=$(get_worker_count)
 fi
 
 # Parse command line arguments
@@ -40,7 +44,7 @@ fi
 
 echo -e "${BLUE}${INFO_ICON} [ $(if [ "$(is_master)" == "true" ]; then echo "MASTER"; else echo "SLAVE"; fi) ] [ $LOCAL_IP ] Found configuration for $CORES_TO_USE cores to use${RESET}"
 
-
+# Master node coordination
 if [ "$(is_master)" == "true" ]; then
     if [ "$LOCAL_ONLY" == "true" ]; then
         echo -e "${BLUE}${INFO_ICON} Local only mode enabled, skipping remote server checks${RESET}"
@@ -53,10 +57,10 @@ if [ "$(is_master)" == "true" ]; then
         check_ssh_connections
         ssh_command_to_each_server "qtools cluster-start"
     fi
-    # Check if master service is running
+
+    # Start/restart master service with wait logic
     if systemctl is-active $MASTER_SERVICE_NAME >/dev/null 2>&1; then
         echo -e "${BLUE}${INFO_ICON} Master service is running, restarting...${RESET}"
-        # Wait for proof submission before restarting
         if [ "$IMMEDIATE_RESTART" == "false" ]; then
             echo -e "${BLUE}${INFO_ICON} Waiting for current proof to complete...${RESET}"
             while read -r line; do
@@ -68,13 +72,14 @@ if [ "$(is_master)" == "true" ]; then
         fi
         sudo systemctl restart $MASTER_SERVICE_NAME
     else
-        echo -e "${BLUE}${INFO_ICON} Starting master service...${RESET}"
-        sudo systemctl start $MASTER_SERVICE_NAME
+        start_master_service
     fi
-else
-    echo -e "${BLUE}${INFO_ICON} Not master node, skipping${RESET}"
 fi
 
+# Start local workers using base_index from config
 if [ "$CORES_TO_USE" -gt 0 ]; then
-    start_local_data_worker_services 1 $CORES_TO_USE $LOCAL_IP
+    local base_index=$(get_base_index_for_server)
+    local start_index=$base_index
+    local end_index=$((start_index + CORES_TO_USE - 1))
+    start_local_data_worker_services $start_index $end_index $LOCAL_IP
 fi

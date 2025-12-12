@@ -63,10 +63,10 @@ get_worker_pid_from_process() {
 }
 
 if [ "$IS_CLUSTERING_ENABLED" == "true" ]; then
-    if [ "$IS_MASTER" == "true" ]; then
-        # Master node
-        if [ "$WORKER_NUM" == "0" ]; then
-            # Get master PID
+    # Clustering mode (local or full) - workers are systemd services
+    if [ "$WORKER_NUM" == "0" ]; then
+        # Get master PID
+        if [ "$IS_MASTER" == "true" ]; then
             PID=$(get_pid "$QUIL_SERVICE_NAME.service")
             if [ -z "$PID" ]; then
                 echo "Master service is not running"
@@ -75,33 +75,21 @@ if [ "$IS_CLUSTERING_ENABLED" == "true" ]; then
                 echo "$PID"
             fi
         else
-            # Get worker PID
-            PID=$(get_pid "$QUIL_DATA_WORKER_SERVICE_NAME@$WORKER_NUM.service")
-            if [ -z "$PID" ]; then
-                echo "Worker $WORKER_NUM service is not running"
-                exit 1
-            else
-                echo "$PID"
-            fi
-        fi
-    else
-        # Non-master node
-        if [ "$WORKER_NUM" == "0" ]; then
             echo "Error: Worker 0 (master) is not available on this node. Use --worker <int> to specify a worker number."
             exit 1
+        fi
+    else
+        # Get worker PID from systemd service
+        PID=$(get_pid "$QUIL_DATA_WORKER_SERVICE_NAME@$WORKER_NUM.service")
+        if [ -z "$PID" ]; then
+            echo "Worker $WORKER_NUM service is not running"
+            exit 1
         else
-            # Get worker PID
-            PID=$(get_pid "$QUIL_DATA_WORKER_SERVICE_NAME@$WORKER_NUM.service")
-            if [ -z "$PID" ]; then
-                echo "Worker $WORKER_NUM service is not running"
-                exit 1
-            else
-                echo "$PID"
-            fi
+            echo "$PID"
         fi
     fi
 else
-    # Non-clustering mode
+    # Automatic mode - master spawns workers as processes
     if [ "$WORKER_NUM" == "0" ]; then
         # Get master PID
         PID=$(get_pid "$QUIL_SERVICE_NAME.service")

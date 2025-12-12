@@ -7,18 +7,27 @@ TOTAL_CORES=$(nproc)
 MASTER=false
 DRY_RUN=false
 LOCAL_IP=$(get_local_ip)
-LOCAL_ONLY=$(yq eval ".service.clustering.local_only" $QTOOLS_CONFIG_FILE)
+LOCAL_ONLY_OVERRIDE=""
 SKIP_FIREWALL=false
 CORES_TO_USE=$(get_cores_to_use "$LOCAL_IP")
+CSV_FILE=""
+PROVISION=false
+SKIP_PROVISION=false
+BASE_INDEX=""
 
 # Function to display usage information
 usage() {
-    echo "Usage: $0 [--master] [--dry-run]"
+    echo "Usage: $0 [--master] [--dry-run] [--from-csv <file>] [--provision] [--skip-provision] [--base-index <index>] [--local-only <true|false>]"
     echo "  --help               Display this help message"
     echo "  --cores-to-use       Number of cores to use (default: number of CPU cores to split workers across)"
     echo "  --dry-run            Dry run mode (default: false)"
     echo "  --skip-firewall      Skip firewall setup (default: false)"
     echo "  --master             Run a master node as one of this CPU's cores"
+    echo "  --from-csv <file>    Parse CSV file and add servers to config"
+    echo "  --provision          Automatically provision servers that don't have qtools installed"
+    echo "  --skip-provision     Skip provisioning check (assume servers are ready)"
+    echo "  --base-index <index> Specify starting core index (for remote server setup)"
+    echo "  --local-only <true|false> Override local_only setting (default: from config)"
     exit 1
 }
 
@@ -50,6 +59,30 @@ while [[ $# -gt 0 ]]; do
             CORES_TO_USE="$2"
             shift 2
             ;;
+        --from-csv)
+            CSV_FILE="$2"
+            shift 2
+            ;;
+        --provision)
+            PROVISION=true
+            shift
+            ;;
+        --skip-provision)
+            SKIP_PROVISION=true
+            shift
+            ;;
+        --base-index)
+            BASE_INDEX="$2"
+            shift 2
+            ;;
+        --local-only)
+            LOCAL_ONLY_OVERRIDE="$2"
+            if [ "$LOCAL_ONLY_OVERRIDE" != "true" ] && [ "$LOCAL_ONLY_OVERRIDE" != "false" ]; then
+                echo "Error: --local-only must be 'true' or 'false'"
+                exit 1
+            fi
+            shift 2
+            ;;
         *)
             echo "Unknown option: $1"
             usage
@@ -57,6 +90,23 @@ while [[ $# -gt 0 ]]; do
             ;;
     esac
 done
+
+# Get LOCAL_ONLY from config or override
+if [ -n "$LOCAL_ONLY_OVERRIDE" ]; then
+    LOCAL_ONLY="$LOCAL_ONLY_OVERRIDE"
+    # Update config if override provided
+    if [ "$DRY_RUN" != "true" ]; then
+        qtools config set-value service.clustering.local_only "$LOCAL_ONLY" --quiet
+    fi
+else
+    LOCAL_ONLY=$(qtools config get-value service.clustering.local_only --default "false")
+fi
+
+# Parse CSV if provided
+if [ -n "$CSV_FILE" ]; then
+    echo -e "${BLUE}${INFO_ICON} Parsing CSV file: $CSV_FILE${RESET}"
+    source $QTOOLS_PATH/scripts/cluster/cluster-parse-csv.sh --from-csv "$CSV_FILE" ${DRY_RUN:+--dry-run}
+fi
 
 
 if [[ ("$CORES_TO_USE" == "0" || "$CORES_TO_USE" == "false") ]]; then
@@ -87,6 +137,7 @@ fi
 
 
 # Check if there are any servers configured
+# Note: For array length, we still need yq since qtools config get-value doesn't support array operations
 server_count=$(yq eval '.service.clustering.servers | length' $QTOOLS_CONFIG_FILE)
 
 if [ "$server_count" -eq 0 ]; then
@@ -140,8 +191,17 @@ if [ "$DRY_RUN" == "false" ]; then
     disable_local_data_worker_services
 
     if [ "$CORES_TO_USE" -gt 0 ]; then
-        echo "Enabling $QUIL_DATA_WORKER_SERVICE_NAME@{1..$CORES_TO_USE}"
-        enable_local_data_worker_services 1 $CORES_TO_USE
+        # Use base_index from config or calculate it
+        local base_index=$(get_base_index_for_server "$LOCAL_IP")
+        if [ -n "$BASE_INDEX" ]; then
+            base_index=$BASE_INDEX
+            # Update config with base_index
+            qtools config set-value data_worker_service.base_index "$base_index" --quiet
+        fi
+        local start_index=$base_index
+        local end_index=$((start_index + CORES_TO_USE - 1))
+        echo "Enabling $QUIL_DATA_WORKER_SERVICE_NAME@{$start_index..$end_index}"
+        enable_local_data_worker_services $start_index $end_index
     fi
     sudo systemctl daemon-reload
 else
@@ -252,16 +312,18 @@ add_remote_server_hardware_info() {
     local SSH_PORT=$4
     local CORE_COUNT=$5
     local HARDWARE_INFO=$(ssh_to_remote $IP $REMOTE_USER $SSH_PORT "qtools hardware-info -s")
+    # Note: Array element updates still require yq since qtools config doesn't support array indexing
     yq eval -i ".service.clustering.servers[$index].hardware_info = \"$HARDWARE_INFO\"" $QTOOLS_CONFIG_FILE
 }
 
 handle_server() {
     local index=$1
+    # Note: Array element access still requires yq since qtools config doesn't support array indexing
     local SERVER=$(yq eval ".service.clustering.servers[$index]" $QTOOLS_CONFIG_FILE)
     local SERVER_IP=$(echo "$SERVER" | yq eval '.ip' -)
     local REMOTE_USER=$(echo "$SERVER" | yq eval ".user // \"$DEFAULT_USER\"" -)
     local SSH_PORT=$(echo "$SERVER" | yq eval ".ssh_port // \"$DEFAULT_SSH_PORT\"" -)
-    local SERVER_CORE_COUNT=$(echo "$SERVER" | yq eval '.cores_to_use // "false"' -)
+    local SERVER_DATA_WORKER_COUNT=$(echo "$SERVER" | yq eval '.data_worker_count // "false"' -)
 
     local IS_LOCAL_SERVER=$(echo "$(hostname -I)" | grep -q "$SERVER_IP" || echo "$SERVER_IP" | grep -q "127.0.0.1" && echo "true" || echo "false")
     if [ "$IS_LOCAL_SERVER" == "false" ]; then
@@ -270,26 +332,54 @@ handle_server() {
             echo -e "${BLUE}${INFO_ICON} Skipping server setup for $SERVER_IP ($REMOTE_USER)${RESET}"
             return
         fi
-    else
-        echo "Skipping SSH check for $SERVER_IP ($REMOTE_USER) because it is local"
-    fi
 
-    if [ "$IS_LOCAL_SERVER" == "false" ]; then
-        if [[ "$SERVER_CORE_COUNT" == "false" ]]; then
-            echo "Getting available cores for $SERVER_IP (user: $REMOTE_USER)"
-            # Get the number of available cores
-            SERVER_CORE_COUNT=$(ssh_to_remote $SERVER_IP $REMOTE_USER $SSH_PORT "nproc")
+        # Check if server needs provisioning
+        if [ "$SKIP_PROVISION" != "true" ] && [ "$PROVISION" == "true" ]; then
+            local needs_provision=$(check_server_needs_provisioning "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT")
+            if [ "$needs_provision" == "true" ]; then
+                echo -e "${BLUE}${INFO_ICON} Server $SERVER_IP needs provisioning...${RESET}"
+                # Calculate base_index for this server
+                local server_base_index=$(calculate_server_core_index "$SERVER_IP")
+                # Get worker count
+                if [ "$SERVER_DATA_WORKER_COUNT" == "false" ] || [ -z "$SERVER_DATA_WORKER_COUNT" ]; then
+                    SERVER_DATA_WORKER_COUNT=$(ssh_to_remote $SERVER_IP $REMOTE_USER $SSH_PORT "nproc")
+                fi
+                # Get peer ID from master if available (quil config, not qtools config)
+                local peer_id=$(yq eval '.peer_id // ""' $QUIL_CONFIG_FILE 2>/dev/null || echo "")
+                # Provision the server
+                source $QTOOLS_PATH/scripts/cluster/cluster-provision-server.sh --ip "$SERVER_IP" --user "$REMOTE_USER" --ssh-port "$SSH_PORT" --worker-count "$SERVER_DATA_WORKER_COUNT" --base-index "$server_base_index" ${peer_id:+--peer-id "$peer_id"} ${DRY_RUN:+--dry-run}
+            fi
         fi
-        echo -e "${BLUE}${INFO_ICON} Configuring server $REMOTE_USER@$SERVER_IP with $SERVER_CORE_COUNT cores${RESET}"
+
+        # Calculate base_index for this server and update config
+        local server_base_index=$(calculate_server_core_index "$SERVER_IP")
+        if [ "$DRY_RUN" == "false" ]; then
+            # Update server's base_index in config (store in server entry for reference)
+            yq eval -i ".service.clustering.servers[$index].base_index = $server_base_index" $QTOOLS_CONFIG_FILE
+        fi
+
+        if [[ "$SERVER_DATA_WORKER_COUNT" == "false" ]] || [ -z "$SERVER_DATA_WORKER_COUNT" ]; then
+            echo "Getting available cores for $SERVER_IP (user: $REMOTE_USER)"
+            SERVER_DATA_WORKER_COUNT=$(ssh_to_remote $SERVER_IP $REMOTE_USER $SSH_PORT "nproc")
+        fi
+        echo -e "${BLUE}${INFO_ICON} Configuring server $REMOTE_USER@$SERVER_IP with $SERVER_DATA_WORKER_COUNT workers (base_index: $server_base_index)${RESET}"
+
+        # Copy config files
         copy_quil_config_to_server "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT"
         copy_quil_keys_to_server "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT"
         copy_cluster_config_to_server "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT"
-        setup_remote_data_workers "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" "$SERVER_CORE_COUNT"
+
+        # Update remote server's base_index in its config
+        ssh_to_remote "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" "yq eval -i '.data_worker_service.base_index = $server_base_index' ~/qtools/config.yml"
+
+        # Setup remote data workers
+        setup_remote_data_workers "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" "$SERVER_DATA_WORKER_COUNT"
+
         # Call the function to set up the remote firewall
         if [ "$SKIP_FIREWALL" == "false" ]; then
-            setup_remote_firewall "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" "$SERVER_CORE_COUNT"
+            setup_remote_firewall "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" "$SERVER_DATA_WORKER_COUNT"
         fi
-        add_remote_server_hardware_info "$index" "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" "$SERVER_CORE_COUNT"
+        add_remote_server_hardware_info "$index" "$SERVER_IP" "$REMOTE_USER" "$SSH_PORT" "$SERVER_DATA_WORKER_COUNT"
     else
         echo -e "${BLUE}${INFO_ICON} Skipping server setup for $SERVER_IP ($REMOTE_USER) because it is local${RESET}"
     fi
@@ -304,8 +394,27 @@ if [ "$MASTER" == "true" ]; then
 
     update_quil_config
 
+    # Note: Array operations still require yq since qtools config doesn't support array access
     servers=$(yq eval '.service.clustering.servers' $QTOOLS_CONFIG_FILE)
     server_count=$(echo "$servers" | yq eval '. | length' -)
+
+    # Calculate and set base_index for all servers
+    for ((server_index=0; server_index<$server_count; server_index++)); do
+        local server=$(yq eval ".service.clustering.servers[$server_index]" $QTOOLS_CONFIG_FILE)
+        local server_ip=$(echo "$server" | yq eval '.ip' -)
+        local base_index=$(calculate_server_core_index "$server_ip")
+
+        if [ "$DRY_RUN" == "false" ]; then
+            # Update base_index in config for reference
+            # Note: Array element updates still require yq since qtools config doesn't support array indexing
+            yq eval -i ".service.clustering.servers[$server_index].base_index = $base_index" $QTOOLS_CONFIG_FILE
+
+            # If this is the local server, also update data_worker_service.base_index
+            if echo "$(hostname -I)" | grep -q "$server_ip" || echo "$server_ip" | grep -q "127.0.0.1"; then
+                qtools config set-value data_worker_service.base_index "$base_index" --quiet
+            fi
+        fi
+    done
 
     for ((server_index=0; server_index<$server_count; server_index++)); do
         handle_server "$server_index" &

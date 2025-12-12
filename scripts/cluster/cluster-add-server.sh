@@ -3,6 +3,8 @@
 # Default values
 BASE_PORT=$(yq eval ".service.clustering.base_port // \"$BASE_PORT\"" $QTOOLS_CONFIG_FILE)
 DRY_RUN=false
+CSV_FILE=""
+PROVISION=false
 
 SERVERS=()
 # Parse command line arguments
@@ -17,12 +19,32 @@ while [[ $# -gt 0 ]]; do
             DRY_RUN=true
             shift
             ;;
+        --from-csv)
+            CSV_FILE="$2"
+            shift 2
+            ;;
+        --provision)
+            PROVISION=true
+            shift
+            ;;
         *)
             SERVERS+=("$1")
             shift
             ;;
     esac
 done
+
+# Parse CSV if provided
+if [ -n "$CSV_FILE" ]; then
+    echo -e "${BLUE}${INFO_ICON} Parsing CSV file: $CSV_FILE${RESET}"
+    source $QTOOLS_PATH/scripts/cluster/cluster-parse-csv.sh --from-csv "$CSV_FILE" ${DRY_RUN:+--dry-run}
+    # After parsing CSV, trigger provisioning if requested
+    if [ "$PROVISION" == "true" ]; then
+        echo -e "${BLUE}${INFO_ICON} Provisioning servers from CSV...${RESET}"
+        # This will be handled by cluster-setup --provision
+        echo -e "${BLUE}${INFO_ICON} Run 'qtools cluster-setup --master --provision' to provision the servers${RESET}"
+    fi
+fi
 
 if [ -z "$BASE_PORT" ]; then
     echo -e "${RED}${ERROR_ICON} Error: Base port not specified in config or via --base-port parameter${RESET}"
@@ -51,13 +73,23 @@ add_server_to_config() {
         fi
     fi
 
+    # Calculate base_index for this server
+    local base_index=$(calculate_server_core_index "$ip")
+
     # Add the new server to the configuration
     if [ "$worker_count" != "null" ]; then
-        yq eval -i ".service.clustering.servers += {\"ip\": \"$ip\", \"ssh_port\": $ssh_port, \"user\": \"$user\", \"data_worker_count\": $worker_count, \"base_port\": $base_port}" "$QTOOLS_CONFIG_FILE"
-        echo -e "${GREEN}${CHECK_ICON} Added server $user@$ip:$ssh_port with $worker_count workers to the cluster configuration.${RESET}"
+        yq eval -i ".service.clustering.servers += {\"ip\": \"$ip\", \"ssh_port\": $ssh_port, \"user\": \"$user\", \"data_worker_count\": $worker_count, \"base_port\": $base_port, \"base_index\": $base_index}" "$QTOOLS_CONFIG_FILE"
+        echo -e "${GREEN}${CHECK_ICON} Added server $user@$ip:$ssh_port with $worker_count workers (base_index: $base_index) to the cluster configuration.${RESET}"
     else
-        yq eval -i ".service.clustering.servers += {\"ip\": \"$ip\", \"ssh_port\": $ssh_port, \"user\": \"$user\", \"base_port\": $base_port}" "$QTOOLS_CONFIG_FILE"
-        echo -e "${GREEN}${CHECK_ICON} Added server $user@$ip:$ssh_port to the cluster configuration.${RESET}"
+        yq eval -i ".service.clustering.servers += {\"ip\": \"$ip\", \"ssh_port\": $ssh_port, \"user\": \"$user\", \"base_port\": $base_port, \"base_index\": $base_index}" "$QTOOLS_CONFIG_FILE"
+        echo -e "${GREEN}${CHECK_ICON} Added server $user@$ip:$ssh_port (base_index: $base_index) to the cluster configuration.${RESET}"
+    fi
+
+    # Provision server if requested
+    if [ "$PROVISION" == "true" ] && [ "$DRY_RUN" != "true" ]; then
+        echo -e "${BLUE}${INFO_ICON} Provisioning server $ip...${RESET}"
+        local peer_id=$(yq eval '.peer_id // ""' $QUIL_CONFIG_FILE 2>/dev/null || echo "")
+        source $QTOOLS_PATH/scripts/cluster/cluster-provision-server.sh --ip "$ip" --user "$user" --ssh-port "$ssh_port" --worker-count "${worker_count:-null}" --base-index "$base_index" ${peer_id:+--peer-id "$peer_id"}
     fi
 }
 

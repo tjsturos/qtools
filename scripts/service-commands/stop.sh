@@ -1,12 +1,20 @@
 #!/bin/bash
 # HELP: Stops the node application service. Will also clean up any leftover node processes (if any).
+# PARAM: --core <int>: stop a specific worker/core by index
+# PARAM: --kill: kill node processes forcefully
+# PARAM: --wait: wait for next proof submission before stopping
 # Usage: qtools stop
-# Usage: qtools stop --quick
+# Usage: qtools stop --core 5
+# Usage: qtools stop --kill
+
+# Source helper functions
+source $QTOOLS_PATH/scripts/cluster/service-helpers.sh
+
 # Initialize variables
-IS_CLUSTERING_ENABLED=$(yq '.service.clustering.enabled // false' $QTOOLS_CONFIG_FILE)
 IS_KILL_MODE=false
-CORE_INDEX=false
+CORE_INDEX=""
 WAIT=false
+
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -14,10 +22,13 @@ while [[ $# -gt 0 ]]; do
             IS_KILL_MODE=true
             shift
             ;;
-        --core-index)
-            CORE_INDEX=$2
-            shift
-            shift
+        --core|--core-index)
+            CORE_INDEX="$2"
+            if [[ ! "$CORE_INDEX" =~ ^[0-9]+$ ]]; then
+                echo "Error: --core requires a valid non-negative integer"
+                exit 1
+            fi
+            shift 2
             ;;
         --wait)
             WAIT=true
@@ -30,27 +41,30 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+# Handle individual core stop
+if [ -n "$CORE_INDEX" ]; then
+    if [ "$CORE_INDEX" == "0" ]; then
+        echo -e "${RED}${ERROR_ICON} Core index 0 is reserved for master process. Use 'qtools stop' to stop master.${RESET}"
+        exit 1
+    fi
+    stop_worker_by_core_index "$CORE_INDEX"
+    exit $?
+fi
 
+# Handle wait flag for master service
 if [ "$WAIT" == "true" ]; then
     echo -e "${BLUE}${INFO_ICON} Waiting for next proof submission or workers to be available...${RESET}"
     while read -r line; do
         if [[ $line =~ "submitting data proof" ]] || [[ $line =~ "workers not yet available for proving" ]]; then
-            echo -e "${GREEN}${CHECK_ICON} Proof submission detected or workers not available, proceeding with restart${RESET}"
+            echo -e "${GREEN}${CHECK_ICON} Proof submission detected or workers not available, proceeding with stop${RESET}"
             break
         fi
     done < <(journalctl -u $QUIL_SERVICE_NAME -f -n 0)
-
-    sudo systemctl stop $QUIL_SERVICE_NAME.service
-
-else
-    sudo systemctl stop $QUIL_SERVICE_NAME.service
 fi
 
-
-# Check if clustering is enabled
-if [ "$IS_CLUSTERING_ENABLED" == "true" ]; then
-    qtools cluster-stop
-fi
+# Stop workers first, then master
+stop_workers
+stop_master_service
 
 # Kill mode is essentially quick mode + kill the node process
 if [ "$IS_KILL_MODE" == "true" ]; then

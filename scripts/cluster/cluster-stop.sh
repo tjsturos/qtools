@@ -1,12 +1,14 @@
-#! /bin/bash
+#!/bin/bash
+
+# Source helper functions
+source $QTOOLS_PATH/scripts/cluster/service-helpers.sh
 
 IS_MASTER=false
 DRY_RUN=false
-CORES=$(nproc)
 DATA_WORKER_COUNT=$(yq eval ".service.clustering.local_data_worker_count" $QTOOLS_CONFIG_FILE)
 
-if [ "$DATA_WORKER_COUNT" == "null" ]; then
-    DATA_WORKER_COUNT=$CORES
+if [ "$DATA_WORKER_COUNT" == "null" ] || [ -z "$DATA_WORKER_COUNT" ]; then
+    DATA_WORKER_COUNT=$(get_worker_count)
 fi
 
 echo -e "${BLUE}${INFO_ICON} Found configuration for $DATA_WORKER_COUNT data workers${RESET}"
@@ -29,10 +31,12 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-
+# Master node coordination
 if [ "$IS_MASTER" == "true" ] || [ "$(is_master)" == "true" ]; then
-    sudo systemctl stop $MASTER_SERVICE_NAME
+    stop_master_service
     echo "Stopping services on remote servers..."
     ssh_command_to_each_server "qtools cluster-stop"
 fi
-stop_local_data_worker_services 1 $DATA_WORKER_COUNT
+
+# Stop local workers
+stop_workers

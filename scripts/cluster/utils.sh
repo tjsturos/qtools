@@ -208,9 +208,133 @@ start_local_data_worker_services() {
     local START_CORE_INDEX=$1
     local END_CORE_INDEX=$2
     local LOCAL_IP=$3
+
+    # Use base_index from config if not explicitly provided
+    if [ -z "$START_CORE_INDEX" ] || [ "$START_CORE_INDEX" == "0" ]; then
+        START_CORE_INDEX=$(yq eval '.data_worker_service.base_index // 1' $QTOOLS_CONFIG_FILE)
+    fi
+
     echo -e "${BLUE}${INFO_ICON} [ LOCAL ] [ $LOCAL_IP ] Starting local data worker services on core $START_CORE_INDEX and ending with $END_CORE_INDEX${RESET}"
     enable_local_data_worker_services $START_CORE_INDEX $END_CORE_INDEX
     bash -c "sudo systemctl start $QUIL_DATA_WORKER_SERVICE_NAME\@{$START_CORE_INDEX..$END_CORE_INDEX} &> /dev/null"
+}
+
+start_single_worker_service() {
+    local CORE_INDEX=$1
+    if [ -z "$CORE_INDEX" ]; then
+        echo -e "${RED}${ERROR_ICON} Core index is required${RESET}"
+        return 1
+    fi
+    echo -e "${BLUE}${INFO_ICON} Starting worker service for core $CORE_INDEX${RESET}"
+    sudo systemctl start ${QUIL_DATA_WORKER_SERVICE_NAME}@${CORE_INDEX}.service
+}
+
+stop_single_worker_service() {
+    local CORE_INDEX=$1
+    if [ -z "$CORE_INDEX" ]; then
+        echo -e "${RED}${ERROR_ICON} Core index is required${RESET}"
+        return 1
+    fi
+    echo -e "${BLUE}${INFO_ICON} Stopping worker service for core $CORE_INDEX${RESET}"
+    sudo systemctl stop ${QUIL_DATA_WORKER_SERVICE_NAME}@${CORE_INDEX}.service
+}
+
+get_base_index_for_server() {
+    local server_ip="${1:-$LOCAL_IP}"
+    local base_index=$(yq eval ".data_worker_service.base_index // 1" $QTOOLS_CONFIG_FILE)
+
+    # If server_ip is provided and different from local, calculate from cluster config
+    if [ -n "$server_ip" ] && [ "$server_ip" != "$LOCAL_IP" ]; then
+        base_index=$(calculate_server_core_index "$server_ip")
+    fi
+
+    echo "${base_index:-1}"
+}
+
+calculate_server_core_index() {
+    local target_ip="$1"
+    local config=$(yq eval . $QTOOLS_CONFIG_FILE)
+    local servers=$(echo "$config" | yq eval '.service.clustering.servers' -)
+    local server_count=$(echo "$servers" | yq eval '. | length' -)
+
+    local cumulative_workers=0
+
+    for ((i=0; i<server_count; i++)); do
+        local server=$(echo "$servers" | yq eval ".[$i]" -)
+        local server_ip=$(echo "$server" | yq eval '.ip' -)
+
+        if [ "$server_ip" == "$target_ip" ]; then
+            # Found target server - return starting index (1 for master, cumulative+1 for others)
+            if [ "$(is_master)" == "true" ] && [ "$server_ip" == "$LOCAL_IP" ]; then
+                echo "1"
+            else
+                echo $((cumulative_workers + 1))
+            fi
+            return
+        fi
+
+        # Add this server's worker count to cumulative
+        local worker_count=$(echo "$server" | yq eval '.data_worker_count // "false"' -)
+        if [ "$worker_count" == "false" ] || [ -z "$worker_count" ]; then
+            # Auto-detect worker count
+            if echo "$(hostname -I)" | grep -q "$server_ip" || echo "$server_ip" | grep -q "127.0.0.1"; then
+                worker_count=$(($(nproc) - 1))  # Master server
+            else
+                worker_count=$(nproc)  # Worker server (would need SSH, but use nproc as fallback)
+            fi
+        fi
+        worker_count=$(echo "$worker_count" | tr -cd '0-9')
+        cumulative_workers=$((cumulative_workers + worker_count))
+    done
+
+    # If server not found, return 1 (default)
+    echo "1"
+}
+
+get_server_info_for_core_index() {
+    local core_index="$1"
+    local config=$(yq eval . $QTOOLS_CONFIG_FILE)
+    local servers=$(echo "$config" | yq eval '.service.clustering.servers' -)
+    local server_count=$(echo "$servers" | yq eval '. | length' -)
+
+    local cumulative_workers=0
+
+    for ((i=0; i<server_count; i++)); do
+        local server=$(echo "$servers" | yq eval ".[$i]" -)
+        local server_ip=$(echo "$server" | yq eval '.ip' -)
+        local remote_user=$(echo "$server" | yq eval ".user // \"$DEFAULT_USER\"" -)
+        local ssh_port=$(echo "$server" | yq eval ".ssh_port // \"$DEFAULT_SSH_PORT\"" -)
+
+        local worker_count=$(echo "$server" | yq eval '.data_worker_count // "false"' -)
+        if [ "$worker_count" == "false" ] || [ -z "$worker_count" ]; then
+            if echo "$(hostname -I)" | grep -q "$server_ip" || echo "$server_ip" | grep -q "127.0.0.1"; then
+                worker_count=$(($(nproc) - 1))
+            else
+                worker_count=$(nproc)
+            fi
+        fi
+        worker_count=$(echo "$worker_count" | tr -cd '0-9')
+
+        local start_index=$((cumulative_workers + 1))
+        if echo "$(hostname -I)" | grep -q "$server_ip" || echo "$server_ip" | grep -q "127.0.0.1"; then
+            # Master server starts at 1
+            start_index=1
+        fi
+
+        local end_index=$((start_index + worker_count - 1))
+
+        if [ "$core_index" -ge "$start_index" ] && [ "$core_index" -le "$end_index" ]; then
+            # Found the server that owns this core index
+            local local_core=$((core_index - start_index + 1))
+            echo "$server_ip|$remote_user|$ssh_port|$local_core"
+            return
+        fi
+
+        cumulative_workers=$((cumulative_workers + worker_count))
+    done
+
+    # Core index not found in any server
+    echo ""
 }
 
 stop_local_data_worker_services() {
@@ -532,6 +656,19 @@ check_ssh_connections() {
             fi
         fi
     done
+}
+
+check_server_needs_provisioning() {
+    local ip=$1
+    local user=$2
+    local ssh_port=$3
+
+    ssh -i $SSH_CLUSTER_KEY -p $ssh_port -o ConnectTimeout=5 -o BatchMode=yes -o StrictHostKeyChecking=no "$user@$ip" "command -v qtools" &>/dev/null
+    if [ $? -ne 0 ]; then
+        echo "true"
+    else
+        echo "false"
+    fi
 }
 
 check_data_worker_services() {
