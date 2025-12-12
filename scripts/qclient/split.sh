@@ -206,7 +206,7 @@ split_tokens() {
     local token=$1
     shift
     local amounts=("$@")
-    
+
     if [ ${#amounts[@]} -le 100 ]; then
         # If 100 or fewer tokens, split directly
         CMD="$LINKED_QCLIENT_BINARY${SKIP_SIG_CHECK:+ --signature-check=false} token split $token ${amounts[@]}"
@@ -219,7 +219,7 @@ split_tokens() {
         local chunk_size=99
         local total_amount=$(echo "${amounts[@]}" | tr ' ' '+' | bc)
         local batch_amount=$(echo "scale=8; $total_amount / ${#amounts[@]}" | bc)
-        
+
         while [ ${#amounts[@]} -gt 100 ]; do
             # Create an array of 99 equal parts and the remainder
             local batch_amounts=()
@@ -228,30 +228,30 @@ split_tokens() {
             done
             local remainder=$(echo "scale=8; $total_amount - ($batch_amount * $chunk_size)" | bc)
             batch_amounts+=($remainder)
-            
+
             # Split into 99 equal parts + remainder
             CMD="$LINKED_QCLIENT_BINARY${SKIP_SIG_CHECK:+ --signature-check=false} token split $token ${batch_amounts[@]}"
             if $DEBUG; then
                 echo "DEBUG: $CMD"
             fi
             $CMD
-            
+
             # Wait for the split to complete and find the new token with the remainder amount
             echo "Waiting for split to complete..."
             local new_token=""
             while [ -z "$new_token" ]; do
                 sleep 5
-                new_token=$(qtools coins ${SKIP_SIG_CHECK:+--skip-sig-check} | awk -v amount="$remainder" '$1 == amount {print $NF}' | sed 's/^(Coin //' | sed 's/)$//')
+                new_token=$(qtools --describe "split" coins ${SKIP_SIG_CHECK:+--skip-sig-check} | awk -v amount="$remainder" '$1 == amount {print $NF}' | sed 's/^(Coin //' | sed 's/)$//')
             done
-            
+
             echo "New token found: $new_token"
-            
+
             # Update variables for next iteration
             token=$new_token
             total_amount=$remainder
             amounts=("${amounts[@]:$chunk_size}")
         done
-        
+
         # If remaining amounts are less than or equal to 100, split directly
         if [ ${#amounts[@]} -gt 0 ]; then
             split_tokens $token "${amounts[@]}"
@@ -274,7 +274,7 @@ while true; do
         echo -e "\nQuitting..."
         exit 0
     fi
-    current_tokens_list=($(qtools coins ${SKIP_SIG_CHECK:+--skip-sig-check}))
+    current_tokens_list=($(qtools --describe "split" coins ${SKIP_SIG_CHECK:+--skip-sig-check}))
     if [[ "${current_tokens_list[@]}" == "${initialial_tokens_list[@]}" ]]; then
         break
     fi

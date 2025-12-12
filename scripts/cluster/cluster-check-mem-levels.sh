@@ -22,7 +22,7 @@ restart_server_data_workers() {
                 break
             fi
         done < <(journalctl -u $QUIL_SERVICE_NAME -f -n 0)
-        ssh_to_remote $ip $remote_user $ssh_port "qtools refresh-data-workers" &
+        ssh_to_remote $ip $remote_user $ssh_port "qtools --describe \"cluster-check-mem-levels\" refresh-data-workers" &
     fi
 }
 
@@ -30,7 +30,7 @@ check_mem_levels() {
     local config=$(yq eval . $QTOOLS_CONFIG_FILE)
     local servers=$(echo "$config" | yq eval '.service.clustering.servers' -)
     local server_count=$(echo "$servers" | yq eval '. | length' -)
-    
+
     for ((i=0; i<server_count; i++)); do
         local server=$(echo "$servers" | yq eval ".[$i]" -)
         local server_ip=$(echo "$server" | yq eval '.ip' -)
@@ -38,7 +38,7 @@ check_mem_levels() {
         local ssh_port=$(echo "$server" | yq eval ".ssh_port // \"$DEFAULT_SSH_PORT\"" -)
 
         if ! echo "$(hostname -I)" | grep -q "$server_ip"; then
-            local mem_usage=$(ssh_to_remote $server_ip $remote_user $ssh_port "qtools memory-usage")
+            local mem_usage=$(ssh_to_remote $server_ip $remote_user $ssh_port "qtools --describe \"cluster-check-mem-levels\" memory-usage")
 
             if (( $(echo "$mem_usage > $THRESHOLD" | bc -l) )); then
                 echo "Memory usage is greater than $THRESHOLD%, restarting data workers"
@@ -58,7 +58,7 @@ if [ ${#SERVERS_RESTARTED[@]} -gt 0 ]; then
         echo "Restarting master node"
         sudo systemctl restart $MASTER_SERVICE_NAME
     fi
-    
+
 else
     echo "No servers restarted"
 fi

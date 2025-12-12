@@ -90,7 +90,7 @@ get_to_address_from_user_input() {
 
 convert_peer_id_to_address() {
     local PEER_ID=$1
-    echo "$(qtools account-from-peer-id --peer-id $PEER_ID)"
+    echo "$(qtools --describe "transfer" account-from-peer-id --peer-id $PEER_ID)"
 }
 
 # Check if TO_ADDRESS is blank
@@ -132,7 +132,7 @@ if [[ $NO_CONFIRM == "false" ]]; then
         echo "Operation cancelled by user."
         exit 0
     fi
-else 
+else
     if [[ $DELAY != "false" ]]; then
         echo "Delaying transfer by $DELAY seconds..."
         # Validate that DELAY is an integer

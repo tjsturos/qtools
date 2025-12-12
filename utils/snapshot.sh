@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Redundant if called via qtools.sh as utils.sh sources this already, 
+# Redundant if called via qtools.sh as utils.sh sources this already,
 # but this is a safeguard if this script is called directly
 # Source the hardware.sh file
 source $QTOOLS_PATH/utils/hardware.sh
@@ -41,7 +41,7 @@ get_current_snapshot() {
   local cores=$(get_cores)
   local threads=$(get_threads)
   local hyperthreading=$(get_is_hyperthreading_enabled)
-  local peer_id=$(qtools peer-id)
+  local peer_id=$(qtools --describe "snapshot" peer-id)
   echo "CPU:$cpu RAM:$ram HDD:$hdd Cores:$cores Threads:$threads Hyperthreading:$hyperthreading PeerID:$peer_id"
 }
 

@@ -6,18 +6,18 @@
 
 # Function to get the unclaimed balance
 get_unclaimed_balance() {
-  echo "$(qtools unclaimed-balance)"
+  echo "$(qtools --describe "record-unclaimed-rewards" unclaimed-balance)"
 }
 
 # Function to clean the CSV file of invalid entries
 clean_csv_file() {
   local file="$1"
   local temp_file="${file}.temp"
-  
+
   # Keep header and valid entries
   head -n 1 "$file" > "$temp_file"
   tail -n +2 "$file" | awk -F',' '$2 ~ /^[0-9]+(\.[0-9]+)?$/' >> "$temp_file"
-  
+
   # Replace original file with cleaned file
   mv "$temp_file" "$file"
 }
@@ -27,7 +27,7 @@ TYPE="$1"
 if [ -z "$TYPE" ]; then
    log "A type must be provided to record to the correct file.  \
       Use 'hourly', 'daily', or 'weekly' as the first parameter, e.g. 'qtools record-unclaimed-rewards hourly'.  \
-      Otherwise if you just wish to view, use 'qtools unclaimed-balance' command." 
+      Otherwise if you just wish to view, use 'qtools unclaimed-balance' command."
    exit 1
 fi
 

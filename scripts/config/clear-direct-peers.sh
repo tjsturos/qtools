@@ -72,6 +72,6 @@ else
 
     echo "Direct peers cleared successfully."
     echo "Restarting service to apply changes..."
-    qtools restart
+    qtools --describe "clear-direct-peers" restart
 fi
 

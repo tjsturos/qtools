@@ -133,7 +133,7 @@ link_node() {
     fi
 
     if [ "$DEV_BUILD" == "true" ]; then
-        qtools update-service --skip-sig-check
+        qtools --describe "download-node" update-service --skip-sig-check
     fi
 }
 
@@ -212,9 +212,9 @@ for file in $NODE_RELEASE_FILES; do
         fi
 
         if [ "$TESTNET" == "true" ]; then
-            qtools update-service --skip-sig-check --testnet
+            qtools --describe "download-node" update-service --skip-sig-check --testnet
         elif [ "$DEV_BUILD" == "true" ] || [ "$BINARY_ONLY" == "true" ]; then
-            qtools update-service --skip-sig-check
+            qtools --describe "download-node" update-service --skip-sig-check
         fi
     fi
 

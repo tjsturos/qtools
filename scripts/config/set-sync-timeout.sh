@@ -22,4 +22,4 @@ else
     echo "Sync timeout set to $1s"
 fi
 
-qtools restart
+qtools --describe "set-sync-timeout" restart

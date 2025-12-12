@@ -22,13 +22,13 @@ main() {
     cd $QTOOLS_PATH
     git pull &> /dev/null
     log "Changes fetched."
-    
+
     # Run config migration after pulling changes
     log "Checking for config updates..."
-    qtools migrate-qtools-config
-    
-    qtools add-auto-complete
-    qtools install-cron
+    qtools --describe "self-update" migrate-qtools-config
+
+    qtools --describe "self-update" add-auto-complete
+    qtools --describe "self-update" install-cron
 }
 
 if [ "$auto_update" == "true" ] && [ "$is_auto_update_enabled" == "false" ]; then

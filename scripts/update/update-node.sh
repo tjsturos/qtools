@@ -62,7 +62,7 @@ if [ "$CURRENT_NODE_VERSION" == "$RELEASE_NODE_VERSION" ]; then
   exit 0
 fi
 
-qtools update-version --node-version "$RELEASE_NODE_VERSION" --qclient-version "$RELEASE_QCLIENT_VERSION"
+qtools --describe "update-node" update-version --node-version "$RELEASE_NODE_VERSION" --qclient-version "$RELEASE_QCLIENT_VERSION"
 set_current_node_version $RELEASE_NODE_VERSION
 set_current_qclient_version $RELEASE_QCLIENT_VERSION
 
@@ -86,8 +86,8 @@ clean_old_node_files() {
     done
 }
 
-qtools update-service
-qtools restart
+qtools --describe "update-node" update-service
+qtools --describe "update-node" restart
 
 if [ "$skip_clean" == "true" ]; then
   log "Skipping clean of old node files."

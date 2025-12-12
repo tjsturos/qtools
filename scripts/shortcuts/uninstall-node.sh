@@ -1,9 +1,9 @@
 
 # Stop the node
-qtools stop
+qtools --describe "uninstall-node" stop
 
 # backup and verify integrity
-if ! qtools verify-backup-integrity; then
+if ! qtools --describe "uninstall-node" verify-backup-integrity; then
     read -p "Backup integrity check failed. Do you want to continue with the uninstallation? (y/N): " response
     if [[ ! $response =~ ^[Yy]$ ]]; then
         echo "Uninstallation aborted."
@@ -11,10 +11,10 @@ if ! qtools verify-backup-integrity; then
     fi
 fi
 
-qtools update-hostname ubuntu
+qtools --describe "uninstall-node" update-hostname ubuntu
 
 # remove tailscale
-qtools install-tailscale --uninstall
+qtools --describe "uninstall-node" install-tailscale --uninstall
 
 # Remove the node
 sudo rm -rf $QUIL_PATH

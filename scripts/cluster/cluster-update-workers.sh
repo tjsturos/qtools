@@ -71,7 +71,7 @@ update_workers() {
         server=$(echo "$servers" | yq eval ".[$i]" -)
         server_ip=$(echo "$server" | yq eval '.ip' -)
         worker_count=$(echo "$server" | yq eval '.data_worker_count' -)
-      
+
         if [ "$DRY_RUN" == "false" ]; then
             if [ "$server_ip" != "$LOCAL_IP" ]; then
                 update_remote_workers $server_ip $worker_count
@@ -88,7 +88,7 @@ verify_changes() {
     for ((i=0; i<server_count; i++)); do
         server=$(echo "$servers" | yq eval ".[$i]" -)
         server_ip=$(echo "$server" | yq eval '.ip' -)
-        
+
         # Get expected worker count
         expected_count=$(get_cluster_worker_count $server_ip)
 
@@ -97,7 +97,7 @@ verify_changes() {
                 # Get actual worker count from remote server
                 actual_count=$(ssh_command_to_server $server_ip "systemctl list-units --type=service --state=running | grep dataworker | wc -l")
                 echo "Server $server_ip: Expected $expected_count workers, found $actual_count running"
-                
+
                 if [ "$actual_count" != "$expected_count" ]; then
                     echo -e "${RED}${WARNING_ICON} Warning: Worker count mismatch on $server_ip${RESET}"
                     echo -e "${RED}${WARNING_ICON} Expected: $expected_count, Actual: $actual_count${RESET}"
@@ -109,7 +109,7 @@ verify_changes() {
                 # Get actual worker count on local machine
                 actual_count=$(systemctl list-units --type=service --state=running| grep dataworker | wc -l)
                 echo "Local server: Expected $expected_count workers, found $actual_count running"
-                
+
                 if [ "$actual_count" != "$expected_count" ]; then
                     echo -e "${RED}${WARNING_ICON} Warning: Local worker count mismatch${RESET}"
                     echo -e "${RED}${WARNING_ICON} Expected: $expected_count, Actual: $actual_count${RESET}"
@@ -129,10 +129,10 @@ update_workers
 
 update_quil_config $DRY_RUN
 
-wait 
+wait
 
 if [ "$(verify_changes)" == "true" ] && [ "$DRY_RUN" == "false" ]; then
-    qtools restart
+    qtools --describe "cluster-update-workers" restart
 fi
 
 

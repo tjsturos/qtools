@@ -201,6 +201,6 @@ else
 
     echo "Announce multiaddrs updated successfully."
     echo "Restarting service to apply changes..."
-    qtools restart
+    qtools --describe "set-announce-multiaddrs" restart
 fi
 

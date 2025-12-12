@@ -64,7 +64,7 @@ done
 # If no coins specified, error out unless "all" flag is used
 if [ ${#COINS[@]} -eq 0 ]; then
     if [ "$MERGE_ALL" == "true" ]; then
-        COINS=($(qtools coins ${SKIP_SIG_CHECK:+--skip-sig-check} --hex-only --config $CONFIG))
+        COINS=($(qtools --describe "merge" coins ${SKIP_SIG_CHECK:+--skip-sig-check} --hex-only --config $CONFIG))
     else
         echo "Error: No coins specified. Use 'all' flag to merge all coins or specify coin IDs."
         exit 1
@@ -83,17 +83,17 @@ merge_all_by_batch() {
     local coins=("$@")
     local batch_size=100
     local start=0
-    
+
     while [ $start -lt ${#coins[@]} ]; do
         # Calculate end index for current batch
         local end=$((start + batch_size))
         if [ $end -gt ${#coins[@]} ]; then
             end=${#coins[@]}
         fi
-        
+
         # Extract batch of coins
         local batch=("${coins[@]:start:batch_size}")
-        
+
         if [ ${#batch[@]} -gt 1 ]; then
             echo "Merging batch of ${#batch[@]} coins..."
             CMD="qclient token merge ${batch[@]}${SKIP_SIG_CHECK:+ --signature-check=false}${PUBLIC_RPC:+ --public-rpc} --config $CONFIG"
@@ -101,11 +101,11 @@ merge_all_by_batch() {
                 echo "Executing: $CMD"
             fi
             $CMD
-            
+
             # Wait briefly between batches
             sleep 2
         fi
-        
+
         start=$end
     done
 }

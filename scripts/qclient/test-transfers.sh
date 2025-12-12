@@ -48,17 +48,17 @@ fi
 
 # Function to get total balance
 get_total_balance() {
-    local total_balance=$(qtools coins ${SKIP_SIG_CHECK:+--skip-sig-check} | awk '{sum += $1} END {print sum}')
+    local total_balance=$(qtools --describe "test-transfers" coins ${SKIP_SIG_CHECK:+--skip-sig-check} | awk '{sum += $1} END {print sum}')
     echo $total_balance
 }
 
 suitable_tokens=()
 update_suitable_tokens() {
     echo "Updating suitable tokens"
-    suitable_tokens=$(qtools coins ${SKIP_SIG_CHECK:+--skip-sig-check} | grep "0x" | awk -v amount="$AMOUNT" '$1 == amount {print $0}')
+    suitable_tokens=$(qtools --describe "test-transfers" coins ${SKIP_SIG_CHECK:+--skip-sig-check} | grep "0x" | awk -v amount="$AMOUNT" '$1 == amount {print $0}')
     # Count suitable tokens
     suitable_token_count=$(echo "$suitable_tokens" | wc -l)
-    
+
     echo "Number of suitable tokens found: $suitable_token_count"
 }
 
@@ -77,20 +77,20 @@ transfer_count=0
 # Main loop
 while true; do
     update_suitable_tokens &
-   
+
     # Iterate through all suitable tokens
     echo "$suitable_tokens" | while read -r suitable_token; do
         token_balance=$(echo $suitable_token | awk '{print $1}')
         token_id=$(echo "$suitable_token" | awk '{print $NF}' | sed 's/^(Coin //' | sed 's/)$//')
-        
+
         transfer_token $token_id &
-        
+
         # Increment transfer count
         ((transfer_count++))
-        
+
         # Log the current number of transfers
         echo "Total transfers completed: $transfer_count"
-        
+
         # Refresh the list of suitable tokens
         update_suitable_tokens &
     done

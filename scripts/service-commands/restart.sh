@@ -12,7 +12,7 @@ while [[ $# -gt 0 ]]; do
             WAIT=true
             shift
             ;;
-        
+
         *)
             echo "Unknown option: $1"
             exit 1
@@ -30,13 +30,13 @@ if [ "$WAIT" == "true" ]; then
         fi
     done < <(journalctl -u $QUIL_SERVICE_NAME -f -n 0)
     if [ "$CLUSTERING_IS_ENABLED" == "true" ]; then
-       
+
         if [ "$(is_master)" == "true" ]; then
             sudo systemctl restart $QUIL_SERVICE_NAME
             restart_cluster_data_workers
             wait
         else
-            qtools refresh-data-workers
+            qtools --describe "restart" refresh-data-workers
             wait
         fi
     else
@@ -44,13 +44,13 @@ if [ "$WAIT" == "true" ]; then
     fi
 else
     if [ "$CLUSTERING_IS_ENABLED" == "true" ]; then
-        
+
         if [ "$(is_master)" == "true" ]; then
             sudo systemctl restart $QUIL_SERVICE_NAME
             restart_cluster_data_workers
             wait
         else
-            qtools refresh-data-workers
+            qtools --describe "restart" refresh-data-workers
             wait
         fi
     else

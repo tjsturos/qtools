@@ -10,7 +10,7 @@ SERVICE_USER=$(yq '.service.default_user // "quilibrium"' $QTOOLS_CONFIG_FILE)
 if [ "$SERVICE_USER" == "quilibrium" ]; then
     if ! id "$SERVICE_USER" &>/dev/null; then
         log "Quilibrium user not found. Creating it..."
-        qtools create-quilibrium-user
+        qtools --describe "update-service" create-quilibrium-user
     fi
     # Use quilibrium user's node path
     QUIL_NODE_PATH_FOR_SERVICE="/home/quilibrium/ceremonyclient/node"

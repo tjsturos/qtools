@@ -58,7 +58,7 @@ if [ ! -z "$LOCAL" ]; then
     yq -i ".p2p.peerPrivKey = \"$PEER_PRIVATE_KEY\"" $QUIL_NODE_PATH/.config/config.yml
     echo "Copying keys.yml from local config"
     cp $LOCAL/keys.yml $QUIL_NODE_PATH/.config/keys.yml
-    
+
     echo "Restored peer config from local directory: $LOCAL"
     exit 0
 fi
@@ -69,7 +69,7 @@ if [ -z "$PEER_ID" ]; then
 
     # see if there the default save dir is overridden
     if [ -z "$NODE_BACKUP_NAME" ]; then
-        PEER_ID="$(qtools peer-id)"
+        PEER_ID="$(qtools --describe "restore-peer" peer-id)"
         NODE_BACKUP_NAME="$PEER_ID"
     fi
 else

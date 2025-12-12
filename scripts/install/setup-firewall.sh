@@ -14,7 +14,7 @@ SSH_PORT=$(yq eval '.ssh.port //22' $QTOOLS_CONFIG_FILE)
 SSH_FROM_IP=$(yq eval '.ssh.allow_from_ip' $QTOOLS_CONFIG_FILE)
 
 if [ "$SSH_FROM_IP" != "false" ]; then
-    qtools set-ssh-port-from-ip
+    qtools --describe "setup-firewall" set-ssh-port-from-ip
 else
     sudo ufw allow $SSH_PORT
 fi

@@ -87,17 +87,17 @@ safe_modify_quil_config() {
 cd $QUIL_HOME
 
 # Create quilibrium user for running node services
-qtools create-quilibrium-user
+qtools --describe "complete-install" create-quilibrium-user
 
-qtools download-node --link
-qtools download-qclient --link
-qtools update-service
+qtools --describe "complete-install" download-node --link
+qtools --describe "complete-install" download-qclient --link
+qtools --describe "complete-install" update-service
 
-qtools install-go
-qtools install-grpc
-qtools setup-firewall
-qtools install-cron
-qtools expand-storage
+qtools --describe "complete-install" install-go
+qtools --describe "complete-install" install-grpc
+qtools --describe "complete-install" setup-firewall
+qtools --describe "complete-install" install-cron
+qtools --describe "complete-install" expand-storage
 
 generate_default_config() {
     # This first command generates a default config file
@@ -117,7 +117,7 @@ generate_default_config() {
     fi
     sleep 3
     if [ -f $BINARY_FILE ]; then
-        qtools modify-config
+        qtools --describe "complete-install" modify-config
     fi
 }
 
@@ -125,10 +125,10 @@ if [ "$PEER_ID" != "" ]; then
     log "Attempting to restore from remote backup. Note: backups must be enabled and configured properly (and connected to at least once) for this to work."
 
     if [ "$PEER_ID" != "false" ] && [ "$PEER_ID" != "" ]; then
-        qtools restore-backup --peer-id $PEER_ID --force
+        qtools --describe "complete-install" restore-backup --peer-id $PEER_ID --force
         wait
         if [ -f $BINARY_FILE ]; then
-            qtools modify-config
+            qtools --describe "complete-install" modify-config
         fi
     else
         log "No peer ID found, skipping restore."
@@ -204,7 +204,7 @@ if [ "$BASE_STREAM_PORT" != "" ]; then
 fi
 
 # tells server to always start node service on reboot
-qtools enable
+qtools --describe "complete-install" enable
 
 if [ "$DISABLE_SSH_PASSWORDS" == 'true' ]; then
 
@@ -217,7 +217,7 @@ if [ "$DISABLE_SSH_PASSWORDS" == 'true' ]; then
     fi
 
     if [ ! -z "$PUBLIC_KEY" ]; then
-        qtools add-public-ssh-key "$PUBLIC_KEY"
+        qtools --describe "complete-install" add-public-ssh-key "$PUBLIC_KEY"
     fi
 
     # Check if authorized_keys file exists and is not empty
@@ -226,7 +226,7 @@ if [ "$DISABLE_SSH_PASSWORDS" == 'true' ]; then
         exit 0
     fi
 
-    qtools disable-ssh-passwords
+    qtools --describe "complete-install" disable-ssh-passwords
 fi
 
 source $QTOOLS_PATH/scripts/install/customization.sh

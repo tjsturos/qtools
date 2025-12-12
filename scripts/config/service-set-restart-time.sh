@@ -22,5 +22,5 @@ else
     echo "Service restart time set to $1s"
 fi
 
-qtools update-service
+qtools --describe "service-set-restart-time" update-service
 

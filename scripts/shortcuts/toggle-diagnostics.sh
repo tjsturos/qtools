@@ -9,7 +9,7 @@ set_diagnostics_status() {
     local status=$1
     yq -i ".scheduled_tasks.diagnostics.enabled = $status" $QTOOLS_CONFIG_FILE
     echo "Diagnostics have been turned $([[ $status == true ]] && echo "on" || echo "off")."
-    qtools update-cron
+    qtools --describe "toggle-diagnostics" update-cron
 }
 
 # Check current diagnostics status

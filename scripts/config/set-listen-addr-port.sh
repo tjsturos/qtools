@@ -60,4 +60,4 @@ yq eval -i ".p2p.listenMultiaddr = \"/ip4/0.0.0.0/${LISTEN_MODE}/${PORT}${PROTOC
 
 echo "Listen port updated to $PORT in configuration files"
 
-qtools restart
+qtools --describe "set-listen-addr-port" restart

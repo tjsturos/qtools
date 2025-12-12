@@ -27,11 +27,11 @@ retry_connection() {
 
     while [ $retry_count -le $RETRY_COUNT ]; do
         echo -e "${YELLOW}${INFO_ICON} Attempt $retry_count of $RETRY_COUNT for $ip${RESET}"
-        
+
         if check_server_ssh_connection "$ip" "$user" "$ssh_port"; then
             echo -e "${GREEN}✓ Successfully connected to $ip on attempt $retry_count${RESET}"
              if [ "$SERVER_ARRAY_TO_CHECK" == "auto_removed_servers" ] && [ "$AUTO" == "true" ]; then
-                qtools cluster-auto-reconnect-server "$ip"
+                qtools --describe "cluster-connection-check" cluster-auto-reconnect-server "$ip"
                 RECONFIGURE_MASTER=true
             fi
             return 0
@@ -41,12 +41,12 @@ retry_connection() {
             echo -e "${YELLOW}${WARNING_ICON} Connection failed to $ip, waiting $RETRY_INTERVAL seconds before next attempt...${RESET}"
             sleep $RETRY_INTERVAL
         fi
-        
+
         retry_count=$((retry_count + 1))
     done
     if [ "$AUTO" == "true" ] && [ "$SERVER_ARRAY_TO_CHECK" == "servers" ]; then
         echo -e "${YELLOW}${INFO_ICON} Auto-removing server $ip due to failed SSH connection${RESET}"
-        qtools cluster-auto-remove-server "$ip"
+        qtools --describe "cluster-connection-check" cluster-auto-remove-server "$ip"
         RECONFIGURE_MASTER=true
         return 1
     fi
@@ -70,7 +70,7 @@ check_server_array_connections() {
         echo -e "${GREEN}✓ No servers found in $SERVER_ARRAY_TO_CHECK${RESET}"
         return 0
     fi
-    
+
     for ((i=0; i<server_count; i++)); do
         local server=$(yq eval ".service.clustering.$SERVER_ARRAY_TO_CHECK[$i]" $QTOOLS_CONFIG_FILE)
         local ip=$(echo "$server" | yq eval '.ip' -)
@@ -87,7 +87,7 @@ check_server_array_connections() {
         if check_server_ssh_connection "$ip" "$user" "$ssh_port"; then
             echo -e "${GREEN}✓ Successfully connected to $ip ($user) on port $ssh_port${RESET}"
             if [ "$SERVER_ARRAY_TO_CHECK" == "auto_removed_servers" ] && [ "$AUTO" == "true" ]; then
-                qtools cluster-auto-reconnect-server "$ip"
+                qtools --describe "cluster-connection-check" cluster-auto-reconnect-server "$ip"
                 RECONFIGURE_MASTER=true
             fi
         else
@@ -106,5 +106,5 @@ wait
 if [ "$RECONFIGURE_MASTER" == "true" ]; then
     echo -e "${YELLOW}Reconfiguring config...${RESET}"
     update_quil_config
-    qtools restart --wait
+    qtools --describe "cluster-connection-check" restart --wait
 fi

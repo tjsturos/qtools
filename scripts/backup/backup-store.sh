@@ -48,11 +48,11 @@ if [ "$IS_CLUSTERING_ENABLED" == "true" ] && [ "$(is_master)" == "false" ]; then
 fi
 
 if [ -z "$PEER_ID" ]; then
-  PEER_ID="$(qtools peer-id)"
+  PEER_ID="$(qtools --describe "backup-store" peer-id)"
 fi
 
 echo "Stopping node"
-qtools stop
+qtools --describe "backup-store" stop
 
 REMOTE_DIR="$(yq '.scheduled_tasks.backup.remote_backup_dir' $QTOOLS_CONFIG_FILE)/store/$PEER_ID"
 REMOTE_URL="$(yq '.scheduled_tasks.backup.backup_url' $QTOOLS_CONFIG_FILE)"
@@ -99,5 +99,5 @@ echo "All backups completed successfully."
 
 if [ "$RESTART_NODE" == "true" ]; then
   echo "Restarting node"
-  qtools start
+  qtools --describe "backup-store" start
 fi

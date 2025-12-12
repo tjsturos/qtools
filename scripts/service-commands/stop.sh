@@ -41,7 +41,7 @@ if [ "$WAIT" == "true" ]; then
     done < <(journalctl -u $QUIL_SERVICE_NAME -f -n 0)
 
     sudo systemctl stop $QUIL_SERVICE_NAME.service
- 
+
 else
     sudo systemctl stop $QUIL_SERVICE_NAME.service
 fi
@@ -49,7 +49,7 @@ fi
 
 # Check if clustering is enabled
 if [ "$IS_CLUSTERING_ENABLED" == "true" ]; then
-    qtools cluster-stop
+    qtools --describe "stop" cluster-stop
 fi
 
 # Kill mode is essentially quick mode + kill the node process

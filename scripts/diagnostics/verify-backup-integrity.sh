@@ -2,12 +2,12 @@
 IS_BACKUP_ENABLED="$(yq '.scheduled_tasks.backup.enabled' $QTOOLS_CONFIG_FILE)"
 
 if [ "$IS_BACKUP_ENABLED" == 'true' ]; then
-    qtools backup-store
+    qtools --describe "verify-backup-integrity" backup-store
     wait
     NODE_BACKUP_NAME="$(yq '.scheduled_tasks.backup.node_backup_name' $QTOOLS_CONFIG_FILE)"
     # see if there the default save dir is overriden
     if [ -z "$NODE_BACKUP_NAME" ]; then
-        NODE_BACKUP_NAME="$(qtools peer-id)"
+        NODE_BACKUP_NAME="$(qtools --describe "verify-backup-integrity" peer-id)"
     fi
     LOCAL_PATH="$QUIL_PATH/node/.config"
     REMOTE_DIR="$(yq '.scheduled_tasks.backup.remote_backup_dir' $QTOOLS_CONFIG_FILE)"

@@ -16,6 +16,6 @@ fi
 yq -i ".service.dataworker_priority = $PRIORITY" $QTOOLS_CONFIG_FILE
 
 # Run the update-service script to apply changes
-qtools update-service
+qtools --describe "cluster-set-worker-priority" update-service
 
 echo "Successfully set data worker priority to $PRIORITY"

@@ -3,7 +3,7 @@
 
 cd $QUIL_PATH
 
-qtools make-local-backup
+qtools --describe "remove-docker" make-local-backup
 
 docker compose down
 
@@ -27,4 +27,4 @@ remove_file ~/policy false
 
 remove_directory $QUIL_PATH false
 
-qtools complete-install
+qtools --describe "remove-docker" complete-install

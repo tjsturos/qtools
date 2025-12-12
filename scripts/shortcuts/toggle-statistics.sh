@@ -9,7 +9,7 @@ set_statistics_status() {
     local status=$1
     yq -i ".scheduled_tasks.statistics.enabled = $status" $QTOOLS_CONFIG_FILE
     echo "Statistics have been turned $([[ $status == true ]] && echo "on" || echo "off")."
-    qtools update-cron
+    qtools --describe "toggle-statistics" update-cron
 }
 
 # Check current statistics status

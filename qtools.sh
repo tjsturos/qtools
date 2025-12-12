@@ -15,11 +15,12 @@ export QTOOLS_PATH=$(dirname "$SCRIPT_PATH")
 
 # Function to display usage information
 usage() {
-  echo "Usage: $0 [-c|--clear] <command> <params>"
+  echo "Usage: $0 [-c|--clear] [--describe <label>] <command> <params>"
   echo "Note that autocomplete should be installed.  If it doesn't work, run 'qtools add-auto-complete && source ~/.bashrc' and try again."
   echo ""
   echo "Options:"
-  echo "  -c, --clear    Clear the screen before running the command"
+  echo "  -c, --clear           Clear the screen before running the command"
+  echo "  --describe <label>    Label command origin in logs (e.g., 'crontab', 'complete-install')"
   echo ""
 
   for dir in $QTOOLS_PATH/scripts/*/; do
@@ -60,6 +61,19 @@ if [ "$1" == "-c" ] || [ "$1" == "--clear" ]; then
   CLEAR_SCREEN=true
   shift
 fi
+
+# Check for describe flag (for tracking command origin)
+# Preserve existing QTOOLS_DESCRIBE from parent if not overridden
+if [ "$1" == "--describe" ]; then
+  if [ -z "$2" ]; then
+    echo "Error: --describe requires a value"
+    exit 1
+  fi
+  QTOOLS_DESCRIBE="$2"
+  export QTOOLS_DESCRIBE
+  shift 2
+fi
+# If --describe not provided, QTOOLS_DESCRIBE will be inherited from parent or remain unset
 
 if [ -z "$1" ] || [ "$1" == "--help" ] || [ "$1" == '-h' ]; then
   usage
@@ -159,7 +173,7 @@ if [ ! -f "$QUIL_SERVICE_FILE" ] && [ "$1" != "update-service" ]; then
     if [ "$IS_MASTER" == "true" ] || [ ! -f $QUIL_DATA_WORKER_SERVICE_FILE ]; then
       log "Service file not found. Running 'qtools update-service'..."
       log "Copying service file to $SYSTEMD_SERVICE_PATH..."
-      qtools update-service
+      qtools --describe "qtools" update-service
     fi
   fi
 fi
@@ -208,7 +222,7 @@ case "$1" in
   get-node-count|get-node-info|get-peer-info|get-token-info|get-node-version|get-peer-id|get-frame-count)
     if ! command_exists grpcurl; then
       log "Command 'grpcurl' doesn't exist, proceeding to install."
-      qtools install-grpc
+      qtools --describe "qtools" install-grpc
     fi
     ;;
   cluster-start|cluster-update-workers|cluster-stop|cluster-enable|cluster-setup|cluster-add-server|cluster-update-server|cluster-remove-server|cluster-update|status|start|stop|restart|enable|disable)
@@ -250,9 +264,11 @@ fi
 # Store command name and parameters for logging before shifting
 COMMAND_NAME="$1"
 # Copy all remaining parameters (excluding command name) for logging
+# Note: --describe is already removed from $@ at this point, so it won't appear in params
 COMMAND_PARAMS=("${@:2}")
 
 # Log command execution (function is available from utils/index.sh which is sourced earlier)
+# QTOOLS_DESCRIBE environment variable is set earlier if --describe was provided
 log_command_execution "$COMMAND_NAME" "${COMMAND_PARAMS[@]}"
 
 # Now shift to remove command name for script execution

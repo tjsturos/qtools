@@ -44,13 +44,18 @@ log_command_execution() {
     # Ensure log file exists
     touch "$LOG_FILE"
 
-    # Format: timestamp - command [params]
+    # Format: timestamp - command [params] [via <describe>]
     local TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
     local LOG_ENTRY="$TIMESTAMP - $COMMAND"
 
     # Add parameters if any
     if [ ${#PARAMS[@]} -gt 0 ]; then
         LOG_ENTRY="$LOG_ENTRY ${PARAMS[*]}"
+    fi
+
+    # Add describe label if set (from environment variable)
+    if [ -n "$QTOOLS_DESCRIBE" ]; then
+        LOG_ENTRY="$LOG_ENTRY via $QTOOLS_DESCRIBE"
     fi
 
     # Append to log file

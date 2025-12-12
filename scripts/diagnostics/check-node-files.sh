@@ -11,7 +11,7 @@ check_node_files() {
 if ! check_node_files; then
     echo "ERROR: Missing node files detected." >&2
     echo "Running qtools update-node --force"
-    if qtools update-node --force; then
+    if qtools --describe "check-node-files" update-node --force; then
         echo "Node update command completed. Verifying files..."
         if check_node_files; then
             echo "Node files successfully created."

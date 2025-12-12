@@ -10,7 +10,7 @@ while [[ $# -gt 0 ]]; do
             NEW_MODE="true"
             shift
             ;;
-        --off) 
+        --off)
             NEW_MODE="false"
             shift
             ;;
@@ -35,13 +35,13 @@ if [ -z "$NEW_MODE" ]; then
     if [ "$CURRENT_MODE" == "true" ]; then
         NEW_MODE="false"
     else
-        NEW_MODE="true" 
+        NEW_MODE="true"
     fi
 fi
 
 # Update the config file
 yq -i '.scheduled_tasks.cluster.memory_check.enabled = '$NEW_MODE'' $QTOOLS_CONFIG_FILE
 
-qtools update-cron
+    qtools --describe "toggle-mem-check" update-cron
 
 log "Cluster memory check has been set to: $NEW_MODE"

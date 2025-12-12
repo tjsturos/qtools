@@ -40,7 +40,7 @@ if [ "$RESET_MODE" == "true" ]; then
     yq -i '.engine.dataWorkerBaseStreamPort = (.engine.dataWorkerBaseStreamPort // 60000)' $QUIL_CONFIG_FILE
     yq -i '.engine.dataWorkerP2PMultiaddrs = []' $QUIL_CONFIG_FILE
     yq -i '.engine.dataWorkerStreamMultiaddrs = []' $QUIL_CONFIG_FILE
-    qtools cluster-setup --master
+    qtools --describe "toggle-cluster-mode" cluster-setup --master
     log "Cluster mode has been reset, run qtools start to start the cluster"
     exit 0
 fi
@@ -49,9 +49,9 @@ fi
 yq -i '.service.clustering.enabled = '$NEW_MODE'' $QTOOLS_CONFIG_FILE
 
 if [ "$NEW_MODE" == "false" ]; then
-    qtools cluster-stop
+    qtools --describe "toggle-cluster-mode" cluster-stop
 else
-    qtools cluster-setup --master
+    qtools --describe "toggle-cluster-mode" cluster-setup --master
 fi
 
 

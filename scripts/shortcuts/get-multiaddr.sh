@@ -6,7 +6,7 @@ INTERNAL_IP="${1}"
 CURRENT_LISTEN_SETTINGS=$(yq eval '.p2p.listenMultiaddr' $QUIL_CONFIG_FILE)
 LISTEN_MODE=$(echo $CURRENT_LISTEN_SETTINGS | sed -n 's/.*\/ip4\/\([0-9\.]\+\)\/\([a-z]\+\)\/\([0-9]\+\).*/\2/p')
 LISTEN_PORT=$(echo $CURRENT_LISTEN_SETTINGS | sed -n 's/.*\/ip4\/\([0-9\.]\+\)\/\([a-z]\+\)\/\([0-9]\+\).*/\3/p')
-PEER_ID=$(qtools peer-id)
+PEER_ID=$(qtools --describe "get-multiaddr" peer-id)
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do

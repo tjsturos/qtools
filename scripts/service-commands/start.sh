@@ -24,12 +24,12 @@ done
 
 IS_CLUSTERING_ENABLED=$(yq '.service.clustering.enabled' $QTOOLS_CONFIG_FILE)
 
-if ! qtools backup-peer; then
+if ! qtools --describe "start" backup-peer; then
     echo "Warning: Could not backup peer config, but continuing with node start"
 fi
 
 if [ "$IS_CLUSTERING_ENABLED" == "true" ]; then
-    qtools cluster-start
+    qtools --describe "start" cluster-start
 else
     sudo systemctl start $QUIL_SERVICE_NAME.service
 fi

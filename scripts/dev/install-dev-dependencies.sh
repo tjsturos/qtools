@@ -44,7 +44,7 @@ install_rust_and_go() {
         echo "Rust is already installed."
     fi
 
-    # Install uniffi-bindgen-go 
+    # Install uniffi-bindgen-go
     if ! command -v uniffi-bindgen-go &> /dev/null; then
         echo "uniffi-bindgen-go not found. Installing..."
         cargo install uniffi-bindgen-go --git https://github.com/NordSecurity/uniffi-bindgen-go --tag v0.2.1+v0.25.0
@@ -54,7 +54,7 @@ install_rust_and_go() {
 
     # Check if Go is installed
     if ! command -v go &> /dev/null; then
-        qtools install-go 1.22.5
+        qtools --describe "install-dev-dependencies" install-go 1.22.5
         # Install grpcurl for RPC testing
         go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest
     else

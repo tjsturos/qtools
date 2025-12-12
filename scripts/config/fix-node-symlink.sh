@@ -15,7 +15,7 @@ fi
 # Check if quilibrium user exists
 if ! id "quilibrium" &>/dev/null; then
     log "Quilibrium user does not exist. Creating it..."
-    qtools create-quilibrium-user
+    qtools --describe "fix-node-symlink" create-quilibrium-user
 fi
 
 # Get current symlink target

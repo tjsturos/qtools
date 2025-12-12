@@ -82,7 +82,7 @@ if [ -n "$GRPC_ADDR" ] && [ -z "$PUBLIC_RPC" ]; then
         echo "Local gRPC endpoint is not listening on port $PORT, using public RPC"
         PUBLIC_RPC="true"
     fi
-else 
+else
     if [ -z "$PUBLIC_RPC" ]; then
         echo "Local gRPC endpoint is not configured, using public RPC"
         PUBLIC_RPC="true"
@@ -125,7 +125,7 @@ FIRST_FRAME_RECEIVED_TIMESTAMP=0
 # Function to calculate and display statistics
 display_stats() {
     cd $QUIL_NODE_PATH
-    
+
     if $DEBUG; then
         echo "Frame numbers: ${frame_numbers[@]}"
     fi
@@ -159,7 +159,7 @@ display_stats() {
     no_proof_count=0
     output=()
     frame_outputs=()
-    
+
     # Sort frame numbers to calculate time between frames
     sorted_timestamps=()
     for frame_num in $(printf '%s\n' "${frame_numbers[@]}" | sort -n); do
@@ -176,13 +176,13 @@ display_stats() {
         total_time_between_frames=$(echo "$total_time_between_frames + $time_diff" | bc)
         ((frame_intervals++))
     done
-    
+
     if [ $frame_intervals -gt 0 ]; then
         avg_time_between_frames=$(echo "scale=2; $total_time_between_frames / $frame_intervals" | bc)
     else
         avg_time_between_frames=0
     fi
-    
+
     for frame_num in $(printf '%s\n' "${frame_numbers[@]}" | sort -n); do
         if [[ -n "${frame_data[$frame_num,received]}" && -n "${frame_data[$frame_num,proof_started]}" && -n "${frame_data[$frame_num,proof_completed]}" ]]; then
             local duration=$(printf "%.2f" $(echo "${frame_data[$frame_num,proof_completed]} - ${frame_data[$frame_num,received]}" | bc))
@@ -211,13 +211,13 @@ display_stats() {
                     frame_outputs+=("$received_timestamp/$proof_completed_timestamp: Frame $frame_num ($ring:$workers): $received/$proof_started/$proof_completed (${duration}s)")
                 fi
             fi
-            
+
             total_duration=$(echo "$total_duration + $duration" | bc)
             total_started=$(echo "$total_started + $proof_started" | bc)
             total_completed=$(echo "$total_completed + $proof_completed" | bc)
             evaluation_time=$(echo "$proof_started - $received" | bc)
             total_evaluation_time=$(echo "$total_evaluation_time + $evaluation_time" | bc)
-            
+
             ((count++))
         else
             ((no_proof_count++))
@@ -237,10 +237,10 @@ display_stats() {
     output+=("Update interval: ${UPDATE_INTERVAL}s (use -u or --update to change)")
     output+=("")
     if [ "$(is_app_finished_starting)" == "true" ]; then
-        output+=("Peer ID: $(qtools peer-id)")
-        output+=("Account: $(qtools account)")
+        output+=("Peer ID: $(qtools --describe "monitor-frame-proofs" peer-id)")
+        output+=("Account: $(qtools --describe "monitor-frame-proofs" account)")
         if $PRINT_QUIL; then
-            output+=("Account Balance: $(qtools balance)")
+            output+=("Account Balance: $(qtools --describe "monitor-frame-proofs" balance)")
         fi
     fi
     output+=("")
@@ -252,11 +252,11 @@ display_stats() {
         fi
         output+=("=======================")
         output+=("${frame_outputs[@]}")
-    else 
+    else
         output+=("Hint: to see individual frame details, use --display to enable")
         output+=("=======================")
     fi
-    
+
     if [ $count -gt 0 ]; then
         proof_count=$(echo "$count - $no_proof_count" | bc)
         avg_duration=$(echo "scale=2; $total_duration / $proof_count" | bc)
@@ -283,7 +283,7 @@ display_stats() {
         # Calculate time differences
         frame_age=$(echo "$CURRENT_TIMESTAMP - $LAST_FRAME_RECEIVED_TIMESTAMP" | bc)
         output+=("Current timestamp:                $CURRENT_TIMESTAMP")
-        output+=("First frame received:             $FIRST_FRAME_RECEIVED_TIMESTAMP") 
+        output+=("First frame received:             $FIRST_FRAME_RECEIVED_TIMESTAMP")
         output+=("Last frame received:              $LAST_FRAME_RECEIVED_TIMESTAMP")
         output+=("Time since last frame:            ${frame_age}s")
         output+=("")
@@ -314,7 +314,7 @@ display_stats() {
         output+=("No frames processed")
     fi
     output+=("=======================")
-    
+
     if ! $ONE_SHOT; then
         clear
     fi
@@ -326,7 +326,7 @@ display_stats() {
 process_log_line() {
     local line="$1"
     local log_type="$2"
-    
+
     # Skip if line doesn't have ts property
     if ! echo "$line" | jq -e '.ts' >/dev/null 2>&1; then
         return
@@ -375,7 +375,7 @@ process_log_line() {
                 echo "Frame numbers after adding $frame_num: ${frame_numbers[@]}"
             fi
         fi
-        
+
     elif [[ $line =~ "creating data shard ring proof" ]]; then
         frame_age=$(echo "$line" | jq -r '.frame_age')
         workers=$(echo "$line" | jq -r '.active_workers')
@@ -384,7 +384,7 @@ process_log_line() {
         fi
         frame_data[$frame_num,proof_started]=$frame_age
         frame_data[$frame_num,proof_started,workers]=$workers
-        
+
     elif [[ $line =~ "submitting data proof" ]]; then
         frame_age=$(echo "$line" | jq -r '.frame_age')
         ring_size=$(echo "$line" | jq -r '.ring')
@@ -392,14 +392,14 @@ process_log_line() {
             workers=$(echo "$line" | jq -r '.active_workers')
             frame_data[$frame_num,proof_started,workers]=$workers
         fi
-        
+
         frame_data[$frame_num,proof_completed]=$frame_age
         frame_data[$frame_num,proof_completed,ring]=$ring_size
         frame_data[$frame_num,proof_completed,timestamp]=$LOG_TIMESTAMP
         if [[ "$log_type" != "historical" ]]; then
             echo "Completed creating proof for frame $frame_num ($ring_size ring, frame age $frame_age):"
         fi
-    fi 
+    fi
 }
 
 truncate_frame_records() {
@@ -411,14 +411,14 @@ truncate_frame_records() {
     if [ "${#sorted_frames[@]}" -gt "$LIMIT" ]; then
         # Calculate how many frames to remove
         remove_count=$((${#sorted_frames[@]} - $LIMIT))
-        
+
         # Remove oldest frames from frame_numbers array
         for ((i=0; i<remove_count; i++)); do
             old_frame=${sorted_frames[i]}
-            
+
             # Remove from frame_numbers array
             frame_numbers=("${frame_numbers[@]/$old_frame}")
-            
+
             # Remove all associated data for this frame
             unset frame_data[$old_frame,received]
             unset frame_data[$old_frame,proof_started]
@@ -431,7 +431,7 @@ truncate_frame_records() {
         frame_numbers=("${frame_numbers[@]}")
         # Set first frame timestamp to FIRST_FRAME_RECEIVED_TIMESTAMP
         if [ ${#sorted_frames[@]} -gt 0 ]; then
-            first_frame=${sorted_frames[0]} 
+            first_frame=${sorted_frames[0]}
             FIRST_FRAME_RECEIVED_TIMESTAMP=${frame_data[$first_frame,received,timestamp]}
         fi
     fi
@@ -446,16 +446,16 @@ check_for_auto_restart() {
         local TIME_DIFF=$(echo "$CURRENT_LOG_TIMESTAMP - $LAST_FRAME_RECEIVED_TIMESTAMP" | bc -l)
         local RESTART_THRESHOLD=275
         local LAST_RESTART_THRESHOLD=$(($RESTART_THRESHOLD * ($RESTART_COUNT + 1)))
-        
+
         local RESTART_AGE=$(echo "$CURRENT_LOG_TIMESTAMP - $LAST_RESTART_TIMESTAMP" | bc -l)
 
         if [ $(echo "$TIME_DIFF > $RESTART_THRESHOLD" | bc -l) -eq 1 ] && [ $RESTART_AGE -gt $LAST_RESTART_THRESHOLD ]; then
-            
+
             echo "No proof received in over 250 seconds, restarting node..."
             echo "Current timestamp: $CURRENT_LOG_TIMESTAMP"
             echo "Last proof received: $LAST_FRAME_RECEIVED_TIMESTAMP"
-            
-            qtools restart
+
+            qtools --describe "monitor-frame-proofs" restart
             LAST_RESTART_TIMESTAMP=$CURRENT_LOG_TIMESTAMP
             RESTART_COUNT=$(($RESTART_COUNT + 1))
         elif [ $RESTART_AGE -gt $LAST_RESTART_THRESHOLD ]; then

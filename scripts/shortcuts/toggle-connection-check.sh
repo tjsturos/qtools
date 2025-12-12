@@ -6,7 +6,7 @@ CONFIG=$(yq eval . $QTOOLS_CONFIG_FILE)
 CURRENT_STATE=$(echo "$CONFIG" | yq eval '.scheduled_tasks.cluster.auto_reconnect.enabled // "false"' -)
 
 if [ "$(yq eval '.qtools_version' $QTOOLS_CONFIG_FILE)" != "17" ]; then
-    qtools migrate-qtools-config
+    qtools --describe "toggle-connection-check" migrate-qtools-config
 fi
 
 # Initialize NEW_STATE to handle direct setting rather than toggling
@@ -56,5 +56,5 @@ fi
 yq eval -i ".scheduled_tasks.cluster.auto_reconnect.enabled = $NEW_STATE" $QTOOLS_CONFIG_FILE
 
 echo "Cluster connection checks are now $([ "$NEW_STATE" = "true" ] && echo "enabled" || echo "disabled")"
-qtools update-cron
+qtools --describe "toggle-connection-check" update-cron
 
