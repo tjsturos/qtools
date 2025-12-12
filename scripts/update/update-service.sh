@@ -115,8 +115,6 @@ else
 fi
 
 if [ -n "$SERVICE_RESTART_TIME" ]; then
-    SERVICE_RESTART_TIME="$(yq ".service.restart_time // \"5s\"" $QTOOLS_CONFIG_FILE)"
-else
     # Allow integer (e.g. 20) or integer+s (e.g. 20s), normalize to "<int>s"
     if [[ "$SERVICE_RESTART_TIME" =~ ^[0-9]+$ ]]; then
         SERVICE_RESTART_TIME="${SERVICE_RESTART_TIME}s"
@@ -125,6 +123,17 @@ else
         exit 1
     fi
     yq -i ".service.restart_time = \"$SERVICE_RESTART_TIME\"" $QTOOLS_CONFIG_FILE
+else
+    # Read from config file, default to 60s if not found or invalid
+    SERVICE_RESTART_TIME="$(yq ".service.restart_time // \"60s\"" $QTOOLS_CONFIG_FILE)"
+    # Validate the value from config file
+    if [[ "$SERVICE_RESTART_TIME" =~ ^[0-9]+$ ]]; then
+        SERVICE_RESTART_TIME="${SERVICE_RESTART_TIME}s"
+    elif ! [[ "$SERVICE_RESTART_TIME" =~ ^[0-9]+s$ ]]; then
+        # Invalid value in config, default to 60s
+        SERVICE_RESTART_TIME="60s"
+        yq -i ".service.restart_time = \"60s\"" $QTOOLS_CONFIG_FILE
+    fi
 fi
 
 # Define the initial service file content as a variable
