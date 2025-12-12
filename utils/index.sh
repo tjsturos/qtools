@@ -318,7 +318,8 @@ get_remote_quil_files() {
         SET_OWNERSHIP=true
         # Ensure quilibrium user owns the directory and can write to it
         sudo chown -R quilibrium:quilibrium "$dest_dir" 2>/dev/null || true
-        sudo chmod -R u+w "$dest_dir" 2>/dev/null || true
+        # Ensure quilibrium user and group can write to the directory
+        sudo chmod -R ug+w "$dest_dir" 2>/dev/null || true
     fi
 
     while IFS= read -r file; do

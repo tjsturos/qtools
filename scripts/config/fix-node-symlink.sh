@@ -43,6 +43,8 @@ if [ "$CURRENT_LINK" != "$EXPECTED_PATH"* ]; then
         # Ensure quilibrium directory exists
         sudo mkdir -p "$EXPECTED_PATH"
         sudo chown -R quilibrium:quilibrium "$EXPECTED_PATH" 2>/dev/null || true
+        # Ensure quilibrium user and group can write to the directory
+        sudo chmod -R ug+w "$EXPECTED_PATH" 2>/dev/null || true
 
         # Copy binary to new location
         NEW_BINARY_PATH="$EXPECTED_PATH/$BINARY_NAME"

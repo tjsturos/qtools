@@ -83,8 +83,8 @@ if [ "$SERVICE_USER" == "quilibrium" ]; then
     if id "quilibrium" &>/dev/null; then
         # Set ownership to quilibrium user for new directories/files
         sudo chown -R quilibrium:quilibrium "$QUIL_NODE_PATH" 2>/dev/null || true
-        # Ensure quilibrium user can write to the directory
-        sudo chmod -R u+w "$QUIL_NODE_PATH" 2>/dev/null || true
+        # Ensure quilibrium user and group can write to the directory
+        sudo chmod -R ug+w "$QUIL_NODE_PATH" 2>/dev/null || true
         # Ensure the directory is accessible (readable and executable) by others so we can cd into it
         sudo chmod u+rx "$QUIL_NODE_PATH" 2>/dev/null || true
     fi

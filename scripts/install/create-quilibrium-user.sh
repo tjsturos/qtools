@@ -31,6 +31,23 @@ sudo mkdir -p "$QUILIBRIUM_HOME/ceremonyclient/client"
 
 # Set ownership of quilibrium user's directories
 sudo chown -R "$QUILIBRIUM_USER:$QUILIBRIUM_USER" "$QUILIBRIUM_HOME"
+# Set group write permissions so members of quilibrium group can edit files
+sudo chmod -R g+w "$QUILIBRIUM_HOME"
+
+# Add current user to quilibrium group so they can edit files without sudo
+CURRENT_USER=$(whoami)
+if ! groups "$CURRENT_USER" | grep -q "\b$QUILIBRIUM_USER\b"; then
+    log "Adding current user '$CURRENT_USER' to quilibrium group..."
+    sudo usermod -a -G "$QUILIBRIUM_USER" "$CURRENT_USER"
+    if [ $? -eq 0 ]; then
+        log "User '$CURRENT_USER' added to quilibrium group successfully."
+        log "Note: You may need to log out and log back in for group changes to take effect."
+    else
+        log "Warning: Failed to add user '$CURRENT_USER' to quilibrium group."
+    fi
+else
+    log "User '$CURRENT_USER' is already a member of quilibrium group."
+fi
 
 # Check if there's an existing node installation in the current user's directory
 # If so, give quilibrium user access to it (for backward compatibility)

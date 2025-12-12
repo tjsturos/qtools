@@ -85,8 +85,8 @@ cd $QUIL_CLIENT_PATH
 SERVICE_USER=$(yq '.service.default_user // "quilibrium"' $QTOOLS_CONFIG_FILE 2>/dev/null || echo "quilibrium")
 if [ "$SERVICE_USER" == "quilibrium" ] && id "quilibrium" &>/dev/null; then
     sudo chown -R quilibrium:quilibrium "$QUIL_CLIENT_PATH" 2>/dev/null || true
-    # Ensure quilibrium user can write to the directory
-    sudo chmod -R u+w "$QUIL_CLIENT_PATH" 2>/dev/null || true
+    # Ensure quilibrium user and group can write to the directory
+    sudo chmod -R ug+w "$QUIL_CLIENT_PATH" 2>/dev/null || true
 fi
 
 for file in $QCLIENT_RELEASE_FILES; do
