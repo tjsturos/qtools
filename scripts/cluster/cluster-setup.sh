@@ -118,7 +118,7 @@ update_local_quil_config() {
 }
 
 if [ "$DRY_RUN" == "false" ]; then
-    yq eval -i ".service.clustering.local_data_worker_count = $CORES_TO_USE" $QTOOLS_CONFIG_FILE
+    qtools config set-value service.clustering.local_data_worker_count "$CORES_TO_USE" --quiet
     echo -e "${BLUE}${INFO_ICON} [ LOCAL ] [ $LOCAL_IP ] Setting this server's cores_to_use to $CORES_TO_USE${RESET}"
     update_local_quil_config $CORES_TO_USE
 else
@@ -197,7 +197,7 @@ setup_remote_data_workers() {
         echo -e "${BLUE}${INFO_ICON} Configuring cluster's data workers on $IP ($USER)${RESET}"
         # Log the core count
         echo "Setting up remote server with core count: $CORE_COUNT"
-        ssh_to_remote $IP $USER $SSH_PORT "qtools --describe \"cluster-setup\" cluster-setup --cores-to-use $CORE_COUNT"
+        ssh_to_remote $IP $USER $SSH_PORT "qtools cluster-setup --cores-to-use $CORE_COUNT"
     else
         echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would configure cluster's data workers on $IP ($USER)${RESET}"
         echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would run setup-cluster.sh on $IP ($USER) with data worker count of $CORE_COUNT${RESET}"
@@ -251,7 +251,7 @@ add_remote_server_hardware_info() {
     local REMOTE_USER=$3
     local SSH_PORT=$4
     local CORE_COUNT=$5
-    local HARDWARE_INFO=$(ssh_to_remote $IP $REMOTE_USER $SSH_PORT "qtools --describe \"cluster-setup\" hardware-info -s")
+    local HARDWARE_INFO=$(ssh_to_remote $IP $REMOTE_USER $SSH_PORT "qtools hardware-info -s")
     yq eval -i ".service.clustering.servers[$index].hardware_info = \"$HARDWARE_INFO\"" $QTOOLS_CONFIG_FILE
 }
 

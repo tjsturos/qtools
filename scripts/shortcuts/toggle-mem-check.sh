@@ -40,8 +40,8 @@ if [ -z "$NEW_MODE" ]; then
 fi
 
 # Update the config file
-yq -i '.scheduled_tasks.cluster.memory_check.enabled = '$NEW_MODE'' $QTOOLS_CONFIG_FILE
+qtools config set-value scheduled_tasks.cluster.memory_check.enabled "$NEW_MODE" --quiet
 
-    qtools --describe "toggle-mem-check" update-cron
+    qtools update-cron
 
 log "Cluster memory check has been set to: $NEW_MODE"

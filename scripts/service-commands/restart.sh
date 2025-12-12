@@ -36,7 +36,7 @@ if [ "$WAIT" == "true" ]; then
             restart_cluster_data_workers
             wait
         else
-            qtools --describe "restart" refresh-data-workers
+            qtools refresh-data-workers
             wait
         fi
     else
@@ -50,7 +50,7 @@ else
             restart_cluster_data_workers
             wait
         else
-            qtools --describe "restart" refresh-data-workers
+            qtools refresh-data-workers
             wait
         fi
     else

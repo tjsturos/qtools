@@ -7,9 +7,9 @@
 # Function to set direct peers update status
 set_direct_peers_status() {
     local status=$1
-    yq -i ".scheduled_tasks.direct_peers.enabled = $status" $QTOOLS_CONFIG_FILE
+    qtools config set-value scheduled_tasks.direct_peers.enabled "$status" --quiet
     echo "Direct peers updates have been turned $([[ $status == true ]] && echo "on" || echo "off")."
-    qtools --describe "toggle-direct-peers" update-cron
+    qtools update-cron
 }
 
 # Check current direct peers update status

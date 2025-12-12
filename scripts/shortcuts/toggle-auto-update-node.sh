@@ -7,9 +7,10 @@
 # Function to set auto-update status
 set_auto_update_status() {
     local status=$1
-    yq -i ".scheduled_tasks.updates.node.enabled = $status" $QTOOLS_CONFIG_FILE
+    # QTOOLS_DESCRIBE is automatically set to the command name by qtools.sh, so internal calls inherit it
+    qtools config set-value scheduled_tasks.updates.node.enabled "$status" --quiet
     echo "Auto-updates have been turned $([[ $status == true ]] && echo "on" || echo "off")."
-    qtools --describe "toggle-auto-update-node" update-cron
+    qtools update-cron
 }
 
 # Check current auto-update status

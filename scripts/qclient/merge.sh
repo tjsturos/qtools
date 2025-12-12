@@ -64,7 +64,7 @@ done
 # If no coins specified, error out unless "all" flag is used
 if [ ${#COINS[@]} -eq 0 ]; then
     if [ "$MERGE_ALL" == "true" ]; then
-        COINS=($(qtools --describe "merge" coins ${SKIP_SIG_CHECK:+--skip-sig-check} --hex-only --config $CONFIG))
+        COINS=($(qtools coins ${SKIP_SIG_CHECK:+--skip-sig-check} --hex-only --config $CONFIG))
     else
         echo "Error: No coins specified. Use 'all' flag to merge all coins or specify coin IDs."
         exit 1

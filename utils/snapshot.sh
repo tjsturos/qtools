@@ -41,7 +41,7 @@ get_current_snapshot() {
   local cores=$(get_cores)
   local threads=$(get_threads)
   local hyperthreading=$(get_is_hyperthreading_enabled)
-  local peer_id=$(qtools --describe "snapshot" peer-id)
+  local peer_id=$(qtools peer-id)
   echo "CPU:$cpu RAM:$ram HDD:$hdd Cores:$cores Threads:$threads Hyperthreading:$hyperthreading PeerID:$peer_id"
 }
 

@@ -11,16 +11,16 @@ if [ $# -ne 1 ]; then
 fi
 
 if [ "$1" == "default" ]; then
-    yq -i '.service.restart_time = "5s"' $QTOOLS_CONFIG_FILE
+    qtools config set-value service.restart_time "5s" --quiet
     echo "Service restart time reset to default (5s)"
 else
     if ! [[ "$1" =~ ^[0-9]+$ ]]; then
         echo "Error: Restart time value must be a positive integer"
         exit 1
     fi
-    yq -i ".service.restart_time = \"$1s\"" $QTOOLS_CONFIG_FILE
+    qtools config set-value service.restart_time "${1}s" --quiet
     echo "Service restart time set to $1s"
 fi
 
-qtools --describe "service-set-restart-time" update-service
+qtools update-service
 

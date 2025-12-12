@@ -6,7 +6,7 @@
 
 # Function to get the unclaimed balance
 get_unclaimed_balance() {
-  echo "$(qtools --describe "record-unclaimed-rewards" unclaimed-balance)"
+  echo "$(qtools unclaimed-balance)"
 }
 
 # Function to clean the CSV file of invalid entries

@@ -19,15 +19,15 @@ if [[ "$*" == *"--update-qtools"* ]]; then
 fi
 
 # Main script execution
-qtools --describe "cluster-update" self-update
-qtools --describe "cluster-update" update-node
+qtools self-update
+qtools update-node
 
 if [ "$IS_MASTER" == "true" ] || [ "$(is_master)" == "true" ]; then
     if [ "$UPDATE_QTOOLS" == "true" ]; then
         ssh_command_to_each_server "cd ~/qtools && git pull"
     fi
 
-    ssh_command_to_each_server "qtools --describe \"cluster-update\" download-node --link"
+    ssh_command_to_each_server "qtools download-node --link"
 fi
 
 

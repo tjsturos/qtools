@@ -17,7 +17,7 @@ while [[ $# -gt 0 ]]; do
         --proto)
             if [[ -n "$2" && "$2" =~ ^(udp|tcp)$ ]]; then
                 LISTEN_MODE="$2"
-                yq eval -i ".settings.listenAddr.mode = '$LISTEN_MODE'" $QTOOLS_CONFIG_FILE
+                qtools config set-value settings.listenAddr.mode "$LISTEN_MODE" --quiet
                 echo "Protocol set to $LISTEN_MODE"
             else
                 echo "Error: Protocol must be either 'udp' or 'tcp'"
@@ -39,7 +39,7 @@ if [ $PORT -lt 1 ] || [ $PORT -gt 65535 ]; then
 fi
 
 # Update qtools config
-yq eval -i ".settings.listenAddr.port = $PORT" $QTOOLS_CONFIG_FILE
+qtools config set-value settings.listenAddr.port "$PORT" --quiet
 
 # Update quilibrium config
 # Get listen mode from config
@@ -60,4 +60,4 @@ yq eval -i ".p2p.listenMultiaddr = \"/ip4/0.0.0.0/${LISTEN_MODE}/${PORT}${PROTOC
 
 echo "Listen port updated to $PORT in configuration files"
 
-qtools --describe "set-listen-addr-port" restart
+qtools restart

@@ -119,7 +119,7 @@ elif [ -z "$MULTIADDR" ]; then
 fi
 
 # Get local peer ID for validation
-LOCAL_PEER_ID=$(qtools --describe "add-direct-peer" peer-id)
+LOCAL_PEER_ID=$(qtools peer-id)
 
 # Extract IP from multiaddr if it exists
 PEER_IP_FROM_ADDR=$(echo "$MULTIADDR" | grep -oE '/ip4/[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | cut -d'/' -f3)
@@ -176,5 +176,5 @@ else
     fi
 
     echo "Direct peer added successfully. Restarting service..."
-    qtools --describe "add-direct-peer" restart
+    qtools restart
 fi

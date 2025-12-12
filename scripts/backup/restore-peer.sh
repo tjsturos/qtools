@@ -69,7 +69,7 @@ if [ -z "$PEER_ID" ]; then
 
     # see if there the default save dir is overridden
     if [ -z "$NODE_BACKUP_NAME" ]; then
-        PEER_ID="$(qtools --describe "restore-peer" peer-id)"
+        PEER_ID="$(qtools peer-id)"
         NODE_BACKUP_NAME="$PEER_ID"
     fi
 else

@@ -34,5 +34,5 @@ fi
 # If this is the master node, update the configuration on all remaining servers
 if [ "$(is_master)" == "true" ]; then
     echo "Updating configuration on remaining servers..."
-    qtools --describe "cluster-remove-server" restart --wait
+    qtools restart --wait
 fi

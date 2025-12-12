@@ -1,1 +1,1 @@
-yq eval -i '.settings.install.tailscale.ephemeral_key = "'$1'"' $QTOOLS_CONFIG_FILE
+qtools config set-value settings.install.tailscale.ephemeral_key "$1" --quiet

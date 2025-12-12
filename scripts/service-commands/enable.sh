@@ -6,5 +6,5 @@
 sudo systemctl enable $QUIL_SERVICE_NAME.service
 
 if [ "$IS_CLUSTERING_ENABLED" == "true" ]; then
-    qtools --describe "enable" cluster-enable
+    qtools cluster-enable
 fi

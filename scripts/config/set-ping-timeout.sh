@@ -22,4 +22,4 @@ else
     echo "Ping timeout set to $1s"
 fi
 
-qtools --describe "set-ping-timeout" restart
+qtools restart

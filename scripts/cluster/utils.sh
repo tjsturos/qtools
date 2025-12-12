@@ -48,7 +48,7 @@ create_master_service_file() {
     if [ "$SERVICE_USER" == "quilibrium" ]; then
         if ! id "$SERVICE_USER" &>/dev/null; then
             log "Quilibrium user not found. Creating it..."
-            qtools --describe "cluster-utils" create-quilibrium-user
+            qtools create-quilibrium-user
         fi
         # Use quilibrium user's node path
         QUIL_NODE_PATH_FOR_SERVICE="/home/quilibrium/ceremonyclient/node"
@@ -116,7 +116,7 @@ create_data_worker_service_file() {
     if [ "$SERVICE_USER" == "quilibrium" ]; then
         if ! id "$SERVICE_USER" &>/dev/null; then
             log "Quilibrium user not found. Creating it..."
-            qtools --describe "cluster-utils" create-quilibrium-user
+            qtools create-quilibrium-user
         fi
         # Use quilibrium user's node path
         QUIL_NODE_PATH_FOR_SERVICE="/home/quilibrium/ceremonyclient/node"
@@ -357,7 +357,7 @@ ssh_command_to_server() {
 }
 
 restart_cluster_data_workers() {
-    ssh_command_to_each_server "qtools --describe \"cluster-utils\" refresh-data-workers -m"
+    ssh_command_to_each_server "qtools refresh-data-workers -m"
 }
 
 update_quil_config() {
@@ -404,7 +404,7 @@ update_quil_config() {
         echo "Processing server: $ip (user: $remote_user, worker count: $data_worker_count)"
         if echo "$(hostname -I)" | grep -q "$ip" || echo "$ip" | grep -q "127.0.0.1"; then
             if [ "$DRY_RUN" == "false" ]; then
-                yq eval -i ".service.clustering.main_ip = \"$ip\"" $QTOOLS_CONFIG_FILE
+                qtools config set-value service.clustering.main_ip "$ip" --quiet
                 echo "Set main IP to $ip in clustering configuration"
             else
                 echo -e "${BLUE}${INFO_ICON} [DRY RUN] [ MASTER ] [ $LOCAL_IP ] Would set main IP to $ip in clustering configuration${RESET}"

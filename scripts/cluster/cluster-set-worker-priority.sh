@@ -13,9 +13,9 @@ if ! [[ "$PRIORITY" =~ ^[0-9]+$ ]] || [ "$PRIORITY" -lt 0 ] || [ "$PRIORITY" -gt
 fi
 
 # Update the config file with the new priority
-yq -i ".service.dataworker_priority = $PRIORITY" $QTOOLS_CONFIG_FILE
+qtools config set-value service.dataworker_priority "$PRIORITY" --quiet
 
 # Run the update-service script to apply changes
-qtools --describe "cluster-set-worker-priority" update-service
+qtools update-service
 
 echo "Successfully set data worker priority to $PRIORITY"

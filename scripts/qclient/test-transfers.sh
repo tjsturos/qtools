@@ -48,14 +48,14 @@ fi
 
 # Function to get total balance
 get_total_balance() {
-    local total_balance=$(qtools --describe "test-transfers" coins ${SKIP_SIG_CHECK:+--skip-sig-check} | awk '{sum += $1} END {print sum}')
+    local total_balance=$(qtools coins ${SKIP_SIG_CHECK:+--skip-sig-check} | awk '{sum += $1} END {print sum}')
     echo $total_balance
 }
 
 suitable_tokens=()
 update_suitable_tokens() {
     echo "Updating suitable tokens"
-    suitable_tokens=$(qtools --describe "test-transfers" coins ${SKIP_SIG_CHECK:+--skip-sig-check} | grep "0x" | awk -v amount="$AMOUNT" '$1 == amount {print $0}')
+    suitable_tokens=$(qtools coins ${SKIP_SIG_CHECK:+--skip-sig-check} | grep "0x" | awk -v amount="$AMOUNT" '$1 == amount {print $0}')
     # Count suitable tokens
     suitable_token_count=$(echo "$suitable_tokens" | wc -l)
 

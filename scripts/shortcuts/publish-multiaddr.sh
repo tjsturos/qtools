@@ -20,10 +20,10 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-PEER_ID=$(qtools --describe "publish-multiaddr" peer-id)
+PEER_ID=$(qtools peer-id)
 
 # Get the multiaddr
-MULTIADDR=$(qtools --describe "publish-multiaddr" get-multiaddr ${INTERNAL_IP:+"--internal"})
+MULTIADDR=$(qtools get-multiaddr ${INTERNAL_IP:+"--internal"})
 
 # Validate peer ID format
 if [[ ! "$PEER_ID" =~ ^Qm ]]; then

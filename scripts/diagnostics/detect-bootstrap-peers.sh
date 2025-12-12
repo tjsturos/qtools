@@ -30,5 +30,5 @@ check_peer() {
     rm /tmp/peer_response.json
 }
 
-peer_id="$(qtools --describe "detect-bootstrap-peers" peer-id)"
+peer_id="$(qtools peer-id)"
 check_peer "$peer_id"

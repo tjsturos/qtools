@@ -241,7 +241,7 @@ split_tokens() {
             local new_token=""
             while [ -z "$new_token" ]; do
                 sleep 5
-                new_token=$(qtools --describe "split" coins ${SKIP_SIG_CHECK:+--skip-sig-check} | awk -v amount="$remainder" '$1 == amount {print $NF}' | sed 's/^(Coin //' | sed 's/)$//')
+                new_token=$(qtools coins ${SKIP_SIG_CHECK:+--skip-sig-check} | awk -v amount="$remainder" '$1 == amount {print $NF}' | sed 's/^(Coin //' | sed 's/)$//')
             done
 
             echo "New token found: $new_token"
@@ -274,7 +274,7 @@ while true; do
         echo -e "\nQuitting..."
         exit 0
     fi
-    current_tokens_list=($(qtools --describe "split" coins ${SKIP_SIG_CHECK:+--skip-sig-check}))
+    current_tokens_list=($(qtools coins ${SKIP_SIG_CHECK:+--skip-sig-check}))
     if [[ "${current_tokens_list[@]}" == "${initialial_tokens_list[@]}" ]]; then
         break
     fi

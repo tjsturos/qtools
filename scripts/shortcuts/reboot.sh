@@ -1,5 +1,5 @@
 #!/bin/bash
-qtools --describe "reboot" stop
+qtools stop
 
 wait
 sudo reboot

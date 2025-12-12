@@ -90,7 +90,7 @@ get_to_address_from_user_input() {
 
 convert_peer_id_to_address() {
     local PEER_ID=$1
-    echo "$(qtools --describe "transfer" account-from-peer-id --peer-id $PEER_ID)"
+    echo "$(qtools account-from-peer-id --peer-id $PEER_ID)"
 }
 
 # Check if TO_ADDRESS is blank

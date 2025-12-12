@@ -5,7 +5,7 @@ log "Installing grpcurl..."
 
 if ! command_exists go; then
     log "Go binary not found, going to install go..."
-    qtools --describe "install-grpc" install-go
+    qtools install-go
 fi
 
 go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest &> /dev/null

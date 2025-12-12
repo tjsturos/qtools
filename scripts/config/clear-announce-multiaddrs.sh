@@ -58,6 +58,6 @@ else
 
     echo "Announce multiaddrs cleared successfully."
     echo "Restarting service to apply changes..."
-    qtools --describe "clear-announce-multiaddrs" restart
+    qtools restart
 fi
 

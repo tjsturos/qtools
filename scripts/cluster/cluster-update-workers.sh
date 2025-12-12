@@ -132,7 +132,7 @@ update_quil_config $DRY_RUN
 wait
 
 if [ "$(verify_changes)" == "true" ] && [ "$DRY_RUN" == "false" ]; then
-    qtools --describe "cluster-update-workers" restart
+    qtools restart
 fi
 
 

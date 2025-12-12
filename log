@@ -1,0 +1,27 @@
+2025-12-12 10:18:33 - config validate
+2025-12-12 10:18:46 - config get-value service.testnet
+2025-12-12 10:18:49 - config help
+2025-12-12 10:18:58 - config get-value service.nonexistent_key
+2025-12-12 10:18:58 - config get-value service.testnet
+2025-12-12 10:22:56 - config get-value service.testnet --default false
+2025-12-12 10:22:56 - config get-value service.nonexistent_key --default default_value
+2025-12-12 10:23:03 - config set-value service.testnet false --quiet
+2025-12-12 10:23:04 - config get-value service.testnet
+2025-12-12 10:23:15 - config set-value test.key test value
+2025-12-12 10:23:15 - config get-value test.key
+2025-12-12 10:23:15 - config set-value test.key new value --quiet
+2025-12-12 10:23:15 - config get-value test.key
+2025-12-12 10:24:25 - config set-value test.key2 test value 2 --quiet
+2025-12-12 10:24:26 - config get-value test.key2
+2025-12-12 10:26:29 - config set-value test.auto_describe test --quiet
+2025-12-12 10:26:34 - config set-value test.inherited test --quiet via test-script
+2025-12-12 10:26:35 - toggle-auto-update-node --off via toggle-auto-update-node
+2025-12-12 10:26:40 - toggle-auto-update-node --off via toggle-auto-update-node
+2025-12-12 10:26:45 - config set-value test.preserve test --quiet via test-parent
+2025-12-12 10:26:49 - toggle-auto-update-node --off via toggle-auto-update-node
+2025-12-12 10:26:54 - config validate via config
+2025-12-12 10:26:58 - config set-value test.debug test --quiet via config
+2025-12-12 10:27:02 - config set-value test.final test --quiet via config
+2025-12-12 10:27:12 - toggle-auto-update-node --off via toggle-auto-update-node
+2025-12-12 10:27:17 - config get-value scheduled_tasks.updates.node.enabled via config
+2025-12-12 10:27:21 - config set-value test.log_test test via config

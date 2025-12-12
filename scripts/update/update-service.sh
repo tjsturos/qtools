@@ -10,7 +10,7 @@ SERVICE_USER=$(yq '.service.default_user // "quilibrium"' $QTOOLS_CONFIG_FILE)
 if [ "$SERVICE_USER" == "quilibrium" ]; then
     if ! id "$SERVICE_USER" &>/dev/null; then
         log "Quilibrium user not found. Creating it..."
-        qtools --describe "update-service" create-quilibrium-user
+        qtools create-quilibrium-user
     fi
     # Use quilibrium user's node path
     QUIL_NODE_PATH_FOR_SERVICE="/home/quilibrium/ceremonyclient/node"
@@ -97,21 +97,21 @@ while [[ $# -gt 0 ]]; do
 done
 
 if [ "$SKIP_SIGNATURE_CHECK" == "true" ]; then
-    yq -i '.service.signature_check = false' $QTOOLS_CONFIG_FILE
+    qtools config set-value service.signature_check "false" --quiet
 else
-    yq -i '.service.signature_check = true' $QTOOLS_CONFIG_FILE
+    qtools config set-value service.signature_check "true" --quiet
 fi
 
 if [ "$TESTNET" == "true" ]; then
-    yq -i '.service.testnet = true' $QTOOLS_CONFIG_FILE
+    qtools config set-value service.testnet "true" --quiet
 else
-    yq -i '.service.testnet = false' $QTOOLS_CONFIG_FILE
+    qtools config set-value service.testnet "false" --quiet
 fi
 
 if [ "$DEBUG_MODE" == "true" ]; then
-    yq -i '.service.debug = true' $QTOOLS_CONFIG_FILE
+    qtools config set-value service.debug "true" --quiet
 else
-    yq -i '.service.debug = false' $QTOOLS_CONFIG_FILE
+    qtools config set-value service.debug "false" --quiet
 fi
 
 if [ -n "$SERVICE_RESTART_TIME" ]; then
@@ -122,17 +122,17 @@ if [ -n "$SERVICE_RESTART_TIME" ]; then
         echo "Error: Service restart time must be a positive integer or a positive integer followed by 's'"
         exit 1
     fi
-    yq -i ".service.restart_time = \"$SERVICE_RESTART_TIME\"" $QTOOLS_CONFIG_FILE
+    qtools config set-value service.restart_time "$SERVICE_RESTART_TIME" --quiet
 else
     # Read from config file, default to 60s if not found or invalid
-    SERVICE_RESTART_TIME="$(yq ".service.restart_time // \"60s\"" $QTOOLS_CONFIG_FILE)"
+    SERVICE_RESTART_TIME="$(qtools config get-value service.restart_time --default "60s")"
     # Validate the value from config file
     if [[ "$SERVICE_RESTART_TIME" =~ ^[0-9]+$ ]]; then
         SERVICE_RESTART_TIME="${SERVICE_RESTART_TIME}s"
     elif ! [[ "$SERVICE_RESTART_TIME" =~ ^[0-9]+s$ ]]; then
         # Invalid value in config, default to 60s
         SERVICE_RESTART_TIME="60s"
-        yq -i ".service.restart_time = \"60s\"" $QTOOLS_CONFIG_FILE
+        qtools config set-value service.restart_time "60s" --quiet
     fi
 fi
 

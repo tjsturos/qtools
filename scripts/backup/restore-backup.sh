@@ -82,11 +82,11 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-qtools --describe "restore-backup" restore-peer ${PEER_ID:+"--peer-id $PEER_ID"}
+qtools restore-peer ${PEER_ID:+"--peer-id $PEER_ID"}
 
 # Restore .config directory
 if [ "$EXCLUDE_STORE" == "false" ]; then
-  qtools --describe "restore-backup" restore-store
+  qtools restore-store
 else
   log "Excluding store"
 fi

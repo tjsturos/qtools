@@ -35,7 +35,7 @@ NEW_PEERS_FILE=$(mktemp)
 yq eval '.p2p.directPeers' $QUIL_CONFIG_FILE > $NEW_PEERS_FILE
 
 CHANGES_MADE=false
-LOCAL_PEER_ID=$(qtools --describe "update-direct-peers" peer-id)
+LOCAL_PEER_ID=$(qtools peer-id)
 
 # Add each remote peer to local config, excluding our own multiaddr
 while IFS= read -r peer; do
@@ -84,7 +84,7 @@ if [ "$DRY_RUN" == "false" ] && [ "$CHANGES_MADE" == "true" ]; then
         done < <(journalctl -u $QUIL_SERVICE_NAME -f -n 0)
     fi
     echo "Changes were made to direct peers list, restarting service..."
-    qtools --describe "update-direct-peers" restart
+    qtools restart
 else
     echo "No changes were made to direct peers list, skipping restart."
 fi

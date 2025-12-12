@@ -74,6 +74,7 @@ if [ "$1" == "--describe" ]; then
   shift 2
 fi
 # If --describe not provided, QTOOLS_DESCRIBE will be inherited from parent or remain unset
+# After we determine the command name, we'll auto-set QTOOLS_DESCRIBE if not already set
 
 if [ -z "$1" ] || [ "$1" == "--help" ] || [ "$1" == '-h' ]; then
   usage
@@ -173,7 +174,7 @@ if [ ! -f "$QUIL_SERVICE_FILE" ] && [ "$1" != "update-service" ]; then
     if [ "$IS_MASTER" == "true" ] || [ ! -f $QUIL_DATA_WORKER_SERVICE_FILE ]; then
       log "Service file not found. Running 'qtools update-service'..."
       log "Copying service file to $SYSTEMD_SERVICE_PATH..."
-      qtools --describe "qtools" update-service
+      qtools update-service
     fi
   fi
 fi
@@ -222,7 +223,7 @@ case "$1" in
   get-node-count|get-node-info|get-peer-info|get-token-info|get-node-version|get-peer-id|get-frame-count)
     if ! command_exists grpcurl; then
       log "Command 'grpcurl' doesn't exist, proceeding to install."
-      qtools --describe "qtools" install-grpc
+      qtools install-grpc
     fi
     ;;
   cluster-start|cluster-update-workers|cluster-stop|cluster-enable|cluster-setup|cluster-add-server|cluster-update-server|cluster-remove-server|cluster-update|status|start|stop|restart|enable|disable)
@@ -267,8 +268,14 @@ COMMAND_NAME="$1"
 # Note: --describe is already removed from $@ at this point, so it won't appear in params
 COMMAND_PARAMS=("${@:2}")
 
+# Automatically set QTOOLS_DESCRIBE to command name if not already set
+# This allows internal qtools calls to automatically inherit the calling script context
+if [ -z "$QTOOLS_DESCRIBE" ]; then
+  export QTOOLS_DESCRIBE="$COMMAND_NAME"
+fi
+
 # Log command execution (function is available from utils/index.sh which is sourced earlier)
-# QTOOLS_DESCRIBE environment variable is set earlier if --describe was provided
+# QTOOLS_DESCRIBE environment variable is set earlier if --describe was provided or auto-set above
 log_command_execution "$COMMAND_NAME" "${COMMAND_PARAMS[@]}"
 
 # Now shift to remove command name for script execution

@@ -51,7 +51,7 @@ if [ "$(is_master)" == "true" ]; then
             echo -e "${RED}${WARNING_ICON} SSH file: $SSH_CLUSTER_KEY not found!${RESET}"
         fi
         check_ssh_connections
-        ssh_command_to_each_server "qtools --describe \"cluster-start\" cluster-start"
+        ssh_command_to_each_server "qtools cluster-start"
     fi
     # Check if master service is running
     if systemctl is-active $MASTER_SERVICE_NAME >/dev/null 2>&1; then

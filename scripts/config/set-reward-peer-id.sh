@@ -102,7 +102,7 @@ if [ "$PEER_ID" == "clear" ]; then
         exit 1
     fi
     echo "Reward peer ID (delegateAddress) cleared from config"
-    qtools --describe "set-reward-peer-id" restart
+    qtools restart
     exit 0
 fi
 
@@ -120,4 +120,4 @@ fi
 
 echo "Reward peer ID (delegateAddress) set to: $PEER_ID"
 
-qtools --describe "set-reward-peer-id" restart
+qtools restart

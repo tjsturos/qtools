@@ -54,7 +54,7 @@ install_rust_and_go() {
 
     # Check if Go is installed
     if ! command -v go &> /dev/null; then
-        qtools --describe "install-dev-dependencies" install-go 1.22.5
+        qtools install-go 1.22.5
         # Install grpcurl for RPC testing
         go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest
     else

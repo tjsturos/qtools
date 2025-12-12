@@ -52,7 +52,7 @@ if [ -z "$TRANSFER_ADDRESS" ]; then
 fi
 
 # Get all tokens and sum
-TOKENS=$(qtools --describe "consolidate-rewards" coins --config $CONFIG ${SKIP_SIG_CHECK:+ --signature-check=false}${PUBLIC_RPC:+ --public-rpc})
+TOKENS=$(qtools coins --config $CONFIG ${SKIP_SIG_CHECK:+ --signature-check=false}${PUBLIC_RPC:+ --public-rpc})
 TOTAL=0
 
 # Calculate total across all tokens
@@ -81,7 +81,7 @@ merge_all "${TOKENS[@]}"
 echo "Waiting for consolidated token, this may take a few minutes..."
 # Wait for consolidated token
 while true; do
-    TOKENS=$(qtools --describe "consolidate-rewards" coins --config $CONFIG ${SKIP_SIG_CHECK:+ --signature-check=false}${PUBLIC_RPC:+ --public-rpc})
+    TOKENS=$(qtools coins --config $CONFIG ${SKIP_SIG_CHECK:+ --signature-check=false}${PUBLIC_RPC:+ --public-rpc})
     for token in $TOKENS; do
         amount=$(echo $token | cut -d',' -f2)
         token_id=$(echo $token | cut -d',' -f1)
@@ -90,7 +90,7 @@ while true; do
         if (( $(echo "$amount == $TOTAL" | bc -l) )); then
             echo "Found consolidated token: $token_id with amount $amount"
             if [ "$DRY_RUN" == "false" ]; then
-                qtools --describe "consolidate-rewards" transfer --to "$TRANSFER_ADDRESS" --token "$token_id" --no-confirm
+                qtools transfer --to "$TRANSFER_ADDRESS" --token "$token_id" --no-confirm
             else
                 echo "Dry run: Would transfer $amount QUIL to $TRANSFER_ADDRESS"
             fi

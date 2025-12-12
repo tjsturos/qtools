@@ -6,5 +6,5 @@ if [ "$#" -ne 1 ]; then
     exit 1
 fi
 log "Changing backup URL to $1"
-yq eval -i ".scheduled_tasks.backup.backup_url = \"$1\"" $QTOOLS_CONFIG_FILE
+qtools config set-value scheduled_tasks.backup.backup_url "$1" --quiet
 

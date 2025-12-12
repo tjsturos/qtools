@@ -8,4 +8,4 @@ if ! [[ $VERSION =~ ^[0-9]+\.[0-9]+(\.[0-9]+)*$ ]]; then
     exit 1
 fi
 
-yq -i ".scheduled_tasks.updates.node.skip_version = \"$VERSION\"" $QTOOLS_CONFIG_FILE
+qtools config set-value scheduled_tasks.updates.node.skip_version "$VERSION" --quiet

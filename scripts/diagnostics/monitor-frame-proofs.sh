@@ -237,10 +237,10 @@ display_stats() {
     output+=("Update interval: ${UPDATE_INTERVAL}s (use -u or --update to change)")
     output+=("")
     if [ "$(is_app_finished_starting)" == "true" ]; then
-        output+=("Peer ID: $(qtools --describe "monitor-frame-proofs" peer-id)")
-        output+=("Account: $(qtools --describe "monitor-frame-proofs" account)")
+        output+=("Peer ID: $(qtools peer-id)")
+        output+=("Account: $(qtools account)")
         if $PRINT_QUIL; then
-            output+=("Account Balance: $(qtools --describe "monitor-frame-proofs" balance)")
+            output+=("Account Balance: $(qtools balance)")
         fi
     fi
     output+=("")
@@ -455,7 +455,7 @@ check_for_auto_restart() {
             echo "Current timestamp: $CURRENT_LOG_TIMESTAMP"
             echo "Last proof received: $LAST_FRAME_RECEIVED_TIMESTAMP"
 
-            qtools --describe "monitor-frame-proofs" restart
+            qtools restart
             LAST_RESTART_TIMESTAMP=$CURRENT_LOG_TIMESTAMP
             RESTART_COUNT=$(($RESTART_COUNT + 1))
         elif [ $RESTART_AGE -gt $LAST_RESTART_THRESHOLD ]; then

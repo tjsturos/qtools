@@ -26,7 +26,7 @@ done
 
 if [ -n "$MANUAL_STATE" ]; then
     NEW_VALUE="$MANUAL_STATE"
-    yq eval -i ".ssh.skip_192_168_block = $NEW_VALUE" $QTOOLS_CONFIG_FILE
+    qtools config set-value ssh.skip_192_168_block "$NEW_VALUE" --quiet
     echo "Set skip_192_168_block to $NEW_VALUE"
     exit 0
 fi
@@ -39,7 +39,7 @@ else
 fi
 
 # Update the config file
-yq eval -i ".ssh.skip_192_168_block = $NEW_VALUE" $QTOOLS_CONFIG_FILE
+qtools config set-value ssh.skip_192_168_block "$NEW_VALUE" --quiet
 
 echo "Toggled skip_192_168_block from $CURRENT_VALUE to $NEW_VALUE"
 

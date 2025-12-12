@@ -22,7 +22,7 @@ restart_server_data_workers() {
                 break
             fi
         done < <(journalctl -u $QUIL_SERVICE_NAME -f -n 0)
-        ssh_to_remote $ip $remote_user $ssh_port "qtools --describe \"cluster-check-mem-levels\" refresh-data-workers" &
+        ssh_to_remote $ip $remote_user $ssh_port "qtools refresh-data-workers" &
     fi
 }
 
@@ -38,7 +38,7 @@ check_mem_levels() {
         local ssh_port=$(echo "$server" | yq eval ".ssh_port // \"$DEFAULT_SSH_PORT\"" -)
 
         if ! echo "$(hostname -I)" | grep -q "$server_ip"; then
-            local mem_usage=$(ssh_to_remote $server_ip $remote_user $ssh_port "qtools --describe \"cluster-check-mem-levels\" memory-usage")
+            local mem_usage=$(ssh_to_remote $server_ip $remote_user $ssh_port "qtools memory-usage")
 
             if (( $(echo "$mem_usage > $THRESHOLD" | bc -l) )); then
                 echo "Memory usage is greater than $THRESHOLD%, restarting data workers"

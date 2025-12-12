@@ -60,8 +60,8 @@ fi
 # Check if the node binary exists in $QUIL_NODE_PATH
 if [[ ! -f "$QUIL_NODE_PATH/node-$NODE_VERSION-$OS_ARCH" ]]; then
 
-    qtools --describe "update-version" download-node${BINARY_ONLY:+ --no-signatures}${NODE_VERSION:+ --version $NODE_VERSION}
-    qtools --describe "update-version" download-qclient${BINARY_ONLY:+ --no-signatures}${QCLIENT_VERSION:+ --version $QCLIENT_VERSION}
+    qtools download-node${BINARY_ONLY:+ --no-signatures}${NODE_VERSION:+ --version $NODE_VERSION}
+    qtools download-qclient${BINARY_ONLY:+ --no-signatures}${QCLIENT_VERSION:+ --version $QCLIENT_VERSION}
     # Check again after download
     if [ ! -f "$QUIL_NODE_PATH/node-$NODE_VERSION-$OS_ARCH" ]; then
         echo "Error: Failed to download node binary. Please check your network connection and try again."

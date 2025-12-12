@@ -8,9 +8,9 @@ export OS_ARCH=$(get_os_arch)
 
 if [ ! -f "$QTOOLS_CONFIG_FILE" ]; then
   cp $QTOOLS_PATH/config.sample.yml $QTOOLS_PATH/config.yml
-  echo "Copied the default config file (config.sample.yml) to make the initial config.yml file."  
+  echo "Copied the default config file (config.sample.yml) to make the initial config.yml file."
   echo "To edit, use 'qtools edit-qtools-config' command"
-  
+
 fi
 
 if ! command -v "yq" >/dev/null 2>&1; then
@@ -25,8 +25,8 @@ fi
 # Set the user and working directory in the config file
 cd $QTOOLS_PATH
 
-yq -i ".user = \"$USER\"" $QTOOLS_CONFIG_FILE
-yq -i ".service.working_dir = \"$HOME/ceremonyclient/node\"" $QTOOLS_CONFIG_FILE
+qtools config set-value user "$USER" --quiet
+qtools config set-value service.working_dir "$HOME/ceremonyclient/node" --quiet
 
 install_package colordiff colordiff
 install_package jq jq
@@ -37,7 +37,7 @@ install_package ufw ufw
 install_package bc bc
 install_package crontab cron
 install_package curl curl
- 
+
 # Remaining scripts need existance of the QTOOLS_BIN_PATH binary
 if [ ! -L "$QTOOLS_BIN_PATH" ]; then
   # Attempt to install it.

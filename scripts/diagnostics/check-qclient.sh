@@ -12,7 +12,7 @@ if ! check_qclient; then
     echo "ERROR: qclient is missing or not executable." >&2
     echo "Attempting to install qclient..."
 
-    if qtools --describe "check-qclient" install-qclient; then
+    if qtools install-qclient; then
         echo "qclient installation completed. Verifying..."
         if check_qclient; then
             echo "qclient successfully installed and is executable."

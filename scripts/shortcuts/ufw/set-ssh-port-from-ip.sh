@@ -47,8 +47,8 @@ if [ -n "$ALLOW_FROM_IP" ] && [ "$ALLOW_FROM_IP" != "false" ]; then
     # Add new rule to allow SSH from specific IP
     sudo ufw allow from $ALLOW_FROM_IP to any port $SSH_PORT proto tcp
 
-    yq eval -i ".ssh.port = $SSH_PORT" $QTOOLS_CONFIG_FILE
-    yq eval -i ".ssh.allow_from_ip = '$ALLOW_FROM_IP'" $QTOOLS_CONFIG_FILE
+    qtools config set-value ssh.port "$SSH_PORT" --quiet
+    qtools config set-value ssh.allow_from_ip "$ALLOW_FROM_IP" --quiet
 
     sudo ufw reload
 

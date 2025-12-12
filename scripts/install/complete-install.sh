@@ -87,17 +87,17 @@ safe_modify_quil_config() {
 cd $QUIL_HOME
 
 # Create quilibrium user for running node services
-qtools --describe "complete-install" create-quilibrium-user
+qtools create-quilibrium-user
 
-qtools --describe "complete-install" download-node --link
-qtools --describe "complete-install" download-qclient --link
-qtools --describe "complete-install" update-service
+qtools download-node --link
+qtools download-qclient --link
+qtools update-service
 
-qtools --describe "complete-install" install-go
-qtools --describe "complete-install" install-grpc
-qtools --describe "complete-install" setup-firewall
-qtools --describe "complete-install" install-cron
-qtools --describe "complete-install" expand-storage
+qtools install-go
+qtools install-grpc
+qtools setup-firewall
+qtools install-cron
+qtools expand-storage
 
 generate_default_config() {
     # This first command generates a default config file
@@ -117,7 +117,7 @@ generate_default_config() {
     fi
     sleep 3
     if [ -f $BINARY_FILE ]; then
-        qtools --describe "complete-install" modify-config
+        qtools modify-config
     fi
 }
 
@@ -125,10 +125,10 @@ if [ "$PEER_ID" != "" ]; then
     log "Attempting to restore from remote backup. Note: backups must be enabled and configured properly (and connected to at least once) for this to work."
 
     if [ "$PEER_ID" != "false" ] && [ "$PEER_ID" != "" ]; then
-        qtools --describe "complete-install" restore-backup --peer-id $PEER_ID --force
+        qtools restore-backup --peer-id $PEER_ID --force
         wait
         if [ -f $BINARY_FILE ]; then
-            qtools --describe "complete-install" modify-config
+            qtools modify-config
         fi
     else
         log "No peer ID found, skipping restore."
@@ -147,7 +147,7 @@ if [ "$LISTEN_PORT" != "" ]; then
     fi
     log "Setting listen port to $LISTEN_PORT"
     # Update qtools config
-    yq eval -i ".settings.listenAddr.port = $LISTEN_PORT" $QTOOLS_CONFIG_FILE
+    qtools config set-value settings.listenAddr.port "$LISTEN_PORT" --quiet
     # Update quil config - get listen mode from config
     if [ -f "$QUIL_CONFIG_FILE" ]; then
         LISTEN_MODE=$(yq eval '.settings.listenAddr.mode // "udp"' $QTOOLS_CONFIG_FILE)
@@ -169,7 +169,7 @@ if [ "$STREAM_PORT" != "" ]; then
     fi
     log "Setting stream listen port to $STREAM_PORT"
     # Update qtools config
-    yq eval -i ".service.clustering.master_stream_port = $STREAM_PORT" $QTOOLS_CONFIG_FILE
+    qtools config set-value service.clustering.master_stream_port "$STREAM_PORT" --quiet
     # Update quil config
     if [ -f "$QUIL_CONFIG_FILE" ]; then
         safe_modify_quil_config ".p2p.streamListenMultiaddr = \"/ip4/0.0.0.0/tcp/${STREAM_PORT}\""
@@ -197,14 +197,14 @@ if [ "$BASE_STREAM_PORT" != "" ]; then
         exit 1
     fi
     log "Setting base stream port to $BASE_STREAM_PORT"
-    yq eval -i ".service.clustering.worker_base_stream_port = $BASE_STREAM_PORT" $QTOOLS_CONFIG_FILE
+    qtools config set-value service.clustering.worker_base_stream_port "$BASE_STREAM_PORT" --quiet
     if [ -f "$QUIL_CONFIG_FILE" ]; then
         safe_modify_quil_config ".engine.dataWorkerBaseStreamPort = $BASE_STREAM_PORT"
     fi
 fi
 
 # tells server to always start node service on reboot
-qtools --describe "complete-install" enable
+qtools enable
 
 if [ "$DISABLE_SSH_PASSWORDS" == 'true' ]; then
 
@@ -217,7 +217,7 @@ if [ "$DISABLE_SSH_PASSWORDS" == 'true' ]; then
     fi
 
     if [ ! -z "$PUBLIC_KEY" ]; then
-        qtools --describe "complete-install" add-public-ssh-key "$PUBLIC_KEY"
+        qtools add-public-ssh-key "$PUBLIC_KEY"
     fi
 
     # Check if authorized_keys file exists and is not empty
@@ -226,7 +226,7 @@ if [ "$DISABLE_SSH_PASSWORDS" == 'true' ]; then
         exit 0
     fi
 
-    qtools --describe "complete-install" disable-ssh-passwords
+    qtools disable-ssh-passwords
 fi
 
 source $QTOOLS_PATH/scripts/install/customization.sh

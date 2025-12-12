@@ -32,7 +32,7 @@ if [ "$IS_CLUSTERING_ENABLED" == "true" ] && [ "$(is_master)" == "false" ]; then
 fi
 
 check_ports_status() {
-    local PORTS_ACTUAL_OUTPUT="$(qtools --describe "status-report" ports-listening)"
+    local PORTS_ACTUAL_OUTPUT="$(qtools ports-listening)"
     local ALL_PORTS_FUNCTIONAL=true
     local port_status=()
     while IFS= read -r LINE; do
@@ -65,7 +65,7 @@ check_ports_status() {
 }
 
 check_hourly_reward_rate() {
-    local HOURLY_REWARD_RATE=$(qtools --describe "status-report" hourly-reward-rate 3)
+    local HOURLY_REWARD_RATE=$(qtools hourly-reward-rate 3)
 
     if [[ $HOURLY_REWARD_RATE =~ ^-?[0-9]+([.][0-9]+)?$ ]]; then
         if $JSON_OUTPUT; then
@@ -159,7 +159,7 @@ check_clustering_status() {
 }
 
 check_service_status() {
-    local output=$(qtools --describe "status-report" status)
+    local output=$(qtools status)
 
     if echo "$output" | grep -q "Active: active (running)"; then
         if $JSON_OUTPUT; then
@@ -167,7 +167,7 @@ check_service_status() {
         else
             echo -e "${GREEN_CHECK} Node service is running (active)"
         fi
-        local version=$(qtools --describe "status-report" node-version)
+        local version=$(qtools node-version)
         local uptime=$(echo "$output" | grep -oP '(?<=since ).*')
         if $JSON_OUTPUT; then
             REPORT_DATA+=("node_version:$version")
@@ -234,7 +234,7 @@ check_command_installed() {
 }
 
 check_unclaimed_balance() {
-    local BALANCE=$(qtools --describe "status-report" unclaimed-balance)
+    local BALANCE=$(qtools unclaimed-balance)
 
     if [[ $BALANCE =~ ^-?[0-9]+([.][0-9]+)?$ ]]; then
         if $JSON_OUTPUT; then
@@ -260,7 +260,7 @@ check_unclaimed_balance() {
 }
 
 check_peer_id() {
-    local PEER_ID=$(qtools --describe "status-report" peer-id)
+    local PEER_ID=$(qtools peer-id)
 
     if [[ -n $PEER_ID ]]; then
         if $JSON_OUTPUT; then
@@ -278,7 +278,7 @@ check_peer_id() {
 }
 
 check_frame_count() {
-    local FRAME_COUNT=$(qtools --describe "status-report" frame-count)
+    local FRAME_COUNT=$(qtools frame-count)
 
     if [[ -n $FRAME_COUNT ]]; then
         if [ ! -z "$(echo $FRAME_COUNT | grep 'finished starting')" ]; then
@@ -310,7 +310,7 @@ check_backup_status() {
     if [[ "$enabled" == "true" ]]; then
         local node_backup_name=$(yq '.scheduled_tasks.backup.node_backup_name' "$config_file" 2>/dev/null)
         if [ -z "$node_backup_name" ]; then
-            node_backup_name=$(qtools --describe "status-report" peer-id)
+            node_backup_name=$(qtools peer-id)
         fi
         local backup_url=$(yq '.scheduled_tasks.backup.backup_url' "$config_file" 2>/dev/null)
         local remote_user=$(yq '.scheduled_tasks.backup.remote_user' "$config_file" 2>/dev/null)

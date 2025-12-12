@@ -15,6 +15,6 @@ if ! [[ $IP =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
 fi
 
 # Update the internal_ip setting in config
-yq eval -i ".settings.internal_ip = \"$IP\"" $QTOOLS_CONFIG_FILE
+qtools config set-value settings.internal_ip "$IP" --quiet
 
 echo "Internal IP updated successfully to: $IP"
