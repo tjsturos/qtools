@@ -41,16 +41,18 @@ if [ "$CURRENT_LINK" != "$EXPECTED_PATH"* ]; then
         log "Binary found at old location: $CURRENT_LINK"
 
         # Ensure quilibrium directory exists
+        QTOOLS_GROUP="qtools"
         sudo mkdir -p "$EXPECTED_PATH"
-        sudo chown -R quilibrium:quilibrium "$EXPECTED_PATH" 2>/dev/null || true
-        # Ensure quilibrium user and group can write to the directory
-        sudo chmod -R ug+w "$EXPECTED_PATH" 2>/dev/null || true
+        sudo chown -R quilibrium:$QTOOLS_GROUP "$EXPECTED_PATH" 2>/dev/null || true
+        # Ensure qtools group can read, write, and execute
+        sudo chmod -R g+rwx "$EXPECTED_PATH" 2>/dev/null || true
 
         # Copy binary to new location
         NEW_BINARY_PATH="$EXPECTED_PATH/$BINARY_NAME"
         log "Copying binary to new location: $NEW_BINARY_PATH"
         sudo cp "$CURRENT_LINK" "$NEW_BINARY_PATH"
-        sudo chown quilibrium:quilibrium "$NEW_BINARY_PATH"
+        sudo chown quilibrium:$QTOOLS_GROUP "$NEW_BINARY_PATH"
+        sudo chmod g+rwx "$NEW_BINARY_PATH"
         sudo chmod +x "$NEW_BINARY_PATH"
 
         # Update symlink

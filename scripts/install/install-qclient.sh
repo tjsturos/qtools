@@ -10,10 +10,11 @@ if [ ! -f "$QUIL_CLIENT_PATH/$CURRENT_QCLIENT_BINARY" ]; then
 
     # Ensure quilibrium user has access if using quilibrium user
     SERVICE_USER=$(yq '.service.default_user // "quilibrium"' $QTOOLS_CONFIG_FILE 2>/dev/null || echo "quilibrium")
+    QTOOLS_GROUP="qtools"
     if [ "$SERVICE_USER" == "quilibrium" ] && id "quilibrium" &>/dev/null; then
-        sudo chown -R quilibrium:quilibrium "$QUIL_CLIENT_PATH" 2>/dev/null || true
-        # Ensure quilibrium user and group can write to the directory
-        sudo chmod -R ug+w "$QUIL_CLIENT_PATH" 2>/dev/null || true
+        sudo chown -R quilibrium:$QTOOLS_GROUP "$QUIL_CLIENT_PATH" 2>/dev/null || true
+        # Ensure qtools group can read, write, and execute
+        sudo chmod -R g+rwx "$QUIL_CLIENT_PATH" 2>/dev/null || true
     fi
 
     get_remote_quil_files qclient_files[@] $QUIL_CLIENT_PATH
@@ -23,7 +24,8 @@ if [ ! -f "$QUIL_CLIENT_PATH/$CURRENT_QCLIENT_BINARY" ]; then
 
         # Ensure quilibrium user owns the binary if using quilibrium user
         if [ "$SERVICE_USER" == "quilibrium" ] && id "quilibrium" &>/dev/null; then
-            sudo chown quilibrium:quilibrium "$QUIL_CLIENT_PATH/$CURRENT_QCLIENT_BINARY" 2>/dev/null || true
+            sudo chown quilibrium:$QTOOLS_GROUP "$QUIL_CLIENT_PATH/$CURRENT_QCLIENT_BINARY" 2>/dev/null || true
+            sudo chmod g+rwx "$QUIL_CLIENT_PATH/$CURRENT_QCLIENT_BINARY" 2>/dev/null || true
         fi
 
         if [ -s $QUIL_QCLIENT_BIN ]; then

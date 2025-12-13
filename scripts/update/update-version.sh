@@ -105,8 +105,10 @@ update_node_link() {
 
     # Ensure quilibrium user owns the binary if using quilibrium user
     SERVICE_USER=$(yq '.service.default_user // "quilibrium"' $QTOOLS_CONFIG_FILE 2>/dev/null || echo "quilibrium")
+    QTOOLS_GROUP="qtools"
     if [ "$SERVICE_USER" == "quilibrium" ] && id "quilibrium" &>/dev/null; then
-        sudo chown quilibrium:quilibrium "$BINARY_PATH" 2>/dev/null || true
+        sudo chown quilibrium:$QTOOLS_GROUP "$BINARY_PATH" 2>/dev/null || true
+        sudo chmod g+rwx "$BINARY_PATH" 2>/dev/null || true
         sudo chmod +x "$BINARY_PATH" 2>/dev/null || true
     fi
 

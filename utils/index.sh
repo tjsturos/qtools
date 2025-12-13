@@ -343,13 +343,14 @@ get_remote_quil_files() {
 
     # Check if we should set ownership for quilibrium user
     SERVICE_USER=$(yq '.service.default_user // "quilibrium"' $QTOOLS_CONFIG_FILE 2>/dev/null || echo "quilibrium")
+    QTOOLS_GROUP="qtools"
     SET_OWNERSHIP=false
     if [ "$SERVICE_USER" == "quilibrium" ] && id "quilibrium" &>/dev/null; then
         SET_OWNERSHIP=true
-        # Ensure quilibrium user owns the directory and can write to it
-        sudo chown -R quilibrium:quilibrium "$dest_dir" 2>/dev/null || true
-        # Ensure quilibrium user and group can write to the directory
-        sudo chmod -R ug+w "$dest_dir" 2>/dev/null || true
+        # Ensure quilibrium user owns the directory with qtools group
+        sudo chown -R quilibrium:$QTOOLS_GROUP "$dest_dir" 2>/dev/null || true
+        # Ensure qtools group can read, write, and execute
+        sudo chmod -R g+rwx "$dest_dir" 2>/dev/null || true
     fi
 
     while IFS= read -r file; do
@@ -362,7 +363,8 @@ get_remote_quil_files() {
                 # Use sudo if we're setting ownership for quilibrium user
                 if [ "$SET_OWNERSHIP" == "true" ]; then
                     sudo curl -o "$dest_file" "$file_url"
-                    sudo chown quilibrium:quilibrium "$dest_file" 2>/dev/null || true
+                    sudo chown quilibrium:$QTOOLS_GROUP "$dest_file" 2>/dev/null || true
+                    sudo chmod g+rwx "$dest_file" 2>/dev/null || true
                     sudo chmod +x "$dest_file" 2>/dev/null || true
                 else
                     curl -o "$dest_file" "$file_url"

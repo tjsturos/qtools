@@ -3,10 +3,26 @@
 # USAGE: qtools create-quilibrium-user
 
 QUILIBRIUM_USER="quilibrium"
+QTOOLS_GROUP="qtools"
 QUILIBRIUM_HOME="/home/$QUILIBRIUM_USER"
 QUILIBRIUM_NODE_PATH="$QUILIBRIUM_HOME/ceremonyclient/node"
+CEREMONYCLIENT_PATH="$QUILIBRIUM_HOME/ceremonyclient"
 
 log "Creating quilibrium system user..."
+
+# Create qtools group if it doesn't exist
+if ! getent group "$QTOOLS_GROUP" >/dev/null 2>&1; then
+    log "Creating qtools group..."
+    sudo groupadd "$QTOOLS_GROUP"
+    if [ $? -eq 0 ]; then
+        log "Group '$QTOOLS_GROUP' created successfully."
+    else
+        log "Failed to create group '$QTOOLS_GROUP'."
+        exit 1
+    fi
+else
+    log "Group '$QTOOLS_GROUP' already exists."
+fi
 
 # Check if user already exists
 if id "$QUILIBRIUM_USER" &>/dev/null; then
@@ -24,30 +40,45 @@ else
     fi
 fi
 
+# Ensure quilibrium user is in qtools group
+if ! id -Gn "$QUILIBRIUM_USER" 2>/dev/null | grep -q "\b$QTOOLS_GROUP\b"; then
+    log "Adding quilibrium user to qtools group..."
+    sudo usermod -a -G "$QTOOLS_GROUP" "$QUILIBRIUM_USER"
+fi
+
+# Ensure root is in qtools group
+if ! id -Gn root 2>/dev/null | grep -q "\b$QTOOLS_GROUP\b"; then
+    log "Adding root user to qtools group..."
+    sudo usermod -a -G "$QTOOLS_GROUP" root
+fi
+
+# Add all existing system users (regular users with UID >= 1000) to qtools group
+log "Adding all existing system users to qtools group..."
+SYSTEM_USERS=$(getent passwd | awk -F: '$3 >= 1000 && $3 < 65534 {print $1}')
+for user in $SYSTEM_USERS; do
+    # Skip quilibrium and root as we already added them
+    if [ "$user" != "$QUILIBRIUM_USER" ] && [ "$user" != "root" ]; then
+        if ! id -Gn "$user" 2>/dev/null | grep -q "\b$QTOOLS_GROUP\b"; then
+            log "Adding user '$user' to qtools group..."
+            sudo usermod -a -G "$QTOOLS_GROUP" "$user" 2>/dev/null || log "Warning: Failed to add user '$user' to qtools group."
+        fi
+    fi
+done
+
 # Create directory structure for quilibrium user
 log "Setting up directory structure for quilibrium user..."
 sudo mkdir -p "$QUILIBRIUM_NODE_PATH/.config"
 sudo mkdir -p "$QUILIBRIUM_HOME/ceremonyclient/client"
 
-# Set ownership of quilibrium user's directories
-sudo chown -R "$QUILIBRIUM_USER:$QUILIBRIUM_USER" "$QUILIBRIUM_HOME"
-# Set group write permissions so members of quilibrium group can edit files
-sudo chmod -R g+w "$QUILIBRIUM_HOME"
+# Set ownership of quilibrium user's directories to quilibrium:qtools
+sudo chown -R "$QUILIBRIUM_USER:$QTOOLS_GROUP" "$QUILIBRIUM_HOME"
 
-# Add current user to quilibrium group so they can edit files without sudo
-CURRENT_USER=$(whoami)
-if ! groups "$CURRENT_USER" | grep -q "\b$QUILIBRIUM_USER\b"; then
-    log "Adding current user '$CURRENT_USER' to quilibrium group..."
-    sudo usermod -a -G "$QUILIBRIUM_USER" "$CURRENT_USER"
-    if [ $? -eq 0 ]; then
-        log "User '$CURRENT_USER' added to quilibrium group successfully."
-        log "Note: You may need to log out and log back in for group changes to take effect."
-    else
-        log "Warning: Failed to add user '$CURRENT_USER' to quilibrium group."
-    fi
-else
-    log "User '$CURRENT_USER' is already a member of quilibrium group."
-fi
+# Set permissions on ceremonyclient directory so qtools group members can edit/view/execute
+log "Setting permissions on ceremonyclient directory..."
+sudo chmod -R g+rwx "$CEREMONYCLIENT_PATH" 2>/dev/null || true
+
+# Also ensure parent directories have proper permissions
+sudo chmod g+rx "$QUILIBRIUM_HOME" 2>/dev/null || true
 
 # Check if there's an existing node installation in the current user's directory
 # If so, give quilibrium user access to it (for backward compatibility)
@@ -90,4 +121,6 @@ fi
 log "Quilibrium user setup complete."
 log "Home directory: $QUILIBRIUM_HOME"
 log "Node path: $QUILIBRIUM_NODE_PATH"
+log "Qtools group: $QTOOLS_GROUP"
+log "Note: You may need to log out and log back in for group changes to take effect."
 

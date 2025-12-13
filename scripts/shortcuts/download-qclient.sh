@@ -83,10 +83,11 @@ cd $QUIL_CLIENT_PATH
 
 # Ensure quilibrium user has access if using quilibrium user
 SERVICE_USER=$(yq '.service.default_user // "quilibrium"' $QTOOLS_CONFIG_FILE 2>/dev/null || echo "quilibrium")
+QTOOLS_GROUP="qtools"
 if [ "$SERVICE_USER" == "quilibrium" ] && id "quilibrium" &>/dev/null; then
-    sudo chown -R quilibrium:quilibrium "$QUIL_CLIENT_PATH" 2>/dev/null || true
-    # Ensure quilibrium user and group can write to the directory
-    sudo chmod -R ug+w "$QUIL_CLIENT_PATH" 2>/dev/null || true
+    sudo chown -R quilibrium:$QTOOLS_GROUP "$QUIL_CLIENT_PATH" 2>/dev/null || true
+    # Ensure qtools group can read, write, and execute
+    sudo chmod -R g+rwx "$QUIL_CLIENT_PATH" 2>/dev/null || true
 fi
 
 for file in $QCLIENT_RELEASE_FILES; do
@@ -97,7 +98,8 @@ for file in $QCLIENT_RELEASE_FILES; do
         chmod +x "$file"
         # Ensure quilibrium user owns the file if using quilibrium user
         if [ "$SERVICE_USER" == "quilibrium" ] && id "quilibrium" &>/dev/null; then
-            sudo chown quilibrium:quilibrium "$file" 2>/dev/null || true
+            sudo chown quilibrium:$QTOOLS_GROUP "$file" 2>/dev/null || true
+            sudo chmod g+rwx "$file" 2>/dev/null || true
         fi
         if [ $? -eq 0 ]; then
             log "Successfully made $file executable"

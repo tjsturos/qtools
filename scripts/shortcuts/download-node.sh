@@ -78,13 +78,14 @@ sudo mkdir -p $QUIL_NODE_PATH
 
 # Ensure quilibrium user has access if using quilibrium user
 SERVICE_USER=$(yq '.service.default_user // "quilibrium"' $QTOOLS_CONFIG_FILE 2>/dev/null || echo "quilibrium")
+QTOOLS_GROUP="qtools"
 if [ "$SERVICE_USER" == "quilibrium" ]; then
     # Ensure quilibrium user exists
     if id "quilibrium" &>/dev/null; then
-        # Set ownership to quilibrium user for new directories/files
-        sudo chown -R quilibrium:quilibrium "$QUIL_NODE_PATH" 2>/dev/null || true
-        # Ensure quilibrium user and group can write to the directory
-        sudo chmod -R ug+w "$QUIL_NODE_PATH" 2>/dev/null || true
+        # Set ownership to quilibrium:qtools for new directories/files
+        sudo chown -R quilibrium:$QTOOLS_GROUP "$QUIL_NODE_PATH" 2>/dev/null || true
+        # Ensure qtools group can read, write, and execute
+        sudo chmod -R g+rwx "$QUIL_NODE_PATH" 2>/dev/null || true
         # Ensure the directory is accessible (readable and executable) by others so we can cd into it
         sudo chmod u+rx "$QUIL_NODE_PATH" 2>/dev/null || true
     fi
@@ -113,7 +114,8 @@ link_node() {
 
     # Ensure quilibrium user owns the binary if using quilibrium user
     if [ "$SERVICE_USER" == "quilibrium" ] && id "quilibrium" &>/dev/null; then
-        sudo chown quilibrium:quilibrium "$BINARY_PATH" 2>/dev/null || true
+        sudo chown quilibrium:$QTOOLS_GROUP "$BINARY_PATH" 2>/dev/null || true
+        sudo chmod g+rwx "$BINARY_PATH" 2>/dev/null || true
         sudo chmod +x "$BINARY_PATH" 2>/dev/null || true
     fi
 
@@ -161,7 +163,8 @@ download_file() {
             # Move to destination with proper ownership
             if [ "$SERVICE_USER" == "quilibrium" ] && id "quilibrium" &>/dev/null; then
                 sudo mv "$TEMP_FILE" "$DEST_FILE"
-                sudo chown quilibrium:quilibrium "$DEST_FILE" 2>/dev/null || true
+                sudo chown quilibrium:$QTOOLS_GROUP "$DEST_FILE" 2>/dev/null || true
+                sudo chmod g+rwx "$DEST_FILE" 2>/dev/null || true
             else
                 mv "$TEMP_FILE" "$DEST_FILE"
             fi
@@ -176,7 +179,8 @@ download_file() {
         if wget --no-check-certificate "https://dev.qcommander.sh/$FILE_NAME" -O "$TEMP_FILE"; then
             if [ "$SERVICE_USER" == "quilibrium" ] && id "quilibrium" &>/dev/null; then
                 sudo mv "$TEMP_FILE" "$DEST_FILE"
-                sudo chown quilibrium:quilibrium "$DEST_FILE" 2>/dev/null || true
+                sudo chown quilibrium:$QTOOLS_GROUP "$DEST_FILE" 2>/dev/null || true
+                sudo chmod g+rwx "$DEST_FILE" 2>/dev/null || true
             else
                 mv "$TEMP_FILE" "$DEST_FILE"
             fi
@@ -197,7 +201,8 @@ for file in $NODE_RELEASE_FILES; do
         echo "Making $file executable..."
         if [ "$SERVICE_USER" == "quilibrium" ] && id "quilibrium" &>/dev/null; then
             sudo chmod +x "$BINARY_FILE"
-            sudo chown quilibrium:quilibrium "$BINARY_FILE" 2>/dev/null || true
+            sudo chown quilibrium:$QTOOLS_GROUP "$BINARY_FILE" 2>/dev/null || true
+            sudo chmod g+rwx "$BINARY_FILE" 2>/dev/null || true
         else
             chmod +x "$BINARY_FILE"
         fi
