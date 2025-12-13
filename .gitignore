@@ -1,5 +1,6 @@
 quil_on_start_log
 *.log
+log
 config.yml
 files/*.key
 files/*.cert
