@@ -229,5 +229,8 @@ if [ "$DISABLE_SSH_PASSWORDS" == 'true' ]; then
     qtools disable-ssh-passwords
 fi
 
+# Add commonly-used environment variables to .bashrc
+qtools add-env-var
+
 source $QTOOLS_PATH/scripts/install/customization.sh
 
