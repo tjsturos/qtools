@@ -1,5 +1,5 @@
 #!/bin/bash
-# HELP: Kills worker processes by core index using SIGTERM
+# HELP: Kills worker processes by core index using SIGINT
 # PARAM: <core_index>: Core index number (required)
 # Usage: qtools kill-workers-by-core <core_index>
 # Usage: qtools kill-workers-by-core 5
@@ -33,13 +33,13 @@ if [ -z "$pids" ]; then
     exit 1
 fi
 
-# Kill each process with SIGTERM
+# Kill each process with SIGINT
 echo "Killing worker processes for core index $CORE_INDEX..."
 for pid in $pids; do
     if sudo kill -0 "$pid" 2>/dev/null; then
-        echo "Sending SIGTERM to PID $pid"
-        sudo kill -SIGTERM "$pid"
+        echo "Sending SIGINT to PID $pid"
+        sudo kill -SIGINT "$pid"
     fi
 done
 
-echo "Done. Sent SIGTERM to all worker processes for core index $CORE_INDEX"
+echo "Done. Sent SIGINT to all worker processes for core index $CORE_INDEX"
