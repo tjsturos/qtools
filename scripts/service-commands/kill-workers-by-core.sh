@@ -39,9 +39,9 @@ fi
 # Kill each process with SIGTERM
 echo "Killing worker processes for core index $CORE_INDEX..."
 for pid in $pids; do
-    if kill -0 "$pid" 2>/dev/null; then
+    if sudo kill -0 "$pid" 2>/dev/null; then
         echo "Sending SIGTERM to PID $pid"
-        kill -SIGTERM "$pid"
+        sudo kill -SIGTERM "$pid"
     fi
 done
 
