@@ -69,9 +69,9 @@ fi
 if [ "$DISABLE" == "true" ]; then
     # Remove the logger configuration
     if [ "$USE_SUDO" == "true" ]; then
-        sudo yq -i 'del(.logging)' "$QUIL_CONFIG_FILE"
+        sudo yq -i 'del(.logger)' "$QUIL_CONFIG_FILE"
     else
-        yq -i 'del(.logging)' "$QUIL_CONFIG_FILE"
+        yq -i 'del(.logger)' "$QUIL_CONFIG_FILE"
     fi
     echo "Custom logging disabled. Logs will now be output to stdout."
 else
@@ -98,19 +98,19 @@ else
     # Add or update the logger configuration
     if [ "$USE_SUDO" == "true" ]; then
         sudo yq -i "
-            .logging.path = \"$LOG_PATH\" |
-            .logging.maxSize = $MAX_SIZE |
-            .logging.maxBackups = $MAX_BACKUPS |
-            .logging.maxAge = $MAX_AGE |
-            .logging.compress = $COMPRESS
+            .logger.path = \"$LOG_PATH\" |
+            .logger.maxSize = $MAX_SIZE |
+            .logger.maxBackups = $MAX_BACKUPS |
+            .logger.maxAge = $MAX_AGE |
+            .logger.compress = $COMPRESS
         " "$QUIL_CONFIG_FILE"
     else
         yq -i "
-            .logging.path = \"$LOG_PATH\" |
-            .logging.maxSize = $MAX_SIZE |
-            .logging.maxBackups = $MAX_BACKUPS |
-            .logging.maxAge = $MAX_AGE |
-            .logging.compress = $COMPRESS
+            .logger.path = \"$LOG_PATH\" |
+            .logger.maxSize = $MAX_SIZE |
+            .logger.maxBackups = $MAX_BACKUPS |
+            .logger.maxAge = $MAX_AGE |
+            .logger.compress = $COMPRESS
         " "$QUIL_CONFIG_FILE"
     fi
 
