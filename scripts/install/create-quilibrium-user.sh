@@ -3,7 +3,6 @@
 # USAGE: qtools create-quilibrium-user
 
 QUILIBRIUM_USER="quilibrium"
-QTOOLS_GROUP="qtools"
 QUILIBRIUM_HOME="/home/$QUILIBRIUM_USER"
 QUILIBRIUM_NODE_PATH="$QUILIBRIUM_HOME/ceremonyclient/node"
 CEREMONYCLIENT_PATH="$QUILIBRIUM_HOME/ceremonyclient"

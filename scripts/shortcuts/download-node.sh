@@ -78,7 +78,6 @@ sudo mkdir -p $QUIL_NODE_PATH
 
 # Ensure quilibrium user has access if using quilibrium user
 SERVICE_USER=$(yq '.service.default_user // "quilibrium"' $QTOOLS_CONFIG_FILE 2>/dev/null || echo "quilibrium")
-QTOOLS_GROUP="qtools"
 if [ "$SERVICE_USER" == "quilibrium" ]; then
     # Ensure quilibrium user exists
     if id "quilibrium" &>/dev/null; then

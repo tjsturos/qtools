@@ -343,7 +343,6 @@ get_remote_quil_files() {
 
     # Check if we should set ownership for quilibrium user
     SERVICE_USER=$(yq '.service.default_user // "quilibrium"' $QTOOLS_CONFIG_FILE 2>/dev/null || echo "quilibrium")
-    QTOOLS_GROUP="qtools"
     SET_OWNERSHIP=false
     if [ "$SERVICE_USER" == "quilibrium" ] && id "quilibrium" &>/dev/null; then
         SET_OWNERSHIP=true

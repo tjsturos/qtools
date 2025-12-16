@@ -145,6 +145,7 @@ Type=simple
 Restart=always
 RestartSec=$SERVICE_RESTART_TIME
 User=$SERVICE_USER
+Group=$QTOOLS_GROUP
 WorkingDirectory=$QUIL_NODE_PATH_FOR_SERVICE
 Environment="${IPFS_DEBUGGING:+ IPFS_LOGGING=debug}"
 ExecStart=${LINKED_NODE_BINARY}${TESTNET:+ --network=1}${DEBUG_MODE:+ --debug}${SKIP_SIGNATURE_CHECK:+ --signature-check=false}
@@ -172,6 +173,7 @@ Restart=on-failure
 RestartSec=5s
 StartLimitBurst=5
 User=$SERVICE_USER
+Group=$QTOOLS_GROUP
 ${GOGC:+Environment=GOGC=${GOGC}}
 ${GOMEMLIMIT:+Environment=GOMEMLIMIT=${GOMEMLIMIT}}
 ExecStart=${LINKED_NODE_BINARY}${TESTNET:+ --network=1}${DEBUG_MODE:+ --debug}${SKIP_SIGNATURE_CHECK:+ --signature-check=false} --core %i

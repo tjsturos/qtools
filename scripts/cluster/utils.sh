@@ -85,6 +85,7 @@ Restart=always
 RestartSec=5
 StartLimitBurst=5
 User=$SERVICE_USER
+Group=$QTOOLS_GROUP
 WorkingDirectory=$QUIL_NODE_PATH_FOR_SERVICE
 ExecStart=$LINKED_NODE_BINARY ${SIGNATURE_CHECK:+"--signature-check=false"} ${DEBUG:+"--debug"} ${TESTNET:+"--network=1"}
 ExecStop=/bin/kill -s SIGINT $MAINPID
@@ -157,6 +158,7 @@ Restart=on-failure
 RestartSec=5
 StartLimitBurst=5
 User=$SERVICE_USER
+Group=$QTOOLS_GROUP
 ExecStart=$LINKED_NODE_BINARY --core %i ${SIGNATURE_CHECK:+"--signature-check=false"} ${DEBUG:+"--debug"} ${TESTNET:+"--network=1"}
 ExecStop=/bin/kill -s SIGINT $MAINPID
 ExecReload=/bin/kill -s SIGINT $MAINPID && $LINKED_NODE_BINARY --core %i ${SIGNATURE_CHECK:+"--signature-check=false"} ${DEBUG:+"--debug"} ${TESTNET:+"--network=1"}

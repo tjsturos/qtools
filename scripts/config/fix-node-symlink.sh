@@ -41,7 +41,6 @@ if [ "$CURRENT_LINK" != "$EXPECTED_PATH"* ]; then
         log "Binary found at old location: $CURRENT_LINK"
 
         # Ensure quilibrium directory exists
-        QTOOLS_GROUP="qtools"
         sudo mkdir -p "$EXPECTED_PATH"
         sudo chown -R quilibrium:$QTOOLS_GROUP "$EXPECTED_PATH" 2>/dev/null || true
         # Ensure qtools group can read, write, and execute

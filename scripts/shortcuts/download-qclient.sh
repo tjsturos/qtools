@@ -83,7 +83,6 @@ cd $QUIL_CLIENT_PATH
 
 # Ensure quilibrium user has access if using quilibrium user
 SERVICE_USER=$(yq '.service.default_user // "quilibrium"' $QTOOLS_CONFIG_FILE 2>/dev/null || echo "quilibrium")
-QTOOLS_GROUP="qtools"
 if [ "$SERVICE_USER" == "quilibrium" ] && id "quilibrium" &>/dev/null; then
     sudo chown -R quilibrium:$QTOOLS_GROUP "$QUIL_CLIENT_PATH" 2>/dev/null || true
     # Ensure qtools group can read, write, and execute
