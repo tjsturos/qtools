@@ -75,8 +75,17 @@ if [ "$USE_FILE_LOGS" == "true" ]; then
 
     # Check if log file exists
     if [ ! -f "$LOG_FILE" ]; then
-        echo "Error: Log file not found: $LOG_FILE"
-        exit 1
+        # File might exist but be owned by quilibrium - check with sudo
+        if ! sudo test -f "$LOG_FILE" 2>/dev/null; then
+            echo "Error: Log file not found: $LOG_FILE"
+            exit 1
+        fi
+    fi
+
+    # Set permissions to u=rwx,g=rwx,o=r (774) so qtools group can read without sudo
+    # Use sudo to change permissions since file is owned by quilibrium
+    if [ -f "$LOG_FILE" ] || sudo test -f "$LOG_FILE" 2>/dev/null; then
+        sudo chmod u=rwx,g=rwx,o=r "$LOG_FILE" 2>/dev/null || true
     fi
 
     # Build tail command - show last N lines then follow (like journalctl)
