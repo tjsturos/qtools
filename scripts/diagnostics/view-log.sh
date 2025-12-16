@@ -8,7 +8,7 @@ CORE_ID=false
 LINES=""
 
 # Check if logger config exists
-LOGGER_CONFIG=$(yq '.engine.logger' $QUIL_CONFIG_FILE 2>/dev/null)
+LOGGER_CONFIG=$(yq '.logger' $QUIL_CONFIG_FILE 2>/dev/null)
 echo "LOGGER_CONFIG: $LOGGER_CONFIG"
 USE_FILE_LOGS=false
 
@@ -16,7 +16,7 @@ if [ "$LOGGER_CONFIG" != "null" ] && [ -n "$LOGGER_CONFIG" ]; then
     echo "Logger config found: $LOGGER_CONFIG"
     USE_FILE_LOGS=true
     # Get logger path, default to .logs
-    LOG_PATH=$(yq '.engine.logger.path // ".logs"' $QUIL_CONFIG_FILE)
+    LOG_PATH=$(yq '.logger.path // ".logs"' $QUIL_CONFIG_FILE)
     # Resolve relative path to absolute path within QUIL_NODE_PATH
     if [[ "$LOG_PATH" != /* ]]; then
         LOG_DIR="$QUIL_NODE_PATH/$LOG_PATH"
@@ -35,7 +35,6 @@ while [[ $# -gt 0 ]]; do
         --core|--worker)
             if [[ -n $2 && $2 =~ ^[0-9]+$ ]]; then
                 CORE_ID=$2
-                WORKER_ID=$2
                 shift 2
             else
                 echo "Error: $1 option requires a valid numeric core/worker ID"
