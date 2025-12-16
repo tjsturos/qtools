@@ -9,6 +9,7 @@ LINES=""
 
 # Check if logger config exists
 LOGGER_CONFIG=$(yq '.engine.logger' $QUIL_CONFIG_FILE 2>/dev/null)
+echo "LOGGER_CONFIG: $LOGGER_CONFIG"
 USE_FILE_LOGS=false
 
 if [ "$LOGGER_CONFIG" != "null" ] && [ -n "$LOGGER_CONFIG" ]; then
