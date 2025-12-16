@@ -1,36 +1,88 @@
 #!/bin/bash
-# HELP: Manage qtools configuration file - get and set config values, diagnose config file issues
-# PARAM: get-value <yml-key> [--default <value>]: Get a configuration value by YAML key path (e.g., service.testnet). Use --default to return a value if key doesn't exist.
-# PARAM: set-value <yml-key> <value>: Set a configuration value by YAML key path
-# PARAM: validate: Validate that the config file can be read properly
-# Usage: qtools config get-value <yml-key> [--default <value>]
-# Usage: qtools config set-value <yml-key> <value>
-# Usage: qtools config validate
+# HELP: Manage qtools and quil configuration files - get and set config values, diagnose config file issues
+# PARAM: get-value <yml-key> [--default <value>] [--config <qtools|quil>]: Get a configuration value by YAML key path. Use --config to specify which config file (default: qtools).
+# PARAM: set-value <yml-key> <value> [--quiet] [--config <qtools|quil>]: Set a configuration value by YAML key path. Use --config to specify which config file (default: qtools).
+# PARAM: validate [--config <qtools|quil>]: Validate that the config file can be read properly. Use --config to specify which config file (default: qtools).
+# Usage: qtools config get-value <yml-key> [--default <value>] [--config <qtools|quil>]
+# Usage: qtools config set-value <yml-key> <value> [--quiet] [--config <qtools|quil>]
+# Usage: qtools config validate [--config <qtools|quil>]
 
 # Function to display usage
 usage() {
     echo "Usage: qtools config <command> [arguments]"
     echo ""
     echo "Commands:"
-    echo "  get-value <yml-key> [--default <value>]  Get a configuration value by YAML key path"
+    echo "  get-value <yml-key> [--default <value>] [--config <qtools|quil>]  Get a configuration value"
     echo "                                           Example: qtools config get-value service.testnet"
     echo "                                           Example: qtools config get-value service.testnet --default false"
-    echo "                                           Example: qtools config get-value scheduled_tasks.backup.enabled"
+    echo "                                           Example: qtools config get-value p2p.listenMultiaddr --config quil"
     echo ""
-    echo "  set-value <yml-key> <value>  Set a configuration value by YAML key path"
-    echo "                               Example: qtools config set-value service.testnet true"
-    echo "                               Example: qtools config set-value scheduled_tasks.backup.backup_url https://backups.example.com"
+    echo "  set-value <yml-key> <value> [--quiet] [--config <qtools|quil>]  Set a configuration value"
+    echo "                                         Example: qtools config set-value service.testnet true"
+    echo "                                         Example: qtools config set-value p2p.listenMultiaddr \"/ip4/0.0.0.0/tcp/8336\" --config quil"
     echo ""
-    echo "  validate               Validate that the config file can be read properly"
-    echo "                         Checks file existence, readability, and YAML validity"
+    echo "  validate [--config <qtools|quil>]      Validate that the config file can be read properly"
+    echo "                                         Checks file existence, readability, and YAML validity"
+    echo "                                         Example: qtools config validate --config quil"
     echo ""
     echo "  help                   Show this help message"
+    echo ""
+    echo "Options:"
+    echo "  --config <qtools|quil>  Specify which config file to use (default: qtools)"
+    echo "                          qtools: $QTOOLS_CONFIG_FILE"
+    if [ -n "$QUIL_CONFIG_FILE" ]; then
+        echo "                          quil: $QUIL_CONFIG_FILE"
+    else
+        echo "                          quil: (not set - node may not be initialized)"
+    fi
     exit 1
+}
+
+# Function to determine which config file to use
+get_config_file() {
+    local config_type="${1:-qtools}"
+    case "$config_type" in
+        qtools)
+            echo "$QTOOLS_CONFIG_FILE"
+            ;;
+        quil)
+            if [ -z "$QUIL_CONFIG_FILE" ]; then
+                echo "Error: QUIL_CONFIG_FILE is not set. Make sure the node is initialized." >&2
+                exit 1
+            fi
+            echo "$QUIL_CONFIG_FILE"
+            ;;
+        *)
+            echo "Error: Invalid config type '$config_type'. Must be 'qtools' or 'quil'." >&2
+            exit 1
+            ;;
+    esac
 }
 
 # Function to validate config file
 validate_config() {
-    local config_file="$QTOOLS_CONFIG_FILE"
+    local config_type="qtools"
+
+    # Parse arguments
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --config)
+                if [ -z "$2" ]; then
+                    echo "Error: --config requires a value (qtools or quil)"
+                    exit 1
+                fi
+                config_type="$2"
+                shift 2
+                ;;
+            *)
+                echo "Error: Unknown argument: $1"
+                usage
+                exit 1
+                ;;
+        esac
+    done
+
+    local config_file=$(get_config_file "$config_type")
     local errors=0
 
     echo "Validating qtools config file: $config_file"
@@ -75,12 +127,22 @@ validate_config() {
     echo ""
     echo "Testing access to common configuration keys:"
 
-    local test_keys=(
-        "service.testnet"
-        "service.debug"
-        "scheduled_tasks.backup.enabled"
-        "settings.log_file"
-    )
+    local test_keys
+    if [ "$config_type" == "quil" ]; then
+        test_keys=(
+            "p2p.listenMultiaddr"
+            "p2p.peerPrivKey"
+            "engine.syncTimeout"
+            "key.keyManagerFile.encryptionKey"
+        )
+    else
+        test_keys=(
+            "service.testnet"
+            "service.debug"
+            "scheduled_tasks.backup.enabled"
+            "settings.log_file"
+        )
+    fi
 
     local key_errors=0
     for key in "${test_keys[@]}"; do
@@ -111,6 +173,7 @@ get_value() {
     local yml_key=""
     local default_value=""
     local use_default=false
+    local config_type="qtools"
 
     # Parse arguments
     while [[ $# -gt 0 ]]; do
@@ -118,11 +181,20 @@ get_value() {
             --default)
                 if [ -z "$2" ]; then
                     echo "Error: --default requires a value"
-                    echo "Usage: qtools config get-value <yml-key> [--default <value>]"
+                    echo "Usage: qtools config get-value <yml-key> [--default <value>] [--config <qtools|quil>]"
                     exit 1
                 fi
                 default_value="$2"
                 use_default=true
+                shift 2
+                ;;
+            --config)
+                if [ -z "$2" ]; then
+                    echo "Error: --config requires a value (qtools or quil)"
+                    echo "Usage: qtools config get-value <yml-key> [--default <value>] [--config <qtools|quil>]"
+                    exit 1
+                fi
+                config_type="$2"
                 shift 2
                 ;;
             *)
@@ -130,7 +202,7 @@ get_value() {
                     yml_key="$1"
                 else
                     echo "Error: Unexpected argument: $1"
-                    echo "Usage: qtools config get-value <yml-key> [--default <value>]"
+                    echo "Usage: qtools config get-value <yml-key> [--default <value>] [--config <qtools|quil>]"
                     exit 1
                 fi
                 shift
@@ -140,19 +212,22 @@ get_value() {
 
     if [ -z "$yml_key" ]; then
         echo "Error: YAML key is required"
-        echo "Usage: qtools config get-value <yml-key> [--default <value>]"
+        echo "Usage: qtools config get-value <yml-key> [--default <value>] [--config <qtools|quil>]"
         echo "Example: qtools config get-value service.testnet"
         echo "Example: qtools config get-value service.testnet --default false"
+        echo "Example: qtools config get-value p2p.listenMultiaddr --config quil"
         exit 1
     fi
 
+    local config_file=$(get_config_file "$config_type")
+
     # Validate config file first
-    if [ ! -f "$QTOOLS_CONFIG_FILE" ]; then
+    if [ ! -f "$config_file" ]; then
         if [ "$use_default" == "true" ]; then
             echo "$default_value"
             return 0
         fi
-        echo "Error: Config file does not exist at: $QTOOLS_CONFIG_FILE"
+        echo "Error: Config file does not exist at: $config_file"
         exit 1
     fi
 
@@ -169,7 +244,7 @@ get_value() {
     local yq_path=".$yml_key"
 
     # Try to get the value
-    local value=$(yq eval "$yq_path" "$QTOOLS_CONFIG_FILE" 2>/dev/null)
+    local value=$(yq eval "$yq_path" "$config_file" 2>/dev/null)
     local exit_code=$?
 
     if [ $exit_code -ne 0 ]; then
@@ -201,46 +276,70 @@ set_value() {
     local yml_key=""
     local value=""
     local quiet=false
+    local config_type="qtools"
 
-    # Parse arguments
-    while [[ $# -gt 0 ]]; do
-        case "$1" in
+    # Parse arguments - need to handle --config before processing value (which may contain spaces)
+    local args=("$@")
+    local processed_args=()
+    local i=0
+
+    while [ $i -lt ${#args[@]} ]; do
+        case "${args[$i]}" in
             --quiet|-q)
                 quiet=true
-                shift
+                ((i++))
+                ;;
+            --config)
+                if [ $((i+1)) -lt ${#args[@]} ]; then
+                    config_type="${args[$((i+1))]}"
+                    i=$((i+2))
+                else
+                    echo "Error: --config requires a value (qtools or quil)"
+                    exit 1
+                fi
                 ;;
             *)
-                if [ -z "$yml_key" ]; then
-                    yml_key="$1"
-                else
-                    if [ -z "$value" ]; then
-                        value="$1"
-                    else
-                        value="$value $1"
-                    fi
-                fi
-                shift
+                processed_args+=("${args[$i]}")
+                ((i++))
                 ;;
         esac
     done
 
+    # Now parse the remaining arguments for yml_key and value
+    local arg_index=0
+    for arg in "${processed_args[@]}"; do
+        if [ -z "$yml_key" ]; then
+            yml_key="$arg"
+        else
+            if [ -z "$value" ]; then
+                value="$arg"
+            else
+                value="$value $arg"
+            fi
+        fi
+        ((arg_index++))
+    done
+
     if [ -z "$yml_key" ]; then
         echo "Error: YAML key is required"
-        echo "Usage: qtools config set-value <yml-key> <value> [--quiet]"
+        echo "Usage: qtools config set-value <yml-key> <value> [--quiet] [--config <qtools|quil>]"
         echo "Example: qtools config set-value service.testnet true"
+        echo "Example: qtools config set-value p2p.listenMultiaddr \"/ip4/0.0.0.0/tcp/8336\" --config quil"
         exit 1
     fi
 
     if [ -z "$value" ]; then
         echo "Error: Value is required"
-        echo "Usage: qtools config set-value <yml-key> <value> [--quiet]"
+        echo "Usage: qtools config set-value <yml-key> <value> [--quiet] [--config <qtools|quil>]"
         echo "Example: qtools config set-value service.testnet true"
         exit 1
     fi
 
+    local config_file=$(get_config_file "$config_type")
+
     # Validate config file first
-    if [ ! -f "$QTOOLS_CONFIG_FILE" ]; then
-        echo "Error: Config file does not exist at: $QTOOLS_CONFIG_FILE"
+    if [ ! -f "$config_file" ]; then
+        echo "Error: Config file does not exist at: $config_file"
         exit 1
     fi
 
@@ -250,7 +349,7 @@ set_value() {
     fi
 
     # Validate YAML before modifying
-    if ! yq eval '.' "$QTOOLS_CONFIG_FILE" >/dev/null 2>&1; then
+    if ! yq eval '.' "$config_file" >/dev/null 2>&1; then
         echo "Error: Config file contains invalid YAML. Please fix it before making changes."
         exit 1
     fi
@@ -259,17 +358,18 @@ set_value() {
     local yq_path=".$yml_key"
 
     # Get the old value for display
-    local old_value=$(yq eval "$yq_path" "$QTOOLS_CONFIG_FILE" 2>/dev/null)
+    local old_value=$(yq eval "$yq_path" "$config_file" 2>/dev/null)
 
     # Set the value using yq
     # Use eval -i to modify in place
     # Quote the value to handle strings properly, but allow yq to interpret booleans/numbers
-    if yq eval -i "$yq_path = \"$value\"" "$QTOOLS_CONFIG_FILE" 2>/dev/null; then
+    if yq eval -i "$yq_path = \"$value\"" "$config_file" 2>/dev/null; then
         # Verify the change was made
-        local new_value=$(yq eval "$yq_path" "$QTOOLS_CONFIG_FILE" 2>/dev/null)
+        local new_value=$(yq eval "$yq_path" "$config_file" 2>/dev/null)
 
         if [ "$quiet" != "true" ]; then
             echo "✓ Configuration updated successfully"
+            echo "  Config: $config_type"
             echo "  Key: $yml_key"
             if [ "$old_value" != "null" ] && [ -n "$old_value" ]; then
                 echo "  Old value: $old_value"
@@ -298,7 +398,8 @@ case "$1" in
         set_value "$@"
         ;;
     validate)
-        validate_config
+        shift
+        validate_config "$@"
         ;;
     help|--help|-h)
         usage

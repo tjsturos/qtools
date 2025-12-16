@@ -1,3 +1,4 @@
+# IGNORE - This is the old config script. Use 'qtools config' command instead.
 # Handle config commands for qtools and quil configs
 # Usage: config <qtools|quil> <get|set> <path> [--value <value>]
 # Example: config qtools get scheduled_tasks backup backup_url
@@ -13,7 +14,7 @@ declare -A CONFIG_SHORTCUTS=(
     ["backup-enabled"]=".scheduled_tasks.backup.enabled"
     ["backup-cron"]=".scheduled_tasks.backup.cron_expression"
     ["node-updates"]=".scheduled_tasks.updates.node.enabled"
-    ["node-update-cron"]=".scheduled_tasks.updates.node.cron_expression" 
+    ["node-update-cron"]=".scheduled_tasks.updates.node.cron_expression"
     ["node-skip-version"]=".scheduled_tasks.updates.node.skip_version"
     ["qtools-updates"]=".scheduled_tasks.updates.qtools.enabled"
     ["qtools-update-cron"]=".scheduled_tasks.updates.qtools.cron_expression"
@@ -34,28 +35,28 @@ config() {
     local operation="$2"
     local value=""
     local config_file=""
-    
+
     # Validate config type
     if [[ "$config_type" != "qtools" && "$config_type" != "quil" ]]; then
         echo "Error: First argument must be either 'qtools' or 'quil'"
         echo "Usage: config <qtools|quil> <get|set> <path> [--value <value>]"
         return 1
     fi
-    
+
     # Set config file based on type
     if [[ "$config_type" == "qtools" ]]; then
         config_file="$QTOOLS_CONFIG_FILE"
     else
-        config_file="$QUIL_CONFIG_FILE" 
+        config_file="$QUIL_CONFIG_FILE"
     fi
-    
+
     # Validate operation
     if [[ "$operation" != "get" && "$operation" != "set" ]]; then
         echo "Error: Second argument must be either 'get' or 'set'"
         echo "Usage: config <qtools|quil> <get|set> <path> [--value <value>]"
         return 1
     fi
-    
+
     # Remove first two arguments to get the path
     shift 2
     local path=""
@@ -73,10 +74,10 @@ config() {
             shift
         done
     fi
-    
+
     # Build the yaml path
-  
-    
+
+
     if [[ "$operation" == "get" ]]; then
         yq eval "$path" "$config_file"
     else
