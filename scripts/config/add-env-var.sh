@@ -18,8 +18,7 @@ add_env_var() {
     # Construct the export line
     local EXPORT_LINE="export $VAR_NAME=\"$VAR_VALUE\""
 
-    # Add the export to .bashrc
-    log "Adding export $VAR_NAME=\"$VAR_VALUE\" to $BASHRC_FILE"
+    # Add the export to .bashrc (append_to_file already logs)
     append_to_file "$BASHRC_FILE" "$EXPORT_LINE" true
 }
 
@@ -58,7 +57,7 @@ add_env_var "GOPATH" "$HOME/go"
 if ! grep -q "GOPATH/bin.*GOROOT/bin" "$BASHRC_FILE" 2>/dev/null; then
     PATH_ADDITION="export PATH=\$GOPATH/bin:\$GOROOT/bin:\$PATH"
     if ! grep -qFx "$PATH_ADDITION" "$BASHRC_FILE" 2>/dev/null; then
-        log "Adding Go PATH additions to $BASHRC_FILE"
+        # append_to_file already logs
         append_to_file "$BASHRC_FILE" "$PATH_ADDITION" true
     fi
 fi
