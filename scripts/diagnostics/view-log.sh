@@ -12,6 +12,7 @@ LOGGER_CONFIG=$(yq '.engine.logger' $QUIL_CONFIG_FILE 2>/dev/null)
 USE_FILE_LOGS=false
 
 if [ "$LOGGER_CONFIG" != "null" ] && [ -n "$LOGGER_CONFIG" ]; then
+    echo "Logger config found: $LOGGER_CONFIG"
     USE_FILE_LOGS=true
     # Get logger path, default to .logs
     LOG_PATH=$(yq '.engine.logger.path // ".logs"' $QUIL_CONFIG_FILE)
@@ -21,7 +22,11 @@ if [ "$LOGGER_CONFIG" != "null" ] && [ -n "$LOGGER_CONFIG" ]; then
     else
         LOG_DIR="$LOG_PATH"
     fi
+else
+    echo "No logger config found, using journalctl"
 fi
+
+
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
