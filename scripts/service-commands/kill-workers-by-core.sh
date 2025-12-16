@@ -24,12 +24,9 @@ if [[ ! "$CORE_INDEX" =~ ^[0-9]+$ ]]; then
     exit 1
 fi
 
-# Get binary name
-binary_name=$(basename "$LINKED_NODE_BINARY")
-
 # Find all PIDs matching the core index
-# Use pgrep to find processes with --core <core_index> in command line
-pids=$(pgrep -f "${binary_name}.*--core ${CORE_INDEX}" 2>/dev/null)
+# Use pgrep to find processes with core=<core_index> in command line
+pids=$(pgrep -f "core=${CORE_INDEX}" 2>/dev/null)
 
 if [ -z "$pids" ]; then
     echo "No worker processes found for core index $CORE_INDEX"
