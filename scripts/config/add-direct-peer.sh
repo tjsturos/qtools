@@ -175,6 +175,13 @@ else
         done < <(journalctl -u $QUIL_SERVICE_NAME -f -n 0)
     fi
 
-    echo "Direct peer added successfully. Restarting service..."
-    qtools restart
+    echo "Direct peer added successfully."
+    echo -e "${BLUE}Restarting service in 10 seconds... (Press any key to skip restart)${RESET}"
+    read -t 10 -n 1 -s input
+    if [[ -n "$input" ]]; then
+        echo -e "\n${YELLOW}Skipping restart. Please restart the service manually when ready.${RESET}"
+    else
+        echo -e "\nRestarting service..."
+        qtools restart
+    fi
 fi
