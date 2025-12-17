@@ -176,12 +176,12 @@ else
     fi
 
     echo "Direct peer added successfully."
-    echo -e "${BLUE}Restarting service in 10 seconds... (Press any key to skip restart)${RESET}"
-    read -t 10 -n 1 -s input
-    if [[ -n "$input" ]]; then
-        echo -e "\n${YELLOW}Skipping restart. Please restart the service manually when ready.${RESET}"
+    echo "Press any key to skip restart or wait 10 seconds..."
+    read -s -n 1 -t 10
+    if [ $? -eq 0 ]; then
+        echo "You pressed a key! Skipping restart."
     else
-        echo -e "\nRestarting service..."
+        echo "Timeout reached. Restarting service..."
         qtools restart
     fi
 fi
