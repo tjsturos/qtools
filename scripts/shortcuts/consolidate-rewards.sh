@@ -25,6 +25,13 @@ while [[ $# -gt 0 ]]; do
         SKIP_SIG_CHECK=true
         shift
         ;;
+        --signature-check=*)
+        VALUE="${1#*=}"
+        if [ "$VALUE" == "false" ]; then
+            SKIP_SIG_CHECK=true
+        fi
+        shift
+        ;;
         --public-rpc|-p)
         PUBLIC_RPC=true
         shift

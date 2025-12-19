@@ -1,7 +1,7 @@
 #!/bin/bash
 # HELP: Split tokens evenly by 100
 # PARAM: --token: Token address to split (required)
-# PARAM: --amount: Amount to split (required) 
+# PARAM: --amount: Amount to split (required)
 # PARAM: --skip-sig-check: Skip signature check (optional)
 # PARAM: --config: Path to the config file (optional)
 
@@ -34,6 +34,13 @@ while [[ $# -gt 0 ]]; do
         ;;
         --skip-sig-check)
         SKIP_SIG_CHECK=true
+        shift
+        ;;
+        --signature-check=*)
+        VALUE="${1#*=}"
+        if [ "$VALUE" == "false" ]; then
+            SKIP_SIG_CHECK=true
+        fi
         shift
         ;;
         --wait)
@@ -99,7 +106,7 @@ split_token() {
     if [ -n "$DEBUG" ]; then
         echo "$CMD"
     fi
-    
+
     $CMD > /dev/null 2>&1
 }
 
@@ -123,7 +130,7 @@ get_all_tokens() {
 
 split_all() {
     echo "Splitting all tokens with amount $AMOUNT"
-   
+
     # Escape decimal point for grep
     local TOKENS=($(get_all_tokens))
     echo "Found tokens:"
@@ -148,7 +155,7 @@ if [ "$WAIT" = "true" ]; then
     while true; do
         # Get tokens with specified amount
         local REMAINING_TOKENS=($(get_all_tokens))
-        
+
         # Exit if no more tokens with target amount
         if [ ${#REMAINING_TOKENS[@]} -eq 0 ]; then
             echo "No more tokens with amount $AMOUNT found. Exiting..."

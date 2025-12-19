@@ -67,7 +67,13 @@ while [[ $# -gt 0 ]]; do
             ;;
         --skip-sig-check|--skip-signature-check)
             SKIP_SIGNATURE_CHECK=true
-
+            shift
+            ;;
+        --signature-check=*)
+            VALUE="${1#*=}"
+            if [ "$VALUE" == "false" ]; then
+                SKIP_SIGNATURE_CHECK=true
+            fi
             shift
             ;;
         --ipfs-debug)
