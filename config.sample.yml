@@ -4,7 +4,7 @@ release_version: 1.4.19.1
 current_node_version: 1.4.19.1
 current_qclient_version: 1.4.19.1
 os_arch: linux-amd64
-qtools_version: 25
+qtools_version: 26
 qclient_cli_name: qclient
 ssh:
     allow_from_ip: false
@@ -139,3 +139,8 @@ dev:
     default_repo_branch: develop
     default_repo_url: https://github.com/tjsturos/ceremonyclient.git
     default_repo_path: $HOME/quil-dev
+    remote_build:
+        ssh_user: ""
+        ssh_hostname: ""
+        file_path: ""
+        ssh_identity: ""

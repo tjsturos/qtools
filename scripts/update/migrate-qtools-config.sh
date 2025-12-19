@@ -193,6 +193,28 @@ VERSION_25() {
     fi
 }
 
+# Version 26: Add dev.remote_build configuration for fetch-dev-binary script
+VERSION_26() {
+    local VERSION=26
+    current_version=$(yq eval '.qtools_version // "0"' "$QTOOLS_CONFIG_FILE")
+    echo "Current version: $current_version vs $VERSION"
+    if [ "$current_version" -lt "$VERSION" ]; then
+        echo "Migrating config.yml to version 26"
+
+        # Add dev.remote_build section with default empty values if it doesn't exist
+        if ! yq eval '.dev.remote_build' "$QTOOLS_CONFIG_FILE" &>/dev/null || [ "$(yq eval '.dev.remote_build' "$QTOOLS_CONFIG_FILE")" == "null" ]; then
+            yq eval -i '.dev.remote_build.ssh_user = ""' "$QTOOLS_CONFIG_FILE"
+            yq eval -i '.dev.remote_build.ssh_hostname = ""' "$QTOOLS_CONFIG_FILE"
+            yq eval -i '.dev.remote_build.file_path = ""' "$QTOOLS_CONFIG_FILE"
+            yq eval -i '.dev.remote_build.ssh_identity = ""' "$QTOOLS_CONFIG_FILE"
+            echo "Added dev.remote_build configuration section"
+        fi
+
+        yq eval -i '.qtools_version = 26' "$QTOOLS_CONFIG_FILE"
+        echo "Updated qtools_version to 26"
+    fi
+}
+
 # run the version migration
 VERSION_2
 VERSION_3
@@ -200,6 +222,7 @@ VERSION_5
 VERSION_21
 VERSION_24
 VERSION_25
+VERSION_26
 
 yq eval -i ".qtools_version = \"$(get_latest_qtools_version)\"" "$QTOOLS_CONFIG_FILE"
 
