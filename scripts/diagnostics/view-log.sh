@@ -4,6 +4,7 @@
 
 IS_CLUSTERING_ENABLED="$(yq '.service.clustering.enabled' $QTOOLS_CONFIG_FILE)"
 FILTER_TEXT=""
+EXCLUDE_TEXT=""
 CORE_ID=false
 LINES=""
 
@@ -49,6 +50,10 @@ while [[ $# -gt 0 ]]; do
             FILTER_TEXT=$2
             shift 2
             ;;
+        --exclude)
+            EXCLUDE_TEXT=$2
+            shift 2
+            ;;
         *)
             echo "Unknown option: $1"
             exit 1
@@ -89,17 +94,30 @@ if [ "$USE_FILE_LOGS" == "true" ]; then
     fi
 
     # Build tail command - show last N lines then follow (like journalctl)
+    # Build grep pipeline for filtering/excluding
+    GREP_PIPELINE=""
+    if [ -n "$FILTER_TEXT" ]; then
+        GREP_PIPELINE="grep --color=always \"$FILTER_TEXT\""
+    fi
+    if [ -n "$EXCLUDE_TEXT" ]; then
+        if [ -n "$GREP_PIPELINE" ]; then
+            GREP_PIPELINE="$GREP_PIPELINE | grep -v --color=always \"$EXCLUDE_TEXT\""
+        else
+            GREP_PIPELINE="grep -v --color=always \"$EXCLUDE_TEXT\""
+        fi
+    fi
+
     if [ -n "$LINES" ]; then
         # Show last N lines, then follow
-        if [ -n "$FILTER_TEXT" ]; then
-            tail -n "$LINES" -f "$LOG_FILE" | grep --color=always "$FILTER_TEXT"
+        if [ -n "$GREP_PIPELINE" ]; then
+            tail -n "$LINES" -f "$LOG_FILE" | eval "$GREP_PIPELINE"
         else
             tail -n "$LINES" -f "$LOG_FILE"
         fi
     else
         # Follow logs from end
-        if [ -n "$FILTER_TEXT" ]; then
-            tail -f "$LOG_FILE" | grep --color=always "$FILTER_TEXT"
+        if [ -n "$GREP_PIPELINE" ]; then
+            tail -f "$LOG_FILE" | eval "$GREP_PIPELINE"
         else
             tail -f "$LOG_FILE"
         fi
@@ -108,12 +126,25 @@ if [ "$USE_FILE_LOGS" == "true" ]; then
 fi
 
 # Fall back to journalctl if logger config is not set
+# Build journalctl command with optional filtering and excluding
 if [ "$IS_CLUSTERING_ENABLED" == "true" ]; then
     if [ "$CORE_ID" == "false" ]; then
-        sudo journalctl -u $QUIL_SERVICE_NAME -f --no-hostname -o cat ${FILTER_TEXT:+--grep="$FILTER_TEXT"} ${LINES:+-n $LINES}
+        if [ -n "$EXCLUDE_TEXT" ]; then
+            sudo journalctl -u $QUIL_SERVICE_NAME -f --no-hostname -o cat ${FILTER_TEXT:+--grep="$FILTER_TEXT"} ${LINES:+-n $LINES} | grep -v --color=always "$EXCLUDE_TEXT"
+        else
+            sudo journalctl -u $QUIL_SERVICE_NAME -f --no-hostname -o cat ${FILTER_TEXT:+--grep="$FILTER_TEXT"} ${LINES:+-n $LINES}
+        fi
     else
-        sudo journalctl -u $QUIL_DATA_WORKER_SERVICE_NAME@$CORE_ID -f --no-hostname -o cat ${FILTER_TEXT:+--grep="$FILTER_TEXT"} ${LINES:+-n $LINES}
+        if [ -n "$EXCLUDE_TEXT" ]; then
+            sudo journalctl -u $QUIL_DATA_WORKER_SERVICE_NAME@$CORE_ID -f --no-hostname -o cat ${FILTER_TEXT:+--grep="$FILTER_TEXT"} ${LINES:+-n $LINES} | grep -v --color=always "$EXCLUDE_TEXT"
+        else
+            sudo journalctl -u $QUIL_DATA_WORKER_SERVICE_NAME@$CORE_ID -f --no-hostname -o cat ${FILTER_TEXT:+--grep="$FILTER_TEXT"} ${LINES:+-n $LINES}
+        fi
     fi
 else
-    sudo journalctl -u $QUIL_SERVICE_NAME -f --no-hostname -o cat ${FILTER_TEXT:+--grep="$FILTER_TEXT"} ${LINES:+-n $LINES}
+    if [ -n "$EXCLUDE_TEXT" ]; then
+        sudo journalctl -u $QUIL_SERVICE_NAME -f --no-hostname -o cat ${FILTER_TEXT:+--grep="$FILTER_TEXT"} ${LINES:+-n $LINES} | grep -v --color=always "$EXCLUDE_TEXT"
+    else
+        sudo journalctl -u $QUIL_SERVICE_NAME -f --no-hostname -o cat ${FILTER_TEXT:+--grep="$FILTER_TEXT"} ${LINES:+-n $LINES}
+    fi
 fi
