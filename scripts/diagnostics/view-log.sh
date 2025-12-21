@@ -45,7 +45,7 @@ while [[ $# -gt 0 ]]; do
             LINES=$2
             shift 2
             ;;
-        --filter)
+        --filter|--grep)
             FILTER_TEXT=$2
             shift 2
             ;;
