@@ -101,9 +101,9 @@ if [ "$USE_FILE_LOGS" == "true" ]; then
     fi
     if [ -n "$EXCLUDE_TEXT" ]; then
         if [ -n "$GREP_PIPELINE" ]; then
-            GREP_PIPELINE="$GREP_PIPELINE | grep -v --color=always \"$EXCLUDE_TEXT\""
+            GREP_PIPELINE="$GREP_PIPELINE | grep -E -v --color=always \"$EXCLUDE_TEXT\""
         else
-            GREP_PIPELINE="grep -v --color=always \"$EXCLUDE_TEXT\""
+            GREP_PIPELINE="grep -E -v --color=always \"$EXCLUDE_TEXT\""
         fi
     fi
 
@@ -130,20 +130,20 @@ fi
 if [ "$IS_CLUSTERING_ENABLED" == "true" ]; then
     if [ "$CORE_ID" == "false" ]; then
         if [ -n "$EXCLUDE_TEXT" ]; then
-            sudo journalctl -u $QUIL_SERVICE_NAME -f --no-hostname -o cat ${FILTER_TEXT:+--grep="$FILTER_TEXT"} ${LINES:+-n $LINES} | grep -v --color=always "$EXCLUDE_TEXT"
+            sudo journalctl -u $QUIL_SERVICE_NAME -f --no-hostname -o cat ${FILTER_TEXT:+--grep="$FILTER_TEXT"} ${LINES:+-n $LINES} | grep -E -v --color=always "$EXCLUDE_TEXT"
         else
             sudo journalctl -u $QUIL_SERVICE_NAME -f --no-hostname -o cat ${FILTER_TEXT:+--grep="$FILTER_TEXT"} ${LINES:+-n $LINES}
         fi
     else
         if [ -n "$EXCLUDE_TEXT" ]; then
-            sudo journalctl -u $QUIL_DATA_WORKER_SERVICE_NAME@$CORE_ID -f --no-hostname -o cat ${FILTER_TEXT:+--grep="$FILTER_TEXT"} ${LINES:+-n $LINES} | grep -v --color=always "$EXCLUDE_TEXT"
+            sudo journalctl -u $QUIL_DATA_WORKER_SERVICE_NAME@$CORE_ID -f --no-hostname -o cat ${FILTER_TEXT:+--grep="$FILTER_TEXT"} ${LINES:+-n $LINES} | grep -E -v --color=always "$EXCLUDE_TEXT"
         else
             sudo journalctl -u $QUIL_DATA_WORKER_SERVICE_NAME@$CORE_ID -f --no-hostname -o cat ${FILTER_TEXT:+--grep="$FILTER_TEXT"} ${LINES:+-n $LINES}
         fi
     fi
 else
     if [ -n "$EXCLUDE_TEXT" ]; then
-        sudo journalctl -u $QUIL_SERVICE_NAME -f --no-hostname -o cat ${FILTER_TEXT:+--grep="$FILTER_TEXT"} ${LINES:+-n $LINES} | grep -v --color=always "$EXCLUDE_TEXT"
+        sudo journalctl -u $QUIL_SERVICE_NAME -f --no-hostname -o cat ${FILTER_TEXT:+--grep="$FILTER_TEXT"} ${LINES:+-n $LINES} | grep -E -v --color=always "$EXCLUDE_TEXT"
     else
         sudo journalctl -u $QUIL_SERVICE_NAME -f --no-hostname -o cat ${FILTER_TEXT:+--grep="$FILTER_TEXT"} ${LINES:+-n $LINES}
     fi
