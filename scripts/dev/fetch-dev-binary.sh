@@ -1,6 +1,22 @@
 #!/bin/bash
 # HELP: Fetches a dev build from a remote server and sets it up as the active node binary
-# Usage: qtools fetch-dev-binary
+# Usage: qtools fetch-dev-binary [--path <remote_file_path>]
+
+# Parse command line arguments
+REMOTE_FILE_PATH_OVERRIDE=""
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --path)
+            REMOTE_FILE_PATH_OVERRIDE="$2"
+            shift 2
+            ;;
+        *)
+            echo "Unknown option: $1"
+            echo "Usage: qtools fetch-dev-binary [--path <remote_file_path>]"
+            exit 1
+            ;;
+    esac
+done
 
 log "Fetching dev binary from remote server..."
 
@@ -9,6 +25,11 @@ SSH_USER=$(yq '.dev.remote_build.ssh_user // ""' $QTOOLS_CONFIG_FILE)
 SSH_HOSTNAME=$(yq '.dev.remote_build.ssh_hostname // ""' $QTOOLS_CONFIG_FILE)
 REMOTE_FILE_PATH=$(yq '.dev.remote_build.file_path // ""' $QTOOLS_CONFIG_FILE)
 SSH_IDENTITY=$(yq '.dev.remote_build.ssh_identity // ""' $QTOOLS_CONFIG_FILE)
+
+# Override REMOTE_FILE_PATH if --path was provided
+if [ -n "$REMOTE_FILE_PATH_OVERRIDE" ]; then
+    REMOTE_FILE_PATH="$REMOTE_FILE_PATH_OVERRIDE"
+fi
 
 # Validate required configuration
 if [ -z "$SSH_USER" ] || [ "$SSH_USER" == "null" ]; then
