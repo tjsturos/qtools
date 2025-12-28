@@ -58,6 +58,52 @@ get_worker_count() {
     fi
 }
 
+# Wait for all workers to be in the desired state
+wait_for_workers_state() {
+    local desired_state="$1"  # "active" or "inactive"
+    local worker_count="$2"
+    local service_name="$3"
+    local timeout="${4:-30}"  # Default timeout 30 seconds
+    local start_time=$(date +%s)
+
+    echo -e "${BLUE}${INFO_ICON} Waiting for all workers to be ${desired_state}...${RESET}"
+
+    while true; do
+        local current_time=$(date +%s)
+        local elapsed=$((current_time - start_time))
+
+        if [ $elapsed -ge $timeout ]; then
+            echo -e "${RED}✗ Timeout waiting for workers to be ${desired_state} after ${timeout}s${RESET}"
+            return 1
+        fi
+
+        local active_count=0
+        local inactive_count=0
+
+        for ((i=1; i<=$worker_count; i++)); do
+            if systemctl is-active --quiet "${service_name}@${i}.service" 2>/dev/null; then
+                active_count=$((active_count + 1))
+            else
+                inactive_count=$((inactive_count + 1))
+            fi
+        done
+
+        if [ "$desired_state" == "active" ]; then
+            if [ $active_count -eq $worker_count ]; then
+                echo -e "${GREEN}${CHECK_ICON} All $worker_count workers are active${RESET}"
+                return 0
+            fi
+        else
+            if [ $inactive_count -eq $worker_count ]; then
+                echo -e "${GREEN}${CHECK_ICON} All $worker_count workers are inactive${RESET}"
+                return 0
+            fi
+        fi
+
+        sleep 0.5
+    done
+}
+
 # Note: calculate_server_core_index() and get_server_info_for_core_index() are defined in utils.sh
 
 # Start master service
@@ -108,9 +154,12 @@ start_workers() {
     # Manual mode uses core indices starting from 1
     if [ "$(is_manual_mode)" == "true" ]; then
         echo -e "${BLUE}${INFO_ICON} Starting manual mode workers from core 1 to $worker_count${RESET}"
-        for ((i=1; i<=$worker_count; i++)); do
-            start_manual_worker $i
-        done
+        # Get worker service name
+        QUIL_DATA_WORKER_SERVICE_NAME=$(yq '.service.clustering.data_worker_service_name // "dataworker"' $QTOOLS_CONFIG_FILE)
+        # Start all workers in parallel using systemd brace expansion
+        bash -c "sudo systemctl start ${QUIL_DATA_WORKER_SERVICE_NAME}@{1..${worker_count}}.service &> /dev/null"
+        # Wait for all workers to be active before returning
+        wait_for_workers_state "active" "$worker_count" "$QUIL_DATA_WORKER_SERVICE_NAME"
     else
         local base_index=$(get_base_index_for_server "$LOCAL_IP")
         local start_index=$base_index
@@ -133,9 +182,12 @@ stop_workers() {
         local worker_count=$(get_worker_count)
         if [ "$worker_count" -gt 0 ]; then
             echo -e "${BLUE}${INFO_ICON} Stopping manual mode workers from core 1 to $worker_count${RESET}"
-            for ((i=1; i<=$worker_count; i++)); do
-                stop_manual_worker $i
-            done
+            # Get worker service name
+            QUIL_DATA_WORKER_SERVICE_NAME=$(yq '.service.clustering.data_worker_service_name // "dataworker"' $QTOOLS_CONFIG_FILE)
+            # Stop all workers in parallel using systemd brace expansion
+            bash -c "sudo systemctl stop ${QUIL_DATA_WORKER_SERVICE_NAME}@{1..${worker_count}}.service &> /dev/null"
+            # Wait for all workers to be inactive before returning
+            wait_for_workers_state "inactive" "$worker_count" "$QUIL_DATA_WORKER_SERVICE_NAME"
         fi
     else
         echo -e "${BLUE}${INFO_ICON} Stopping all worker services...${RESET}"
