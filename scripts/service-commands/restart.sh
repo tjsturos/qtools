@@ -2,9 +2,11 @@
 
 # HELP: Stops and then starts the node application service, effectively a restart.
 # PARAM: --core <int>: restart a specific worker/core by index
+# PARAM: --master: restart only the master service (not workers)
 # PARAM: --wait: wait for next proof submission before restarting
 # Usage: qtools restart
 # Usage: qtools restart --core 5
+# Usage: qtools restart --master
 # Usage: qtools restart --wait
 
 # Source helper functions
@@ -12,6 +14,7 @@ source $QTOOLS_PATH/scripts/cluster/service-helpers.sh
 
 WAIT=false
 CORE_INDEX=""
+MASTER_ONLY=false
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -28,6 +31,10 @@ while [[ $# -gt 0 ]]; do
             fi
             shift 2
             ;;
+        --master)
+            MASTER_ONLY=true
+            shift
+            ;;
         *)
             echo "Unknown option: $1"
             exit 1
@@ -38,7 +45,7 @@ done
 # Handle individual core restart
 if [ -n "$CORE_INDEX" ]; then
     if [ "$CORE_INDEX" == "0" ]; then
-        echo -e "${RED}${ERROR_ICON} Core index 0 is reserved for master process. Use 'qtools restart' to restart master.${RESET}"
+        echo -e "${RED}${ERROR_ICON} Core index 0 is reserved for master process. Use 'qtools restart --master' to restart master.${RESET}"
         exit 1
     fi
     stop_worker_by_core_index "$CORE_INDEX"
@@ -56,6 +63,19 @@ if [ "$WAIT" == "true" ]; then
             break
         fi
     done < <(journalctl -u $QUIL_SERVICE_NAME -f -n 0)
+fi
+
+# Handle master-only restart
+if [ "$MASTER_ONLY" == "true" ]; then
+    # --master flag only works in clustering or manual mode
+    if [ "$(is_clustering_enabled)" != "true" ] && [ "$(is_manual_mode)" != "true" ]; then
+        echo -e "${RED}✗ --master flag is only available in clustering or manual mode${RESET}"
+        echo -e "${BLUE}${INFO_ICON} In automatic mode, restarting the master service will also restart workers automatically${RESET}"
+        exit 1
+    fi
+    echo -e "${BLUE}${INFO_ICON} Restarting master service only...${RESET}"
+    sudo systemctl restart $QUIL_SERVICE_NAME
+    exit $?
 fi
 
 # Restart master and workers
