@@ -48,11 +48,27 @@ if [ -n "$CORE_INDEX" ]; then
         echo -e "${RED}${ERROR_ICON} Core index 0 is reserved for master process${RESET}"
         exit 1
     fi
-    start_worker_by_core_index "$CORE_INDEX"
+    # Only start individual core if manual mode is enabled
+    if [ "$(is_manual_mode)" == "true" ]; then
+        start_manual_worker "$CORE_INDEX"
+    else
+        echo -e "${RED}${ERROR_ICON} Cannot start individual core in automatic mode. Enable manual mode first with 'qtools manual-mode --enable'${RESET}"
+        exit 1
+    fi
     exit $?
 fi
 
-# Start master and all workers
-start_master_service
-start_workers
+# Check if manual mode is enabled
+if [ "$(is_manual_mode)" == "true" ]; then
+    # Manual mode: start workers first, then master
+    start_workers
+    start_master_service
+elif [ "$(is_clustering_enabled)" == "true" ]; then
+    # Clustering mode: start master and workers as services
+    start_master_service
+    start_workers
+else
+    # Normal/automatic mode: only start master service (it will auto-spawn workers)
+    start_master_service
+fi
 

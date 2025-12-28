@@ -215,6 +215,73 @@ VERSION_26() {
     fi
 }
 
+# Version 27: Add manual mode and worker service configuration
+VERSION_27() {
+    local VERSION=27
+    current_version=$(yq eval '.qtools_version // "0"' "$QTOOLS_CONFIG_FILE")
+    echo "Current version: $current_version vs $VERSION"
+    if [ "$current_version" -lt "$VERSION" ]; then
+        echo "Migrating config.yml to version 27"
+
+        # Migrate old service.gogc to service.worker_service.gogc if it exists
+        old_gogc=$(yq eval '.service.gogc // ""' "$QTOOLS_CONFIG_FILE" 2>/dev/null)
+        if [ -n "$old_gogc" ] && [ "$old_gogc" != "null" ] && [ "$old_gogc" != '""' ]; then
+            yq eval -i '.service.worker_service.gogc = (.service.gogc // "")' "$QTOOLS_CONFIG_FILE"
+            yq eval -i 'del(.service.gogc)' "$QTOOLS_CONFIG_FILE"
+            echo "Migrated service.gogc to service.worker_service.gogc"
+        fi
+
+        # Migrate old service.gomemlimit to service.worker_service.gomemlimit if it exists
+        old_gomemlimit=$(yq eval '.service.gomemlimit // ""' "$QTOOLS_CONFIG_FILE" 2>/dev/null)
+        if [ -n "$old_gomemlimit" ] && [ "$old_gomemlimit" != "null" ] && [ "$old_gomemlimit" != '""' ]; then
+            yq eval -i '.service.worker_service.gomemlimit = (.service.gomemlimit // "")' "$QTOOLS_CONFIG_FILE"
+            yq eval -i 'del(.service.gomemlimit)' "$QTOOLS_CONFIG_FILE"
+            echo "Migrated service.gomemlimit to service.worker_service.gomemlimit"
+        fi
+
+        # Add service.worker_service section if it doesn't exist
+        if ! yq eval '.service.worker_service' "$QTOOLS_CONFIG_FILE" &>/dev/null || [ "$(yq eval '.service.worker_service' "$QTOOLS_CONFIG_FILE")" == "null" ]; then
+            yq eval -i '.service.worker_service.gogc = ""' "$QTOOLS_CONFIG_FILE"
+            yq eval -i '.service.worker_service.gomemlimit = ""' "$QTOOLS_CONFIG_FILE"
+            yq eval -i '.service.worker_service.restart_time = "5s"' "$QTOOLS_CONFIG_FILE"
+            echo "Added service.worker_service configuration section"
+        else
+            # Ensure all worker_service fields exist with defaults
+            if ! yq eval '.service.worker_service.gogc' "$QTOOLS_CONFIG_FILE" &>/dev/null || [ "$(yq eval '.service.worker_service.gogc' "$QTOOLS_CONFIG_FILE")" == "null" ]; then
+                yq eval -i '.service.worker_service.gogc = ""' "$QTOOLS_CONFIG_FILE"
+            fi
+            if ! yq eval '.service.worker_service.gomemlimit' "$QTOOLS_CONFIG_FILE" &>/dev/null || [ "$(yq eval '.service.worker_service.gomemlimit' "$QTOOLS_CONFIG_FILE")" == "null" ]; then
+                yq eval -i '.service.worker_service.gomemlimit = ""' "$QTOOLS_CONFIG_FILE"
+            fi
+            if ! yq eval '.service.worker_service.restart_time' "$QTOOLS_CONFIG_FILE" &>/dev/null || [ "$(yq eval '.service.worker_service.restart_time' "$QTOOLS_CONFIG_FILE")" == "null" ]; then
+                yq eval -i '.service.worker_service.restart_time = "5s"' "$QTOOLS_CONFIG_FILE"
+            fi
+        fi
+
+        # Add manual section if it doesn't exist
+        if ! yq eval '.manual' "$QTOOLS_CONFIG_FILE" &>/dev/null || [ "$(yq eval '.manual' "$QTOOLS_CONFIG_FILE")" == "null" ]; then
+            yq eval -i '.manual.enabled = false' "$QTOOLS_CONFIG_FILE"
+            yq eval -i '.manual.worker_count = 0' "$QTOOLS_CONFIG_FILE"
+            yq eval -i '.manual.local_only = true' "$QTOOLS_CONFIG_FILE"
+            echo "Added manual mode configuration section"
+        else
+            # Ensure all manual fields exist with defaults
+            if ! yq eval '.manual.enabled' "$QTOOLS_CONFIG_FILE" &>/dev/null || [ "$(yq eval '.manual.enabled' "$QTOOLS_CONFIG_FILE")" == "null" ]; then
+                yq eval -i '.manual.enabled = false' "$QTOOLS_CONFIG_FILE"
+            fi
+            if ! yq eval '.manual.worker_count' "$QTOOLS_CONFIG_FILE" &>/dev/null || [ "$(yq eval '.manual.worker_count' "$QTOOLS_CONFIG_FILE")" == "null" ]; then
+                yq eval -i '.manual.worker_count = 0' "$QTOOLS_CONFIG_FILE"
+            fi
+            if ! yq eval '.manual.local_only' "$QTOOLS_CONFIG_FILE" &>/dev/null || [ "$(yq eval '.manual.local_only' "$QTOOLS_CONFIG_FILE")" == "null" ]; then
+                yq eval -i '.manual.local_only = true' "$QTOOLS_CONFIG_FILE"
+            fi
+        fi
+
+        yq eval -i '.qtools_version = 27' "$QTOOLS_CONFIG_FILE"
+        echo "Updated qtools_version to 27"
+    fi
+}
+
 # run the version migration
 VERSION_2
 VERSION_3
@@ -223,6 +290,7 @@ VERSION_21
 VERSION_24
 VERSION_25
 VERSION_26
+VERSION_27
 
 yq eval -i ".qtools_version = \"$(get_latest_qtools_version)\"" "$QTOOLS_CONFIG_FILE"
 

@@ -46,11 +46,22 @@ IPFS_DEBUGGING=""
 GOGC=""
 GOMEMLIMIT=""
 SERVICE_RESTART_TIME=""
+MASTER_ONLY=false
+WORKER_ARGS=()
+
+# Parse arguments and build worker args
 while [[ $# -gt 0 ]]; do
     case $1 in
+        --master)
+            MASTER_ONLY=true
+            shift
+            ;;
         --testnet)
             TESTNET=true
             mkdir -p $QUIL_NODE_PATH/test
+            WORKER_ARGS+=("$1")
+            # --testnet always applies to both, so clear MASTER_ONLY if it was set
+            MASTER_ONLY=false
             shift
             ;;
         --enable)
@@ -63,35 +74,42 @@ while [[ $# -gt 0 ]]; do
             ;;
         --debug)
             DEBUG_MODE=true
+            WORKER_ARGS+=("$1")
             shift
             ;;
         --skip-sig-check|--skip-signature-check)
             SKIP_SIGNATURE_CHECK=true
+            WORKER_ARGS+=("$1")
             shift
             ;;
         --signature-check=*)
             VALUE="${1#*=}"
             if [ "$VALUE" == "false" ]; then
                 SKIP_SIGNATURE_CHECK=true
+                WORKER_ARGS+=("--skip-sig-check")
             fi
             shift
             ;;
         --ipfs-debug)
             IPFS_DEBUGGING=true
+            WORKER_ARGS+=("$1")
             shift
             ;;
         --restart-time)
             SERVICE_RESTART_TIME=$2
+            WORKER_ARGS+=("$1" "$2")
             shift
             shift
             ;;
         --gogc)
             GOGC=$2
+            WORKER_ARGS+=("$1" "$2")
             shift
             shift
             ;;
         --gomemlimit)
             GOMEMLIMIT=$2
+            WORKER_ARGS+=("$1" "$2")
             shift
             shift
             ;;
@@ -166,36 +184,6 @@ TimeoutStopSec=240
 [Install]
 WantedBy=multi-user.target"
 
-DATA_WORKER_SERVICE_CONTENT="[Unit]
-Description=Quilibrium Worker Service %i
-After=network.target
-Wants=network-online.target
-StartLimitIntervalSec=0
-
-[Service]
-Type=simple
-WorkingDirectory=$QUIL_NODE_PATH_FOR_SERVICE
-Restart=on-failure
-RestartSec=5s
-StartLimitBurst=5
-User=$SERVICE_USER
-Group=$QTOOLS_GROUP
-${GOGC:+Environment=GOGC=${GOGC}}
-${GOMEMLIMIT:+Environment=GOMEMLIMIT=${GOMEMLIMIT}}
-ExecStart=${LINKED_NODE_BINARY}${TESTNET:+ --network=1}${DEBUG_MODE:+ --debug}${SKIP_SIGNATURE_CHECK:+ --signature-check=false} --core %i
-ExecStop=/bin/kill -s SIGINT \$MAINPID
-ExecReload=/bin/kill -s SIGINT \$MAINPID && ${LINKED_NODE_BINARY}${TESTNET:+ --network=1}${DEBUG_MODE:+ --debug}${SKIP_SIGNATURE_CHECK:+ --signature-check=false} --core %i
-KillSignal=SIGINT
-RestartKillSignal=SIGINT
-FinalKillSignal=SIGKILL
-TimeoutStopSec=240
-
-CPUSchedulingPolicy=rr
-CPUSchedulingPriority=$(yq '.service.dataworker_priority // 90' $QTOOLS_CONFIG_FILE)
-
-[Install]
-WantedBy=multi-user.target"
-
 updateServiceContent() {
     local CONTENT=$1
     local FILE=$2
@@ -204,10 +192,6 @@ updateServiceContent() {
 
 updateServiceBinary() {
     updateServiceContent "$SERVICE_CONTENT" "$SERVICE_FILE"
-}
-
-updateDataWorkerServiceBinary() {
-    updateServiceContent "$DATA_WORKER_SERVICE_CONTENT" "$QUIL_DATA_WORKER_SERVICE_FILE"
 }
 
 createServiceIfNone() {
@@ -233,8 +217,17 @@ else
     updateServiceBinary
 fi
 
-updateDataWorkerServiceBinary
 sudo systemctl daemon-reload
+
+# Update worker service unless --master was specified (and --testnet is not present)
+# --testnet always applies to both, so it overrides --master
+if [ "$MASTER_ONLY" != "true" ]; then
+    log "Updating worker service..."
+    # Set environment variable to indicate this is being called from update-service
+    export QTOOLS_UPDATE_SERVICE_CALLER="update-service"
+    qtools update-worker-service "${WORKER_ARGS[@]}"
+    unset QTOOLS_UPDATE_SERVICE_CALLER
+fi
 
 if [ "$ENABLE_SERVICE" == "true" ]; then
     log "Enabling service..."

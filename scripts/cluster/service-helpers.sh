@@ -11,6 +11,10 @@ is_clustering_enabled() {
     yq eval '.service.clustering.enabled // false' $QTOOLS_CONFIG_FILE
 }
 
+is_manual_mode() {
+    yq eval '.manual.enabled // false' $QTOOLS_CONFIG_FILE
+}
+
 is_local_only() {
     local enabled=$(is_clustering_enabled)
     if [ "$enabled" == "true" ]; then
@@ -21,13 +25,24 @@ is_local_only() {
 }
 
 should_use_worker_services() {
-    # Workers are services if clustering is enabled (local or full)
-    is_clustering_enabled
+    # Workers are services if clustering is enabled (local or full) or manual mode is enabled
+    if [ "$(is_manual_mode)" == "true" ]; then
+        echo "true"
+    else
+        is_clustering_enabled
+    fi
 }
 
 # Get worker count based on mode
 get_worker_count() {
-    if [ "$(is_clustering_enabled)" == "true" ]; then
+    if [ "$(is_manual_mode)" == "true" ]; then
+        local count=$(yq eval '.manual.worker_count // "0"' $QTOOLS_CONFIG_FILE)
+        if [ "$count" == "false" ] || [ -z "$count" ] || [ "$count" == "0" ]; then
+            echo "0"
+        else
+            echo "$count"
+        fi
+    elif [ "$(is_clustering_enabled)" == "true" ]; then
         local count=$(yq eval '.service.clustering.local_data_worker_count // "false"' $QTOOLS_CONFIG_FILE)
         if [ "$count" == "false" ] || [ -z "$count" ]; then
             if [ "$(is_master)" == "true" ]; then
@@ -90,12 +105,20 @@ start_workers() {
         return 0
     fi
 
-    local base_index=$(get_base_index_for_server "$LOCAL_IP")
-    local start_index=$base_index
-    local end_index=$((start_index + worker_count - 1))
+    # Manual mode uses core indices starting from 1
+    if [ "$(is_manual_mode)" == "true" ]; then
+        echo -e "${BLUE}${INFO_ICON} Starting manual mode workers from core 1 to $worker_count${RESET}"
+        for ((i=1; i<=$worker_count; i++)); do
+            start_manual_worker $i
+        done
+    else
+        local base_index=$(get_base_index_for_server "$LOCAL_IP")
+        local start_index=$base_index
+        local end_index=$((start_index + worker_count - 1))
 
-    echo -e "${BLUE}${INFO_ICON} Starting workers from core $start_index to $end_index${RESET}"
-    start_local_data_worker_services $start_index $end_index $LOCAL_IP
+        echo -e "${BLUE}${INFO_ICON} Starting workers from core $start_index to $end_index${RESET}"
+        start_local_data_worker_services $start_index $end_index $LOCAL_IP
+    fi
 }
 
 # Stop all workers
@@ -105,8 +128,19 @@ stop_workers() {
         return 0
     fi
 
-    echo -e "${BLUE}${INFO_ICON} Stopping all worker services...${RESET}"
-    stop_local_data_worker_services
+    # Manual mode uses core indices starting from 1
+    if [ "$(is_manual_mode)" == "true" ]; then
+        local worker_count=$(get_worker_count)
+        if [ "$worker_count" -gt 0 ]; then
+            echo -e "${BLUE}${INFO_ICON} Stopping manual mode workers from core 1 to $worker_count${RESET}"
+            for ((i=1; i<=$worker_count; i++)); do
+                stop_manual_worker $i
+            done
+        fi
+    else
+        echo -e "${BLUE}${INFO_ICON} Stopping all worker services...${RESET}"
+        stop_local_data_worker_services
+    fi
 }
 
 # Start a specific worker by core index
@@ -116,6 +150,12 @@ start_worker_by_core_index() {
     if [ -z "$core_index" ]; then
         echo -e "${RED}${ERROR_ICON} Core index is required${RESET}"
         return 1
+    fi
+
+    # Manual mode handling
+    if [ "$(is_manual_mode)" == "true" ]; then
+        start_manual_worker "$core_index"
+        return $?
     fi
 
     # Get server info for this core index
@@ -157,6 +197,12 @@ stop_worker_by_core_index() {
         return 1
     fi
 
+    # Manual mode handling
+    if [ "$(is_manual_mode)" == "true" ]; then
+        stop_manual_worker "$core_index"
+        return $?
+    fi
+
     # Get server info for this core index
     local server_info=$(get_server_info_for_core_index "$core_index")
     if [ -z "$server_info" ]; then
@@ -193,4 +239,46 @@ stop_worker_by_core_index() {
             return 1
         fi
     fi
+}
+
+# Start a manual mode worker by core index
+start_manual_worker() {
+    local core_index="$1"
+
+    if [ -z "$core_index" ]; then
+        echo -e "${RED}${ERROR_ICON} Core index is required${RESET}"
+        return 1
+    fi
+
+    if [ "$core_index" == "0" ]; then
+        echo -e "${RED}${ERROR_ICON} Core index 0 is reserved for master process${RESET}"
+        return 1
+    fi
+
+    # Get worker service name
+    QUIL_DATA_WORKER_SERVICE_NAME=$(yq '.service.clustering.data_worker_service_name // "dataworker"' $QTOOLS_CONFIG_FILE)
+
+    echo -e "${BLUE}${INFO_ICON} Starting manual worker service for core $core_index${RESET}"
+    sudo systemctl start ${QUIL_DATA_WORKER_SERVICE_NAME}@${core_index}.service
+}
+
+# Stop a manual mode worker by core index
+stop_manual_worker() {
+    local core_index="$1"
+
+    if [ -z "$core_index" ]; then
+        echo -e "${RED}${ERROR_ICON} Core index is required${RESET}"
+        return 1
+    fi
+
+    if [ "$core_index" == "0" ]; then
+        echo -e "${RED}${ERROR_ICON} Core index 0 is reserved for master process${RESET}"
+        return 1
+    fi
+
+    # Get worker service name
+    QUIL_DATA_WORKER_SERVICE_NAME=$(yq '.service.clustering.data_worker_service_name // "dataworker"' $QTOOLS_CONFIG_FILE)
+
+    echo -e "${BLUE}${INFO_ICON} Stopping manual worker service for core $core_index${RESET}"
+    sudo systemctl stop ${QUIL_DATA_WORKER_SERVICE_NAME}@${core_index}.service
 }

@@ -4,7 +4,7 @@ release_version: 1.4.19.1
 current_node_version: 1.4.19.1
 current_qclient_version: 1.4.19.1
 os_arch: linux-amd64
-qtools_version: 26
+qtools_version: 27
 qclient_cli_name: qclient
 ssh:
     allow_from_ip: false
@@ -22,6 +22,10 @@ service:
     quilibrium_node_path: $HOME/ceremonyclient/node
     quilibrium_client_path: $HOME/ceremonyclient/client
     restart_time: 5s
+    worker_service:
+        gogc: ""  # GOGC environment variable for worker services (e.g., "100")
+        gomemlimit: ""  # GOMEMLIMIT environment variable for worker services (e.g., "8GiB")
+        restart_time: 5s  # Restart time for worker services (defaults to service.restart_time if not set)
     clustering:
         enabled: false
         master_service_name: ceremonyclient
@@ -46,6 +50,10 @@ data_worker_service:
     worker_count: 0
     base_port: 40000
     base_index: 1
+manual:
+    enabled: false  # Enable manual mode for managing workers separately from master
+    worker_count: 0  # Number of workers in manual mode (calculated automatically if not set)
+    local_only: true  # Manual mode is always local-only
 scheduled_tasks:
     cluster:
         memory_check:

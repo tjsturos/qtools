@@ -47,7 +47,13 @@ if [ -n "$CORE_INDEX" ]; then
         echo -e "${RED}${ERROR_ICON} Core index 0 is reserved for master process. Use 'qtools stop' to stop master.${RESET}"
         exit 1
     fi
-    stop_worker_by_core_index "$CORE_INDEX"
+    # Only stop individual core if manual mode is enabled
+    if [ "$(is_manual_mode)" == "true" ]; then
+        stop_manual_worker "$CORE_INDEX"
+    else
+        echo -e "${RED}${ERROR_ICON} Cannot stop individual core in automatic mode. Enable manual mode first with 'qtools manual-mode --enable'${RESET}"
+        exit 1
+    fi
     exit $?
 fi
 
@@ -62,9 +68,19 @@ if [ "$WAIT" == "true" ]; then
     done < <(journalctl -u $QUIL_SERVICE_NAME -f -n 0)
 fi
 
-# Stop workers first, then master
-stop_workers
-stop_master_service
+# Check if manual mode is enabled
+if [ "$(is_manual_mode)" == "true" ]; then
+    # Manual mode: stop master first, then workers
+    stop_master_service
+    stop_workers
+elif [ "$(is_clustering_enabled)" == "true" ]; then
+    # Clustering mode: stop workers first, then master
+    stop_workers
+    stop_master_service
+else
+    # Normal/automatic mode: only stop master service (workers are auto-managed)
+    stop_master_service
+fi
 
 # Kill mode is essentially quick mode + kill the node process
 if [ "$IS_KILL_MODE" == "true" ]; then
