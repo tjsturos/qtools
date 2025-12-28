@@ -98,7 +98,7 @@ while [[ $# -gt 0 ]]; do
             fi
             shift
             ;;
-        --ipfs-debug)
+        --ipfs-debug|ipfs)
             IPFS_DEBUGGING=true
             qtools config set-value service.ipfs_debug "true" --quiet
             shift
