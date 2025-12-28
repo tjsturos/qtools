@@ -1,35 +1,43 @@
 #!/bin/bash
 # HELP: Updates the worker service template for manual mode workers
-# NOTE: This script should be called from update-service, not directly
-# PARAM: --testnet: Enable testnet mode
+# NOTE: --testnet must be used with update-service, not directly with this script
 # PARAM: --debug: Enable debug mode
 # PARAM: --skip-sig-check|--skip-signature-check: Skip signature check
-# PARAM: --ipfs-debug: Enable IPFS debugging
+# PARAM: --ipfs-debug: Enable IPFS debugging (for compatibility, doesn't apply to workers)
 # PARAM: --restart-time <value>: Set restart time for worker services
 # PARAM: --gogc <value>: Set GOGC environment variable
 # PARAM: --gomemlimit <value>: Set GOMEMLIMIT environment variable
-# Usage: qtools update-service (calls this internally)
-# Usage: qtools update-service --testnet (calls this internally with --testnet)
+# Usage: qtools update-worker-service --gogc 100
+# Usage: qtools update-worker-service --gomemlimit 8GiB
+# Usage: qtools update-worker-service --restart-time 10s
+# Usage: qtools update-service --testnet (updates both master and workers with --testnet)
 
 # Source required utilities
 source $QTOOLS_PATH/utils/index.sh
 
-# Check if this is being called directly (not from update-service)
-# The QTOOLS_UPDATE_SERVICE_CALLER environment variable is set by update-service.sh
-# When called via 'qtools update-worker-service', this variable won't be set
-if [ -z "$QTOOLS_UPDATE_SERVICE_CALLER" ]; then
-    echo "Error: update-worker-service should not be called directly."
-    echo "Please use 'qtools update-service' instead, which will update both master and worker services."
-    echo ""
-    echo "Examples:"
-    echo "  qtools update-service                    # Updates both master and workers"
-    echo "  qtools update-service --testnet          # Updates both with --testnet"
-    echo "  qtools update-service --master --testnet # Updates both with --testnet (--testnet overrides --master)"
-    echo "  qtools update-service --master           # Updates only master"
-    exit 1
-fi
-
 log "Updating the worker service..."
+
+# Check if --testnet is being used in a direct call (not from update-service)
+# --testnet must always go through update-service to update both master and workers
+if [ -z "$QTOOLS_UPDATE_SERVICE_CALLER" ]; then
+    # Check if --testnet is in the arguments
+    for arg in "$@"; do
+        if [ "$arg" == "--testnet" ]; then
+            echo "Error: --testnet cannot be used with update-worker-service directly."
+            echo "Please use 'qtools update-service --testnet' instead, which will update both master and worker services."
+            echo ""
+            echo "Examples:"
+            echo "  qtools update-service --testnet          # Updates both with --testnet"
+            echo "  qtools update-service --master --testnet # Updates both with --testnet (--testnet overrides --master)"
+            echo ""
+            echo "For other options, you can use update-worker-service directly:"
+            echo "  qtools update-worker-service --gogc 100"
+            echo "  qtools update-worker-service --gomemlimit 8GiB"
+            echo "  qtools update-worker-service --restart-time 10s"
+            exit 1
+        fi
+    done
+fi
 
 # Get the service user from config, default to 'quilibrium'
 SERVICE_USER=$(yq '.service.default_user // "quilibrium"' $QTOOLS_CONFIG_FILE)
@@ -92,7 +100,7 @@ while [[ $# -gt 0 ]]; do
             ;;
         --ipfs-debug)
             IPFS_DEBUGGING=true
-            # IPFS debug doesn't apply to workers, but accept it for compatibility
+            qtools config set-value service.ipfs_debug "true" --quiet
             shift
             ;;
         --restart-time)
@@ -138,6 +146,14 @@ if [ -z "$GOGC" ]; then
 fi
 if [ -z "$GOMEMLIMIT" ]; then
     GOMEMLIMIT=$(yq '.service.worker_service.gomemlimit // ""' $QTOOLS_CONFIG_FILE)
+fi
+
+# Get IPFS debugging setting from config if not provided
+if [ -z "$IPFS_DEBUGGING" ]; then
+    IPFS_DEBUG=$(yq '.service.ipfs_debug // "false"' $QTOOLS_CONFIG_FILE)
+    if [ "$IPFS_DEBUG" == "true" ]; then
+        IPFS_DEBUGGING=true
+    fi
 fi
 
 # Handle restart-time
@@ -205,6 +221,7 @@ RestartSec=$SERVICE_RESTART_TIME
 StartLimitBurst=5
 User=$SERVICE_USER
 Group=$QTOOLS_GROUP
+${IPFS_DEBUGGING:+Environment=IPFS_LOGGING=debug}
 ${GOGC:+Environment=GOGC=${GOGC}}
 ${GOMEMLIMIT:+Environment=GOMEMLIMIT=${GOMEMLIMIT}}
 ExecStart=${EXEC_START}
