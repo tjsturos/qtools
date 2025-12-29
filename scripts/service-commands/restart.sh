@@ -48,9 +48,16 @@ if [ -n "$CORE_INDEX" ]; then
         echo -e "${RED}${ERROR_ICON} Core index 0 is reserved for master process. Use 'qtools restart --master' to restart master.${RESET}"
         exit 1
     fi
-    stop_worker_by_core_index "$CORE_INDEX"
-    sleep 1
-    start_worker_by_core_index "$CORE_INDEX"
+
+    # Stop worker service (with --wait if specified)
+    if [ "$WAIT" == "true" ]; then
+        qtools stop --core "$CORE_INDEX" --wait
+    else
+        qtools stop --core "$CORE_INDEX"
+    fi
+
+    # Start worker service
+    qtools start --core "$CORE_INDEX"
     exit $?
 fi
 
@@ -74,7 +81,16 @@ if [ "$MASTER_ONLY" == "true" ]; then
         exit 1
     fi
     echo -e "${BLUE}${INFO_ICON} Restarting master service only...${RESET}"
-    sudo systemctl restart $QUIL_SERVICE_NAME
+
+    # Stop master service (with --wait if specified)
+    if [ "$WAIT" == "true" ]; then
+        qtools stop --master --wait
+    else
+        qtools stop --master
+    fi
+
+    # Start master service
+    qtools start --master
     exit $?
 fi
 

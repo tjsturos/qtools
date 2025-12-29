@@ -3,9 +3,11 @@
 # PARAM: --core <int>: stop a specific worker/core by index
 # PARAM: --kill: kill node processes forcefully
 # PARAM: --wait: wait for next proof submission before stopping
+# PARAM: --master: stop only the master service (not workers) - only available in clustering or manual mode
 # Usage: qtools stop
 # Usage: qtools stop --core 5
 # Usage: qtools stop --kill
+# Usage: qtools stop --master
 
 # Source helper functions
 source $QTOOLS_PATH/scripts/cluster/service-helpers.sh
@@ -14,6 +16,7 @@ source $QTOOLS_PATH/scripts/cluster/service-helpers.sh
 IS_KILL_MODE=false
 CORE_INDEX=""
 WAIT=false
+MASTER_ONLY=false
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -34,6 +37,10 @@ while [[ $# -gt 0 ]]; do
             WAIT=true
             shift
             ;;
+        --master)
+            MASTER_ONLY=true
+            shift
+            ;;
         *)
             echo "Unknown option: $1"
             exit 1
@@ -44,7 +51,7 @@ done
 # Handle individual core stop
 if [ -n "$CORE_INDEX" ]; then
     if [ "$CORE_INDEX" == "0" ]; then
-        echo -e "${RED}${ERROR_ICON} Core index 0 is reserved for master process. Use 'qtools stop' to stop master.${RESET}"
+        echo -e "${RED}${ERROR_ICON} Core index 0 is reserved for master process. Use 'qtools stop --master' to stop master.${RESET}"
         exit 1
     fi
     # Only stop individual core if manual mode is enabled
@@ -66,6 +73,19 @@ if [ "$WAIT" == "true" ]; then
             break
         fi
     done < <(journalctl -u $QUIL_SERVICE_NAME -f -n 0)
+fi
+
+# Handle master-only stop
+if [ "$MASTER_ONLY" == "true" ]; then
+    # --master flag only works in clustering or manual mode
+    if [ "$(is_clustering_enabled)" != "true" ] && [ "$(is_manual_mode)" != "true" ]; then
+        echo -e "${RED}✗ --master flag is only available in clustering or manual mode${RESET}"
+        echo -e "${BLUE}${INFO_ICON} In automatic mode, stopping the master service will also stop workers automatically${RESET}"
+        exit 1
+    fi
+    echo -e "${BLUE}${INFO_ICON} Stopping master service only...${RESET}"
+    stop_master_service
+    exit $?
 fi
 
 # Check if manual mode is enabled
