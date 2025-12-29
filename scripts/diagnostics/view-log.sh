@@ -110,16 +110,16 @@ if [ "$USE_FILE_LOGS" == "true" ]; then
     if [ -n "$LINES" ]; then
         # Show last N lines, then follow
         if [ -n "$GREP_PIPELINE" ]; then
-            tail -n "$LINES" -f "$LOG_FILE" | eval "$GREP_PIPELINE"
+            tail -n "$LINES" -F "$LOG_FILE" | eval "$GREP_PIPELINE"
         else
-            tail -n "$LINES" -f "$LOG_FILE"
+            tail -n "$LINES" -F "$LOG_FILE"
         fi
     else
         # Follow logs from end
         if [ -n "$GREP_PIPELINE" ]; then
-            tail -f "$LOG_FILE" | eval "$GREP_PIPELINE"
+            tail -F "$LOG_FILE" | eval "$GREP_PIPELINE"
         else
-            tail -f "$LOG_FILE"
+            tail -F "$LOG_FILE"
         fi
     fi
     exit 0
