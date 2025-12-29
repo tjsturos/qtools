@@ -8,6 +8,7 @@
 IS_BACKUP_ENABLED="$(yq '.scheduled_tasks.backup.enabled // false' $QTOOLS_CONFIG_FILE)"
 CONFIRM=false
 AUTO=false
+FORCE=false
 LOCAL=""
 # Parse command-line arguments
 while [[ $# -gt 0 ]]; do
@@ -18,6 +19,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --confirm)
       CONFIRM=true
+      shift
+      ;;
+    --force)
+      FORCE=true
       shift
       ;;
     --local)
@@ -38,6 +43,12 @@ IS_CLUSTERING_ENABLED="$(yq '.service.clustering.enabled // false' $QTOOLS_CONFI
 
 if [ "$IS_CLUSTERING_ENABLED" == "true" ] && [ "$(is_master)" == "false" ]; then
   echo "Clustering is enabled, skipping backup."
+  exit 0
+fi
+
+# Check if backups are enabled (skip check if --force is used or --local is specified)
+if [ "$FORCE" != "true" ] && [ -z "$LOCAL" ] && [ "$IS_BACKUP_ENABLED" != "true" ]; then
+  echo "Backups are disabled in configuration. Use --force to bypass this check."
   exit 0
 fi
 
