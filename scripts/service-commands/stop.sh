@@ -2,7 +2,6 @@
 # HELP: Stops the node application service. Will also clean up any leftover node processes (if any).
 # PARAM: --core <int>: stop a specific worker/core by index
 # PARAM: --kill: kill node processes forcefully
-# PARAM: --wait: wait for next proof submission before stopping
 # PARAM: --master: stop only the master service (not workers) - only available in clustering or manual mode
 # Usage: qtools stop
 # Usage: qtools stop --core 5
@@ -15,7 +14,6 @@ source $QTOOLS_PATH/scripts/cluster/service-helpers.sh
 # Initialize variables
 IS_KILL_MODE=false
 CORE_INDEX=""
-WAIT=false
 MASTER_ONLY=false
 
 # Parse command line arguments
@@ -32,10 +30,6 @@ while [[ $# -gt 0 ]]; do
                 exit 1
             fi
             shift 2
-            ;;
-        --wait)
-            WAIT=true
-            shift
             ;;
         --master)
             MASTER_ONLY=true
@@ -62,17 +56,6 @@ if [ -n "$CORE_INDEX" ]; then
         exit 1
     fi
     exit $?
-fi
-
-# Handle wait flag for master service
-if [ "$WAIT" == "true" ]; then
-    echo -e "${BLUE}${INFO_ICON} Waiting for next proof submission or workers to be available...${RESET}"
-    while read -r line; do
-        if [[ $line =~ "submitting data proof" ]] || [[ $line =~ "workers not yet available for proving" ]]; then
-            echo -e "${GREEN}${CHECK_ICON} Proof submission detected or workers not available, proceeding with stop${RESET}"
-            break
-        fi
-    done < <(journalctl -u $QUIL_SERVICE_NAME -f -n 0)
 fi
 
 # Handle master-only stop

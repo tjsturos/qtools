@@ -12,17 +12,13 @@
 # Source helper functions
 source $QTOOLS_PATH/scripts/cluster/service-helpers.sh
 
-WAIT=false
 CORE_INDEX=""
 MASTER_ONLY=false
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
-        --on-next-proof|--wait|on-next-submission|-w|-np)
-            WAIT=true
-            shift
-            ;;
+
         --core)
             CORE_INDEX="$2"
             if [[ ! "$CORE_INDEX" =~ ^[0-9]+$ ]]; then
@@ -49,28 +45,14 @@ if [ -n "$CORE_INDEX" ]; then
         exit 1
     fi
 
-    # Stop worker service (with --wait if specified)
-    if [ "$WAIT" == "true" ]; then
-        qtools stop --core "$CORE_INDEX" --wait
-    else
-        qtools stop --core "$CORE_INDEX"
-    fi
+    qtools stop --core "$CORE_INDEX"
 
     # Start worker service
     qtools start --core "$CORE_INDEX"
     exit $?
 fi
 
-# Handle wait flag
-if [ "$WAIT" == "true" ]; then
-    echo -e "${BLUE}${INFO_ICON} Waiting for next proof submission or workers to be available...${RESET}"
-    while read -r line; do
-        if [[ $line =~ "submitting data proof" ]] || [[ $line =~ "workers not yet available for proving" ]]; then
-            echo -e "${GREEN}${CHECK_ICON} Proof submission detected or workers not available, proceeding with restart${RESET}"
-            break
-        fi
-    done < <(journalctl -u $QUIL_SERVICE_NAME -f -n 0)
-fi
+
 
 # Handle master-only restart
 if [ "$MASTER_ONLY" == "true" ]; then
@@ -82,12 +64,8 @@ if [ "$MASTER_ONLY" == "true" ]; then
     fi
     echo -e "${BLUE}${INFO_ICON} Restarting master service only...${RESET}"
 
-    # Stop master service (with --wait if specified)
-    if [ "$WAIT" == "true" ]; then
-        qtools stop --master --wait
-    else
-        qtools stop --master
-    fi
+
+    qtools stop --master
 
     # Start master service
     qtools start --master
