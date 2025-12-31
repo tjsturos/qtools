@@ -43,6 +43,19 @@ if [ "$AUTO_UPDATE_QTOOLS" == "true" ]; then
   append_to_file $FILE_CRON "$QTOOLS_UPDATE_CRON_EXPRESSION qtools self-update --auto" false
 fi
 
+AUTO_MONITOR_PUBLIC_IP=$(yq eval '.scheduled_tasks.public_ip.enabled // "false"' $QTOOLS_CONFIG_FILE)
+
+if [ "$AUTO_MONITOR_PUBLIC_IP" == "true" ]; then
+  PUBLIC_IP_MONITOR_CRON_EXPRESSION=$(yq eval '.scheduled_tasks.public_ip.cron_expression' $QTOOLS_CONFIG_FILE)
+
+  # Check if Expression is valid
+  if [ -z "$PUBLIC_IP_MONITOR_CRON_EXPRESSION" ]; then
+    PUBLIC_IP_MONITOR_CRON_EXPRESSION="*/5 * * * *"
+  fi
+
+  log "Adding public IP monitor cron expression: $PUBLIC_IP_MONITOR_CRON_EXPRESSION"
+  append_to_file $FILE_CRON "$PUBLIC_IP_MONITOR_CRON_EXPRESSION qtools monitor-public-ip" false
+fi
 
 if [ "$IS_CLUSTERING_ENABLED" == "true" ] && [ "$IS_MASTER" == "true" ] || [ "$IS_CLUSTERING_ENABLED" == "false" ]; then
   AUTO_RUN_DIAGNOSTICS=$(yq eval '.scheduled_tasks.diagnostics.enabled' $QTOOLS_CONFIG_FILE)

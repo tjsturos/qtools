@@ -282,6 +282,38 @@ VERSION_27() {
     fi
 }
 
+# Version 28: Add public IP monitoring configuration
+VERSION_28() {
+    local VERSION=28
+    current_version=$(yq eval '.qtools_version // "0"' "$QTOOLS_CONFIG_FILE")
+    echo "Current version: $current_version vs $VERSION"
+    if [ "$current_version" -lt "$VERSION" ]; then
+        echo "Migrating config.yml to version 28"
+
+        # Add public_ip section if it doesn't exist
+        if ! yq eval '.scheduled_tasks.public_ip' "$QTOOLS_CONFIG_FILE" &>/dev/null || [ "$(yq eval '.scheduled_tasks.public_ip' "$QTOOLS_CONFIG_FILE")" == "null" ]; then
+            yq eval -i '.scheduled_tasks.public_ip.enabled = false' "$QTOOLS_CONFIG_FILE"
+            yq eval -i '.scheduled_tasks.public_ip.cron_expression = ""' "$QTOOLS_CONFIG_FILE"
+            yq eval -i '.scheduled_tasks.public_ip.previous_ip = ""' "$QTOOLS_CONFIG_FILE"
+            echo "Added scheduled_tasks.public_ip configuration section"
+        else
+            # Ensure all public_ip fields exist with defaults
+            if ! yq eval '.scheduled_tasks.public_ip.enabled' "$QTOOLS_CONFIG_FILE" &>/dev/null || [ "$(yq eval '.scheduled_tasks.public_ip.enabled' "$QTOOLS_CONFIG_FILE")" == "null" ]; then
+                yq eval -i '.scheduled_tasks.public_ip.enabled = false' "$QTOOLS_CONFIG_FILE"
+            fi
+            if ! yq eval '.scheduled_tasks.public_ip.cron_expression' "$QTOOLS_CONFIG_FILE" &>/dev/null || [ "$(yq eval '.scheduled_tasks.public_ip.cron_expression' "$QTOOLS_CONFIG_FILE")" == "null" ]; then
+                yq eval -i '.scheduled_tasks.public_ip.cron_expression = ""' "$QTOOLS_CONFIG_FILE"
+            fi
+            if ! yq eval '.scheduled_tasks.public_ip.previous_ip' "$QTOOLS_CONFIG_FILE" &>/dev/null || [ "$(yq eval '.scheduled_tasks.public_ip.previous_ip' "$QTOOLS_CONFIG_FILE")" == "null" ]; then
+                yq eval -i '.scheduled_tasks.public_ip.previous_ip = ""' "$QTOOLS_CONFIG_FILE"
+            fi
+        fi
+
+        yq eval -i '.qtools_version = 28' "$QTOOLS_CONFIG_FILE"
+        echo "Updated qtools_version to 28"
+    fi
+}
+
 # run the version migration
 VERSION_2
 VERSION_3
@@ -291,6 +323,7 @@ VERSION_24
 VERSION_25
 VERSION_26
 VERSION_27
+VERSION_28
 
 yq eval -i ".qtools_version = \"$(get_latest_qtools_version)\"" "$QTOOLS_CONFIG_FILE"
 
