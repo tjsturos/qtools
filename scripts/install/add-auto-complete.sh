@@ -76,12 +76,47 @@ _qtools_complete() {
   
   # Extract flags (--flag or -f format) from PARAM lines
   while IFS= read -r param_line; do
-    # Extract flags using grep (matches both --flag and -f formats)
-    flags=\$(echo "\$param_line" | grep -oE '(-[a-zA-Z0-9-]+)' 2>/dev/null)
-    if [ -n "\$flags" ]; then
-      while read -r flag; do
-        params+=("\$flag")
-      done <<< "\$flags"
+    # Extract the parameter definition part (before colon, if colon exists)
+    # Format examples:
+    # "# PARAM: --flag: description" -> extract "--flag"
+    # "# PARAM: -m, --memory: description" -> extract "-m, --memory"
+    # "# PARAM: <arg>: description" -> extract "<arg>"
+    
+    # Extract the parameter definition part
+    # Remove "# PARAM: " prefix first
+    param_def=\$(echo "\$param_line" | sed 's/^# PARAM: //')
+    
+    # Extract part before colon (if colon exists) - this is the flag definition
+    if [[ "\$param_def" =~ ^([^:]+): ]]; then
+      # Has colon - extract everything before the colon
+      param_def=\${BASH_REMATCH[1]}
+    else
+      # No colon - extract flags and comma-separated flags up to first space
+      # This handles: "# PARAM: --flag desc" and "# PARAM: -m, --memory desc"
+      # Extract the flag definition part (stops at first space that's not part of a flag)
+      param_def=\$(echo "\$param_def" | sed -E 's/^([^[:space:]]+(,[[:space:]]*[^[:space:]]+)*).*/\1/' | head -c 200)
+    fi
+    
+    # Trim whitespace
+    param_def=\$(echo "\$param_def" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+    
+    # Extract flags from the parameter definition
+    # Only proceed if param_def looks like it contains flags (starts with -)
+    if [[ "\$param_def" =~ ^- ]]; then
+      # Replace commas with spaces to handle comma-separated flags
+      param_normalized=\$(echo "\$param_def" | tr ',' ' ' | sed 's/[[:space:]]\+/ /g')
+      # Extract flags - match - or -- followed by alphanumerics and hyphens
+      # Match at start of string or after space, end at space or end of string
+      flags=\$(echo "\$param_normalized" | grep -oE '(^|[[:space:]])(-[a-zA-Z0-9][a-zA-Z0-9-]*)' 2>/dev/null | sed 's/^[[:space:]]*//')
+      
+      if [ -n "\$flags" ]; then
+        while read -r flag; do
+          # Final validation: must be a proper flag
+          if [[ "\$flag" =~ ^-[a-zA-Z0-9] ]] || [[ "\$flag" =~ ^--[a-zA-Z0-9-]+ ]]; then
+            params+=("\$flag")
+          fi
+        done <<< "\$flags"
+      fi
     fi
     
     # Extract quoted values (e.g., "hourly"|"daily")
