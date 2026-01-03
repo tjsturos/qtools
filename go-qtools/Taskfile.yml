@@ -1,0 +1,203 @@
+version: '3'
+
+vars:
+  BINARY_NAME: qtools
+  DIST_PATH: dist
+  OUTPUT_PATH: '{{.DIST_PATH}}/{{.BINARY_NAME}}'
+  OUTPUT_PATH_ARM64: '{{.DIST_PATH}}/{{.BINARY_NAME}}-arm64'
+  DOCKER_IMAGE: qtools-builder
+  DOCKER_IMAGE_ARM64: qtools-builder-arm64
+  DOCKERFILE: Dockerfile
+  VERSION:
+    sh: git describe --tags --always --dirty 2>/dev/null || echo "dev"
+
+tasks:
+  default:
+    desc: Build the qtools binary in Docker
+    cmds:
+      - task: build:docker
+
+  build:docker:
+    desc: Build the qtools binary for AMD64 Linux in Docker container
+    cmds:
+      - mkdir -p {{.DIST_PATH}}
+      - docker build --platform linux/amd64 --build-arg TARGETOS=linux --build-arg TARGETARCH=amd64 -t {{.DOCKER_IMAGE}} .
+      - |
+        set -e
+        CONTAINER_ID=$(docker create --platform linux/amd64 {{.DOCKER_IMAGE}} /qtools)
+        docker cp $CONTAINER_ID:/qtools {{.OUTPUT_PATH}}
+        docker rm $CONTAINER_ID
+    generates:
+      - '{{.OUTPUT_PATH}}'
+    sources:
+      - '**/*.go'
+      - 'go.mod'
+      - 'go.sum'
+      - '{{.DOCKERFILE}}'
+
+  build:docker:arm64:
+    desc: Build the qtools binary for ARM64 Linux in Docker container
+    cmds:
+      - mkdir -p {{.DIST_PATH}}
+      - docker build --platform linux/arm64 --build-arg TARGETOS=linux --build-arg TARGETARCH=arm64 -t {{.DOCKER_IMAGE_ARM64}} .
+      - |
+        set -e
+        CONTAINER_ID=$(docker create --platform linux/arm64 {{.DOCKER_IMAGE_ARM64}} /qtools)
+        docker cp $CONTAINER_ID:/qtools {{.OUTPUT_PATH_ARM64}}
+        docker rm $CONTAINER_ID
+    generates:
+      - '{{.OUTPUT_PATH_ARM64}}'
+    sources:
+      - '**/*.go'
+      - 'go.mod'
+      - 'go.sum'
+      - '{{.DOCKERFILE}}'
+
+  build:docker:all:
+    desc: Build binaries for both AMD64 and ARM64 in Docker
+    cmds:
+      - task: build:docker
+      - task: build:docker:arm64
+
+  clean:
+    desc: Remove built binaries and Docker images
+    cmds:
+      - rm -rf {{.DIST_PATH}}
+      - docker rmi {{.DOCKER_IMAGE}} 2>/dev/null || true
+      - docker rmi {{.DOCKER_IMAGE_ARM64}} 2>/dev/null || true
+
+  verify:arm64:
+    desc: Verify the ARM64 binary architecture
+    cmds:
+      - file {{.OUTPUT_PATH_ARM64}} || echo "Binary not found. Run 'task build:docker:arm64' first."
+
+  test:
+    desc: Run tests
+    cmds:
+      - go test ./...
+
+  fmt:
+    desc: Format Go code
+    cmds:
+      - go fmt ./...
+
+  vet:
+    desc: Run go vet
+    cmds:
+      - go vet ./...
+
+  lint:
+    desc: Run linters (if available)
+    cmds:
+      - go vet ./...
+      - go fmt -d .
+
+  release:prepare:
+    desc: Build binaries and create release archives (without creating GitHub release)
+    cmds:
+      - task: build:docker:all
+      - |
+        set -e
+        # Check for QTOOLS_DIST_VERSION, then VERSION, then prompt
+        if [ -z "$$QTOOLS_DIST_VERSION" ] && [ -z "$$VERSION" ]; then
+          echo "Version not set. Please enter version (e.g., v1.0.0):"
+          read -r VERSION_INPUT
+          if [ -z "$$VERSION_INPUT" ]; then
+            echo "Error: Version is required"
+            exit 1
+          fi
+          VERSION=$$VERSION_INPUT
+        else
+          VERSION=$${QTOOLS_DIST_VERSION:-$$VERSION}
+        fi
+        
+        # Validate version format (should start with v)
+        if [ "$${VERSION#v}" = "$$VERSION" ]; then
+          echo "Warning: Version should start with 'v' (e.g., v1.0.0). Adding 'v' prefix..."
+          VERSION="v$$VERSION"
+        fi
+        
+        # Remove 'v' prefix if present for archive names
+        VERSION_NO_V=$${VERSION#v}
+        
+        # Create release archives
+        echo "Creating release archives for version: $$VERSION"
+        cd {{.DIST_PATH}}
+        tar -czf {{.BINARY_NAME}}-linux-amd64-$$VERSION_NO_V.tar.gz {{.BINARY_NAME}}
+        tar -czf {{.BINARY_NAME}}-linux-arm64-$$VERSION_NO_V.tar.gz {{.BINARY_NAME}}-arm64
+        
+        echo "Release archives created:"
+        echo "  - {{.DIST_PATH}}/{{.BINARY_NAME}}-linux-amd64-$$VERSION_NO_V.tar.gz"
+        echo "  - {{.DIST_PATH}}/{{.BINARY_NAME}}-linux-arm64-$$VERSION_NO_V.tar.gz"
+
+  release:
+    desc: Build binaries, create archives, tag, and create GitHub release
+    cmds:
+      - |
+        set -e
+        # Check for QTOOLS_DIST_VERSION, then VERSION, then prompt
+        if [ -z "$$QTOOLS_DIST_VERSION" ] && [ -z "$$VERSION" ]; then
+          echo "Version not set. Please enter version (e.g., v1.0.0):"
+          read -r VERSION_INPUT
+          if [ -z "$$VERSION_INPUT" ]; then
+            echo "Error: Version is required"
+            exit 1
+          fi
+          export VERSION=$$VERSION_INPUT
+        else
+          export VERSION=$${QTOOLS_DIST_VERSION:-$$VERSION}
+        fi
+        
+        # Validate version format (should start with v)
+        if [ "$${VERSION#v}" = "$$VERSION" ]; then
+          echo "Warning: Version should start with 'v' (e.g., v1.0.0). Adding 'v' prefix..."
+          export VERSION="v$$VERSION"
+        fi
+        
+        echo "Using version: $$VERSION"
+      - task: build:docker:all
+      - |
+        set -e
+        VERSION=$${QTOOLS_DIST_VERSION:-$$VERSION}
+        if [ -z "$$VERSION" ]; then
+          echo "Error: VERSION not set"
+          exit 1
+        fi
+        
+        # Validate version format (should start with v)
+        if [ "$${VERSION#v}" = "$$VERSION" ]; then
+          VERSION="v$$VERSION"
+        fi
+        
+        VERSION_NO_V=$${VERSION#v}
+        
+        # Create release archives
+        echo "Creating release archives for version: $$VERSION"
+        cd {{.DIST_PATH}}
+        tar -czf {{.BINARY_NAME}}-linux-amd64-$$VERSION_NO_V.tar.gz {{.BINARY_NAME}}
+        tar -czf {{.BINARY_NAME}}-linux-arm64-$$VERSION_NO_V.tar.gz {{.BINARY_NAME}}-arm64
+        
+        # Create git tag if it doesn't exist
+        if ! git rev-parse "$$VERSION" >/dev/null 2>&1; then
+          echo "Creating git tag: $$VERSION"
+          git tag -a "$$VERSION" -m "Release $$VERSION"
+          git push origin "$$VERSION" || echo "Warning: Failed to push tag. Push manually with: git push origin $$VERSION"
+        else
+          echo "Tag $$VERSION already exists"
+        fi
+        
+        # Create GitHub release using gh CLI
+        if command -v gh >/dev/null 2>&1; then
+          echo "Creating GitHub release: $$VERSION"
+          gh release create "$$VERSION" \
+            --title "$$VERSION" \
+            --notes "Release $$VERSION" \
+            {{.DIST_PATH}}/{{.BINARY_NAME}}-linux-amd64-$$VERSION_NO_V.tar.gz \
+            {{.DIST_PATH}}/{{.BINARY_NAME}}-linux-arm64-$$VERSION_NO_V.tar.gz || echo "Warning: Failed to create GitHub release. Create manually or ensure gh CLI is authenticated."
+        else
+          echo "GitHub CLI (gh) not found. Skipping GitHub release creation."
+          echo "Install it from: https://cli.github.com/"
+          echo "Or create release manually at: https://github.com/$(git config --get remote.origin.url | sed 's/.*github.com[:/]\(.*\)\.git/\1/')/releases/new"
+        fi
+        
+        echo "Release $$VERSION created successfully!"
