@@ -103,15 +103,18 @@ _qtools_complete() {
     # Extract flags from the parameter definition
     # Only proceed if param_def looks like it contains flags (starts with -)
     if [[ "\$param_def" =~ ^- ]]; then
+      # Remove argument placeholders like <int>, <string>, etc. before processing
+      param_cleaned=\$(echo "\$param_def" | sed -E 's/<[^>]+>//g')
       # Replace commas with spaces to handle comma-separated flags
-      param_normalized=\$(echo "\$param_def" | tr ',' ' ' | sed 's/[[:space:]]\+/ /g')
+      param_normalized=\$(echo "\$param_cleaned" | tr ',' ' ' | sed 's/[[:space:]]\+/ /g')
       # Extract flags - match - or -- followed by alphanumerics and hyphens
-      # Match at start of string or after space, end at space or end of string
-      flags=\$(echo "\$param_normalized" | grep -oE '(^|[[:space:]])(-[a-zA-Z0-9][a-zA-Z0-9-]*)' 2>/dev/null | sed 's/^[[:space:]]*//')
+      # Pattern matches: -f, -flag, --flag, --long-flag
+      # Use --? to match one or two dashes
+      flags=\$(echo "\$param_normalized" | grep -oE '(--?[a-zA-Z0-9][a-zA-Z0-9-]*)' 2>/dev/null)
       
       if [ -n "\$flags" ]; then
         while read -r flag; do
-          # Final validation: must be a proper flag
+          # Final validation: must be a proper flag (single - or double --)
           if [[ "\$flag" =~ ^-[a-zA-Z0-9] ]] || [[ "\$flag" =~ ^--[a-zA-Z0-9-]+ ]]; then
             params+=("\$flag")
           fi
