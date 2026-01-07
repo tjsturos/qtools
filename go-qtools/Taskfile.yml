@@ -110,22 +110,22 @@ tasks:
         else
           VERSION=$${QTOOLS_DIST_VERSION:-$$VERSION}
         fi
-        
+
         # Validate version format (should start with v)
         if [ "$${VERSION#v}" = "$$VERSION" ]; then
           echo "Warning: Version should start with 'v' (e.g., v1.0.0). Adding 'v' prefix..."
           VERSION="v$$VERSION"
         fi
-        
+
         # Remove 'v' prefix if present for archive names
         VERSION_NO_V=$${VERSION#v}
-        
+
         # Create release archives
         echo "Creating release archives for version: $$VERSION"
         cd {{.DIST_PATH}}
         tar -czf {{.BINARY_NAME}}-linux-amd64-$$VERSION_NO_V.tar.gz {{.BINARY_NAME}}
         tar -czf {{.BINARY_NAME}}-linux-arm64-$$VERSION_NO_V.tar.gz {{.BINARY_NAME}}-arm64
-        
+
         echo "Release archives created:"
         echo "  - {{.DIST_PATH}}/{{.BINARY_NAME}}-linux-amd64-$$VERSION_NO_V.tar.gz"
         echo "  - {{.DIST_PATH}}/{{.BINARY_NAME}}-linux-arm64-$$VERSION_NO_V.tar.gz"
@@ -147,13 +147,13 @@ tasks:
         else
           export VERSION=$${QTOOLS_DIST_VERSION:-$$VERSION}
         fi
-        
+
         # Validate version format (should start with v)
         if [ "$${VERSION#v}" = "$$VERSION" ]; then
           echo "Warning: Version should start with 'v' (e.g., v1.0.0). Adding 'v' prefix..."
           export VERSION="v$$VERSION"
         fi
-        
+
         echo "Using version: $$VERSION"
       - task: build:docker:all
       - |
@@ -163,20 +163,20 @@ tasks:
           echo "Error: VERSION not set"
           exit 1
         fi
-        
+
         # Validate version format (should start with v)
         if [ "$${VERSION#v}" = "$$VERSION" ]; then
           VERSION="v$$VERSION"
         fi
-        
+
         VERSION_NO_V=$${VERSION#v}
-        
+
         # Create release archives
         echo "Creating release archives for version: $$VERSION"
         cd {{.DIST_PATH}}
         tar -czf {{.BINARY_NAME}}-linux-amd64-$$VERSION_NO_V.tar.gz {{.BINARY_NAME}}
         tar -czf {{.BINARY_NAME}}-linux-arm64-$$VERSION_NO_V.tar.gz {{.BINARY_NAME}}-arm64
-        
+
         # Create git tag if it doesn't exist
         if ! git rev-parse "$$VERSION" >/dev/null 2>&1; then
           echo "Creating git tag: $$VERSION"
@@ -185,7 +185,7 @@ tasks:
         else
           echo "Tag $$VERSION already exists"
         fi
-        
+
         # Create GitHub release using gh CLI
         if command -v gh >/dev/null 2>&1; then
           echo "Creating GitHub release: $$VERSION"
@@ -199,5 +199,5 @@ tasks:
           echo "Install it from: https://cli.github.com/"
           echo "Or create release manually at: https://github.com/$(git config --get remote.origin.url | sed 's/.*github.com[:/]\(.*\)\.git/\1/')/releases/new"
         fi
-        
+
         echo "Release $$VERSION created successfully!"
